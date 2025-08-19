@@ -7,6 +7,12 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+type LoginForm = {
+    login: string;
+    password: string;
+    remember: boolean;
+};
+
 export default function Login({
     status,
     canResetPassword,
@@ -14,11 +20,12 @@ export default function Login({
     status?: string;
     canResetPassword: boolean;
 }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
-        remember: false as boolean,
-    });
+    const { data, setData, post, processing, errors, reset } =
+        useForm<LoginForm>({
+            login: '',
+            password: '',
+            remember: false,
+        });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -40,20 +47,21 @@ export default function Login({
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="login" value="Email atau Username" />
 
                     <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
+                        id="login"
+                        type="text" // <- text agar username non-email juga valid
+                        name="login"
+                        value={data.login}
                         className="mt-1 block w-full"
                         autoComplete="username"
                         isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
+                        placeholder="contoh: user@mail.com atau zacky"
+                        onChange={(e) => setData('login', e.target.value)}
                     />
 
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputError message={errors.login} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -78,10 +86,7 @@ export default function Login({
                             name="remember"
                             checked={data.remember}
                             onChange={(e) =>
-                                setData(
-                                    'remember',
-                                    (e.target.checked || false) as false,
-                                )
+                                setData('remember', e.target.checked)
                             }
                         />
                         <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">

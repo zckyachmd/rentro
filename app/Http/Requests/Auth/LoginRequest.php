@@ -11,41 +11,51 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Validasi:
+     * - pakai 'login' (email/username), atau fallback 'email' kalau FE lama
      */
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'login'    => ['required_without:email', 'string'],
+            'email'    => ['required_without:login', 'string', 'email'],
             'password' => ['required', 'string'],
+            'remember' => ['sometimes', 'boolean'],
         ];
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Autentikasi:
+     * - deteksi email vs username
+     * - lowercasing username jika perlu (agar konsisten jika tidak pakai CITEXT)
      */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $rawLogin = (string) ($this->input('login') ?? $this->input('email') ?? '');
+        $password = (string) $this->input('password');
+
+        $field = filter_var($rawLogin, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $value = $field === 'username' ? mb_strtolower($rawLogin) : $rawLogin;
+
+        $credentials = [
+            $field     => $value,
+            'password' => $password,
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            // kembalikan error ke field 'login' agar FE baru/lama tetap relevan
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'login' => trans('auth.failed'),
             ]);
         }
 
@@ -53,11 +63,18 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Ensure the login request is not rate limited.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Rate limiter (gabung login/email + IP).
      */
-    public function ensureIsNotRateLimited(): void
+    public function throttleKey(): string
+    {
+        $identifier = (string) ($this->input('login') ?? $this->input('email') ?? '');
+        return Str::lower($identifier) . '|' . $this->ip();
+    }
+
+    /**
+     * Pastikan tidak melewati batas percobaan login.
+     */
+    protected function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
@@ -68,18 +85,10 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'login' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
         ]);
-    }
-
-    /**
-     * Get the rate limiting throttle key for the request.
-     */
-    public function throttleKey(): string
-    {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }
