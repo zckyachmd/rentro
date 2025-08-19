@@ -1,0 +1,50 @@
+grumphp:
+  hide_circumvention_tip: true
+  process_timeout: 120
+  stop_on_failure: true
+
+  fixer:
+    enabled: true
+    fix_by_default: true
+
+  parallel:
+    enabled: true
+    max_workers: 5
+
+  tasks:
+    composer:
+      no_check_lock: false
+      no_check_publish: true
+
+    phpversion:
+      project: '8.2'
+
+    phpcs:
+      standard: phpcs.xml.dist
+      triggered_by: ['php']
+      ignore_patterns:
+        - /^vendor\/.*/
+        - /^storage\/.*/
+        - /^node_modules\/.*/
+        - /^public\/.*/
+        - /^resources\/.*/
+        - /^bootstrap\/cache\/.*/
+        - /^tests\/Fixtures\/.*/
+      warning_severity: 0
+
+    phpcsfixer:
+      allow_risky: false
+      config: '.php-cs-fixer.php'
+      config_contains_finder: true
+      using_cache: true
+      verbose: false
+      diff: false
+      triggered_by: ['php']
+
+    phpstan:
+      configuration: phpstan.neon
+      autoload_file: vendor/autoload.php
+      level: null
+      memory_limit: 1G
+      use_grumphp_paths: true
+      triggered_by: ['php']

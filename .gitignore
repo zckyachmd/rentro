@@ -7,12 +7,15 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/tmp/*
 /vendor
 .env
 .env.backup
 .env.production
 .phpactor.json
 .phpunit.result.cache
+.php-cs-fixer.cache
+phpstan-baseline.neon
 Homestead.json
 Homestead.yaml
 npm-debug.log

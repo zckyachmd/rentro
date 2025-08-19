@@ -50,7 +50,7 @@ class LoginRequest extends FormRequest
             'password' => $password,
         ];
 
-        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+        if (!Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             // kembalikan error ke field 'login' agar FE baru/lama tetap relevan
@@ -68,6 +68,7 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         $identifier = (string) ($this->input('login') ?? $this->input('email') ?? '');
+
         return Str::lower($identifier) . '|' . $this->ip();
     }
 
@@ -76,7 +77,7 @@ class LoginRequest extends FormRequest
      */
     protected function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 

@@ -1,0 +1,30 @@
+includes:
+  - vendor/nesbot/carbon/extension.neon
+  - phpstan-baseline.neon
+
+parameters:
+  level: 6
+
+  paths:
+    - app
+    - database
+    - config
+    - routes
+
+  bootstrapFiles:
+    - vendor/autoload.php
+
+  tmpDir: storage/tmp/phpstan
+
+  reportUnmatchedIgnoredErrors: false
+
+  excludePaths:
+    - storage/*
+    - vendor/*
+    - node_modules/*
+    - bootstrap/cache/*
+    - tests/Fixtures/*
+
+  ignoreErrors:
+    - '#Call to an undefined method Illuminate\\Support\\Collection::.*#'
+    - '#@var PHPDoc tag.*could be replaced by native type hint#'
