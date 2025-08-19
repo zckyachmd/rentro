@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Traits\AuthActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,6 +11,8 @@ use Illuminate\Validation\Rules\Password;
 
 class PasswordController extends Controller
 {
+    use AuthActivity;
+
     /**
      * Update the user's password.
      */
@@ -23,6 +26,8 @@ class PasswordController extends Controller
         $request->user()->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        $this->logAuth('password_updated', $request->user());
 
         return back();
     }

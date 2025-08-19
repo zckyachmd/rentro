@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Traits\AuthActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class ConfirmablePasswordController extends Controller
 {
+    use AuthActivity;
+
     /**
      * Show the confirm password view.
      */
@@ -37,6 +40,8 @@ class ConfirmablePasswordController extends Controller
         }
 
         $request->session()->put('auth.password_confirmed_at', time());
+
+        $this->logAuth('password_confirmed', $request->user());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Traits\AuthActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class PasswordResetLinkController extends Controller
 {
+    use AuthActivity;
+
     /**
      * Display the password reset link request view.
      */
@@ -41,6 +44,8 @@ class PasswordResetLinkController extends Controller
         );
 
         if ($status == Password::RESET_LINK_SENT) {
+            $this->logAuth('password_reset_link_sent', null, ['email' => $request->input('email')]);
+
             return back()->with('status', __($status));
         }
 

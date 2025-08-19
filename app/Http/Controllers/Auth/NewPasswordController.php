@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Traits\AuthActivity;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,8 @@ use Inertia\Response;
 
 class NewPasswordController extends Controller
 {
+    use AuthActivity;
+
     /**
      * Display the password reset view.
      */
@@ -59,6 +62,8 @@ class NewPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         if ($status == Password::PASSWORD_RESET) {
+            $this->logAuth('password_reset', $user ?? null);
+
             return redirect()->route('login')->with('status', __($status));
         }
 
