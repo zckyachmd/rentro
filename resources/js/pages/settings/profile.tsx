@@ -90,7 +90,7 @@ export default function Profile({
                                 {mustVerifyEmail &&
                                     auth.user.email_verified_at === null && (
                                         <div>
-                                            <p className="text-muted-foreground -mt-4 text-sm">
+                                            <p className="-mt-4 text-sm text-muted-foreground">
                                                 Your email address is
                                                 unverified.{' '}
                                                 <Link
@@ -99,7 +99,7 @@ export default function Profile({
                                                     )}
                                                     method="post"
                                                     as="button"
-                                                    className="text-foreground hover:decoration-current! underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out dark:decoration-neutral-500"
+                                                    className="hover:decoration-current! text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out dark:decoration-neutral-500"
                                                 >
                                                     Click here to resend the
                                                     verification email.

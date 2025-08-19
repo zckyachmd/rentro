@@ -1,139 +1,262 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Link, useForm } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
+
+import AuthLayout from '@/layouts/auth-layout';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { AtSign, Eye, EyeOff, Loader2, Lock, User } from 'lucide-react';
+
+type RegisterForm = {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+};
 
 export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        username: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-    });
+    const { data, setData, post, processing, errors, reset, clearErrors } =
+        useForm<RegisterForm>({
+            name: '',
+            username: '',
+            email: '',
+            password: '',
+            password_confirmation: '',
+        });
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
         post(route('register'), {
+            onStart: () => {
+                clearErrors();
+            },
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
 
     return (
-        <GuestLayout>
-            <Head title="Register" />
+        <AuthLayout
+            title="Register"
+            description="Fill the fields below to get started."
+            content={
+                <form onSubmit={submit} className="space-y-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Full name</Label>
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <User className="h-4 w-4 text-muted-foreground" />
+                            </span>
+                            <Input
+                                id="name"
+                                name="name"
+                                type="text"
+                                autoComplete="name"
+                                value={data.name}
+                                placeholder="your full name"
+                                aria-invalid={Boolean(errors.name)}
+                                className="pl-10"
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
+                            />
+                        </div>
+                        {errors.name && (
+                            <p className="text-sm text-red-500 dark:text-red-400">
+                                {errors.name}
+                            </p>
+                        )}
+                    </div>
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <div className="grid gap-2">
+                        <Label htmlFor="username">Username</Label>
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <User className="h-4 w-4 text-muted-foreground" />
+                            </span>
+                            <Input
+                                id="username"
+                                name="username"
+                                type="text"
+                                autoComplete="username"
+                                value={data.username}
+                                placeholder="choose a username"
+                                aria-invalid={Boolean(errors.username)}
+                                className="pl-10"
+                                onChange={(e) =>
+                                    setData('username', e.target.value)
+                                }
+                            />
+                        </div>
+                        {errors.username && (
+                            <p className="text-sm text-red-500 dark:text-red-400">
+                                {errors.username}
+                            </p>
+                        )}
+                    </div>
 
-                    <TextInput
-                        id="name"
-                        name="name"
-                        value={data.name}
-                        className="mt-1 block w-full"
-                        autoComplete="name"
-                        isFocused={true}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                    />
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <AtSign className="h-4 w-4 text-muted-foreground" />
+                            </span>
+                            <Input
+                                id="email"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                value={data.email}
+                                placeholder="you@example.com"
+                                aria-invalid={Boolean(errors.email)}
+                                className="pl-10"
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
+                            />
+                        </div>
+                        {errors.email && (
+                            <p className="text-sm text-red-500 dark:text-red-400">
+                                {errors.email}
+                            </p>
+                        )}
+                    </div>
 
-                    <InputError message={errors.name} className="mt-2" />
-                </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <Lock className="h-4 w-4 text-muted-foreground" />
+                            </span>
+                            <Input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete="new-password"
+                                value={data.password}
+                                placeholder="password"
+                                aria-invalid={Boolean(errors.password)}
+                                className="pl-10 pr-10"
+                                onChange={(e) =>
+                                    setData('password', e.target.value)
+                                }
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                onClick={() => setShowPassword((s) => !s)}
+                                tabIndex={-1}
+                                aria-label={
+                                    showPassword
+                                        ? 'Hide password'
+                                        : 'Show password'
+                                }
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
+                            </Button>
+                        </div>
+                        {errors.password && (
+                            <p className="text-sm text-red-500 dark:text-red-400">
+                                {errors.password}
+                            </p>
+                        )}
+                    </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="username" value="Username" />
+                    <div className="grid gap-2">
+                        <Label htmlFor="password_confirmation">
+                            Confirm password
+                        </Label>
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <Lock className="h-4 w-4 text-muted-foreground" />
+                            </span>
+                            <Input
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                type={showPasswordConfirm ? 'text' : 'password'}
+                                autoComplete="new-password"
+                                value={data.password_confirmation}
+                                placeholder="confirm your password"
+                                aria-invalid={Boolean(
+                                    errors.password_confirmation,
+                                )}
+                                className="pl-10 pr-10"
+                                onChange={(e) =>
+                                    setData(
+                                        'password_confirmation',
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                tabIndex={-1}
+                                onClick={() =>
+                                    setShowPasswordConfirm((s) => !s)
+                                }
+                                aria-label={
+                                    showPasswordConfirm
+                                        ? 'Hide password'
+                                        : 'Show password'
+                                }
+                            >
+                                {showPasswordConfirm ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
+                            </Button>
+                        </div>
+                        {errors.password_confirmation && (
+                            <p className="text-sm text-red-500 dark:text-red-400">
+                                {errors.password_confirmation}
+                            </p>
+                        )}
+                    </div>
 
-                    <TextInput
-                        id="username"
-                        type="text"
-                        name="username"
-                        value={data.username}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('username', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="email"
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        required
-                    />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={processing}
                     >
-                        Already registered?
-                    </Link>
+                        {processing ? (
+                            <span className="inline-flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Creating account...
+                            </span>
+                        ) : (
+                            'Create account'
+                        )}
+                    </Button>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+                    <div className="space-y-3">
+                        <Separator />
+                        <p className="text-center text-sm text-muted-foreground">
+                            Already have an account?{' '}
+                            <Link
+                                href={route('login')}
+                                className="font-medium text-foreground underline underline-offset-4"
+                            >
+                                Sign in
+                            </Link>
+                        </p>
+                    </div>
+                </form>
+            }
+        />
     );
 }

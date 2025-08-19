@@ -1,95 +1,166 @@
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { Form } from '@inertiajs/react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
-interface ResetPasswordProps {
-    token: string;
+export default function ResetPassword({
+    email,
+    token,
+}: {
     email: string;
-}
+    token: string;
+}) {
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-export default function ResetPassword({ token, email }: ResetPasswordProps) {
     return (
-        <AuthLayout
-            title="Reset password"
-            description="Please enter your new password below"
-        >
-            <Head title="Reset password" />
+        <>
+            <AuthLayout
+                title="Reset password"
+                description="Enter your new password below."
+                content={
+                    <Form
+                        method="post"
+                        action={route('password.store')}
+                        transform={(data) => ({
+                            ...data,
+                            token,
+                            email,
+                        })}
+                        onSuccess={() => {
+                            toast.success('Password has been reset.');
+                        }}
+                        onError={(errors) => {
+                            const fieldErrors = [
+                                'password',
+                                'password_confirmation',
+                            ];
+                            const generalErrors = Object.entries(errors)
+                                .filter(([key]) => !fieldErrors.includes(key))
+                                .map(([, message]) => message);
+                            console.log(generalErrors);
+                            if (generalErrors.length > 0) {
+                                toast.error(generalErrors.join(' '));
+                            }
+                        }}
+                    >
+                        {({ processing, errors }) => (
+                            <div className="space-y-6">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="password">
+                                        New password
+                                    </Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                                            <Lock className="h-4 w-4 text-muted-foreground" />
+                                        </span>
+                                        <Input
+                                            id="password"
+                                            name="password"
+                                            type={
+                                                showPassword
+                                                    ? 'text'
+                                                    : 'password'
+                                            }
+                                            autoComplete="new-password"
+                                            placeholder="********"
+                                            aria-invalid={Boolean(
+                                                errors.password,
+                                            )}
+                                            className="pl-10 pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                            tabIndex={-1}
+                                            onClick={() =>
+                                                setShowPassword(!showPassword)
+                                            }
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff />
+                                            ) : (
+                                                <Eye />
+                                            )}
+                                        </Button>
+                                    </div>
+                                    {errors.password && (
+                                        <p className="text-sm text-red-500 dark:text-red-400">
+                                            {errors.password}
+                                        </p>
+                                    )}
+                                </div>
 
-            <Form
-                method="post"
-                action={route('password.store')}
-                transform={(data) => ({ ...data, token, email })}
-                resetOnSuccess={['password', 'password_confirmation']}
-            >
-                {({ processing, errors }) => (
-                    <div className="grid gap-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                name="email"
-                                autoComplete="email"
-                                value={email}
-                                className="mt-1 block w-full"
-                                readOnly
-                            />
-                            <InputError
-                                message={errors.email}
-                                className="mt-2"
-                            />
-                        </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="password_confirmation">
+                                        Confirm password
+                                    </Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                                            <Lock className="h-4 w-4 text-muted-foreground" />
+                                        </span>
+                                        <Input
+                                            id="password_confirmation"
+                                            name="password_confirmation"
+                                            type={
+                                                showConfirmPassword
+                                                    ? 'text'
+                                                    : 'password'
+                                            }
+                                            autoComplete="new-password"
+                                            placeholder="********"
+                                            aria-invalid={Boolean(
+                                                errors.password_confirmation,
+                                            )}
+                                            className="pl-10 pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                            tabIndex={-1}
+                                            onClick={() =>
+                                                setShowConfirmPassword(
+                                                    !showConfirmPassword,
+                                                )
+                                            }
+                                        >
+                                            {showConfirmPassword ? (
+                                                <EyeOff />
+                                            ) : (
+                                                <Eye />
+                                            )}
+                                        </Button>
+                                    </div>
+                                    {errors.password_confirmation && (
+                                        <p className="text-sm text-red-500 dark:text-red-400">
+                                            {errors.password_confirmation}
+                                        </p>
+                                    )}
+                                </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                name="password"
-                                autoComplete="new-password"
-                                className="mt-1 block w-full"
-                                autoFocus
-                                placeholder="Password"
-                            />
-                            <InputError message={errors.password} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">
-                                Confirm password
-                            </Label>
-                            <Input
-                                id="password_confirmation"
-                                type="password"
-                                name="password_confirmation"
-                                autoComplete="new-password"
-                                className="mt-1 block w-full"
-                                placeholder="Confirm password"
-                            />
-                            <InputError
-                                message={errors.password_confirmation}
-                                className="mt-2"
-                            />
-                        </div>
-
-                        <Button
-                            type="submit"
-                            className="mt-4 w-full"
-                            disabled={processing}
-                        >
-                            {processing && (
-                                <LoaderCircle className="h-4 w-4 animate-spin" />
-                            )}
-                            Reset password
-                        </Button>
-                    </div>
-                )}
-            </Form>
-        </AuthLayout>
+                                <Button
+                                    type="submit"
+                                    className="w-full"
+                                    disabled={processing}
+                                >
+                                    {processing
+                                        ? 'Resetting...'
+                                        : 'Reset password'}
+                                </Button>
+                            </div>
+                        )}
+                    </Form>
+                }
+            />
+        </>
     );
 }

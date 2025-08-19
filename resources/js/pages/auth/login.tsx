@@ -1,11 +1,14 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Link, useForm } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
+
+import AuthLayout from '@/layouts/auth-layout';
+
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { AtSign, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 
 type LoginForm = {
     login: string;
@@ -14,102 +17,171 @@ type LoginForm = {
 };
 
 export default function Login({
-    status,
     canResetPassword,
 }: {
     status?: string;
     canResetPassword: boolean;
 }) {
-    const { data, setData, post, processing, errors, reset } =
+    const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm<LoginForm>({
             login: '',
             password: '',
             remember: false,
         });
 
+    const [showPassword, setShowPassword] = useState(false);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
         post(route('login'), {
+            onStart: () => {
+                clearErrors();
+            },
             onFinish: () => reset('password'),
         });
     };
 
     return (
-        <GuestLayout>
-            <Head title="Log in" />
+        <AuthLayout
+            title="Sign in"
+            description="Use your email/username and password to sign in."
+            content={
+                <form onSubmit={submit} className="space-y-6">
+                    <div className="grid gap-2">
+                        <Label htmlFor="login">Email or username</Label>
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <AtSign className="h-4 w-4 text-muted-foreground" />
+                            </span>
+                            <Input
+                                id="login"
+                                name="login"
+                                type="text"
+                                value={data.login}
+                                autoComplete="username"
+                                placeholder="email or username"
+                                aria-invalid={Boolean(errors.login)}
+                                className="pl-10"
+                                onChange={(e) =>
+                                    setData('login', e.target.value)
+                                }
+                            />
+                        </div>
+                        {errors.login && (
+                            <p className="text-sm text-red-500 dark:text-red-400">
+                                {errors.login}
+                            </p>
+                        )}
+                    </div>
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <Lock className="h-4 w-4 text-muted-foreground" />
+                            </span>
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="login" value="Email atau Username" />
+                            <Input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                value={data.password}
+                                autoComplete="current-password"
+                                placeholder="password"
+                                aria-invalid={Boolean(errors.password)}
+                                className="pl-10 pr-10"
+                                onChange={(e) =>
+                                    setData('password', e.target.value)
+                                }
+                            />
 
-                    <TextInput
-                        id="login"
-                        type="text" // <- text agar username non-email juga valid
-                        name="login"
-                        value={data.login}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        placeholder="contoh: user@mail.com atau zacky"
-                        onChange={(e) => setData('login', e.target.value)}
-                    />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setShowPassword((s) => !s)}
+                                className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                tabIndex={-1}
+                                aria-label={
+                                    showPassword
+                                        ? 'Hide password'
+                                        : 'Show password'
+                                }
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
+                            </Button>
+                        </div>
+                        {errors.password && (
+                            <p className="text-sm text-red-500 dark:text-red-400">
+                                {errors.password}
+                            </p>
+                        )}
+                    </div>
 
-                    <InputError message={errors.login} className="mt-2" />
-                </div>
+                    <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2">
+                            <Checkbox
+                                id="remember"
+                                checked={data.remember}
+                                onCheckedChange={(checked) =>
+                                    setData('remember', Boolean(checked))
+                                }
+                            />
+                            <span className="text-sm text-muted-foreground">
+                                Remember me
+                            </span>
+                        </label>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                        {canResetPassword &&
+                            typeof route === 'function' &&
+                            route().has &&
+                            route().has('password.request') && (
+                                <Link
+                                    href={route('password.request')}
+                                    className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                                >
+                                    Forgot password?
+                                </Link>
+                            )}
+                    </div>
 
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={processing}
+                    >
+                        {processing ? (
+                            <span className="inline-flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Processing...
+                            </span>
+                        ) : (
+                            'Sign in'
+                        )}
+                    </Button>
 
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4 block">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
-                        />
-                        <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
-                            Remember me
-                        </span>
-                    </label>
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+                    {typeof route === 'function' &&
+                        route().has &&
+                        route().has('register') && (
+                            <div className="space-y-3">
+                                <Separator />
+                                <p className="text-center text-sm text-muted-foreground">
+                                    Don’t have an account?{' '}
+                                    <Link
+                                        href={route('register')}
+                                        className="font-medium text-foreground underline underline-offset-4"
+                                    >
+                                        Create one
+                                    </Link>
+                                </p>
+                            </div>
+                        )}
+                </form>
+            }
+        />
     );
 }
