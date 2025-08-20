@@ -2,10 +2,17 @@ import { createInertiaApp } from '@inertiajs/react';
 import createServer from '@inertiajs/react/server';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import ReactDOMServer from 'react-dom/server';
-import { RouteName } from 'ziggy-js';
+import type { Config as ZiggyConfig } from 'ziggy-js';
 import { route } from '../../vendor/tightenco/ziggy';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+type ZiggyRouteFn = typeof route;
+
+declare global {
+    // eslint-disable-next-line no-var
+    var route: ZiggyRouteFn;
+}
 
 createServer((page) =>
     createInertiaApp({
@@ -18,14 +25,52 @@ createServer((page) =>
                 import.meta.glob('./Pages/**/*.tsx'),
             ),
         setup: ({ App, props }) => {
-            /* eslint-disable */
-            // @ts-expect-error
-            global.route<RouteName> = (name, params, absolute) =>
-                route(name, params as any, absolute, {
-                    ...page.props.ziggy,
-                    location: new URL(page.props.ziggy.location),
-                });
-            /* eslint-enable */
+            const ziggy = (page.props as Record<string, unknown>)
+                .ziggy as ZiggyConfig & {
+                location?:
+                    | string
+                    | {
+                          host?: string;
+                          pathname?: string;
+                          search?: string;
+                      };
+            };
+
+            const ziggyLocationObj = (() => {
+                const loc = ziggy.location;
+                if (loc && typeof loc === 'object') {
+                    return loc;
+                }
+                const base = typeof loc === 'string' ? loc : ziggy.url;
+                try {
+                    const u = new URL(base);
+                    return {
+                        host: u.host,
+                        pathname: u.pathname,
+                        search: u.search,
+                    };
+                } catch {
+                    return undefined;
+                }
+            })();
+
+            const ziggyConfig: ZiggyConfig = {
+                ...ziggy,
+                ...(ziggyLocationObj ? { location: ziggyLocationObj } : {}),
+            };
+
+            // Expose a typed global route that appends our Ziggy config automatically
+            const routeWithConfig = ((...args: Parameters<ZiggyRouteFn>) => {
+                const [name, params, absolute] = args;
+                return (route as ZiggyRouteFn)(
+                    name,
+                    params,
+                    absolute,
+                    ziggyConfig,
+                );
+            }) as ZiggyRouteFn;
+
+            globalThis.route = routeWithConfig;
 
             return <App {...props} />;
         },

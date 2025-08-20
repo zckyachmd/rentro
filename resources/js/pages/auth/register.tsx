@@ -1,7 +1,7 @@
 import { Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
-import AuthLayout from '@/layouts/auth-layout';
+import GuestLayout from '@/layouts/guest-layout';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,7 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout
+        <GuestLayout
             title="Register"
             description="Fill the fields below to get started."
             content={

@@ -1,7 +1,7 @@
 import { Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
-import AuthLayout from '@/layouts/auth-layout';
+import GuestLayout from '@/layouts/guest-layout';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -42,7 +42,7 @@ export default function Login({
     };
 
     return (
-        <AuthLayout
+        <GuestLayout
             title="Sign in"
             description="Use your email/username and password to sign in."
             content={

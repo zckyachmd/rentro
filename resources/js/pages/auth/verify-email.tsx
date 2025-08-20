@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import AuthLayout from '@/layouts/auth-layout';
+import GuestLayout from '@/layouts/guest-layout';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     useEffect(() => {
@@ -16,7 +16,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
     }, [status]);
 
     return (
-        <AuthLayout
+        <GuestLayout
             title="Verify email"
             description="Please verify your email address to continue."
             content={

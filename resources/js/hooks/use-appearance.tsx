@@ -1,81 +1,76 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-export type Appearance = 'light' | 'dark' | 'system';
+export type Theme = 'dark' | 'light' | 'system';
 
-const prefersDark = () => {
-    if (typeof window === 'undefined') {
-        return false;
-    }
+const DARK_MQ = '(prefers-color-scheme: dark)';
 
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-};
-
-const setCookie = (name: string, value: string, days = 365) => {
-    if (typeof document === 'undefined') {
-        return;
-    }
-
-    const maxAge = days * 24 * 60 * 60;
-    document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
-};
-
-const applyTheme = (appearance: Appearance) => {
-    const isDark =
-        appearance === 'dark' || (appearance === 'system' && prefersDark());
-
-    document.documentElement.classList.toggle('dark', isDark);
-};
-
-const mediaQuery = () => {
-    if (typeof window === 'undefined') {
-        return null;
-    }
-
-    return window.matchMedia('(prefers-color-scheme: dark)');
-};
-
-const handleSystemThemeChange = () => {
-    const currentAppearance = localStorage.getItem('appearance') as Appearance;
-    applyTheme(currentAppearance || 'system');
-};
-
-export function initializeTheme() {
-    const savedAppearance =
-        (localStorage.getItem('appearance') as Appearance) || 'system';
-
-    applyTheme(savedAppearance);
-
-    // Add the event listener for system theme changes...
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+function applyThemeToDocument(theme: Theme, prefersDark: boolean) {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    const isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+    root.classList.toggle('dark', isDark);
+    root.style.colorScheme = isDark ? 'dark' : 'light';
 }
 
-export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+export function useAppearance(opts?: {
+    defaultTheme?: Theme;
+    storageKey?: string;
+}) {
+    const defaultTheme = opts?.defaultTheme ?? 'system';
+    const storageKey = opts?.storageKey ?? 'vite-ui-theme';
 
-    const updateAppearance = useCallback((mode: Appearance) => {
-        setAppearance(mode);
+    const [theme, setThemeState] = useState<Theme>(() => {
+        if (typeof window === 'undefined') return defaultTheme;
+        try {
+            return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+        } catch {
+            return defaultTheme;
+        }
+    });
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', mode);
+    const [prefersDark, setPrefersDark] = useState<boolean>(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return false;
+        try {
+            return window.matchMedia(DARK_MQ).matches;
+        } catch {
+            return false;
+        }
+    });
 
-        // Store in cookie for SSR...
-        setCookie('appearance', mode);
-
-        applyTheme(mode);
-    }, []);
-
+    // Persist theme
     useEffect(() => {
-        const savedAppearance = localStorage.getItem(
-            'appearance',
-        ) as Appearance | null;
-        updateAppearance(savedAppearance || 'system');
+        try {
+            localStorage.setItem(storageKey, theme);
+        } catch {
+            // ignore
+        }
+    }, [theme, storageKey]);
 
-        return () =>
-            mediaQuery()?.removeEventListener(
-                'change',
-                handleSystemThemeChange,
-            );
-    }, [updateAppearance]);
+    // Watch system appearance when theme = system
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return;
+        if (theme !== 'system') return;
+        const mq = window.matchMedia(DARK_MQ);
+        const handler = () => setPrefersDark(mq.matches);
+        handler();
+        mq.addEventListener?.('change', handler);
+        return () => mq.removeEventListener?.('change', handler);
+    }, [theme]);
 
-    return { appearance, updateAppearance } as const;
+    // Apply to <html>
+    useEffect(() => {
+        applyThemeToDocument(theme, prefersDark);
+    }, [prefersDark, theme]);
+
+    const setTheme = useCallback((t: Theme) => setThemeState(t), []);
+
+    const resolvedTheme = useMemo<'light' | 'dark'>(
+        () =>
+            theme === 'dark' || (theme === 'system' && prefersDark)
+                ? 'dark'
+                : 'light',
+        [theme, prefersDark],
+    );
+
+    return { theme, setTheme, resolvedTheme, prefersDark };
 }

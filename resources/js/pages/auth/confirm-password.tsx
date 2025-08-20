@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+import GuestLayout from '@/layouts/guest-layout';
 import { Form } from '@inertiajs/react';
 import { Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 import { useState } from 'react';
@@ -10,7 +10,7 @@ export default function ConfirmPassword() {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <AuthLayout
+        <GuestLayout
             title="Confirm your password"
             description="This is a secure area of the application. Please confirm your password before continuing."
             content={

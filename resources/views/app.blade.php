@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
@@ -13,16 +14,18 @@
 
     <!-- Scripts -->
     <script>
-        (function() {
+        (function () {
             try {
-            var k='vite-ui-theme';
-            var saved=localStorage.getItem(k);
-            var sys=window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            var mode = saved || (sys ? 'dark' : 'light');
-            var dark = (mode==='dark') || (mode==='system' && sys);
-            if (dark) document.documentElement.classList.add('dark');
-            else document.documentElement.classList.remove('dark');
-            } catch(e){}
+                var KEY = 'vite-ui-theme';
+                var theme = localStorage.getItem(KEY) || 'system';
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+                var root = document.documentElement;
+                if (isDark) root.classList.add('dark'); else root.classList.remove('dark');
+                root.style.colorScheme = isDark ? 'dark' : 'light';
+            } catch (e) {
+                // ignore
+            }
         })();
     </script>
 
