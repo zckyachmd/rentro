@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Traits\AuthActivity;
+use App\Traits\LogActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +13,7 @@ use Inertia\Response;
 
 class ConfirmablePasswordController extends Controller
 {
-    use AuthActivity;
+    use LogActivity;
 
     /**
      * Show the confirm password view.

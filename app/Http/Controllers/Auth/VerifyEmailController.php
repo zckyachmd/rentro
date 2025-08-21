@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Traits\AuthActivity;
+use App\Traits\LogActivity;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 
 class VerifyEmailController extends Controller
 {
-    use AuthActivity;
+    use LogActivity;
 
     /**
      * Mark the authenticated user's email address as verified.

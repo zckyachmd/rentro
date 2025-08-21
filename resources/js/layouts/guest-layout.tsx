@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/sonner';
 import Footer from '@/layouts/partials/footer';
+import { getAppName } from '@/lib/env';
 import { Head } from '@inertiajs/react';
 import { ReactNode } from 'react';
 
@@ -18,8 +19,6 @@ type GuestLayoutProps = {
     description?: string;
     content: ReactNode;
     contentFooter?: ReactNode;
-    brandHref?: string;
-    brandLabel?: string;
     rightSlot?: ReactNode;
     extraFooter?: ReactNode;
     fullWidthFooter?: boolean;
@@ -30,24 +29,22 @@ export default function GuestLayout({
     description,
     content,
     contentFooter,
-    brandHref = '/',
-    brandLabel = 'Rentro',
     rightSlot,
     extraFooter,
     fullWidthFooter = true,
 }: GuestLayoutProps) {
-    const pageTitle = title ?? 'Auth';
+    const brandLabel = getAppName();
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Head title={pageTitle} />
+            <Head title={title ?? 'Auth'} />
 
             <div className="container mx-auto flex min-h-screen items-center justify-center px-4">
                 <ThemeProvider>
                     <div className="w-full max-w-md">
                         <div className="mb-6 flex items-center justify-between">
                             <a
-                                href={brandHref}
+                                href="/"
                                 className="inline-flex items-center gap-2 font-semibold"
                             >
                                 <span className="text-xl">{brandLabel}</span>

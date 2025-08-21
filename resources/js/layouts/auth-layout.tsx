@@ -14,6 +14,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { getAppName } from '@/lib/env';
 import type { LucideIcon } from 'lucide-react';
 import {
     Archive,
@@ -77,6 +78,33 @@ function hasChildren(
 
 type Crumb = { label: string; href?: string };
 
+function Breadcrumbs({ items }: { items: Crumb[] }) {
+    if (!items || items.length === 0) return null;
+    return (
+        <Breadcrumb>
+            <BreadcrumbList>
+                {items.map((c, idx) => {
+                    const isLast = idx === items.length - 1;
+                    return (
+                        <React.Fragment key={`${c.label}-${idx}`}>
+                            <BreadcrumbItem>
+                                {isLast || !c.href ? (
+                                    <BreadcrumbPage>{c.label}</BreadcrumbPage>
+                                ) : (
+                                    <BreadcrumbLink asChild>
+                                        <a href={c.href}>{c.label}</a>
+                                    </BreadcrumbLink>
+                                )}
+                            </BreadcrumbItem>
+                            {!isLast && <BreadcrumbSeparator />}
+                        </React.Fragment>
+                    );
+                })}
+            </BreadcrumbList>
+        </Breadcrumb>
+    );
+}
+
 type AuthLayoutProps = PropsWithChildren<{
     header?: ReactNode;
     pageTitle?: string;
@@ -92,6 +120,8 @@ export default function AuthLayout({
     pageDescription,
     breadcrumbs,
 }: AuthLayoutProps) {
+    const brandLabel = getAppName();
+
     const { auth } = usePage().props as InertiaProps;
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
 
@@ -111,15 +141,6 @@ export default function AuthLayout({
         });
     }, []);
 
-    const brandLabel = (() => {
-        try {
-            const env = (import.meta as unknown as { env?: { VITE_APP_NAME?: string } }).env;
-            return env?.VITE_APP_NAME ?? 'Rentro';
-        } catch {
-            return 'Rentro';
-        }
-    })();
-
     const [q, setQ] = useState('');
     const onSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,13 +149,18 @@ export default function AuthLayout({
         console.log('search:', q);
     };
 
-    const menuGroups: MenuGroup[] = React.useMemo(() => (
-        [
+    const menuGroups: MenuGroup[] = React.useMemo(
+        () => [
             {
                 id: 'general',
                 label: 'Umum',
                 items: [
-                    { label: 'Dashboard', href: route('dashboard'), name: 'dashboard', icon: Home },
+                    {
+                        label: 'Dashboard',
+                        href: route('dashboard'),
+                        name: 'dashboard',
+                        icon: Home,
+                    },
                     { label: 'Kamar', href: '#', icon: Bed },
                     { label: 'Penyewa', href: '#', icon: UserIcon },
                     { label: 'Booking', href: '#', icon: CalendarCheck },
@@ -149,9 +175,21 @@ export default function AuthLayout({
                         icon: Wallet,
                         children: [
                             { label: 'Tagihan', href: '#', icon: ReceiptText },
-                            { label: 'Pembayaran', href: '#', icon: CreditCard },
-                            { label: 'Laporan', href: '#', icon: FileBarChart2 },
-                            { label: 'Rekonsiliasi', href: '#', icon: FileBarChart2 },
+                            {
+                                label: 'Pembayaran',
+                                href: '#',
+                                icon: CreditCard,
+                            },
+                            {
+                                label: 'Laporan',
+                                href: '#',
+                                icon: FileBarChart2,
+                            },
+                            {
+                                label: 'Rekonsiliasi',
+                                href: '#',
+                                icon: FileBarChart2,
+                            },
                             { label: 'Aset', href: '#', icon: Package },
                         ],
                     },
@@ -167,7 +205,11 @@ export default function AuthLayout({
                         children: [
                             { label: 'Tugas', href: '#', icon: ClipboardCheck },
                             { label: 'Maintenance', href: '#', icon: Wrench },
-                            { label: 'Task Template', href: '#', icon: ClipboardCheck },
+                            {
+                                label: 'Task Template',
+                                href: '#',
+                                icon: ClipboardCheck,
+                            },
                             { label: 'SLA', href: '#', icon: Wrench },
                         ],
                     },
@@ -189,7 +231,12 @@ export default function AuthLayout({
                 id: 'akun',
                 label: 'Akun',
                 items: [
-                    { label: 'Profil', href: route('profile.edit'), name: 'profile.edit', icon: UserIcon },
+                    {
+                        label: 'Profil',
+                        href: route('profile.show'),
+                        name: 'profile.show',
+                        icon: UserIcon,
+                    },
                     {
                         label: 'Pengaturan',
                         icon: Settings,
@@ -211,7 +258,11 @@ export default function AuthLayout({
                         children: [
                             { label: 'Pengguna', href: '#', icon: Users },
                             { label: 'Roles', href: '#', icon: KeySquare },
-                            { label: 'Audit Log', href: '#', icon: ShieldCheck },
+                            {
+                                label: 'Audit Log',
+                                href: '#',
+                                icon: ShieldCheck,
+                            },
                         ],
                     },
                 ],
@@ -226,47 +277,14 @@ export default function AuthLayout({
                     { label: 'Changelog', href: '#', icon: BookText },
                 ],
             },
-        ]
-    ), []);
-
-    const autoBreadcrumbs: Crumb[] = React.useMemo(() => {
-        try {
-            const currentPath = window.location?.pathname || '';
-            for (const group of menuGroups) {
-                for (const item of group.items) {
-                    const topMatchHref = item.href
-                        ? new URL(item.href, window.location.origin)
-                              .pathname === currentPath
-                        : false;
-                    const topMatchName = item.name ? isRouteActive(item.name) : false;
-                    if ((topMatchHref || topMatchName) && !hasChildren(item)) {
-                        return [{ label: item.label, href: item.href }];
-                    }
-                    if (hasChildren(item)) {
-                        for (const child of item.children) {
-                            const childMatchHref = child.href
-                                ? new URL(child.href, window.location.origin)
-                                      .pathname === currentPath
-                                : false;
-                            const childMatchName = child.name ? isRouteActive(child.name) : false;
-                            if (childMatchHref || childMatchName) {
-                                return [
-                                    { label: item.label },
-                                    { label: child.label, href: child.href },
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-        } catch { /* ignore breadcrumb build error */ }
-        return pageTitle ? [{ label: pageTitle }] : [];
-    }, [menuGroups, pageTitle]);
+        ],
+        [],
+    );
 
     const effectiveBreadcrumbs: Crumb[] = React.useMemo(() => {
         if (breadcrumbs && breadcrumbs.length) return breadcrumbs;
-        return autoBreadcrumbs;
-    }, [breadcrumbs, autoBreadcrumbs]);
+        return [];
+    }, [breadcrumbs]);
 
     const activeParentId = React.useMemo(() => {
         try {
@@ -275,8 +293,9 @@ export default function AuthLayout({
                 for (const parent of group.items || []) {
                     if (!hasChildren(parent)) continue;
                     for (const child of parent.children) {
-                        // Prefer name (Ziggy), fallback ke href
-                        const byName = child.name ? isRouteActive(child.name) : false;
+                        const byName = child.name
+                            ? isRouteActive(child.name)
+                            : false;
                         const byHref = child.href
                             ? new URL(child.href, window.location.origin)
                                   .pathname === currentPath
@@ -287,7 +306,9 @@ export default function AuthLayout({
                     }
                 }
             }
-        } catch { /* ignore active parent detection error */ }
+        } catch {
+            /* ignore active parent */
+        }
         return undefined;
     }, [menuGroups]);
 
@@ -324,51 +345,6 @@ export default function AuthLayout({
                             pageDescription) && (
                             <div className="border-b bg-background">
                                 <div className="container mx-auto space-y-2 px-4 py-3 md:py-4">
-                                    {effectiveBreadcrumbs.length > 0 && (
-                                        <Breadcrumb>
-                                            <BreadcrumbList>
-                                                {effectiveBreadcrumbs.map(
-                                                    (c, idx) => (
-                                                        <React.Fragment
-                                                            key={`${c.label}-${idx}`}
-                                                        >
-                                                            <BreadcrumbItem>
-                                                                {idx <
-                                                                    effectiveBreadcrumbs.length -
-                                                                        1 &&
-                                                                c.href ? (
-                                                                    <BreadcrumbLink
-                                                                        asChild
-                                                                    >
-                                                                        <a
-                                                                            href={
-                                                                                c.href
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                c.label
-                                                                            }
-                                                                        </a>
-                                                                    </BreadcrumbLink>
-                                                                ) : (
-                                                                    <BreadcrumbPage>
-                                                                        {
-                                                                            c.label
-                                                                        }
-                                                                    </BreadcrumbPage>
-                                                                )}
-                                                            </BreadcrumbItem>
-                                                            {idx <
-                                                                effectiveBreadcrumbs.length -
-                                                                    1 && (
-                                                                <BreadcrumbSeparator />
-                                                            )}
-                                                        </React.Fragment>
-                                                    ),
-                                                )}
-                                            </BreadcrumbList>
-                                        </Breadcrumb>
-                                    )}
                                     {(pageTitle ||
                                         pageDescription ||
                                         header) && (
@@ -385,6 +361,9 @@ export default function AuthLayout({
                                             )}
                                             {header}
                                         </div>
+                                    )}
+                                    {effectiveBreadcrumbs.length > 0 && (
+                                        <Breadcrumbs items={effectiveBreadcrumbs} />
                                     )}
                                 </div>
                             </div>

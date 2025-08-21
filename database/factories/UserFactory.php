@@ -30,6 +30,17 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password'          => static::$password ??= Hash::make('password'),
             'remember_token'    => Str::random(10),
+            'phone'             => fake()->phoneNumber(),
+            'avatar_path'       => null,
+            'gender'            => fake()->randomElement(['male', 'female']),
+            'dob'               => fake()->dateTimeBetween('-60 years', '-18 years')->format('Y-m-d'),
+            'preferences'       => json_encode([
+                'notifications' => [
+                    'email' => true,
+                    'sms'   => fake()->boolean(),
+                ],
+                'theme' => fake()->randomElement(['light', 'dark']),
+            ]),
         ];
     }
 

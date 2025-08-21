@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Traits\AuthActivity;
+use App\Traits\LogActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class EmailVerificationNotificationController extends Controller
 {
-    use AuthActivity;
+    use LogActivity;
 
     /**
      * Send a new email verification notification.

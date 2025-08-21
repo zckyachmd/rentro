@@ -33,24 +33,18 @@ function hasChildren(item: MenuItem): item is MenuItem & { children: MenuChild[]
 export type SidebarProps = {
     collapsed: boolean;
     brandLabel: string;
-    user: { name: string; email?: string; avatar?: string };
+    user: { name: string; email?: string; avatar_url?: string };
     menuGroups: { id: string; label: string; items: MenuItem[] }[];
     activeParentId?: string;
 };
 
 function Sidebar({
     collapsed,
-    brandLabel,
+    brandLabel = 'Rentro',
     user,
     menuGroups,
     activeParentId,
 }: SidebarProps) {
-    const avatarSrc = React.useMemo(() => {
-        const seed = encodeURIComponent(
-            String(user?.name || user?.email || 'user'),
-        );
-        return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}`;
-    }, [user?.name, user?.email]);
 
     const [hydrated, setHydrated] = React.useState(false);
     React.useEffect(() => {
@@ -324,7 +318,7 @@ function Sidebar({
                     >
                         <Avatar className="h-8 w-8">
                             <AvatarImage
-                                src={user.avatar || avatarSrc}
+                                src={user.avatar_url || undefined}
                                 alt={user.name}
                             />
                             <AvatarFallback>

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Traits\AuthActivity;
+use App\Traits\LogActivity;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    use AuthActivity;
+    use LogActivity;
 
     /**
      * Display the registration view.

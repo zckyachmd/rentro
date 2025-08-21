@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\Profile\ProfileUpdateRequest;
+use App\Models\UserAddress;
+use App\Traits\LogActivity;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,13 +15,102 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    use LogActivity;
+
+    /**
+     * Display the user's profile (read-only view).
+     */
+    public function show(Request $request): Response
+    {
+        $user = $request->user()->load([
+            'addresses' => fn ($q) => $q->orderBy('id'),
+            'documents',
+            'emergencyContacts' => fn ($q) => $q->orderBy('id'),
+        ]);
+
+        return Inertia::render('profile/show', [
+            'user' => $user->append('avatar_url')->only([
+                'id',
+                'name',
+                'username',
+                'email',
+                'phone',
+                'gender',
+                'dob',
+                'avatar_url',
+                'created_at',
+                'email_verified_at',
+            ]),
+            'addresses' => $user->addresses->map->only([
+                'id',
+                'label',
+                'address_line',
+                'village',
+                'district',
+                'city',
+                'province',
+                'postal_code',
+                'country',
+                'is_primary',
+            ]),
+            'documents' => $user->documents->map->only([
+                'id',
+                'type',
+                'number',
+                'status',
+                'file_path',
+                'verified_at',
+            ]),
+            'contacts' => $user->emergencyContacts->map->only([
+                'id',
+                'name',
+                'relationship',
+                'phone',
+                'email',
+                'address_line',
+                'is_primary',
+            ]),
+            'preferences' => $user->preferences ?? new \stdClass(),
+            'counts'      => [
+                'addresses' => $user->addresses->count(),
+                'documents' => $user->documents->count(),
+                'contacts'  => $user->emergencyContacts->count(),
+            ],
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail && is_null($user->email_verified_at),
+            'status'          => session('status'),
+        ]);
+    }
+
     /**
      * Display the user's profile form.
      */
     public function edit(Request $request): Response
     {
-        return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+        $user    = $request->user()->load(['addresses' => fn ($q) => $q->orderBy('id')]);
+        $address = $user->addresses->first();
+
+        return Inertia::render('profile/edit', [
+            'user' => [
+                'id'         => $user->id,
+                'name'       => $user->name,
+                'username'   => $user->username,
+                'email'      => $user->email,
+                'phone'      => $user->phone,
+                'dob'        => optional($user->dob)?->toDateString(),
+                'gender'     => $user->gender,
+                'avatar_url' => $user->avatar_url,
+            ],
+            'address' => $address ? [
+                'id'           => $address->id,
+                'label'        => $address->label,
+                'address_line' => $address->address_line,
+                'village'      => $address->village,
+                'district'     => $address->district,
+                'city'         => $address->city,
+                'province'     => $address->province,
+                'postal_code'  => $address->postal_code,
+            ] : null,
+            'mustVerifyEmail' => is_null($user->email_verified_at),
             'status'          => session('status'),
         ]);
     }
@@ -29,15 +120,67 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user      = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $originalEmail = $user->getOriginal('email');
+
+        $user->fill(array_intersect_key($validated, array_flip([
+            'name',
+            'username',
+            'email',
+            'phone',
+            'dob',
+            'gender',
+        ])));
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+
+            $this->logEvent(
+                event: 'profile.email_changed',
+                subject: $user,
+                properties: [
+                    'old' => $originalEmail,
+                    'new' => $user->email,
+                ],
+                logName: 'profile',
+            );
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit');
+        if ($request->hasFile('avatar')) {
+            $user->updateAvatar($request->file('avatar'));
+
+            $this->logEvent(
+                event: 'profile.avatar_updated',
+                subject: $user,
+                logName: 'profile',
+            );
+        }
+
+        if (isset($validated['address']) && is_array($validated['address'])) {
+            $addr = array_map(
+                fn ($v) => is_string($v) ? trim($v) : $v,
+                $validated['address'],
+            );
+
+            UserAddress::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'label'        => $addr['label'] ?? '',
+                    'address_line' => $addr['address_line'] ?? '',
+                    'village'      => $addr['village'] ?? '',
+                    'district'     => $addr['district'] ?? '',
+                    'city'         => $addr['city'] ?? '',
+                    'province'     => $addr['province'] ?? '',
+                    'postal_code'  => $addr['postal_code'] ?? '',
+                ],
+            );
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
@@ -52,6 +195,13 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
+
+        $this->logEvent(
+            event: 'account.deleted',
+            causer: $user,
+            subject: $user,
+            logName: 'account',
+        );
 
         $user->delete();
 

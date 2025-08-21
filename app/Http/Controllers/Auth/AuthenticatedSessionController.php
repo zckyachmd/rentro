@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Traits\AuthActivity;
+use App\Traits\LogActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +14,7 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
-    use AuthActivity;
+    use LogActivity;
 
     /**
      * Display the login view.

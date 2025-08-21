@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Traits\AuthActivity;
+use App\Traits\LogActivity;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ use Inertia\Response;
 
 class NewPasswordController extends Controller
 {
-    use AuthActivity;
+    use LogActivity;
 
     /**
      * Display the password reset view.

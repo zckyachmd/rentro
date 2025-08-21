@@ -63,7 +63,7 @@ type NavbarProps = {
 export default function Navbar({
     collapsed,
     onToggleCollapsed,
-    brandLabel,
+    brandLabel = 'Rentro',
     menuGroups,
     q,
     setQ,
@@ -323,7 +323,7 @@ export default function Navbar({
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                                <Link href={route('profile.edit')}>
+                                <Link href={route('profile.show')}>
                                     Profile
                                 </Link>
                             </DropdownMenuItem>

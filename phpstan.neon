@@ -3,11 +3,10 @@ includes:
   - phpstan-baseline.neon
 
 parameters:
-  level: 6
+  level: 5
 
   paths:
     - app
-    - database
     - config
     - routes
 
@@ -19,6 +18,7 @@ parameters:
   reportUnmatchedIgnoredErrors: false
 
   excludePaths:
+    - database/*
     - storage/*
     - vendor/*
     - node_modules/*

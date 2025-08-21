@@ -18,6 +18,12 @@ return new class () extends Migration {
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('phone')->nullable();
+            $table->date('dob')->nullable();
+            $table->enum('gender', ['male', 'female', 'other'])->nullable();
+            $table->string('avatar_path')->nullable();
+            $table->json('preferences')->nullable();
+            $table->index('phone');
             $table->rememberToken();
             $table->timestamps();
         });
