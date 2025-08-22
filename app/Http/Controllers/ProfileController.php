@@ -53,18 +53,7 @@ class ProfileController extends Controller
                 'country',
                 'is_primary',
             ]),
-            'document' => $user->document ? [
-                'id'          => $user->document->id,
-                'type'        => $user->document->type,
-                'number'      => $user->document->number,
-                'status'      => $user->document->status,
-                'file_path'   => $user->document->file_path,
-                'issued_at'   => optional($user->document->issued_at)?->toDateString(),
-                'expires_at'  => optional($user->document->expires_at)?->toDateString(),
-                'verified_at' => optional($user->document->verified_at)?->toDateTimeString(),
-                'verified_by' => $user->document->verified_by,
-                'notes'       => $user->document->notes,
-            ] : null,
+            'document' => $user->getDocumentForFrontend(),
             'contacts' => $user->emergencyContacts->map->only([
                 'id',
                 'name',
@@ -108,6 +97,7 @@ class ProfileController extends Controller
                 'province'     => $address->province,
                 'postal_code'  => $address->postal_code,
             ] : null,
+            'document'        => $user->getDocumentForFrontend(),
             'mustVerifyEmail' => is_null($user->email_verified_at),
             'status'          => session('status'),
         ]);
@@ -176,6 +166,37 @@ class ProfileController extends Controller
                     'postal_code'  => $addr['postal_code'] ?? '',
                 ],
             );
+        }
+
+        if (isset($validated['document']) && is_array($validated['document'])) {
+            $docInput = array_map(
+                static fn ($v) => is_string($v) ? (trim($v) === '' ? null : trim($v)) : $v,
+                $validated['document'],
+            );
+
+            $attributes = [
+                'type'       => $docInput['type'] ?? null,
+                'number'     => $docInput['number'] ?? null,
+                'issued_at'  => $docInput['issued_at'] ?? null,
+                'expires_at' => $docInput['expires_at'] ?? null,
+            ];
+
+            ['document' => $doc, 'changed' => $changed, 'created' => $created] = $user->syncDocument($attributes, $docInput['file'], 'public', 'documents');
+
+            if ($created) {
+                $this->logEvent(
+                    event: 'profile.document_created',
+                    subject: $doc,
+                    logName: 'profile',
+                );
+            } elseif (!empty($changed)) {
+                $this->logEvent(
+                    event: 'profile.document_updated',
+                    subject: $doc,
+                    properties: compact('changed'),
+                    logName: 'profile',
+                );
+            }
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

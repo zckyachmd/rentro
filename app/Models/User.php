@@ -4,14 +4,13 @@ namespace App\Models;
 
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasAvatar;
+use App\Models\Concerns\HasDocument;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -20,7 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
     use Notifiable;
     use HasAudit;
     use HasAvatar;
-    use LogsActivity;
+    use HasDocument;
 
     /**
      * The attributes that are mass assignable.
@@ -66,20 +65,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'dob'                       => 'date',
             'preferences'               => 'array',
         ];
-    }
-
-    /**
-     * Get the activity log options for the model.
-     *
-     * @return LogOptions
-     */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('user')
-            ->logOnly(['name', 'username', 'email', 'phone', 'dob', 'gender'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
     }
 
     public function sessions()

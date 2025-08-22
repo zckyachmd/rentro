@@ -24,6 +24,10 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $user             = $this->user();
+        $document         = $user->document;
+        $documentRequired = !$document || $document->status === 'rejected';
+
         return [
             'name'     => ['required', 'string', 'max:255'],
             'username' => [
@@ -42,10 +46,12 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class, 'email')->ignore($this->user()->id),
             ],
-            'phone'                => ['required', 'string', 'max:255'],
-            'dob'                  => ['nullable', 'date', 'before:today'],
-            'gender'               => ['required', 'in:male,female,other'],
-            'avatar'               => ['nullable', 'image', 'max:2048'],
+            'phone'  => ['required', 'string', 'max:255'],
+            'dob'    => ['nullable', 'date', 'before:today'],
+            'gender' => ['required', 'in:male,female,other'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
+
+            // Address
             'address'              => ['required', 'array'],
             'address.label'        => ['nullable', 'string', 'max:255'],
             'address.address_line' => ['required', 'string', 'max:255'],
@@ -54,6 +60,15 @@ class ProfileUpdateRequest extends FormRequest
             'address.city'         => ['required', 'string', 'max:255'],
             'address.province'     => ['required', 'string', 'max:255'],
             'address.postal_code'  => ['required', 'string', 'max:20'],
+
+            // Document
+            'document'            => ['nullable', 'array'],
+            'document.type'       => [$documentRequired ? 'required' : 'nullable', Rule::in(['KTP', 'SIM', 'PASSPORT', 'NPWP', 'other'])],
+            'document.number'     => [$documentRequired ? 'required' : 'nullable', 'string', 'max:255'],
+            'document.file'       => [$documentRequired ? 'required' : 'nullable', 'file', 'max:2048'],
+            'document.issued_at'  => ['nullable', 'date'],
+            'document.expires_at' => ['nullable', 'date'],
+            'document.status'     => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
         ];
     }
 }

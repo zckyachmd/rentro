@@ -10,11 +10,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import AuthLayout from '@/layouts/auth-layout';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import { toast } from 'sonner';
+import AddressSection from './partials/address';
+import DocumentSection from './partials/document';
 
 type UserDTO = {
     id: number;
@@ -38,9 +39,21 @@ type AddressDTO = {
     postal_code?: string | null;
 } | null;
 
+type DocumentDTO = {
+    id?: number;
+    type?: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | null;
+    number?: string | null;
+    file_url?: string | null;
+    issued_at?: string | null;
+    expires_at?: string | null;
+    status?: 'pending' | 'approved' | 'rejected' | null;
+    notes?: string | null;
+} | null;
+
 type PageProps = {
     user: UserDTO;
     address: AddressDTO;
+    document?: DocumentDTO;
     mustVerifyEmail: boolean;
     status?: string | null;
 };
@@ -62,9 +75,19 @@ type FormData = {
         province: string;
         postal_code: string;
     };
+    document: {
+      type: '' | 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
+      number: string;
+      file: File | null;
+      file_url?: string | null;
+      issued_at: string;
+      expires_at: string;
+      status?: 'pending' | 'approved' | 'rejected';
+      notes?: string | null;
+    };
 };
 
-export default function Edit({ user, address, mustVerifyEmail }: PageProps) {
+export default function Edit({ user, address, document, mustVerifyEmail }: PageProps) {
     const breadcrumbs = React.useMemo(
         () => [
             { label: 'Akun', href: '#' },
@@ -90,6 +113,16 @@ export default function Edit({ user, address, mustVerifyEmail }: PageProps) {
             city: address?.city ?? '',
             province: address?.province ?? '',
             postal_code: address?.postal_code ?? '',
+        },
+        document: {
+            type: document?.type ?? '',
+            number: document?.number ?? '',
+            file: null,
+            file_url: document?.file_url ?? null,
+            issued_at: document?.issued_at ?? '',
+            expires_at: document?.expires_at ?? '',
+            status: document?.status ?? undefined,
+            notes: document?.notes ?? null,
         },
     };
 
@@ -139,7 +172,7 @@ export default function Edit({ user, address, mustVerifyEmail }: PageProps) {
 
             {/* Form */}
             <form onSubmit={onSubmit}>
-                <div className="space-y-8">
+                <div className="space-y-4">
                     <section className="space-y-4">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
                             <div className="space-y-3 md:col-span-1 lg:col-span-1 xl:col-span-1">
@@ -346,183 +379,18 @@ export default function Edit({ user, address, mustVerifyEmail }: PageProps) {
                     </section>
 
                     {/* Address */}
-                    <section className="space-y-4">
-                        <h3 className="text-base font-semibold">Alamat</h3>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="address_line">
-                                    Alamat{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <Textarea
-                                    id="address_line"
-                                    name="address[address_line]"
-                                    rows={3}
-                                    value={data.address.address_line}
-                                    onChange={(e) =>
-                                        setData('address', {
-                                            ...data.address,
-                                            address_line: e.target.value,
-                                        })
-                                    }
-                                    placeholder="Nama jalan, nomor rumah, RT/RW"
-                                />
-                                {errors['address.address_line'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['address.address_line']}
-                                    </p>
-                                )}
-                            </div>
+                    <AddressSection
+                        value={data.address}
+                        onChange={(next) => setData('address', next)}
+                        errors={errors}
+                    />
 
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <div className="space-y-2">
-                                    <Label htmlFor="village">
-                                        Kelurahan/Desa{' '}
-                                        <span className="text-destructive">
-                                            *
-                                        </span>
-                                    </Label>
-                                    <Input
-                                        id="village"
-                                        name="address[village]"
-                                        value={data.address.village}
-                                        onChange={(e) =>
-                                            setData('address', {
-                                                ...data.address,
-                                                village: e.target.value,
-                                            })
-                                        }
-                                        placeholder="Masukkan kelurahan/desa"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="district">
-                                        Kecamatan{' '}
-                                        <span className="text-destructive">
-                                            *
-                                        </span>
-                                    </Label>
-                                    <Input
-                                        id="district"
-                                        name="address[district]"
-                                        value={data.address.district}
-                                        onChange={(e) =>
-                                            setData('address', {
-                                                ...data.address,
-                                                district: e.target.value,
-                                            })
-                                        }
-                                        placeholder="Masukkan kecamatan"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="postal_code">
-                                        Kode Pos{' '}
-                                        <span className="text-destructive">
-                                            *
-                                        </span>
-                                    </Label>
-                                    <Input
-                                        id="postal_code"
-                                        name="address[postal_code]"
-                                        value={data.address.postal_code}
-                                        onChange={(e) =>
-                                            setData('address', {
-                                                ...data.address,
-                                                postal_code: e.target.value,
-                                            })
-                                        }
-                                        placeholder="Masukkan kode pos"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <div className="space-y-2">
-                                    <Label htmlFor="city">
-                                        Kota{' '}
-                                        <span className="text-destructive">
-                                            *
-                                        </span>
-                                    </Label>
-                                    <Input
-                                        id="city"
-                                        name="address[city]"
-                                        value={data.address.city}
-                                        onChange={(e) =>
-                                            setData('address', {
-                                                ...data.address,
-                                                city: e.target.value,
-                                            })
-                                        }
-                                        placeholder="Masukkan kota/kabupaten"
-                                    />
-                                    {errors['address.city'] && (
-                                        <p className="text-xs text-destructive">
-                                            {errors['address.city']}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="province">
-                                        Provinsi{' '}
-                                        <span className="text-destructive">
-                                            *
-                                        </span>
-                                    </Label>
-                                    <Input
-                                        id="province"
-                                        name="address[province]"
-                                        value={data.address.province}
-                                        onChange={(e) =>
-                                            setData('address', {
-                                                ...data.address,
-                                                province: e.target.value,
-                                            })
-                                        }
-                                        placeholder="Masukkan provinsi"
-                                    />
-                                    {errors['address.province'] && (
-                                        <p className="text-xs text-destructive">
-                                            {errors['address.province']}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="label">Label Alamat</Label>
-                                    <Select
-                                        value={data.address.label}
-                                        onValueChange={(v) =>
-                                            setData('address', {
-                                                ...data.address,
-                                                label: v,
-                                            })
-                                        }
-                                    >
-                                        <SelectTrigger id="label">
-                                            <SelectValue placeholder="Pilih label alamat" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Rumah">
-                                                Rumah
-                                            </SelectItem>
-                                            <SelectItem value="Kantor">
-                                                Kantor
-                                            </SelectItem>
-                                            <SelectItem value="Kampus">
-                                                Kampus
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <input
-                                        type="hidden"
-                                        name="address[label]"
-                                        value={data.address.label}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                    {/* Document */}
+                    <DocumentSection
+                        value={data.document}
+                        onChange={(next) => setData('document', next)}
+                        errors={errors}
+                    />
                 </div>
 
                 <p className="mb-4 mt-2 text-xs text-muted-foreground">
