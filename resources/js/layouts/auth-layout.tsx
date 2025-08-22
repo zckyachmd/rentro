@@ -363,7 +363,9 @@ export default function AuthLayout({
                                         </div>
                                     )}
                                     {effectiveBreadcrumbs.length > 0 && (
-                                        <Breadcrumbs items={effectiveBreadcrumbs} />
+                                        <Breadcrumbs
+                                            items={effectiveBreadcrumbs}
+                                        />
                                     )}
                                 </div>
                             </div>

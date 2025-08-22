@@ -24,6 +24,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { Link } from '@inertiajs/react';
+import type { LucideIcon } from 'lucide-react';
 import {
     Bell,
     LogOut,
@@ -32,7 +33,6 @@ import {
     Search,
     User,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import * as React from 'react';
 
 type MenuChild = { label: string; href?: string };
@@ -44,7 +44,9 @@ type MenuItem = {
 };
 type MenuGroup = { id: string; label: string; items: MenuItem[] };
 
-function hasChildren(item: MenuItem): item is MenuItem & { children: MenuChild[] } {
+function hasChildren(
+    item: MenuItem,
+): item is MenuItem & { children: MenuChild[] } {
     return Array.isArray(item.children) && item.children.length > 0;
 }
 
@@ -189,38 +191,59 @@ export default function Navbar({
                                                     type="single"
                                                     collapsible
                                                     value={mobileSection}
-                                                    onValueChange={handleMobileSectionChange}
+                                                    onValueChange={
+                                                        handleMobileSectionChange
+                                                    }
                                                     className="mt-2"
                                                 >
                                                     {group.items
                                                         .filter(hasChildren)
                                                         .map((parent) => (
                                                             <AccordionItem
-                                                                key={parent.label}
+                                                                key={
+                                                                    parent.label
+                                                                }
                                                                 value={`${group.id}:${parent.label}`}
                                                                 className="border-b-0"
                                                             >
                                                                 <AccordionTrigger className="rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
                                                                     <span className="flex items-center gap-2">
-                                                                        {parent.label}
+                                                                        {
+                                                                            parent.label
+                                                                        }
                                                                     </span>
                                                                 </AccordionTrigger>
                                                                 <AccordionContent>
                                                                     <div className="mt-1 space-y-1 pl-6 pr-2">
-                                                                        {parent.children.map((child) => (
-                                                                            <Link
-                                                                                key={child.label}
-                                                                                href={child.href || '#'}
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    setMobileSection(`${group.id}:${parent.label}`);
-                                                                                    handleNavigate();
-                                                                                }}
-                                                                                className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                                                            >
-                                                                                {child.label}
-                                                                            </Link>
-                                                                        ))}
+                                                                        {parent.children.map(
+                                                                            (
+                                                                                child,
+                                                                            ) => (
+                                                                                <Link
+                                                                                    key={
+                                                                                        child.label
+                                                                                    }
+                                                                                    href={
+                                                                                        child.href ||
+                                                                                        '#'
+                                                                                    }
+                                                                                    onClick={(
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        e.stopPropagation();
+                                                                                        setMobileSection(
+                                                                                            `${group.id}:${parent.label}`,
+                                                                                        );
+                                                                                        handleNavigate();
+                                                                                    }}
+                                                                                    className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                                                                >
+                                                                                    {
+                                                                                        child.label
+                                                                                    }
+                                                                                </Link>
+                                                                            ),
+                                                                        )}
                                                                     </div>
                                                                 </AccordionContent>
                                                             </AccordionItem>

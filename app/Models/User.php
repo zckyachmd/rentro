@@ -50,20 +50,6 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
-     * Get the activity log options for the model.
-     *
-     * @return LogOptions
-     */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('user')
-            ->logOnly(['name', 'username', 'email', 'phone', 'dob', 'gender'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
-    }
-
-    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -81,19 +67,35 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    /** Alamat */
+    /**
+     * Get the activity log options for the model.
+     *
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('user')
+            ->logOnly(['name', 'username', 'email', 'phone', 'dob', 'gender'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function sessions()
+    {
+        return $this->hasMany(Session::class);
+    }
+
     public function addresses(): HasMany
     {
         return $this->hasMany(UserAddress::class);
     }
 
-    /** Dokumen identitas */
     public function documents(): HasMany
     {
         return $this->hasMany(UserDocument::class);
     }
 
-    /** Kontak darurat */
     public function emergencyContacts(): HasMany
     {
         return $this->hasMany(EmergencyContact::class);

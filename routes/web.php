@@ -34,6 +34,16 @@ Route::middleware('auth')->group(function (): void {
             ->middleware('password.confirm')
             ->name('password.update');
 
+        Route::prefix('sessions')->name('sessions.')->group(function (): void {
+            Route::post('/revoke-others', [SecurityController::class, 'revokeOthers'])
+                ->middleware('password.confirm')
+                ->name('revokeOthers');
+
+            Route::delete('/{id}', [SecurityController::class, 'destroySession'])
+                ->middleware('password.confirm')
+                ->name('destroy');
+        });
+
         Route::prefix('2fa')->name('2fa.')->group(function (): void {
             Route::post('/start', [TwoFactorController::class, 'start'])
                 ->middleware('password.confirm')
@@ -49,10 +59,12 @@ Route::middleware('auth')->group(function (): void {
                 ->middleware('password.confirm')
                 ->name('disable');
 
-            Route::get('/recovery-codes', [TwoFactorController::class, 'recoveryCode'])->name('recovery.index');
-            Route::post('/recovery-codes/regenerate', [TwoFactorController::class, 'recoveryRegenerate'])
-                ->middleware('password.confirm')
-                ->name('recovery.regenerate');
+            Route::prefix('recovery-codes')->name('recovery.')->group(function (): void {
+                Route::get('/', [TwoFactorController::class, 'recoveryCode'])->name('index');
+                Route::post('/regenerate', [TwoFactorController::class, 'recoveryRegenerate'])
+                    ->middleware('password.confirm')
+                    ->name('regenerate');
+            });
         });
     });
 });

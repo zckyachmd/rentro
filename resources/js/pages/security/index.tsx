@@ -88,7 +88,7 @@ export default function SecurityIndex() {
                     toast.error('Gagal mengirim email verifikasi. Coba lagi.');
                 },
                 onFinish: () => setSending(false),
-            }
+            },
         );
     };
 

@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
 import { useConfirmPasswordDialog } from '@/hooks/use-confirm-password';
+import { Eye, EyeOff } from 'lucide-react';
 export { useConfirmPasswordModal } from '@/hooks/use-confirm-password';
 
 export type ConfirmPasswordDialogProps = {
@@ -44,10 +44,11 @@ export function ConfirmPasswordDialog({
                 </DialogHeader>
                 <form onSubmit={onSubmit} className="space-y-3">
                     <div className="space-y-2">
-                        <Label htmlFor="confirm_password">Password</Label>
+                        <Label htmlFor="password">Password</Label>
                         <div className="relative">
                             <Input
-                                id="confirm_password"
+                                id="password"
+                                name="password"
                                 ref={inputRef}
                                 type={show ? 'text' : 'password'}
                                 value={confirmForm.data.password}
@@ -79,7 +80,10 @@ export function ConfirmPasswordDialog({
                             </Button>
                         </div>
                         {confirmForm.errors.password && (
-                            <p className="text-sm text-destructive" role="alert">
+                            <p
+                                className="text-sm text-destructive"
+                                role="alert"
+                            >
                                 {confirmForm.errors.password}
                             </p>
                         )}

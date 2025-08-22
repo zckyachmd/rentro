@@ -1,31 +1,45 @@
-import * as React from 'react';
 import { useForm } from '@inertiajs/react';
+import * as React from 'react';
 import { toast } from 'sonner';
 
-function getCsrfToken(): string | null {
-  const meta = document.querySelector(
-    'meta[name="csrf-token"]',
-  ) as HTMLMetaElement | null;
-  if (meta?.content) return meta.content;
-  const match = document.cookie
-    .split('; ')
-    .find((c) => c.startsWith('XSRF-TOKEN='));
-  if (!match) return null;
-  const raw = match.split('=')[1];
-  try {
-    return decodeURIComponent(raw);
-  } catch {
-    return raw;
-  }
+function readXsrfCookie(): string | null {
+    const match = document.cookie
+        .split('; ')
+        .find((c) => c.startsWith('XSRF-TOKEN='));
+    if (!match) return null;
+    const raw = match.split('=')[1];
+    try {
+        return decodeURIComponent(raw);
+    } catch {
+        return raw;
+    }
+}
+
+async function ensureXsrfToken(): Promise<string | null> {
+    let token = readXsrfCookie();
+    if (token) return token;
+
+    try {
+        await fetch('/sanctum/csrf-cookie', {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+    } catch {
+        // ignore; we'll re-check token below
+    }
+
+    token = readXsrfCookie();
+    return token;
 }
 
 export type UseConfirmPasswordDialogReturn = {
-  confirmForm: ReturnType<typeof useForm<{ password: string }>>;
-  show: boolean;
-  setShow: React.Dispatch<React.SetStateAction<boolean>>;
-  submitting: boolean;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  onSubmit: (e: React.FormEvent) => Promise<void>;
+    confirmForm: ReturnType<typeof useForm<{ password: string }>>;
+    show: boolean;
+    setShow: React.Dispatch<React.SetStateAction<boolean>>;
+    submitting: boolean;
+    inputRef: React.RefObject<HTMLInputElement | null>;
+    onSubmit: (e: React.FormEvent) => Promise<void>;
 };
 
 /**
@@ -33,81 +47,94 @@ export type UseConfirmPasswordDialogReturn = {
  * (state, effect focus/reset, dan submit handling).
  */
 export function useConfirmPasswordDialog(
-  open: boolean,
-  onClose: () => void,
-  onConfirmed?: () => void,
+    open: boolean,
+    onClose: () => void,
+    onConfirmed?: () => void,
 ): UseConfirmPasswordDialogReturn {
-  const confirmForm = useForm<{ password: string }>({ password: '' });
-  const [show, setShow] = React.useState(false);
-  const [submitting, setSubmitting] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+    const confirmForm = useForm<{ password: string }>({ password: '' });
+    const [show, setShow] = React.useState(false);
+    const [submitting, setSubmitting] = React.useState(false);
+    const inputRef = React.useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    if (open) {
-      setShow(false);
-      confirmForm.reset('password');
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+    React.useEffect(() => {
+        if (open) {
+            setShow(false);
+            confirmForm.reset('password');
+            setTimeout(() => inputRef.current?.focus(), 0);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submitting) return;
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (submitting) return;
 
-    const token = getCsrfToken();
-    if (!token) {
-      toast.error('CSRF token tidak ditemukan.');
-      return;
-    }
+        const token = await ensureXsrfToken();
+        if (!token) {
+            toast.error(
+                'Gagal mendapatkan CSRF token. Coba muat ulang halaman.',
+            );
+            return;
+        }
 
-    try {
-      setSubmitting(true);
-      // @ts-ignore route helper global dari Ziggy
-      const url = route('password.confirm');
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': token,
-          'X-XSRF-TOKEN': token,
-          'X-Inertia': 'true',
-          'X-Requested-With': 'XMLHttpRequest',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({ password: confirmForm.data.password }),
-        credentials: 'same-origin',
-      });
-
-      if (res.status === 204) {
-        confirmForm.clearErrors();
-        confirmForm.reset('password');
-        onClose();
-        onConfirmed?.();
-        return;
-      }
-
-      if (res.status === 422) {
-        let message = 'Password tidak valid.';
         try {
-          const data = await res.json();
-          const err = data?.errors?.password?.[0];
-          if (typeof err === 'string') message = err;
-        } catch {}
-        confirmForm.setError('password', message);
-        toast.error(message);
-        return;
-      }
+            setSubmitting(true);
+            // @ts-ignore route helper global dari Ziggy
+            const url = route('password.confirm');
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': token,
+                    'X-Inertia': 'true',
+                },
+                body: JSON.stringify({ password: confirmForm.data.password }),
+                credentials: 'same-origin',
+            });
 
-      toast.error('Gagal mengkonfirmasi password. Coba lagi.');
-    } catch {
-      toast.error('Gagal mengkonfirmasi password. Periksa koneksi Anda.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+            if (res.status === 204) {
+                confirmForm.clearErrors();
+                confirmForm.reset('password');
+                onClose();
+                onConfirmed?.();
+                return;
+            }
 
-  return { confirmForm, show, setShow, submitting, inputRef, onSubmit } as const;
+            if (res.status === 422) {
+                let message = 'Password tidak valid.';
+                try {
+                    const data = await res.json();
+                    const err = data?.errors?.password?.[0];
+                    if (typeof err === 'string') message = err;
+                } catch {}
+                confirmForm.setError('password', message);
+                toast.error(message);
+                return;
+            }
+
+            if (res.status === 419) {
+                toast.error('Sesi kedaluwarsa. Silakan muat ulang halaman.');
+                return;
+            }
+
+            toast.error('Gagal mengkonfirmasi password. Coba lagi.');
+        } catch {
+            toast.error('Gagal mengkonfirmasi password. Periksa koneksi Anda.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return {
+        confirmForm,
+        show,
+        setShow,
+        submitting,
+        inputRef,
+        onSubmit,
+    } as const;
 }
 
 /**
@@ -116,48 +143,48 @@ export function useConfirmPasswordDialog(
  * Tidak merender JSX (hindari circular dependency dengan komponen).
  */
 export function useConfirmPasswordModal() {
-  const [open, setOpen] = React.useState(false);
-  const pendingRef = React.useRef<null | (() => void)>(null);
+    const [open, setOpen] = React.useState(false);
+    const pendingRef = React.useRef<null | (() => void)>(null);
 
-  const openConfirm = async (run: () => void) => {
-    try {
-      // @ts-ignore Ziggy
-      const url = route('password.confirm.needs');
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          Accept: 'application/json',
-        },
-        credentials: 'same-origin',
-      });
+    const openConfirm = async (run: () => void) => {
+        try {
+            // @ts-ignore Ziggy
+            const url = route('password.confirm.needs');
+            const res = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    Accept: 'application/json',
+                },
+                credentials: 'same-origin',
+            });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.required === false) {
-          run();
-          return;
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.required === false) {
+                    run();
+                    return;
+                }
+                if (data && data.required === true) {
+                    pendingRef.current = run;
+                    setOpen(true);
+                    return;
+                }
+            }
+
+            pendingRef.current = run;
+            setOpen(true);
+        } catch {
+            pendingRef.current = run;
+            setOpen(true);
         }
-        if (data && data.required === true) {
-          pendingRef.current = run;
-          setOpen(true);
-          return;
-        }
-      }
+    };
 
-      pendingRef.current = run;
-      setOpen(true);
-    } catch {
-      pendingRef.current = run;
-      setOpen(true);
-    }
-  };
+    const handleConfirmed = () => {
+        const fn = pendingRef.current;
+        pendingRef.current = null;
+        if (typeof fn === 'function') fn();
+    };
 
-  const handleConfirmed = () => {
-    const fn = pendingRef.current;
-    pendingRef.current = null;
-    if (typeof fn === 'function') fn();
-  };
-
-  return { open, setOpen, openConfirm, handleConfirmed } as const;
+    return { open, setOpen, openConfirm, handleConfirmed } as const;
 }

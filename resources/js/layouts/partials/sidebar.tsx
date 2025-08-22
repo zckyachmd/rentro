@@ -16,7 +16,6 @@ import * as React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { isRouteActive } from '../auth-layout';
 
-
 type MenuChild = { label: string; href?: string; name?: string };
 export type MenuItem = {
     label: string;
@@ -26,7 +25,9 @@ export type MenuItem = {
     children?: MenuChild[];
 };
 
-function hasChildren(item: MenuItem): item is MenuItem & { children: MenuChild[] } {
+function hasChildren(
+    item: MenuItem,
+): item is MenuItem & { children: MenuChild[] } {
     return Array.isArray(item.children) && item.children.length > 0;
 }
 
@@ -45,7 +46,6 @@ function Sidebar({
     menuGroups,
     activeParentId,
 }: SidebarProps) {
-
     const [hydrated, setHydrated] = React.useState(false);
     React.useEffect(() => {
         const t = requestAnimationFrame(() => setHydrated(true));
@@ -133,15 +133,29 @@ function Sidebar({
                                     {group.items
                                         .filter((i) => !hasChildren(i))
                                         .map((item) => {
-                                            const Icon = item.icon as React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined;
+                                            const Icon = item.icon as
+                                                | React.ComponentType<
+                                                      React.SVGProps<SVGSVGElement>
+                                                  >
+                                                | undefined;
                                             let isActive = false;
-                                            if (item.name && isRouteActive(item.name)) {
+                                            if (
+                                                item.name &&
+                                                isRouteActive(item.name)
+                                            ) {
                                                 isActive = true;
                                             } else if (item.href) {
                                                 try {
-                                                    const currentPath = window.location?.pathname || '';
-                                                    const itemPath = new URL(item.href, window.location.origin).pathname;
-                                                    isActive = itemPath === currentPath;
+                                                    const currentPath =
+                                                        window.location
+                                                            ?.pathname || '';
+                                                    const itemPath = new URL(
+                                                        item.href,
+                                                        window.location.origin,
+                                                    ).pathname;
+                                                    isActive =
+                                                        itemPath ===
+                                                        currentPath;
                                                 } catch {
                                                     // ignore URL parsing error
                                                 }
@@ -150,15 +164,25 @@ function Sidebar({
                                                 <Link
                                                     key={item.label}
                                                     href={item.href || '#'}
-                                                    aria-current={isActive ? 'page' : undefined}
+                                                    aria-current={
+                                                        isActive
+                                                            ? 'page'
+                                                            : undefined
+                                                    }
                                                     className={`group flex items-center rounded-md px-3 py-2 text-sm transition-colors ${
                                                         isActive
                                                             ? 'bg-accent text-accent-foreground'
                                                             : 'hover:bg-accent hover:text-accent-foreground'
                                                     } ${collapsed ? 'justify-center' : 'gap-3'}`}
-                                                    title={collapsed ? item.label : undefined}
+                                                    title={
+                                                        collapsed
+                                                            ? item.label
+                                                            : undefined
+                                                    }
                                                 >
-                                                    {Icon && <Icon className="h-5 w-5 shrink-0" />}
+                                                    {Icon && (
+                                                        <Icon className="h-5 w-5 shrink-0" />
+                                                    )}
                                                     <span
                                                         className={[
                                                             'overflow-hidden whitespace-nowrap',
@@ -167,8 +191,12 @@ function Sidebar({
                                                                 : 'transition-none',
                                                         ].join(' ')}
                                                         style={{
-                                                            maxWidth: collapsed ? '0px' : '12rem',
-                                                            opacity: collapsed ? 0 : 1,
+                                                            maxWidth: collapsed
+                                                                ? '0px'
+                                                                : '12rem',
+                                                            opacity: collapsed
+                                                                ? 0
+                                                                : 1,
                                                         }}
                                                     >
                                                         {item.label}
@@ -178,38 +206,65 @@ function Sidebar({
                                         })}
                                 </div>
 
-                                {group.items.some(
-                                    (i) => hasChildren(i),
-                                ) &&
+                                {group.items.some((i) => hasChildren(i)) &&
                                     (collapsed ? (
                                         <div className="mt-1 space-y-1">
                                             {group.items
                                                 .filter(hasChildren)
                                                 .map((parent) => {
-                                                    const Icon = parent.icon as React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined;
+                                                    const Icon = parent.icon as
+                                                        | React.ComponentType<
+                                                              React.SVGProps<SVGSVGElement>
+                                                          >
+                                                        | undefined;
                                                     const pid = `${group.id}:${parent.label}`;
                                                     return (
                                                         <Popover
                                                             key={parent.label}
-                                                            open={flyoutOpen === pid}
-                                                            onOpenChange={(open) =>
-                                                                setFlyoutOpen(open ? pid : null)
+                                                            open={
+                                                                flyoutOpen ===
+                                                                pid
+                                                            }
+                                                            onOpenChange={(
+                                                                open,
+                                                            ) =>
+                                                                setFlyoutOpen(
+                                                                    open
+                                                                        ? pid
+                                                                        : null,
+                                                                )
                                                             }
                                                         >
-                                                            <PopoverTrigger asChild>
+                                                            <PopoverTrigger
+                                                                asChild
+                                                            >
                                                                 <button
                                                                     type="button"
                                                                     aria-haspopup="menu"
-                                                                    aria-expanded={flyoutOpen === pid}
-                                                                    onClick={(e) => {
+                                                                    aria-expanded={
+                                                                        flyoutOpen ===
+                                                                        pid
+                                                                    }
+                                                                    onClick={(
+                                                                        e,
+                                                                    ) => {
                                                                         e.preventDefault();
                                                                         e.stopPropagation();
-                                                                        setFlyoutOpen(flyoutOpen === pid ? null : pid);
+                                                                        setFlyoutOpen(
+                                                                            flyoutOpen ===
+                                                                                pid
+                                                                                ? null
+                                                                                : pid,
+                                                                        );
                                                                     }}
                                                                     className="flex w-full justify-center rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
-                                                                    title={parent.label}
+                                                                    title={
+                                                                        parent.label
+                                                                    }
                                                                 >
-                                                                    {Icon && <Icon className="h-5 w-5" />}
+                                                                    {Icon && (
+                                                                        <Icon className="h-5 w-5" />
+                                                                    )}
                                                                 </button>
                                                             </PopoverTrigger>
                                                             <PopoverContent
@@ -219,25 +274,48 @@ function Sidebar({
                                                                 className="w-64 p-2"
                                                             >
                                                                 <div className="mb-2 flex items-center gap-2 px-1 text-sm font-medium">
-                                                                    {Icon && <Icon className="h-4 w-4" />}
-                                                                    <span className="truncate">{parent.label}</span>
+                                                                    {Icon && (
+                                                                        <Icon className="h-4 w-4" />
+                                                                    )}
+                                                                    <span className="truncate">
+                                                                        {
+                                                                            parent.label
+                                                                        }
+                                                                    </span>
                                                                 </div>
                                                                 <div className="space-y-1">
-                                                                    {parent.children.map((child) => (
-                                                                        <Link
-                                                                            key={child.label}
-                                                                            href={child.href || '#'}
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                const pid = `${group.id}:${parent.label}`;
-                                                                                setOpenSection(pid);
-                                                                                setFlyoutOpen(null);
-                                                                            }}
-                                                                            className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                                                        >
-                                                                            {child.label}
-                                                                        </Link>
-                                                                    ))}
+                                                                    {parent.children.map(
+                                                                        (
+                                                                            child,
+                                                                        ) => (
+                                                                            <Link
+                                                                                key={
+                                                                                    child.label
+                                                                                }
+                                                                                href={
+                                                                                    child.href ||
+                                                                                    '#'
+                                                                                }
+                                                                                onClick={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    e.stopPropagation();
+                                                                                    const pid = `${group.id}:${parent.label}`;
+                                                                                    setOpenSection(
+                                                                                        pid,
+                                                                                    );
+                                                                                    setFlyoutOpen(
+                                                                                        null,
+                                                                                    );
+                                                                                }}
+                                                                                className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                                                            >
+                                                                                {
+                                                                                    child.label
+                                                                                }
+                                                                            </Link>
+                                                                        ),
+                                                                    )}
                                                                 </div>
                                                             </PopoverContent>
                                                         </Popover>
@@ -255,23 +333,55 @@ function Sidebar({
                                             {group.items
                                                 .filter(hasChildren)
                                                 .map((parent) => (
-                                                    <AccordionItem key={parent.label} value={`${group.id}:${parent.label}`} className="border-b-0">
+                                                    <AccordionItem
+                                                        key={parent.label}
+                                                        value={`${group.id}:${parent.label}`}
+                                                        className="border-b-0"
+                                                    >
                                                         {(() => {
                                                             const pid = `${group.id}:${parent.label}`;
-                                                            const parentActive = openSection === pid || activeParentId === pid;
-                                                            const Icon = parent.icon as React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined;
+                                                            const parentActive =
+                                                                openSection ===
+                                                                    pid ||
+                                                                activeParentId ===
+                                                                    pid;
+                                                            const Icon =
+                                                                parent.icon as
+                                                                    | React.ComponentType<
+                                                                          React.SVGProps<SVGSVGElement>
+                                                                      >
+                                                                    | undefined;
                                                             return (
-                                                                <AccordionTrigger className={`rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground ${parentActive ? 'bg-accent text-accent-foreground' : ''}`}>
+                                                                <AccordionTrigger
+                                                                    className={`rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground ${parentActive ? 'bg-accent text-accent-foreground' : ''}`}
+                                                                >
                                                                     <span className="flex items-center gap-3">
-                                                                        {Icon && <Icon className="h-4 w-4" />}
+                                                                        {Icon && (
+                                                                            <Icon className="h-4 w-4" />
+                                                                        )}
                                                                         <span
                                                                             className={[
                                                                                 'overflow-hidden whitespace-nowrap',
-                                                                                hydrated ? 'transition-[max-width,opacity] duration-300 ease-in-out' : 'transition-none',
-                                                                            ].join(' ')}
-                                                                            style={{ maxWidth: collapsed ? '0px' : '12rem', opacity: collapsed ? 0 : 1 }}
+                                                                                hydrated
+                                                                                    ? 'transition-[max-width,opacity] duration-300 ease-in-out'
+                                                                                    : 'transition-none',
+                                                                            ].join(
+                                                                                ' ',
+                                                                            )}
+                                                                            style={{
+                                                                                maxWidth:
+                                                                                    collapsed
+                                                                                        ? '0px'
+                                                                                        : '12rem',
+                                                                                opacity:
+                                                                                    collapsed
+                                                                                        ? 0
+                                                                                        : 1,
+                                                                            }}
                                                                         >
-                                                                            {parent.label}
+                                                                            {
+                                                                                parent.label
+                                                                            }
                                                                         </span>
                                                                     </span>
                                                                 </AccordionTrigger>
@@ -279,23 +389,46 @@ function Sidebar({
                                                         })()}
                                                         <AccordionContent>
                                                             <div className="mt-1 space-y-1 pl-10 pr-2">
-                                                                {parent.children.map((child) => (
-                                                                    <Link
-                                                                        key={child.label}
-                                                                        href={child.href || '#'}
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            const pid = `${group.id}:${parent.label}`;
-                                                                            setOpenSection(pid);
-                                                                        }}
-                                                                        aria-current={isRouteActive(child.name) ? 'page' : undefined}
-                                                                        className={`block rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground ${
-                                                                            isRouteActive(child.name) ? 'bg-accent/60 text-accent-foreground' : 'text-muted-foreground'
-                                                                        }`}
-                                                                    >
-                                                                        {child.label}
-                                                                    </Link>
-                                                                ))}
+                                                                {parent.children.map(
+                                                                    (child) => (
+                                                                        <Link
+                                                                            key={
+                                                                                child.label
+                                                                            }
+                                                                            href={
+                                                                                child.href ||
+                                                                                '#'
+                                                                            }
+                                                                            onClick={(
+                                                                                e,
+                                                                            ) => {
+                                                                                e.stopPropagation();
+                                                                                const pid = `${group.id}:${parent.label}`;
+                                                                                setOpenSection(
+                                                                                    pid,
+                                                                                );
+                                                                            }}
+                                                                            aria-current={
+                                                                                isRouteActive(
+                                                                                    child.name,
+                                                                                )
+                                                                                    ? 'page'
+                                                                                    : undefined
+                                                                            }
+                                                                            className={`block rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground ${
+                                                                                isRouteActive(
+                                                                                    child.name,
+                                                                                )
+                                                                                    ? 'bg-accent/60 text-accent-foreground'
+                                                                                    : 'text-muted-foreground'
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                child.label
+                                                                            }
+                                                                        </Link>
+                                                                    ),
+                                                                )}
                                                             </div>
                                                         </AccordionContent>
                                                     </AccordionItem>

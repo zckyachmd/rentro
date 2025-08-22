@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 export interface ShowMoreProps {
@@ -17,7 +15,7 @@ export default function ShowMore({ text, limit = 120 }: ShowMoreProps) {
             <button
                 type="button"
                 onClick={() => setExpanded(!expanded)}
-                className="text-primary hover:underline text-xs font-medium"
+                className="text-xs font-medium text-primary hover:underline"
             >
                 {expanded ? 'Sembunyikan' : 'Selengkapnya'}
             </button>
