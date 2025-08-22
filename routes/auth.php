@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TwoFactorLoginController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,12 @@ Route::middleware('guest')->group(function (): void {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    Route::get('two-factor-challenge', [TwoFactorLoginController::class, 'create'])
+        ->name('twofactor.index');
+
+    Route::post('two-factor-challenge', [TwoFactorLoginController::class, 'store'])
+        ->name('twofactor.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
@@ -49,6 +56,9 @@ Route::middleware('auth')->group(function (): void {
 
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
+
+    Route::get('confirm-password/needs', [ConfirmablePasswordController::class, 'needs'])
+        ->name('password.confirm.needs');
 
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 

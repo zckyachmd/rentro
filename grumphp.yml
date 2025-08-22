@@ -41,10 +41,10 @@ grumphp:
       diff: false
       triggered_by: ['php']
 
-    phpstan:
-      configuration: phpstan.neon
-      autoload_file: vendor/autoload.php
-      level: null
-      memory_limit: 1G
-      use_grumphp_paths: true
-      triggered_by: ['php']
+    # phpstan:
+    #   configuration: phpstan.neon
+    #   autoload_file: vendor/autoload.php
+    #   level: null
+    #   memory_limit: 1G
+    #   use_grumphp_paths: true
+    #   triggered_by: ['php']

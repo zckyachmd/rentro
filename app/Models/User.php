@@ -21,15 +21,6 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasAvatar;
     use LogsActivity;
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('user')
-            ->logOnly(['name', 'username', 'email', 'phone', 'dob', 'gender'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
-    }
-
     /**
      * The attributes that are mass assignable.
      *
@@ -40,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'username',
         'email',
         'password',
+        'password_changed_at',
         'phone',
         'dob',
         'gender',
@@ -58,6 +50,20 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * Get the activity log options for the model.
+     *
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('user')
+            ->logOnly(['name', 'username', 'email', 'phone', 'dob', 'gender'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -65,10 +71,13 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'dob'               => 'date',
-            'preferences'       => 'array',
+            'email_verified_at'         => 'datetime',
+            'password'                  => 'hashed',
+            'two_factor_secret'         => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at'   => 'datetime',
+            'dob'                       => 'date',
+            'preferences'               => 'array',
         ];
     }
 

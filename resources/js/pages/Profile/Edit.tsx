@@ -144,7 +144,10 @@ export default function Edit({ user, address, mustVerifyEmail }: PageProps) {
                     </Button>
 
                     <Button asChild size="sm" variant="outline">
-                        <a href="#" className="flex items-center gap-2">
+                        <a
+                            href={route('security.index')}
+                            className="flex items-center gap-2"
+                        >
                             <ShieldCheck className="h-4 w-4" />
                             Keamanan Akun
                         </a>
