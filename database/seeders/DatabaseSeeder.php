@@ -20,8 +20,8 @@ class DatabaseSeeder extends Seeder
             'password' => 'Admin1234!',
         ])
             ->has(UserAddress::factory()->count(1), 'addresses')
-            ->has(UserDocument::factory()->count(1), 'documents')
-            ->has(EmergencyContact::factory()->count(3), 'emergencyContacts')
+            ->has(UserDocument::factory()->count(1), 'document')
+            ->has(EmergencyContact::factory()->count(2), 'emergencyContacts')
             ->create();
     }
 }

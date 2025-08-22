@@ -12,25 +12,12 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import AuthLayout from '@/layouts/auth-layout';
 import { router, usePage } from '@inertiajs/react';
-import {
-    CheckCircle2,
-    CircleAlert,
-    Phone,
-    ShieldCheck,
-    Users,
-} from 'lucide-react';
+import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
+import ContactSection from './partials/contact';
 
 type UserDTO = {
     id: number;
@@ -80,19 +67,18 @@ type ContactDTO = {
 type PageProps = {
     user: UserDTO;
     addresses: AddressDTO[];
-    documents: DocumentDTO[];
+    document: DocumentDTO | null;
     contacts: ContactDTO[];
     mustVerifyEmail: boolean;
     status?: string | null;
     preferences: Record<string, unknown>;
-    counts: { addresses: number; documents: number; contacts: number };
 };
 
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : '-');
 
 export default function ShowProfile() {
     const { props } = usePage<PageProps>();
-    const { user, addresses, documents, contacts, mustVerifyEmail } = props;
+    const { user, addresses, document, contacts, mustVerifyEmail } = props;
 
     const rowCls =
         'flex flex-col gap-1 py-2 sm:flex-row sm:items-start sm:gap-4';
@@ -310,8 +296,8 @@ export default function ShowProfile() {
                                             Jenis
                                         </span>
                                         <span className="capitalize">
-                                            {documents[0]
-                                                ? documents[0].type.replace(
+                                            {document
+                                                ? document.type.replace(
                                                       '_',
                                                       ' ',
                                                   )
@@ -323,7 +309,7 @@ export default function ShowProfile() {
                                             Nomor
                                         </span>
                                         <span className="font-mono text-xs">
-                                            {documents[0]?.number || '-'}
+                                            {document?.number || '-'}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -331,14 +317,14 @@ export default function ShowProfile() {
                                             Status
                                         </span>
                                         <span>
-                                            {documents[0] ? (
-                                                documents[0].status ===
+                                            {document ? (
+                                                document.status ===
                                                 'approved' ? (
                                                     <Badge className="gap-1">
                                                         <ShieldCheck className="h-3 w-3" />{' '}
                                                         Disetujui
                                                     </Badge>
-                                                ) : documents[0].status ===
+                                                ) : document.status ===
                                                   'pending' ? (
                                                     <Badge variant="secondary">
                                                         Menunggu
@@ -362,83 +348,7 @@ export default function ShowProfile() {
                 </section>
 
                 {/* Kontak Darurat */}
-                <section>
-                    <div className="mt-4 flex items-center justify-between">
-                        <h2 className="flex items-center gap-2 text-lg font-semibold">
-                            <Users className="h-5 w-5" />
-                            Kontak Darurat
-                        </h2>
-                        <Button asChild size="sm" variant="outline">
-                            <a href="#">Kelola Kontak</a>
-                        </Button>
-                    </div>
-                    <Separator className="mb-6 mt-2" />
-                    {contacts.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            Belum ada kontak darurat.
-                        </p>
-                    ) : (
-                        <div className="overflow-x-auto rounded-lg border">
-                            <Table className="text-sm">
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="py-3 md:py-4">
-                                            Nama
-                                        </TableHead>
-                                        <TableHead className="py-3 md:py-4">
-                                            Telepon
-                                        </TableHead>
-                                        <TableHead className="py-3 md:py-4">
-                                            Email
-                                        </TableHead>
-                                        <TableHead className="py-3 md:py-4">
-                                            Alamat
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {contacts.map((c) => (
-                                        <TableRow key={c.id}>
-                                            <TableCell className="py-3 md:py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-medium">
-                                                        {c.name}
-                                                    </span>
-                                                    {c.relationship && (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            ({c.relationship})
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap py-3 md:py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Phone className="h-3.5 w-3.5" />
-                                                    <span className="truncate">
-                                                        {c.phone}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="max-w-[220px] truncate py-3 md:py-4">
-                                                {c.email || '-'}
-                                            </TableCell>
-                                            <TableCell className="max-w-[320px] truncate py-3 md:py-4">
-                                                {c.address_line ? (
-                                                    <ShowMore
-                                                        text={c.address_line}
-                                                        limit={60}
-                                                    />
-                                                ) : (
-                                                    '-'
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-                </section>
+                <ContactSection contacts={contacts} />
             </div>
         </AuthLayout>
     );

@@ -13,7 +13,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AuthLayout from '@/layouts/auth-layout';
 import { Head, useForm } from '@inertiajs/react';
-import { FileText, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -68,6 +67,7 @@ type FormData = {
 export default function Edit({ user, address, mustVerifyEmail }: PageProps) {
     const breadcrumbs = React.useMemo(
         () => [
+            { label: 'Akun', href: '#' },
             { label: 'Profil', href: route('profile.show') },
             { label: 'Edit Profil' },
         ],
@@ -134,24 +134,6 @@ export default function Edit({ user, address, mustVerifyEmail }: PageProps) {
                     <p className="text-sm text-muted-foreground">
                         Perbarui data akun dan alamat.
                     </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button asChild size="sm" variant="outline">
-                        <a href="#" className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            Informasi Tambahan
-                        </a>
-                    </Button>
-
-                    <Button asChild size="sm" variant="outline">
-                        <a
-                            href={route('security.index')}
-                            className="flex items-center gap-2"
-                        >
-                            <ShieldCheck className="h-4 w-4" />
-                            Keamanan Akun
-                        </a>
-                    </Button>
                 </div>
             </div>
 

@@ -24,7 +24,7 @@ class ProfileController extends Controller
     {
         $user = $request->user()->load([
             'addresses' => fn ($q) => $q->orderBy('id'),
-            'documents',
+            'document',
             'emergencyContacts' => fn ($q) => $q->orderBy('id'),
         ]);
 
@@ -53,14 +53,18 @@ class ProfileController extends Controller
                 'country',
                 'is_primary',
             ]),
-            'documents' => $user->documents->map->only([
-                'id',
-                'type',
-                'number',
-                'status',
-                'file_path',
-                'verified_at',
-            ]),
+            'document' => $user->document ? [
+                'id'          => $user->document->id,
+                'type'        => $user->document->type,
+                'number'      => $user->document->number,
+                'status'      => $user->document->status,
+                'file_path'   => $user->document->file_path,
+                'issued_at'   => optional($user->document->issued_at)?->toDateString(),
+                'expires_at'  => optional($user->document->expires_at)?->toDateString(),
+                'verified_at' => optional($user->document->verified_at)?->toDateTimeString(),
+                'verified_by' => $user->document->verified_by,
+                'notes'       => $user->document->notes,
+            ] : null,
             'contacts' => $user->emergencyContacts->map->only([
                 'id',
                 'name',
@@ -70,12 +74,6 @@ class ProfileController extends Controller
                 'address_line',
                 'is_primary',
             ]),
-            'preferences' => $user->preferences ?? new \stdClass(),
-            'counts'      => [
-                'addresses' => $user->addresses->count(),
-                'documents' => $user->documents->count(),
-                'contacts'  => $user->emergencyContacts->count(),
-            ],
             'mustVerifyEmail' => $user instanceof MustVerifyEmail && is_null($user->email_verified_at),
             'status'          => session('status'),
         ]);

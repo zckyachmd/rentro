@@ -7,6 +7,7 @@ use App\Models\Concerns\HasAvatar;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
@@ -91,9 +92,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(UserAddress::class);
     }
 
-    public function documents(): HasMany
+    public function document(): HasOne
     {
-        return $this->hasMany(UserDocument::class);
+        return $this->hasOne(UserDocument::class);
     }
 
     public function emergencyContacts(): HasMany

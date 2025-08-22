@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\TwoFactorController;
@@ -24,6 +25,12 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
         // Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+
+        Route::prefix('emergency-contacts')->name('contacts.')->group(function (): void {
+            Route::post('/', [EmergencyContactController::class, 'store'])->name('store');
+            Route::put('/{contact}', [EmergencyContactController::class, 'update'])->name('update');
+            Route::delete('/{contact}', [EmergencyContactController::class, 'destroy'])->name('destroy');
+        });
     });
 
     // Security
