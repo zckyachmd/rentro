@@ -79,7 +79,6 @@ export function useConfirmPasswordDialog(
 
         try {
             setSubmitting(true);
-            // @ts-ignore route helper global dari Ziggy
             const url = route('password.confirm');
             const res = await fetch(url, {
                 method: 'POST',
@@ -108,7 +107,9 @@ export function useConfirmPasswordDialog(
                     const data = await res.json();
                     const err = data?.errors?.password?.[0];
                     if (typeof err === 'string') message = err;
-                } catch {}
+                } catch {
+                    /* ignore error */
+                }
                 confirmForm.setError('password', message);
                 toast.error(message);
                 return;
@@ -148,7 +149,6 @@ export function useConfirmPasswordModal() {
 
     const openConfirm = async (run: () => void) => {
         try {
-            // @ts-ignore Ziggy
             const url = route('password.confirm.needs');
             const res = await fetch(url, {
                 method: 'GET',

@@ -54,7 +54,6 @@ type PageProps = {
     user: UserDTO;
     address: AddressDTO;
     document?: DocumentDTO;
-    mustVerifyEmail: boolean;
     status?: string | null;
 };
 
@@ -76,18 +75,18 @@ type FormData = {
         postal_code: string;
     };
     document: {
-      type: '' | 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
-      number: string;
-      file: File | null;
-      file_url?: string | null;
-      issued_at: string;
-      expires_at: string;
-      status?: 'pending' | 'approved' | 'rejected';
-      notes?: string | null;
+        type: '' | 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
+        number: string;
+        file: File | null;
+        file_url?: string | null;
+        issued_at: string;
+        expires_at: string;
+        status?: 'pending' | 'approved' | 'rejected';
+        notes?: string | null;
     };
 };
 
-export default function Edit({ user, address, document, mustVerifyEmail }: PageProps) {
+export default function Edit({ user, address, document }: PageProps) {
     const breadcrumbs = React.useMemo(
         () => [
             { label: 'Akun', href: '#' },
@@ -103,7 +102,7 @@ export default function Edit({ user, address, document, mustVerifyEmail }: PageP
         email: user.email ?? '',
         phone: user.phone ?? '',
         dob: user.dob ?? '',
-        gender: (user.gender as any) ?? '',
+        gender: (user.gender as FormData['gender']) ?? '',
         avatar: null,
         address: {
             label: address?.label ?? '',

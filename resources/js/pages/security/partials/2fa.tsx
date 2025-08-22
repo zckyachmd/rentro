@@ -57,7 +57,9 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                 : null,
                         );
                     }
-                } catch {}
+                } catch {
+                    // ignore fetch error (QR code fetch failure)
+                }
                 toast.success(
                     'Persiapan 2FA dimulai. Scan QR & konfirmasi OTP.',
                 );
@@ -76,7 +78,9 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                 const data = await res.json();
                 setRecoveryCodes(Array.isArray(data?.codes) ? data.codes : []);
             }
-        } catch {}
+        } catch {
+            // ignore fetch error (recovery codes fetch failure)
+        }
     };
 
     const onConfirm2FA = () => {

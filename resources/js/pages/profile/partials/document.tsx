@@ -5,6 +5,7 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { DatePickerInput } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { ShieldCheck } from 'lucide-react';
 import * as React from 'react';
 
 export type DocumentFormValue = {
@@ -303,16 +305,21 @@ export default function DocumentSection({
                                     <Label className="mr-2">
                                         Status Verifikasi
                                     </Label>
-                                    <span
-                                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                                            value.status === 'approved'
-                                                ? 'bg-green-100 text-green-800'
-                                                : value.status === 'rejected'
-                                                  ? 'bg-red-100 text-red-800'
-                                                  : 'bg-yellow-100 text-yellow-800'
-                                        }`}
-                                    >
-                                        {value.status}
+                                    <span>
+                                        {value.status === 'approved' ? (
+                                            <Badge className="gap-1">
+                                                <ShieldCheck className="h-3 w-3" />{' '}
+                                                Disetujui
+                                            </Badge>
+                                        ) : value.status === 'pending' ? (
+                                            <Badge variant="secondary">
+                                                Menunggu
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="destructive">
+                                                Ditolak
+                                            </Badge>
+                                        )}
                                     </span>
                                 </div>
                             )}

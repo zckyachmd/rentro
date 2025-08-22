@@ -77,7 +77,7 @@ export function DatePickerInput(props: DatePickerInputProps) {
   React.useEffect(() => {
     // Keep month in sync with selected value
     if (selectedDate) setMonth(selectedDate)
-  }, [value])
+  }, [selectedDate])
 
   const displayValue = selectedDate
     ? formatDate(selectedDate, locale)
