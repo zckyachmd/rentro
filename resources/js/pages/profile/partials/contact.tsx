@@ -47,19 +47,13 @@ type Props = {
     contacts: ContactDTO[];
 };
 
-const RELATIONSHIP_OPTIONS = [
-    'Pasangan',
-    'Orang Tua',
-    'Saudara Kandung',
-    'Kerabat',
-    'Teman',
-    'Tetangga',
-    'Atasan',
-];
 const MAX_CONTACTS = 3;
 
 export default function ContactSection({ contacts }: Props) {
-    const { errors } = usePage<{ errors?: Record<string, string> }>().props;
+    const { errors, options } = usePage<{
+        errors?: Record<string, string>;
+        options: { emergencyRelationshipLabel: string[] };
+    }>().props;
     const total = contacts.length;
     const canAdd = total < MAX_CONTACTS;
 
@@ -282,7 +276,7 @@ export default function ContactSection({ contacts }: Props) {
                                                 <SelectValue placeholder="Pilih hubungan" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {RELATIONSHIP_OPTIONS.map(
+                                                {options.emergencyRelationshipLabel.map(
                                                     (opt) => (
                                                         <SelectItem
                                                             key={opt}

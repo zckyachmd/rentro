@@ -43,7 +43,6 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
-        $this->logAuth('registered', $user);
 
         return redirect(route('dashboard', absolute: false));
     }

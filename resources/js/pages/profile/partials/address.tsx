@@ -14,6 +14,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { usePage } from '@inertiajs/react';
 
 export type AddressValue = {
     label: string;
@@ -40,6 +41,9 @@ export default function AddressSection({
     defaultOpen = true,
     title = 'Address',
 }: AddressProps) {
+    const { props } = usePage<{ options: { addressLabels: string[] } }>();
+    const addressLabels = props.options.addressLabels;
+
     const setField = (key: keyof AddressValue, val: string) => {
         onChange({ ...value, [key]: val });
     };
@@ -193,15 +197,14 @@ export default function AddressSection({
                                         <SelectValue placeholder="Pilih label alamat" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Rumah">
-                                            Rumah
-                                        </SelectItem>
-                                        <SelectItem value="Kantor">
-                                            Kantor
-                                        </SelectItem>
-                                        <SelectItem value="Kampus">
-                                            Kampus
-                                        </SelectItem>
+                                        {addressLabels.map((label) => (
+                                            <SelectItem
+                                                key={label}
+                                                value={label}
+                                            >
+                                                {label}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 {errors['address.label'] && (

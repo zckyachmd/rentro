@@ -11,6 +11,8 @@ trait HasDocument
 {
     /**
      * Relationship: get the user's document.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\UserDocument>
      */
     public function document(): HasOne
     {
@@ -19,10 +21,21 @@ trait HasDocument
 
     /**
      * Create or update the user's document with given attributes.
+     *
+     * @return \App\Models\UserDocument
+     */
+    /**
+     * Create or update the user's document with given attributes.
+     *
+     * @param array $attributes
+     * @return \App\Models\UserDocument
      */
     public function upsertDocument(array $attributes): UserDocument
     {
-        return $this->document()->updateOrCreate([], $attributes);
+        /** @var \App\Models\UserDocument $document */
+        $document = $this->document()->updateOrCreate([], $attributes);
+
+        return $document;
     }
 
     /**
@@ -32,10 +45,11 @@ trait HasDocument
      * @param UploadedFile|null $file
      * @param string $disk
      * @param string $dir
-     * @return array{document: UserDocument, changed: array<int,string>, created: bool}
+     * @return array{document: \App\Models\UserDocument, changed: list<string>, created: bool}
      */
     public function syncDocument(array $attributes, ?UploadedFile $file = null, string $disk = 'public', string $dir = 'documents'): array
     {
+        /** @var \App\Models\UserDocument|null $doc */
         $doc     = $this->document;
         $created = false;
 
@@ -78,6 +92,7 @@ trait HasDocument
      */
     public function getDocumentForFrontend(): ?array
     {
+        /** @var \App\Models\UserDocument|null $doc */
         $doc = $this->document;
 
         if (!$doc) {

@@ -11,14 +11,14 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
-            $table->enum('type', ['KTP', 'SIM', 'PASSPORT', 'NPWP', 'other'])->nullable();
-            $table->string('number')->nullable();
-            $table->string('file_path');
+            $table->string('type', 50)->nullable();
+            $table->string('number', 50)->nullable();
+            $table->string('file_path', 255);
 
             $table->date('issued_at')->nullable();
             $table->date('expires_at')->nullable();
 
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->string('status', 50)->default('pending');
             $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('verified_at')->nullable();
             $table->text('notes')->nullable();

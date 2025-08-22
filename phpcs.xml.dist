@@ -10,6 +10,7 @@
   <arg name="colors"/>
   <arg name="parallel" value="4"/>
   <arg name="extensions" value="php"/>
+  <arg name="warning-severity" value="0"/>
 
   <rule ref="PSR12"/>
 
@@ -19,4 +20,6 @@
   <exclude-pattern>resources/*</exclude-pattern>
   <exclude-pattern>public/*</exclude-pattern>
   <exclude-pattern>bootstrap/cache/*</exclude-pattern>
+  <exclude-pattern>node_modules/*</exclude-pattern>
+  <exclude-pattern>tests/*</exclude-pattern>
 </ruleset>

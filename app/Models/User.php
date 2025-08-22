@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enum\Gender;
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasAvatar;
 use App\Models\Concerns\HasDocument;
@@ -63,6 +64,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at'   => 'datetime',
             'dob'                       => 'date',
+            'gender'                    => Gender::class,
             'preferences'               => 'array',
         ];
     }

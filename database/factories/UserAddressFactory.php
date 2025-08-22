@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\UserAddress;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enum\AddressLabel;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserAddress>
@@ -26,7 +27,7 @@ class UserAddressFactory extends Factory
     {
         return [
             'user_id'      => null, // Should be set explicitly when creating
-            'label'        => fake()->randomElement(['Home', 'Office']),
+            'label'        => fake()->randomElement(AddressLabel::values()),
             'address_line' => fake()->streetAddress(),
             'village'      => fake()->citySuffix(),
             'district'     => fake()->city(),

@@ -11,12 +11,12 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
-            $table->string('label')->nullable(); // Rumah/Kantor/dll
-            $table->string('address_line');
-            $table->string('village')->nullable();   // Kelurahan
-            $table->string('district')->nullable();  // Kecamatan
-            $table->string('city');                  // Kota/Kabupaten
-            $table->string('province');
+            $table->string('label', 50)->nullable();
+            $table->text('address_line');
+            $table->string('village', 100)->nullable();
+            $table->string('district', 100)->nullable();
+            $table->string('city', 100);
+            $table->string('province', 100);
             $table->string('postal_code', 20)->nullable();
 
             $table->timestamps();

@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\AddressLabel;
+use App\Enum\DocumentStatus;
+use App\Enum\DocumentType;
+use App\Enum\EmergencyRelationship;
+use App\Enum\Gender;
+use App\Http\Requests\Auth\ConfirmPasswordRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
 use App\Models\UserAddress;
 use App\Traits\LogActivity;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,8 +68,13 @@ class ProfileController extends Controller
                 'address_line',
                 'is_primary',
             ]),
-            'mustVerifyEmail' => $user instanceof MustVerifyEmail && is_null($user->email_verified_at),
+            'mustVerifyEmail' => is_null($user->email_verified_at),
             'status'          => session('status'),
+            'options'         => [
+                'documentTypes'              => DocumentType::values(),
+                'documentStatuses'           => DocumentStatus::values(),
+                'emergencyRelationshipLabel' => EmergencyRelationship::values(),
+            ],
         ]);
     }
 
@@ -73,7 +83,8 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
-        $user    = $request->user()->load(['addresses' => fn ($q) => $q->orderBy('id')]);
+        $user = $request->user()->load(['addresses' => fn ($q) => $q->orderBy('id')]);
+        /** @var \App\Models\UserAddress|null $address */
         $address = $user->addresses->first();
 
         return Inertia::render('profile/edit', [
@@ -100,6 +111,12 @@ class ProfileController extends Controller
             'document'        => $user->getDocumentForFrontend(),
             'mustVerifyEmail' => is_null($user->email_verified_at),
             'status'          => session('status'),
+            'options'         => [
+                'genders'          => Gender::values(),
+                'documentTypes'    => DocumentType::values(),
+                'documentStatuses' => DocumentStatus::values(),
+                'addressLabels'    => AddressLabel::values(),
+            ],
         ]);
     }
 
@@ -110,8 +127,6 @@ class ProfileController extends Controller
     {
         $user      = $request->user();
         $validated = $request->validated();
-
-        $originalEmail = $user->getOriginal('email');
 
         $user->fill(array_intersect_key($validated, array_flip([
             'name',
@@ -124,28 +139,12 @@ class ProfileController extends Controller
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
-
-            $this->logEvent(
-                event: 'profile.email_changed',
-                subject: $user,
-                properties: [
-                    'old' => $originalEmail,
-                    'new' => $user->email,
-                ],
-                logName: 'profile',
-            );
         }
 
         $user->save();
 
         if ($request->hasFile('avatar')) {
             $user->updateAvatar($request->file('avatar'));
-
-            $this->logEvent(
-                event: 'profile.avatar_updated',
-                subject: $user,
-                logName: 'profile',
-            );
         }
 
         if (isset($validated['address']) && is_array($validated['address'])) {
@@ -181,22 +180,7 @@ class ProfileController extends Controller
                 'expires_at' => $docInput['expires_at'] ?? null,
             ];
 
-            ['document' => $doc, 'changed' => $changed, 'created' => $created] = $user->syncDocument($attributes, $docInput['file'], 'public', 'documents');
-
-            if ($created) {
-                $this->logEvent(
-                    event: 'profile.document_created',
-                    subject: $doc,
-                    logName: 'profile',
-                );
-            } elseif (!empty($changed)) {
-                $this->logEvent(
-                    event: 'profile.document_updated',
-                    subject: $doc,
-                    properties: compact('changed'),
-                    logName: 'profile',
-                );
-            }
+            $user->syncDocument($attributes, $docInput['file'], 'public', 'documents');
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
@@ -205,7 +189,7 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(ConfirmPasswordRequest $request): RedirectResponse
     {
         $request->validate([
             'password' => ['required', 'current_password'],
@@ -214,13 +198,6 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-
-        $this->logEvent(
-            event: 'account.deleted',
-            causer: $user,
-            subject: $user,
-            logName: 'account',
-        );
 
         $user->delete();
 

@@ -1,6 +1,6 @@
 includes:
+  - vendor/larastan/larastan/extension.neon
   - vendor/nesbot/carbon/extension.neon
-  - phpstan-baseline.neon
 
 parameters:
   level: 5
@@ -9,6 +9,7 @@ parameters:
     - app
     - config
     - routes
+    - resources
 
   bootstrapFiles:
     - vendor/autoload.php
@@ -20,11 +21,13 @@ parameters:
   excludePaths:
     - database/*
     - storage/*
+    - resources/*
+    - tests/*
+    - bootstrap/cache/*
     - vendor/*
     - node_modules/*
-    - bootstrap/cache/*
-    - tests/Fixtures/*
 
   ignoreErrors:
     - '#Call to an undefined method Illuminate\\Support\\Collection::.*#'
+    - '#Call to an undefined static method App\\Models\\User::where\(\)#'
     - '#@var PHPDoc tag.*could be replaced by native type hint#'

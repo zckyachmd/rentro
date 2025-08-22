@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAudit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 class UserDocument extends Model
 {
     use HasFactory;
-    use LogsActivity;
+    use HasAudit;
 
     protected $fillable = [
         'user_id',
@@ -31,15 +30,6 @@ class UserDocument extends Model
         'expires_at'  => 'date',
         'verified_at' => 'datetime',
     ];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->useLogName('user_document')
-            ->logOnly(['type', 'number', 'file_path', 'issued_at', 'expires_at', 'status', 'verified_by', 'verified_at', 'notes'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
-    }
 
     public function user(): BelongsTo
     {

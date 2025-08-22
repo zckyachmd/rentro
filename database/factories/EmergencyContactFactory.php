@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\EmergencyContact;
+use App\Enum\EmergencyRelationship;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,7 +28,7 @@ class EmergencyContactFactory extends Factory
         return [
             'user_id'      => null, // Should be set explicitly when creating
             'name'         => fake()->name(),
-            'relationship' => fake()->randomElement(['parent', 'sibling', 'friend', 'spouse', 'partner']),
+            'relationship' => fake()->randomElement(EmergencyRelationship::values()),
             'phone'        => fake()->phoneNumber(),
             'email'        => fake()->optional()->safeEmail(),
             'address_line' => fake()->optional()->streetAddress(),

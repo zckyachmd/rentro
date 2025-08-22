@@ -23,10 +23,10 @@ class EmergencyContactRequest extends FormRequest
     {
         return [
             'name'         => ['required', 'string', 'max:255'],
-            'phone'        => ['required', 'string', 'max:255'],
-            'relationship' => ['required', 'string', 'max:255'],
+            'phone'        => ['required', 'string', 'max:20'],
+            'relationship' => ['required', 'string', 'max:50'],
             'email'        => ['nullable', 'email', 'max:255'],
-            'address_line' => ['nullable', 'string', 'max:255'],
+            'address_line' => ['nullable', 'string', 'max:1000'],
         ];
     }
 

@@ -27,14 +27,8 @@ class TwoFactorService implements TwoFactorServiceInterface
         $this->digits        = (int) config('twofactor.digits', 6);
         $this->period        = (int) config('twofactor.period', 30);
         $this->algorithm     = (string) config('twofactor.algorithm', 'SHA1');
-
-        // Set Google2FA instance options if supported
-        if (method_exists($this->g2fa, 'setOneTimePasswordLength')) {
-            $this->g2fa->setOneTimePasswordLength($this->digits);
-        }
-        if (method_exists($this->g2fa, 'setKeyRegeneration')) {
-            $this->g2fa->setKeyRegeneration($this->period);
-        }
+        $this->g2fa->setOneTimePasswordLength($this->digits);
+        $this->g2fa->setKeyRegeneration($this->period);
     }
 
     public function generateSecret(int $length = 32): string
@@ -109,6 +103,7 @@ class TwoFactorService implements TwoFactorServiceInterface
         if (is_array($stored)) {
             return array_values(array_map(fn ($c) => (string) $c, $stored));
         }
+
         if (is_string($stored)) {
             $json    = $this->decryptOrNull($stored) ?? $stored;
             $decoded = json_decode($json, true);
@@ -137,6 +132,7 @@ class TwoFactorService implements TwoFactorServiceInterface
         if ($ciphertext === null || $ciphertext === '') {
             return null;
         }
+
         try {
             return Crypt::decryptString($ciphertext);
         } catch (\Throwable $e) {

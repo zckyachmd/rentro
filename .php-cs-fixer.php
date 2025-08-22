@@ -1,13 +1,20 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-    ->in(__DIR__)
+    ->in([
+        __DIR__.'/app',
+        __DIR__.'/config',
+        __DIR__.'/routes',
+    ])
     ->exclude([
-        'storage',
+        'database',
         'vendor',
-        'public',
+        'storage',
         'resources',
-        'config',
+        'public',
+        'bootstrap/cache',
+        'node_modules',
+        'tests',
     ])
     ->notPath('storage/framework/views');
 

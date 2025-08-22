@@ -20,7 +20,7 @@ trait HasAudit
 
     protected function auditableAttributes(): array
     {
-        $fillable  = $this->fillable ?? [];
+        $fillable  = $this->fillable;
         $sensitive = [
             'password',
             'remember_token',
@@ -38,19 +38,19 @@ trait HasAudit
     {
         $req = request();
 
-        $props = collect($activity->properties ?? [])
+        $props = collect($activity->properties?->toArray() ?? [])
             ->merge([
                 'event'      => $eventName,
-                'ip'         => $req?->ip(),
-                'user_agent' => (string) $req?->userAgent(),
-                'url'        => $req?->fullUrl(),
+                'ip'         => $req->ip(),
+                'user_agent' => (string) $req->userAgent(),
+                'url'        => $req->fullUrl(),
             ]);
 
         if (method_exists($this, 'auditLabel')) {
-            $props->put('subject_label', $this->auditLabel());
+            $props->put((string) 'subject_label', $this->auditLabel());
         }
 
-        $activity->properties = $props->toArray();
+        $activity->properties = collect($props);
 
         $activity->description = $this->auditDescription($eventName);
     }
@@ -61,9 +61,9 @@ trait HasAudit
         $label   = method_exists($this, 'auditLabel') ? $this->auditLabel() : "#{$this->getKey()}";
 
         return match ($eventName) {
-            'created' => "{$subject} {$label} dibuat",
-            'updated' => "{$subject} {$label} diperbarui",
-            'deleted' => "{$subject} {$label} dihapus",
+            'created' => "{$subject} {$label} created",
+            'updated' => "{$subject} {$label} updated",
+            'deleted' => "{$subject} {$label} deleted",
             default   => "{$subject} {$label} {$eventName}",
         };
     }

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\UserDocument;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Enum\DocumentType;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserDocument>
@@ -24,18 +25,20 @@ class UserDocumentFactory extends Factory
      */
     public function definition(): array
     {
-        $type = fake()->randomElement(['KTP', 'SIM', 'PASSPORT', 'NPWP', 'other']);
+        $type = fake()->randomElement(DocumentType::cases())->value;
 
-        // Generate realistic document number formats
         $number = match ($type) {
-            'KTP'  => fake()->numerify(str_repeat('#', 16)), // 16-digit NIK
-            'NPWP' => fake()->numerify('##.###.###.#-###.###'), // NPWP-like format
-            'SIM', 'PASSPORT' => fake()->bothify('??######'),
-            'other' => null,
+            DocumentType::KTP->value      => fake()->numerify(str_repeat('#', 16)),
+            DocumentType::NPWP->value     => fake()->numerify('##.###.###.#-###.###'),
+            DocumentType::SIM->value,
+            DocumentType::PASSPORT->value => fake()->bothify('??######'),
+            DocumentType::OTHER->value    => null,
         };
 
         $issuedAt  = fake()->date();
-        $expiresAt = in_array($type, ['SIM', 'PASSPORT', 'other']) ? fake()->dateTimeBetween('+1 year', '+10 years')->format('Y-m-d') : null;
+        $expiresAt = in_array($type, [DocumentType::SIM->value, DocumentType::PASSPORT->value, DocumentType::OTHER->value])
+            ? fake()->dateTimeBetween('+1 year', '+10 years')->format('Y-m-d')
+            : null;
 
         return [
             'user_id'     => null, // set explicitly when creating

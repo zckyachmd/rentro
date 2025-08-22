@@ -55,7 +55,6 @@ class StrongPassword implements ValidationRule
             $fail('Password harus mengandung simbol.');
         }
 
-        // Larangan mengandung username atau local-part email
         $parts = [];
         if ($this->username) {
             $parts[] = $this->username;

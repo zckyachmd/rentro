@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Contracts\Activity as ActivityContract;
 use Spatie\Activitylog\Facades\Activity;
 use Spatie\Activitylog\Models\Activity as ActivityModel;
 
@@ -16,16 +17,7 @@ trait LogActivity
         ?Model $subject = null,
         ?string $description = null,
         ?string $logName = null,
-        bool $withRequestContext = true,
-    ): ?ActivityModel {
-        $req = request();
-
-        $base = $withRequestContext ? array_filter([
-            'ip'         => $req?->ip(),
-            'user_agent' => $req?->userAgent(),
-            'url'        => $req?->fullUrl(),
-        ]) : [];
-
+    ): ?ActivityContract {
         $logger = Activity::tap(function (ActivityModel $activity) use ($event) {
             $activity->event = $event;
         });
@@ -36,8 +28,8 @@ trait LogActivity
 
         if ($causer instanceof Authenticatable || $causer) {
             $logger = $logger->causedBy($causer);
-        } elseif (function_exists('request') && $req && $req->user()) {
-            $logger = $logger->causedBy($req->user());
+        } elseif (request()->user()) {
+            $logger = $logger->causedBy(request()->user());
         }
 
         if ($subject) {
@@ -45,12 +37,26 @@ trait LogActivity
         }
 
         return $logger
-            ->withProperties($base + $properties)
+            ->withProperties($this->formatEventProperties($event, $properties))
             ->event($event)
-            ->log($description ?? $event);
+            ->log($description ?? ucfirst(str_replace('_', ' ', $event)));
     }
 
-    protected function logAuth(string $event, ?Authenticatable $user = null, array $extra = []): ?ActivityModel
+    protected function formatEventProperties(string $event, array $properties = []): array
+    {
+        $req = request();
+
+        return collect($properties)
+            ->merge([
+                'event'      => $event,
+                'ip'         => $req->ip(),
+                'user_agent' => (string) $req->userAgent(),
+                'url'        => $req->fullUrl(),
+            ])
+            ->toArray();
+    }
+
+    protected function logAuth(string $event, ?Authenticatable $user = null, array $extra = []): ?ActivityContract
     {
         $descriptions = [
             'login'                        => 'User login',
@@ -74,7 +80,7 @@ trait LogActivity
         );
     }
 
-    protected function logModel(string $event, Model $subject, array $properties = [], ?string $description = null, ?string $logName = 'model'): ?ActivityModel
+    protected function logModel(string $event, Model $subject, array $properties = [], ?string $description = null, ?string $logName = 'model'): ?ActivityContract
     {
         return $this->logEvent(
             event: $event,

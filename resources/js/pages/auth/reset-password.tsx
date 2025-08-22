@@ -32,18 +32,16 @@ export default function ResetPassword({
                             token,
                             email,
                         })}
-                        onSuccess={() => {
-                            toast.success('Password has been reset.');
-                        }}
                         onError={(errors) => {
                             const fieldErrors = [
                                 'password',
                                 'password_confirmation',
                             ];
+
                             const generalErrors = Object.entries(errors)
                                 .filter(([key]) => !fieldErrors.includes(key))
                                 .map(([, message]) => message);
-                            console.log(generalErrors);
+
                             if (generalErrors.length > 0) {
                                 toast.error(generalErrors.join(' '));
                             }

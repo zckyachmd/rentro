@@ -6,13 +6,15 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @mixin \App\Models\User
+ */
 trait HasAvatar
 {
     protected function avatarUrl(): Attribute
     {
         return Attribute::make(
             get: function () {
-                /** @var \Illuminate\Database\Eloquent\Model $this */
                 if (!empty($this->avatar_path)) {
                     return Storage::url($this->avatar_path);
                 }
@@ -25,28 +27,16 @@ trait HasAvatar
 
     public function updateAvatar(UploadedFile $file): void
     {
-        /** @var \Illuminate\Database\Eloquent\Model $this */
-        if (!empty($this->avatar_path) && Storage::exists($this->avatar_path)) {
-            Storage::delete($this->avatar_path);
-        }
-
         $ext      = strtolower($file->getClientOriginalExtension() ?: $file->extension());
         $dir      = 'avatars/' . $this->getKey();
         $filename = 'avatar_' . now()->format('Ymd_His') . '.' . $ext;
         $path     = $file->storeAs($dir, $filename, ['disk' => 'public']);
 
-        $this->avatar_path = $path;
-        $this->save();
-    }
-
-    public function deleteAvatar(): void
-    {
-        /** @var \Illuminate\Database\Eloquent\Model $this */
         if (!empty($this->avatar_path) && Storage::exists($this->avatar_path)) {
             Storage::delete($this->avatar_path);
         }
 
-        $this->avatar_path = null;
+        $this->avatar_path = $path;
         $this->save();
     }
 }

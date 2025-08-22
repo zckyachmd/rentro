@@ -118,7 +118,7 @@ class TwoFactorController extends Controller
             return back()->withErrors(['status' => 'Aktifkan & konfirmasi 2FA terlebih dahulu.']);
         }
 
-        $user->two_factor_recovery_codes = $tfa->generateRecoveryCodes();
+        $user->two_factor_recovery_codes = json_encode($tfa->generateRecoveryCodes());
         $user->save();
 
         $this->logEvent(event: 'security.2fa_recovery_regenerated', subject: $user, logName: 'security');

@@ -76,7 +76,8 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
             const res = await fetch(route('security.2fa.recovery.index'));
             if (res.ok) {
                 const data = await res.json();
-                setRecoveryCodes(Array.isArray(data?.codes) ? data.codes : []);
+                const codes = JSON.parse(data?.codes ?? '[]');
+                setRecoveryCodes(codes);
             }
         } catch {
             // ignore fetch error (recovery codes fetch failure)

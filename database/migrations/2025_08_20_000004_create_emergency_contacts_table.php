@@ -11,11 +11,11 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
-            $table->string('name');
-            $table->string('relationship')->nullable();
-            $table->string('phone');
-            $table->string('email')->nullable();
-            $table->string('address_line')->nullable();
+            $table->string('name', 255);
+            $table->string('relationship', 50)->nullable();
+            $table->string('phone', 20);
+            $table->string('email', 255)->nullable();
+            $table->text('address_line')->nullable();
 
             $table->timestamps();
         });

@@ -2,7 +2,11 @@
 
 namespace App\Http\Requests\Profile;
 
+use App\Enum\DocumentStatus;
+use App\Enum\DocumentType;
+use App\Enum\Gender;
 use App\Models\User;
+use App\Rules\ValidUsername;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -24,7 +28,8 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $user             = $this->user();
+        $user = $this->user();
+        /** @var \App\Models\UserDocument|null $document */
         $document         = $user->document;
         $documentRequired = !$document || $document->status === 'rejected';
 
@@ -33,9 +38,7 @@ class ProfileUpdateRequest extends FormRequest
             'username' => [
                 'required',
                 'string',
-                'min:3',
-                'max:30',
-                'regex:/^[a-zA-Z0-9_\.]+$/',
+                new ValidUsername(),
                 Rule::unique(User::class, 'username')->ignore($this->user()->id),
             ],
             'email' => [
@@ -46,29 +49,29 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class, 'email')->ignore($this->user()->id),
             ],
-            'phone'  => ['required', 'string', 'max:255'],
+            'phone'  => ['required', 'string', 'max:20'],
             'dob'    => ['nullable', 'date', 'before:today'],
-            'gender' => ['required', 'in:male,female,other'],
+            'gender' => ['required', Rule::in(Gender::values())],
             'avatar' => ['nullable', 'image', 'max:2048'],
 
             // Address
             'address'              => ['required', 'array'],
-            'address.label'        => ['nullable', 'string', 'max:255'],
-            'address.address_line' => ['required', 'string', 'max:255'],
-            'address.village'      => ['required', 'string', 'max:255'],
-            'address.district'     => ['required', 'string', 'max:255'],
-            'address.city'         => ['required', 'string', 'max:255'],
-            'address.province'     => ['required', 'string', 'max:255'],
+            'address.label'        => ['nullable', 'string', 'max:50'],
+            'address.address_line' => ['required', 'string', 'max:1000'],
+            'address.village'      => ['required', 'string', 'max:100'],
+            'address.district'     => ['required', 'string', 'max:100'],
+            'address.city'         => ['required', 'string', 'max:100'],
+            'address.province'     => ['required', 'string', 'max:100'],
             'address.postal_code'  => ['required', 'string', 'max:20'],
 
             // Document
             'document'            => ['nullable', 'array'],
-            'document.type'       => [$documentRequired ? 'required' : 'nullable', Rule::in(['KTP', 'SIM', 'PASSPORT', 'NPWP', 'other'])],
+            'document.type'       => [$documentRequired ? 'required' : 'nullable', Rule::in(DocumentType::values())],
             'document.number'     => [$documentRequired ? 'required' : 'nullable', 'string', 'max:255'],
             'document.file'       => [$documentRequired ? 'required' : 'nullable', 'file', 'max:2048'],
             'document.issued_at'  => ['nullable', 'date'],
             'document.expires_at' => ['nullable', 'date'],
-            'document.status'     => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
+            'document.status'     => ['nullable', Rule::in(DocumentStatus::values())],
         ];
     }
 }

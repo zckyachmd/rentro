@@ -3,11 +3,9 @@
 namespace App\Http\Requests\Auth;
 
 use App\Rules\StrongPassword;
-use App\Rules\ValidUsername;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class RegisterRequest extends FormRequest
+class ResetPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,21 +23,8 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'username' => [
-                'required',
-                'string',
-                new ValidUsername(),
-                Rule::unique('users', 'username'),
-            ],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email'),
-            ],
+            'token'    => 'required',
+            'email'    => 'required|email',
             'password' => ['required', 'confirmed', new StrongPassword()],
         ];
     }

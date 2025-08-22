@@ -1,3 +1,4 @@
+import { DatePickerInput } from '@/components/date-picker';
 import {
     Accordion,
     AccordionContent,
@@ -6,7 +7,6 @@ import {
 } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { DatePickerInput } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -44,6 +44,8 @@ interface Props {
         rejected: string;
         notesTitle: string;
     }>;
+    documentTypes?: string[];
+    documentStatuses?: string[];
 }
 
 function getAlertText(
@@ -97,6 +99,7 @@ export default function DocumentSection({
     defaultOpen = true,
     title = 'Dokumen Identitas',
     messages = {},
+    documentTypes = [],
 }: Props) {
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -174,17 +177,11 @@ export default function DocumentSection({
                                         <SelectValue placeholder="Pilih jenis" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="KTP">KTP</SelectItem>
-                                        <SelectItem value="SIM">SIM</SelectItem>
-                                        <SelectItem value="PASSPORT">
-                                            PASSPORT
-                                        </SelectItem>
-                                        <SelectItem value="NPWP">
-                                            NPWP
-                                        </SelectItem>
-                                        <SelectItem value="other">
-                                            Lainnya
-                                        </SelectItem>
+                                        {documentTypes.map((type) => (
+                                            <SelectItem key={type} value={type}>
+                                                {type}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 {errors['document.type'] && (

@@ -1,6 +1,6 @@
+import { DatePickerInput } from '@/components/date-picker';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DatePickerInput } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -55,6 +55,10 @@ type PageProps = {
     address: AddressDTO;
     document?: DocumentDTO;
     status?: string | null;
+    options: {
+        documentTypes: string[];
+        documentStatuses: string[];
+    };
 };
 
 type FormData = {
@@ -86,7 +90,7 @@ type FormData = {
     };
 };
 
-export default function Edit({ user, address, document }: PageProps) {
+export default function Edit({ user, address, document, options }: PageProps) {
     const breadcrumbs = React.useMemo(
         () => [
             { label: 'Akun', href: '#' },
@@ -149,7 +153,16 @@ export default function Edit({ user, address, document }: PageProps) {
         e.preventDefault();
         transform((form) => ({ ...form, _method: 'PATCH' }));
         post(route('profile.update'), {
-            onSuccess: () => toast.success('Profil berhasil diperbarui'),
+            onSuccess: () => {
+                toast.success('Profil berhasil diperbarui');
+                setData((prev) => ({
+                    ...prev,
+                    avatar: null,
+                    document: { ...prev.document, file: null },
+                }));
+                setAvatarPreview(null);
+                if (fileRef.current) fileRef.current.value = '';
+            },
             onError: () => toast.error('Gagal memperbarui profil'),
             preserveScroll: true,
             forceFormData: true,
@@ -389,6 +402,8 @@ export default function Edit({ user, address, document }: PageProps) {
                         value={data.document}
                         onChange={(next) => setData('document', next)}
                         errors={errors}
+                        documentTypes={options.documentTypes}
+                        documentStatuses={options.documentStatuses}
                     />
                 </div>
 

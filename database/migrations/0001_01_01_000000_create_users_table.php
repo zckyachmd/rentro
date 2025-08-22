@@ -13,23 +13,24 @@ return new class () extends Migration {
         // USERS
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
-            $table->string('name');
-            $table->string('username')->unique();
-            $table->string('email')->unique();
+            $table->string('name', 255);
+            $table->string('username', 30)->unique();
+            $table->string('email', 255)->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password', 255);
             $table->timestamp('password_changed_at')->nullable();
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('phone', 20)->nullable();
             $table->date('dob')->nullable();
-            $table->enum('gender', ['male', 'female', 'other'])->nullable();
-            $table->string('avatar_path')->nullable();
+            $table->string('gender', 10)->nullable();
+            $table->string('avatar_path', 255)->nullable();
             $table->json('preferences')->nullable();
-            $table->index('phone');
             $table->rememberToken();
             $table->timestamps();
+
+            $table->index('phone');
         });
 
         DB::statement('ALTER TABLE users ALTER COLUMN username TYPE CITEXT;');

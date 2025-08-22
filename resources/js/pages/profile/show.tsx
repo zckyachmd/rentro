@@ -17,7 +17,7 @@ import { router, usePage } from '@inertiajs/react';
 import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
-import ContactSection from './partials/contact';
+import ContactSection, { ContactDTO } from './partials/contact';
 
 type UserDTO = {
     id: number;
@@ -26,7 +26,7 @@ type UserDTO = {
     email: string;
     phone?: string;
     avatar_url?: string;
-    gender?: 'male' | 'female' | 'other' | null;
+    gender?: 'male' | 'female' | null;
     dob?: string | null;
     created_at?: string;
     email_verified_at?: string | null;
@@ -54,16 +54,6 @@ type DocumentDTO = {
     verified_at?: string | null;
 };
 
-type ContactDTO = {
-    id: number;
-    name: string;
-    relationship?: string | null;
-    phone: string;
-    email?: string | null;
-    address_line?: string | null;
-    is_primary: boolean;
-};
-
 type PageProps = {
     user: UserDTO;
     addresses: AddressDTO[];
@@ -72,13 +62,18 @@ type PageProps = {
     mustVerifyEmail: boolean;
     status?: string | null;
     preferences: Record<string, unknown>;
+    options: {
+        documentTypes: string[];
+        documentStatuses: string[];
+    };
 };
 
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : '-');
 
 export default function ShowProfile() {
     const { props } = usePage<PageProps>();
-    const { user, addresses, document, contacts, mustVerifyEmail } = props;
+    const { user, addresses, document, contacts, mustVerifyEmail, options } =
+        props;
 
     const rowCls =
         'flex flex-col gap-1 py-2 sm:flex-row sm:items-start sm:gap-4';
@@ -297,10 +292,10 @@ export default function ShowProfile() {
                                         </span>
                                         <span className="capitalize">
                                             {document
-                                                ? document.type.replace(
-                                                      '_',
-                                                      ' ',
-                                                  )
+                                                ? (options.documentTypes.find(
+                                                      (t) =>
+                                                          t === document.type,
+                                                  ) ?? document.type)
                                                 : '-'}
                                         </span>
                                     </div>
