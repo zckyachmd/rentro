@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Contracts\MenuServiceInterface;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -14,6 +15,15 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'app';
+
+    /**
+     * Create a new middleware instance.
+     *
+     * @param MenuServiceInterface $menus
+     */
+    public function __construct(protected MenuServiceInterface $menus)
+    {
+    }
 
     /**
      * Determine the current asset version.
@@ -58,6 +68,9 @@ class HandleInertiaRequests extends Middleware
                     ]),
                 ];
             })(),
+            'menuGroups' => function () use ($request) {
+                return $this->menus->forUser($request->user());
+            },
             'ziggy' => fn () => [
                 ...(new Ziggy())->toArray(),
                 'location' => $request->url(),

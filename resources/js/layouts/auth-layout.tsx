@@ -3,107 +3,34 @@ import { Toaster } from '@/components/ui/sonner';
 import { Head, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useCallback, useState } from 'react';
 import Footer from './partials/footer';
+import { hasChildren, MenuGroup } from './partials/menu';
 import Navbar from './partials/navbar';
 import Sidebar from './partials/sidebar';
 
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+import Breadcrumbs, { Crumb } from '@/components/breadcrumbs';
 import { getAppName } from '@/lib/env';
 import type { LucideIcon } from 'lucide-react';
-import {
-    Archive,
-    Bed,
-    Bell,
-    BookText,
-    CalendarCheck,
-    ClipboardCheck,
-    CreditCard,
-    FileBarChart2,
-    HelpCircle,
-    Home,
-    KeySquare,
-    LifeBuoy,
-    MessageSquareWarning,
-    Package,
-    ReceiptText,
-    Settings,
-    ShieldCheck,
-    User as UserIcon,
-    Users,
-    Wallet,
-    Wrench,
-} from 'lucide-react';
+import * as Icons from 'lucide-react';
 import React from 'react';
 
 const LS_SIDEBAR = 'rentro:sidebar:collapsed';
 
-export function isRouteActive(name?: string): boolean {
-    try {
-        return !!(
-            name &&
-            typeof route === 'function' &&
-            route().current?.(name as string)
-        );
-    } catch {
-        return false;
-    }
+function getIconByName(name?: string) {
+    if (!name) return undefined;
+    const icons = Icons as unknown as Record<string, LucideIcon>;
+    return icons[name];
 }
 
-type MenuChild = {
+type ServerMenuChild = { label: string; href?: string; icon?: string };
+
+type ServerMenuItem = {
     label: string;
     href?: string;
-    name?: string;
-    icon?: LucideIcon;
+    icon?: string;
+    children?: ServerMenuChild[] | null;
 };
-type MenuItem = {
-    label: string;
-    href?: string;
-    name?: string;
-    icon?: LucideIcon;
-    children?: MenuChild[];
-};
-type MenuGroup = { id: string; label: string; items: MenuItem[] };
 
-function hasChildren(
-    item: MenuItem,
-): item is MenuItem & { children: MenuChild[] } {
-    return Array.isArray(item.children) && item.children.length > 0;
-}
-
-type Crumb = { label: string; href?: string };
-
-function Breadcrumbs({ items }: { items: Crumb[] }) {
-    if (!items || items.length === 0) return null;
-    return (
-        <Breadcrumb>
-            <BreadcrumbList>
-                {items.map((c, idx) => {
-                    const isLast = idx === items.length - 1;
-                    return (
-                        <React.Fragment key={`${c.label}-${idx}`}>
-                            <BreadcrumbItem>
-                                {isLast || !c.href ? (
-                                    <BreadcrumbPage>{c.label}</BreadcrumbPage>
-                                ) : (
-                                    <BreadcrumbLink asChild>
-                                        <a href={c.href}>{c.label}</a>
-                                    </BreadcrumbLink>
-                                )}
-                            </BreadcrumbItem>
-                            {!isLast && <BreadcrumbSeparator />}
-                        </React.Fragment>
-                    );
-                })}
-            </BreadcrumbList>
-        </Breadcrumb>
-    );
-}
+type ServerMenuGroup = { id: string; label: string; items: ServerMenuItem[] };
 
 type AuthLayoutProps = PropsWithChildren<{
     header?: ReactNode;
@@ -112,7 +39,12 @@ type AuthLayoutProps = PropsWithChildren<{
     breadcrumbs?: Crumb[];
 }>;
 
-type InertiaProps = { auth?: { user?: { name: string; email: string } } };
+interface AppPageProps {
+    [key: string]: unknown;
+    auth?: { user?: { name: string; email: string } };
+    menuGroups?: ServerMenuGroup[];
+}
+
 export default function AuthLayout({
     header,
     children,
@@ -122,7 +54,8 @@ export default function AuthLayout({
 }: AuthLayoutProps) {
     const brandLabel = getAppName();
 
-    const { auth } = usePage().props as InertiaProps;
+    const { auth, menuGroups: serverMenuGroups } =
+        usePage<AppPageProps>().props;
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
 
     const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -142,144 +75,30 @@ export default function AuthLayout({
     }, []);
 
     const [q, setQ] = useState('');
+
     const onSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: arahkan ke halaman pencarian ketika sudah ada rutenya
         // eslint-disable-next-line no-console
         console.log('search:', q);
     };
 
-    const menuGroups: MenuGroup[] = React.useMemo(
-        () => [
-            {
-                id: 'general',
-                label: 'Umum',
-                items: [
-                    {
-                        label: 'Dashboard',
-                        href: route('dashboard'),
-                        name: 'dashboard',
-                        icon: Home,
-                    },
-                    { label: 'Kamar', href: '#', icon: Bed },
-                    { label: 'Penyewa', href: '#', icon: UserIcon },
-                    { label: 'Booking', href: '#', icon: CalendarCheck },
-                ],
-            },
-            {
-                id: 'keuangan',
-                label: 'Keuangan',
-                items: [
-                    {
-                        label: 'Keuangan',
-                        icon: Wallet,
-                        children: [
-                            { label: 'Tagihan', href: '#', icon: ReceiptText },
-                            {
-                                label: 'Pembayaran',
-                                href: '#',
-                                icon: CreditCard,
-                            },
-                            {
-                                label: 'Laporan',
-                                href: '#',
-                                icon: FileBarChart2,
-                            },
-                            {
-                                label: 'Rekonsiliasi',
-                                href: '#',
-                                icon: FileBarChart2,
-                            },
-                            { label: 'Aset', href: '#', icon: Package },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 'operasional',
-                label: 'Operasional',
-                items: [
-                    {
-                        label: 'Tugas & Maintenance',
-                        icon: Wrench,
-                        children: [
-                            { label: 'Tugas', href: '#', icon: ClipboardCheck },
-                            { label: 'Maintenance', href: '#', icon: Wrench },
-                            {
-                                label: 'Task Template',
-                                href: '#',
-                                icon: ClipboardCheck,
-                            },
-                            { label: 'SLA', href: '#', icon: Wrench },
-                        ],
-                    },
-                    {
-                        label: 'Inventaris',
-                        icon: Package,
-                        children: [
-                            { label: 'Barang', href: '#', icon: Package },
-                            { label: 'Riwayat', href: '#', icon: Archive },
-                            { label: 'Mutasi', href: '#', icon: Package },
-                            { label: 'Disposal', href: '#', icon: Archive },
-                        ],
-                    },
-                    { label: 'Keluhan', href: '#', icon: MessageSquareWarning },
-                    { label: 'Paket', href: '#', icon: Package },
-                ],
-            },
-            {
-                id: 'akun',
-                label: 'Akun',
-                items: [
-                    {
-                        label: 'Profil',
-                        href: route('profile.show'),
-                        name: 'profile.show',
-                        icon: UserIcon,
-                    },
-                    {
-                        label: 'Pengaturan',
-                        icon: Settings,
-                        children: [
-                            { label: 'Preferensi', href: '#', icon: Settings },
-                            { label: 'Notifikasi', href: '#', icon: Bell },
-                            { label: 'Integrasi', href: '#', icon: Settings },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 'admin',
-                label: 'Administrasi',
-                items: [
-                    {
-                        label: 'Akses & Peran',
-                        icon: ShieldCheck,
-                        children: [
-                            { label: 'Pengguna', href: '#', icon: Users },
-                            { label: 'Roles', href: '#', icon: KeySquare },
-                            {
-                                label: 'Audit Log',
-                                href: '#',
-                                icon: ShieldCheck,
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 'bantuan',
-                label: 'Bantuan',
-                items: [
-                    { label: 'Dokumentasi', href: '#', icon: BookText },
-                    { label: 'FAQ', href: '#', icon: HelpCircle },
-                    { label: 'Support', href: '#', icon: LifeBuoy },
-                    { label: 'Changelog', href: '#', icon: BookText },
-                ],
-            },
-        ],
-        [],
-    );
+    const menuGroups: MenuGroup[] = React.useMemo(() => {
+        const groups = serverMenuGroups ?? [];
+        return groups.map((g) => ({
+            id: g.id,
+            label: g.label,
+            items: (g.items ?? []).map((m) => ({
+                label: m.label,
+                href: m.href,
+                icon: getIconByName(m.icon),
+                children: (m.children ?? undefined)?.map((c) => ({
+                    label: c.label,
+                    href: c.href,
+                    icon: getIconByName(c.icon),
+                })),
+            })),
+        }));
+    }, [serverMenuGroups]);
 
     const effectiveBreadcrumbs: Crumb[] = React.useMemo(() => {
         if (breadcrumbs && breadcrumbs.length) return breadcrumbs;
@@ -293,14 +112,11 @@ export default function AuthLayout({
                 for (const parent of group.items || []) {
                     if (!hasChildren(parent)) continue;
                     for (const child of parent.children) {
-                        const byName = child.name
-                            ? isRouteActive(child.name)
-                            : false;
                         const byHref = child.href
                             ? new URL(child.href, window.location.origin)
                                   .pathname === currentPath
                             : false;
-                        if (byName || byHref) {
+                        if (byHref) {
                             return `${group.id}:${parent.label}`;
                         }
                     }

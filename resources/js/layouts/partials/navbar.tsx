@@ -1,10 +1,4 @@
 import { ModeToggle } from '@/components/mode-toggle';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -24,7 +18,6 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { Link } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
 import {
     Bell,
     LogOut,
@@ -33,22 +26,9 @@ import {
     Search,
     User,
 } from 'lucide-react';
+import { MenuGroups } from './menu';
+import type { MenuGroup } from './menu';
 import * as React from 'react';
-
-type MenuChild = { label: string; href?: string };
-type MenuItem = {
-    label: string;
-    href?: string;
-    icon?: LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;
-    children?: MenuChild[];
-};
-type MenuGroup = { id: string; label: string; items: MenuItem[] };
-
-function hasChildren(
-    item: MenuItem,
-): item is MenuItem & { children: MenuChild[] } {
-    return Array.isArray(item.children) && item.children.length > 0;
-}
 
 type NavbarProps = {
     collapsed: boolean;
@@ -154,105 +134,13 @@ export default function Navbar({
                                 </form>
 
                                 {/* Mobile nav grouped with accordions */}
-                                <nav className="mt-2 space-y-3">
-                                    {menuGroups.map((group) => (
-                                        <div key={group.id}>
-                                            <p className="px-1 pb-1 text-[10px] font-medium uppercase text-muted-foreground">
-                                                {group.label}
-                                            </p>
-
-                                            {/* Items without children */}
-                                            <div className="space-y-1">
-                                                {group.items
-                                                    .filter(
-                                                        (i) =>
-                                                            !i.children?.length,
-                                                    )
-                                                    .map((item) => (
-                                                        <Link
-                                                            key={item.label}
-                                                            href={
-                                                                item.href || '#'
-                                                            }
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleNavigate();
-                                                            }}
-                                                            className="block rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-                                                        >
-                                                            {item.label}
-                                                        </Link>
-                                                    ))}
-                                            </div>
-
-                                            {/* Items with children */}
-                                            {group.items.some(hasChildren) && (
-                                                <Accordion
-                                                    type="single"
-                                                    collapsible
-                                                    value={mobileSection}
-                                                    onValueChange={
-                                                        handleMobileSectionChange
-                                                    }
-                                                    className="mt-2"
-                                                >
-                                                    {group.items
-                                                        .filter(hasChildren)
-                                                        .map((parent) => (
-                                                            <AccordionItem
-                                                                key={
-                                                                    parent.label
-                                                                }
-                                                                value={`${group.id}:${parent.label}`}
-                                                                className="border-b-0"
-                                                            >
-                                                                <AccordionTrigger className="rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
-                                                                    <span className="flex items-center gap-2">
-                                                                        {
-                                                                            parent.label
-                                                                        }
-                                                                    </span>
-                                                                </AccordionTrigger>
-                                                                <AccordionContent>
-                                                                    <div className="mt-1 space-y-1 pl-6 pr-2">
-                                                                        {parent.children.map(
-                                                                            (
-                                                                                child,
-                                                                            ) => (
-                                                                                <Link
-                                                                                    key={
-                                                                                        child.label
-                                                                                    }
-                                                                                    href={
-                                                                                        child.href ||
-                                                                                        '#'
-                                                                                    }
-                                                                                    onClick={(
-                                                                                        e,
-                                                                                    ) => {
-                                                                                        e.stopPropagation();
-                                                                                        setMobileSection(
-                                                                                            `${group.id}:${parent.label}`,
-                                                                                        );
-                                                                                        handleNavigate();
-                                                                                    }}
-                                                                                    className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                                                                >
-                                                                                    {
-                                                                                        child.label
-                                                                                    }
-                                                                                </Link>
-                                                                            ),
-                                                                        )}
-                                                                    </div>
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        ))}
-                                                </Accordion>
-                                            )}
-                                        </div>
-                                    ))}
-                                </nav>
+                                <MenuGroups
+                                    variant="mobile"
+                                    menuGroups={menuGroups}
+                                    sectionValue={mobileSection}
+                                    onSectionChange={handleMobileSectionChange}
+                                    onNavigate={handleNavigate}
+                                />
                             </div>
                         </SheetContent>
                     </Sheet>
