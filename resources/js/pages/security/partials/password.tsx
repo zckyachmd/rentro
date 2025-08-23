@@ -14,9 +14,15 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function PasswordTab() {
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [show, setShow] = useState<{
+        current: boolean;
+        new: boolean;
+        confirm: boolean;
+    }>({
+        current: false,
+        new: false,
+        confirm: false,
+    });
 
     const passwordForm = useForm<{
         current_password: string;
@@ -59,11 +65,7 @@ export default function PasswordTab() {
                             <div className="relative">
                                 <Input
                                     id="current_password"
-                                    type={
-                                        showCurrentPassword
-                                            ? 'text'
-                                            : 'password'
-                                    }
+                                    type={show.current ? 'text' : 'password'}
                                     placeholder="Masukan password saat ini"
                                     value={passwordForm.data.current_password}
                                     className="pr-10"
@@ -79,17 +81,20 @@ export default function PasswordTab() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() =>
-                                        setShowCurrentPassword((s) => !s)
+                                        setShow((s) => ({
+                                            ...s,
+                                            current: !s.current,
+                                        }))
                                     }
                                     className="absolute right-0 top-0 h-full border-0 px-3 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
                                     tabIndex={-1}
                                     aria-label={
-                                        showCurrentPassword
+                                        show.current
                                             ? 'Hide password'
                                             : 'Show password'
                                     }
                                 >
-                                    {showCurrentPassword ? (
+                                    {show.current ? (
                                         <EyeOff className="h-4 w-4" />
                                     ) : (
                                         <Eye className="h-4 w-4" />
@@ -108,7 +113,7 @@ export default function PasswordTab() {
                             <div className="relative">
                                 <Input
                                     id="password"
-                                    type={showNewPassword ? 'text' : 'password'}
+                                    type={show.new ? 'text' : 'password'}
                                     placeholder="Masukan password baru"
                                     value={passwordForm.data.password}
                                     className="pr-10"
@@ -124,17 +129,17 @@ export default function PasswordTab() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() =>
-                                        setShowNewPassword((s) => !s)
+                                        setShow((s) => ({ ...s, new: !s.new }))
                                     }
                                     className="absolute right-0 top-0 h-full border-0 px-3 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
                                     tabIndex={-1}
                                     aria-label={
-                                        showNewPassword
+                                        show.new
                                             ? 'Hide password'
                                             : 'Show password'
                                     }
                                 >
-                                    {showNewPassword ? (
+                                    {show.new ? (
                                         <EyeOff className="h-4 w-4" />
                                     ) : (
                                         <Eye className="h-4 w-4" />
@@ -155,11 +160,7 @@ export default function PasswordTab() {
                             <div className="relative">
                                 <Input
                                     id="password_confirmation"
-                                    type={
-                                        showConfirmPassword
-                                            ? 'text'
-                                            : 'password'
-                                    }
+                                    type={show.confirm ? 'text' : 'password'}
                                     placeholder="Konfirmasi password baru"
                                     value={
                                         passwordForm.data.password_confirmation
@@ -177,17 +178,20 @@ export default function PasswordTab() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() =>
-                                        setShowConfirmPassword((s) => !s)
+                                        setShow((s) => ({
+                                            ...s,
+                                            confirm: !s.confirm,
+                                        }))
                                     }
                                     className="absolute right-0 top-0 h-full border-0 px-3 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
                                     tabIndex={-1}
                                     aria-label={
-                                        showConfirmPassword
+                                        show.confirm
                                             ? 'Hide password'
                                             : 'Show password'
                                     }
                                 >
-                                    {showConfirmPassword ? (
+                                    {show.confirm ? (
                                         <EyeOff className="h-4 w-4" />
                                     ) : (
                                         <Eye className="h-4 w-4" />

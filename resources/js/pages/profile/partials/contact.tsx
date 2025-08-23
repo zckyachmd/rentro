@@ -47,6 +47,20 @@ type Props = {
     contacts: ContactDTO[];
 };
 
+type ContactFormState = null | {
+    mode: 'create' | 'edit';
+    editingId: number | null;
+    values: {
+        name: string;
+        phone: string;
+        relationship: string;
+        email: string;
+        address_line: string;
+    };
+    showErrors: boolean;
+    processing: boolean;
+};
+
 const MAX_CONTACTS = 3;
 
 export default function ContactSection({ contacts }: Props) {
@@ -57,15 +71,12 @@ export default function ContactSection({ contacts }: Props) {
     const total = contacts.length;
     const canAdd = total < MAX_CONTACTS;
 
-    const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-    const [deleteTarget, setDeleteTarget] = React.useState<{
-        id: number;
-        name: string;
-    } | null>(null);
+    const [deleteTarget, setDeleteTarget] = React.useState<ContactDTO | null>(
+        null,
+    );
 
     const askDelete = React.useCallback((c: ContactDTO) => {
-        setDeleteTarget({ id: c.id, name: c.name });
-        setDeleteDialogOpen(true);
+        setDeleteTarget(c);
     }, []);
 
     const confirmDelete = React.useCallback(() => {
@@ -74,7 +85,6 @@ export default function ContactSection({ contacts }: Props) {
             onStart: () => {},
             onSuccess: () => {
                 toast.success('Kontak darurat dihapus');
-                setDeleteDialogOpen(false);
                 setDeleteTarget(null);
             },
             onError: () => toast.error('Gagal menghapus kontak'),
@@ -84,30 +94,10 @@ export default function ContactSection({ contacts }: Props) {
         });
     }, [deleteTarget]);
 
-    const [contactDialogOpen, setContactDialogOpen] = React.useState(false);
-    const [contactMode, setContactMode] = React.useState<'create' | 'edit'>(
-        'create',
-    );
-
-    const [editingId, setEditingId] = React.useState<number | null>(null);
-    const [contactForm, setContactForm] = React.useState({
-        name: '',
-        phone: '',
-        relationship: '',
-        email: '',
-        address_line: '',
-    });
+    const [formState, setFormState] = React.useState<ContactFormState>(null);
 
     const resetContactForm = () => {
-        setEditingId(null);
-        setContactMode('create');
-        setContactForm({
-            name: '',
-            phone: '',
-            relationship: '',
-            email: '',
-            address_line: '',
-        });
+        setFormState(null);
     };
 
     const openAddContact = React.useCallback(() => {
@@ -115,61 +105,67 @@ export default function ContactSection({ contacts }: Props) {
             toast.error(`Maksimal ${MAX_CONTACTS} kontak darurat.`);
             return;
         }
-        resetContactForm();
-        setContactMode('create');
-        setContactDialogOpen(true);
+        setFormState({
+            mode: 'create',
+            editingId: null,
+            values: {
+                name: '',
+                phone: '',
+                relationship: '',
+                email: '',
+                address_line: '',
+            },
+            showErrors: false,
+            processing: false,
+        });
     }, [canAdd]);
 
     const openEditContact = React.useCallback((c: ContactDTO) => {
-        setEditingId(c.id);
-        setContactMode('edit');
-        setContactForm({
-            name: c.name || '',
-            phone: c.phone || '',
-            relationship: c.relationship || '',
-            email: c.email || '',
-            address_line: c.address_line || '',
+        setFormState({
+            mode: 'edit',
+            editingId: c.id,
+            values: {
+                name: c.name || '',
+                phone: c.phone || '',
+                relationship: c.relationship || '',
+                email: c.email || '',
+                address_line: c.address_line || '',
+            },
+            showErrors: false,
+            processing: false,
         });
-        setContactDialogOpen(true);
     }, []);
-
-    const [submitting, setSubmitting] = React.useState(false);
 
     const submitContact = (e: React.FormEvent) => {
         e.preventDefault();
-
+        if (!formState) return;
         const fd = new FormData();
-        if (contactMode === 'edit' && editingId) {
+        if (formState.mode === 'edit' && formState.editingId) {
             fd.append('_method', 'put');
         }
-        fd.append('name', contactForm.name);
-        fd.append('phone', contactForm.phone);
-        fd.append('relationship', contactForm.relationship ?? '');
-        fd.append('email', contactForm.email ?? '');
-        fd.append('address_line', contactForm.address_line ?? '');
+        fd.append('name', formState.values.name);
+        fd.append('phone', formState.values.phone);
+        fd.append('relationship', formState.values.relationship ?? '');
+        fd.append('email', formState.values.email ?? '');
+        fd.append('address_line', formState.values.address_line ?? '');
 
-        const common = {
-            forceFormData: true,
-            onStart: () => setSubmitting(true),
-            onFinish: () => setSubmitting(false),
-            preserveScroll: true,
-            replace: true,
-        } as const;
-
-        const isEdit = contactMode === 'edit' && !!editingId;
+        const isEdit = formState.mode === 'edit' && !!formState.editingId;
         const actionRoute = isEdit
-            ? route('profile.contacts.update', editingId)
+            ? route('profile.contacts.update', formState.editingId as number)
             : route('profile.contacts.store');
-
         const successMsg = isEdit
             ? 'Kontak darurat diperbarui'
             : 'Kontak darurat ditambahkan';
-
         router.post(actionRoute, fd, {
-            ...common,
+            forceFormData: true,
+            onStart: () =>
+                setFormState((s) => (s ? { ...s, processing: true } : s)),
+            onFinish: () =>
+                setFormState((s) => (s ? { ...s, processing: false } : s)),
+            preserveScroll: true,
+            replace: true,
             onSuccess: () => {
                 toast.success(successMsg);
-                setContactDialogOpen(false);
                 resetContactForm();
             },
             onError: (errs: Record<string, string>) => {
@@ -180,6 +176,7 @@ export default function ContactSection({ contacts }: Props) {
                             : 'Gagal menambahkan kontak',
                     );
                 }
+                setFormState((s) => (s ? { ...s, showErrors: true } : s));
             },
         });
     };
@@ -196,8 +193,10 @@ export default function ContactSection({ contacts }: Props) {
                         Maksimal {MAX_CONTACTS} kontak darurat.
                     </span>
                     <Dialog
-                        open={contactDialogOpen}
-                        onOpenChange={setContactDialogOpen}
+                        open={formState !== null}
+                        onOpenChange={(open) => {
+                            if (!open) resetContactForm();
+                        }}
                     >
                         <DialogTrigger asChild>
                             <Button
@@ -209,186 +208,260 @@ export default function ContactSection({ contacts }: Props) {
                                 Tambah Kontak
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="animate-none sm:max-w-2xl">
-                            <DialogHeader>
-                                <DialogTitle>
-                                    {contactMode === 'create'
-                                        ? 'Tambah Kontak Darurat'
-                                        : 'Edit Kontak Darurat'}
-                                </DialogTitle>
-                                <DialogDescription>
-                                    Isi data kontak darurat dengan benar.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <form
-                                onSubmit={submitContact}
-                                className="space-y-3"
-                            >
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="c-name">
-                                            Nama{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <Input
-                                            id="c-name"
-                                            placeholder="Nama lengkap"
-                                            value={contactForm.name}
-                                            onChange={(e) =>
-                                                setContactForm((v) => ({
-                                                    ...v,
-                                                    name: e.target.value,
-                                                }))
-                                            }
-                                            autoComplete="name"
-                                            aria-invalid={!!errors?.name}
-                                        />
-                                        {errors?.name && (
-                                            <p className="mt-1 text-xs text-destructive">
-                                                {errors.name}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="c-relationship">
-                                            Hubungan{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <Select
-                                            value={contactForm.relationship}
-                                            onValueChange={(v) =>
-                                                setContactForm((s) => ({
-                                                    ...s,
-                                                    relationship: v,
-                                                }))
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="c-relationship"
+                        {formState && (
+                            <DialogContent className="animate-none sm:max-w-2xl">
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {formState.mode === 'create'
+                                            ? 'Tambah Kontak Darurat'
+                                            : 'Edit Kontak Darurat'}
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Isi data kontak darurat dengan benar.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <form
+                                    onSubmit={submitContact}
+                                    className="space-y-3"
+                                >
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="c-name">
+                                                Nama{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Input
+                                                id="c-name"
+                                                placeholder="Nama lengkap"
+                                                value={formState.values.name}
+                                                onChange={(e) =>
+                                                    setFormState(
+                                                        (s) =>
+                                                            s && {
+                                                                ...s,
+                                                                values: {
+                                                                    ...s.values,
+                                                                    name: e
+                                                                        .target
+                                                                        .value,
+                                                                },
+                                                            },
+                                                    )
+                                                }
+                                                autoComplete="name"
                                                 aria-invalid={
-                                                    !!errors?.relationship
+                                                    !!(
+                                                        formState.showErrors &&
+                                                        errors?.name
+                                                    )
+                                                }
+                                            />
+                                            {formState.showErrors &&
+                                                errors?.name && (
+                                                    <p className="mt-1 text-xs text-destructive">
+                                                        {errors.name}
+                                                    </p>
+                                                )}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="c-relationship">
+                                                Hubungan{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    formState.values
+                                                        .relationship
+                                                }
+                                                onValueChange={(v) =>
+                                                    setFormState(
+                                                        (s) =>
+                                                            s && {
+                                                                ...s,
+                                                                values: {
+                                                                    ...s.values,
+                                                                    relationship:
+                                                                        v,
+                                                                },
+                                                            },
+                                                    )
                                                 }
                                             >
-                                                <SelectValue placeholder="Pilih hubungan" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {options.emergencyRelationshipLabel.map(
-                                                    (opt) => (
-                                                        <SelectItem
-                                                            key={opt}
-                                                            value={opt}
-                                                        >
-                                                            {opt}
-                                                        </SelectItem>
-                                                    ),
+                                                <SelectTrigger
+                                                    id="c-relationship"
+                                                    aria-invalid={
+                                                        !!(
+                                                            formState.showErrors &&
+                                                            errors?.relationship
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectValue placeholder="Pilih hubungan" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {options.emergencyRelationshipLabel.map(
+                                                        (opt) => (
+                                                            <SelectItem
+                                                                key={opt}
+                                                                value={opt}
+                                                            >
+                                                                {opt}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            {formState.showErrors &&
+                                                errors?.relationship && (
+                                                    <p className="mt-1 text-xs text-destructive">
+                                                        {errors.relationship}
+                                                    </p>
                                                 )}
-                                            </SelectContent>
-                                        </Select>
-                                        {errors?.relationship && (
-                                            <p className="mt-1 text-xs text-destructive">
-                                                {errors.relationship}
-                                            </p>
-                                        )}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="c-phone">
+                                                No. Telepon{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Input
+                                                id="c-phone"
+                                                placeholder="08xxxxxxxxxx"
+                                                value={formState.values.phone}
+                                                onChange={(e) =>
+                                                    setFormState(
+                                                        (s) =>
+                                                            s && {
+                                                                ...s,
+                                                                values: {
+                                                                    ...s.values,
+                                                                    phone: e
+                                                                        .target
+                                                                        .value,
+                                                                },
+                                                            },
+                                                    )
+                                                }
+                                                autoComplete="tel"
+                                                aria-invalid={
+                                                    !!(
+                                                        formState.showErrors &&
+                                                        errors?.phone
+                                                    )
+                                                }
+                                            />
+                                            {formState.showErrors &&
+                                                errors?.phone && (
+                                                    <p className="mt-1 text-xs text-destructive">
+                                                        {errors.phone}
+                                                    </p>
+                                                )}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="c-email">
+                                                Email
+                                            </Label>
+                                            <Input
+                                                id="c-email"
+                                                type="email"
+                                                placeholder="email@contoh.com"
+                                                value={formState.values.email}
+                                                onChange={(e) =>
+                                                    setFormState(
+                                                        (s) =>
+                                                            s && {
+                                                                ...s,
+                                                                values: {
+                                                                    ...s.values,
+                                                                    email: e
+                                                                        .target
+                                                                        .value,
+                                                                },
+                                                            },
+                                                    )
+                                                }
+                                                autoComplete="email"
+                                                aria-invalid={
+                                                    !!(
+                                                        formState.showErrors &&
+                                                        errors?.email
+                                                    )
+                                                }
+                                            />
+                                            {formState.showErrors &&
+                                                errors?.email && (
+                                                    <p className="mt-1 text-xs text-destructive">
+                                                        {errors.email}
+                                                    </p>
+                                                )}
+                                        </div>
+                                        <div className="space-y-1.5 sm:col-span-2">
+                                            <Label htmlFor="c-address">
+                                                Alamat
+                                            </Label>
+                                            <Textarea
+                                                id="c-address"
+                                                placeholder="Nama jalan, RT/RW, kelurahan/kecamatan, kota/kabupaten"
+                                                value={
+                                                    formState.values
+                                                        .address_line
+                                                }
+                                                onChange={(e) =>
+                                                    setFormState(
+                                                        (s) =>
+                                                            s && {
+                                                                ...s,
+                                                                values: {
+                                                                    ...s.values,
+                                                                    address_line:
+                                                                        e.target
+                                                                            .value,
+                                                                },
+                                                            },
+                                                    )
+                                                }
+                                                aria-invalid={
+                                                    !!(
+                                                        formState.showErrors &&
+                                                        errors?.address_line
+                                                    )
+                                                }
+                                            />
+                                            {formState.showErrors &&
+                                                errors?.address_line && (
+                                                    <p className="mt-1 text-xs text-destructive">
+                                                        {errors.address_line}
+                                                    </p>
+                                                )}
+                                        </div>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="c-phone">
-                                            No. Telepon{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <Input
-                                            id="c-phone"
-                                            placeholder="08xxxxxxxxxx"
-                                            value={contactForm.phone}
-                                            onChange={(e) =>
-                                                setContactForm((v) => ({
-                                                    ...v,
-                                                    phone: e.target.value,
-                                                }))
-                                            }
-                                            autoComplete="tel"
-                                            aria-invalid={!!errors?.phone}
-                                        />
-                                        {errors?.phone && (
-                                            <p className="mt-1 text-xs text-destructive">
-                                                {errors.phone}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="c-email">Email</Label>
-                                        <Input
-                                            id="c-email"
-                                            type="email"
-                                            placeholder="email@contoh.com"
-                                            value={contactForm.email}
-                                            onChange={(e) =>
-                                                setContactForm((v) => ({
-                                                    ...v,
-                                                    email: e.target.value,
-                                                }))
-                                            }
-                                            autoComplete="email"
-                                            aria-invalid={!!errors?.email}
-                                        />
-                                        {errors?.email && (
-                                            <p className="mt-1 text-xs text-destructive">
-                                                {errors.email}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-1.5 sm:col-span-2">
-                                        <Label htmlFor="c-address">
-                                            Alamat
-                                        </Label>
-                                        <Textarea
-                                            id="c-address"
-                                            placeholder="Nama jalan, RT/RW, kelurahan/kecamatan, kota/kabupaten"
-                                            value={contactForm.address_line}
-                                            onChange={(e) =>
-                                                setContactForm((v) => ({
-                                                    ...v,
-                                                    address_line:
-                                                        e.target.value,
-                                                }))
-                                            }
-                                            aria-invalid={
-                                                !!errors?.address_line
-                                            }
-                                        />
-                                        {errors?.address_line && (
-                                            <p className="mt-1 text-xs text-destructive">
-                                                {errors.address_line}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setContactDialogOpen(false);
-                                            resetContactForm();
-                                        }}
-                                    >
-                                        Batal
-                                    </Button>
-                                    <Button type="submit" disabled={submitting}>
-                                        {submitting
-                                            ? 'Menyimpan...'
-                                            : contactMode === 'create'
-                                              ? 'Simpan'
-                                              : 'Update'}
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
+                                    <DialogFooter>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={resetContactForm}
+                                        >
+                                            Batal
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={formState.processing}
+                                        >
+                                            {formState.processing
+                                                ? 'Menyimpan...'
+                                                : formState.mode === 'create'
+                                                  ? 'Simpan'
+                                                  : 'Update'}
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        )}
                     </Dialog>
                 </div>
             </div>
@@ -492,7 +565,12 @@ export default function ContactSection({ contacts }: Props) {
                 </>
             )}
             {/* Dialog konfirmasi hapus */}
-            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <Dialog
+                open={!!deleteTarget}
+                onOpenChange={(open) => {
+                    if (!open) setDeleteTarget(null);
+                }}
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Hapus Kontak Darurat</DialogTitle>
@@ -511,7 +589,7 @@ export default function ContactSection({ contacts }: Props) {
                     <DialogFooter>
                         <Button
                             variant="outline"
-                            onClick={() => setDeleteDialogOpen(false)}
+                            onClick={() => setDeleteTarget(null)}
                         >
                             Batal
                         </Button>

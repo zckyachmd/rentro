@@ -48,6 +48,7 @@ type PageProps = {
 
 const TAB_KEYS = ['password', '2fa', 'sessions'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
+
 function getTabFromUrl(): TabKey {
     const params = new URLSearchParams(window.location.search);
     const t = params.get('t');
@@ -93,16 +94,15 @@ export default function SecurityIndex() {
     };
 
     useEffect(() => {
-        setTabInUrl(tab);
-    }, [tab]);
+        const syncFromUrl = () => setTab(getTabFromUrl());
+        syncFromUrl();
+        window.addEventListener('popstate', syncFromUrl);
+        return () => window.removeEventListener('popstate', syncFromUrl);
+    }, []);
 
     useEffect(() => {
-        const onPopState = () => {
-            setTab(getTabFromUrl());
-        };
-        window.addEventListener('popstate', onPopState);
-        return () => window.removeEventListener('popstate', onPopState);
-    }, []);
+        setTabInUrl(tab);
+    }, [tab]);
 
     return (
         <AuthLayout

@@ -1,6 +1,32 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+    useSyncExternalStore,
+} from 'react';
+
+const DEFAULT_STORAGE_KEY = 'vite-ui-theme' as const;
 
 export type Theme = 'dark' | 'light' | 'system';
+
+function useSystemPrefersDark(): boolean {
+    const subscribe = useCallback((notify: () => void) => {
+        if (typeof window === 'undefined' || !window.matchMedia)
+            return () => {};
+        const mq = window.matchMedia(DARK_MQ);
+        const handler = () => notify();
+        mq.addEventListener?.('change', handler);
+        return () => mq.removeEventListener?.('change', handler);
+    }, []);
+
+    const getSnapshot = useCallback(() => {
+        if (typeof window === 'undefined' || !window.matchMedia) return false;
+        return window.matchMedia(DARK_MQ).matches;
+    }, []);
+
+    return useSyncExternalStore(subscribe, getSnapshot, () => false);
+}
 
 const DARK_MQ = '(prefers-color-scheme: dark)';
 
@@ -12,12 +38,19 @@ function applyThemeToDocument(theme: Theme, prefersDark: boolean) {
     root.style.colorScheme = isDark ? 'dark' : 'light';
 }
 
+export type UseAppearanceReturn = {
+    theme: Theme;
+    setTheme: (t: Theme) => void;
+    resolvedTheme: 'light' | 'dark';
+    prefersDark: boolean;
+};
+
 export function useAppearance(opts?: {
     defaultTheme?: Theme;
     storageKey?: string;
-}) {
+}): UseAppearanceReturn {
     const defaultTheme = opts?.defaultTheme ?? 'system';
-    const storageKey = opts?.storageKey ?? 'vite-ui-theme';
+    const storageKey = opts?.storageKey ?? DEFAULT_STORAGE_KEY;
 
     const [theme, setThemeState] = useState<Theme>(() => {
         if (typeof window === 'undefined') return defaultTheme;
@@ -28,41 +61,20 @@ export function useAppearance(opts?: {
         }
     });
 
-    const [prefersDark, setPrefersDark] = useState<boolean>(() => {
-        if (typeof window === 'undefined' || !window.matchMedia) return false;
-        try {
-            return window.matchMedia(DARK_MQ).matches;
-        } catch {
-            return false;
-        }
-    });
+    const prefersDark = useSystemPrefersDark();
 
-    // Persist theme
     useEffect(() => {
         try {
             localStorage.setItem(storageKey, theme);
         } catch {
             // ignore
         }
-    }, [theme, storageKey]);
-
-    // Watch system appearance when theme = system
-    useEffect(() => {
-        if (typeof window === 'undefined' || !window.matchMedia) return;
-        if (theme !== 'system') return;
-        const mq = window.matchMedia(DARK_MQ);
-        const handler = () => setPrefersDark(mq.matches);
-        handler();
-        mq.addEventListener?.('change', handler);
-        return () => mq.removeEventListener?.('change', handler);
-    }, [theme]);
-
-    // Apply to <html>
-    useEffect(() => {
         applyThemeToDocument(theme, prefersDark);
-    }, [prefersDark, theme]);
+    }, [theme, storageKey, prefersDark]);
 
-    const setTheme = useCallback((t: Theme) => setThemeState(t), []);
+    const setTheme = useCallback((t: Theme) => {
+        setThemeState((prev) => (prev === t ? prev : t));
+    }, []);
 
     const resolvedTheme = useMemo<'light' | 'dark'>(
         () =>

@@ -15,8 +15,10 @@ export default function ResetPassword({
     email: string;
     token: string;
 }) {
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [show, setShow] = useState<{ password: boolean; confirm: boolean }>({
+        password: false,
+        confirm: false,
+    });
 
     return (
         <>
@@ -61,7 +63,7 @@ export default function ResetPassword({
                                             id="password"
                                             name="password"
                                             type={
-                                                showPassword
+                                                show.password
                                                     ? 'text'
                                                     : 'password'
                                             }
@@ -79,10 +81,13 @@ export default function ResetPassword({
                                             className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
                                             tabIndex={-1}
                                             onClick={() =>
-                                                setShowPassword(!showPassword)
+                                                setShow((s) => ({
+                                                    ...s,
+                                                    password: !s.password,
+                                                }))
                                             }
                                         >
-                                            {showPassword ? (
+                                            {show.password ? (
                                                 <EyeOff />
                                             ) : (
                                                 <Eye />
@@ -108,7 +113,7 @@ export default function ResetPassword({
                                             id="password_confirmation"
                                             name="password_confirmation"
                                             type={
-                                                showConfirmPassword
+                                                show.confirm
                                                     ? 'text'
                                                     : 'password'
                                             }
@@ -126,12 +131,13 @@ export default function ResetPassword({
                                             className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
                                             tabIndex={-1}
                                             onClick={() =>
-                                                setShowConfirmPassword(
-                                                    !showConfirmPassword,
-                                                )
+                                                setShow((s) => ({
+                                                    ...s,
+                                                    confirm: !s.confirm,
+                                                }))
                                             }
                                         >
-                                            {showConfirmPassword ? (
+                                            {show.confirm ? (
                                                 <EyeOff />
                                             ) : (
                                                 <Eye />

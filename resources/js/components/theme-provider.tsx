@@ -30,7 +30,7 @@ export function ThemeProvider({
 
     const value = useMemo<ThemeProviderState>(
         () => ({ theme, setTheme, resolvedTheme }),
-        [theme, resolvedTheme, setTheme],
+        [theme, setTheme, resolvedTheme],
     );
 
     return (

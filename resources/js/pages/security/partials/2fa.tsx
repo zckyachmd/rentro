@@ -26,36 +26,48 @@ type Summary = {
 type TwoFactorTabProps = { summary: Summary };
 
 export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
-    const enable2faForm = useForm({});
-    const disable2faForm = useForm({});
-    const confirm2faForm = useForm<{ code: string }>({ code: '' });
+    const forms = {
+        enable: useForm({}),
+        disable: useForm({}),
+        confirm: useForm<{ code: string }>({ code: '' }),
+    };
 
-    const [enrolling, setEnrolling] = useState(false);
-    const [qrSvg, setQrSvg] = useState<string | null>(null);
-    const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
-    const [showRecovery, setShowRecovery] = useState(false);
-    const [manualSecret, setManualSecret] = useState<string | null>(null);
+    const [state, setState] = useState<{
+        enrolling: boolean;
+        qrSvg: string | null;
+        recoveryCodes: string[] | null;
+        showRecovery: boolean;
+        manualSecret: string | null;
+    }>({
+        enrolling: false,
+        qrSvg: null,
+        recoveryCodes: null,
+        showRecovery: false,
+        manualSecret: null,
+    });
 
     const { open, setOpen, openConfirm, handleConfirmed } =
         useConfirmPasswordModal();
     const confirmGuard = openConfirm;
 
     const onStart2FA = () => {
-        setEnrolling(true);
-        confirm2faForm.reset('code');
-        enable2faForm.post(route('security.2fa.start'), {
+        setState((s) => ({ ...s, enrolling: true }));
+        forms.confirm.reset('code');
+        forms.enable.post(route('security.2fa.start'), {
             preserveScroll: true,
             onSuccess: async () => {
                 try {
                     const res = await fetch(route('security.2fa.qr'));
                     if (res.ok) {
                         const data = await res.json();
-                        setQrSvg(data?.svg ?? null);
-                        setManualSecret(
-                            typeof data?.secret === 'string'
-                                ? data.secret
-                                : null,
-                        );
+                        setState((s) => ({ ...s, qrSvg: data?.svg ?? null }));
+                        setState((s) => ({
+                            ...s,
+                            manualSecret:
+                                typeof data?.secret === 'string'
+                                    ? data.secret
+                                    : null,
+                        }));
                     }
                 } catch {
                     // ignore fetch error (QR code fetch failure)
@@ -65,7 +77,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                 );
             },
             onError: () => {
-                setEnrolling(false);
+                setState((s) => ({ ...s, enrolling: false }));
                 toast.error('Gagal memulai 2FA.');
             },
         });
@@ -88,23 +100,26 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                 codes = [];
             }
 
-            setRecoveryCodes(codes);
+            setState((s) => ({ ...s, recoveryCodes: codes }));
         } catch {
             // ignore fetch error
         }
     };
 
     const onConfirm2FA = () => {
-        confirm2faForm.post(route('security.2fa.confirm'), {
+        forms.confirm.post(route('security.2fa.confirm'), {
             preserveScroll: true,
             onSuccess: async () => {
-                setEnrolling(false);
-                setQrSvg(null);
-                setManualSecret(null);
-                confirm2faForm.reset('code');
+                setState((s) => ({
+                    ...s,
+                    enrolling: false,
+                    qrSvg: null,
+                    manualSecret: null,
+                }));
+                forms.confirm.reset('code');
 
                 await fetchRecovery();
-                setShowRecovery(true);
+                setState((s) => ({ ...s, showRecovery: true }));
 
                 toast.success('2FA berhasil dikonfirmasi.');
             },
@@ -114,14 +129,16 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
     };
 
     const onDisable2FA = () => {
-        disable2faForm.delete(route('security.2fa.disable'), {
+        forms.disable.delete(route('security.2fa.disable'), {
             preserveScroll: true,
             onSuccess: () => {
-                setRecoveryCodes(null);
-                setEnrolling(false);
-                setQrSvg(null);
-                setManualSecret(null);
-                setShowRecovery(false);
+                setState({
+                    enrolling: false,
+                    qrSvg: null,
+                    recoveryCodes: null,
+                    showRecovery: false,
+                    manualSecret: null,
+                });
                 toast.success('2FA dinonaktifkan.');
             },
             onError: () => toast.error('Gagal menonaktifkan 2FA.'),
@@ -136,7 +153,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                 preserveScroll: true,
                 onSuccess: async () => {
                     await fetchRecovery();
-                    setShowRecovery(true);
+                    setState((s) => ({ ...s, showRecovery: true }));
                     toast.success('Recovery codes diperbarui.');
                 },
                 onError: () => toast.error('Gagal memperbarui recovery codes.'),
@@ -151,10 +168,13 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    setEnrolling(false);
-                    setQrSvg(null);
-                    setManualSecret(null);
-                    confirm2faForm.reset('code');
+                    setState((s) => ({
+                        ...s,
+                        enrolling: false,
+                        qrSvg: null,
+                        manualSecret: null,
+                    }));
+                    forms.confirm.reset('code');
                     toast.success('Proses 2FA dibatalkan.');
                 },
                 onError: () => toast.error('Gagal membatalkan proses 2FA.'),
@@ -163,8 +183,8 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
     };
 
     const onCopyRecovery = async () => {
-        if (Array.isArray(recoveryCodes) && recoveryCodes.length) {
-            const text = recoveryCodes.join('\n');
+        if (Array.isArray(state.recoveryCodes) && state.recoveryCodes.length) {
+            const text = state.recoveryCodes.join('\n');
             try {
                 await navigator.clipboard.writeText(text);
                 toast.success('Recovery codes disalin ke clipboard.');
@@ -186,14 +206,14 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {/* 2FA status & actions */}
-                    {!summary.two_factor_enabled && !enrolling && (
+                    {!summary.two_factor_enabled && !state.enrolling && (
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-muted-foreground">
                                 2FA belum aktif.
                             </p>
                             <Button
                                 onClick={() => confirmGuard(onStart2FA)}
-                                disabled={enable2faForm.processing}
+                                disabled={forms.enable.processing}
                             >
                                 Aktifkan 2FA
                             </Button>
@@ -210,21 +230,25 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                     variant="secondary"
                                     onClick={async () => {
                                         if (
-                                            !showRecovery &&
-                                            recoveryCodes === null
-                                        )
+                                            !state.showRecovery &&
+                                            state.recoveryCodes === null
+                                        ) {
                                             await fetchRecovery();
-                                        setShowRecovery((v: boolean) => !v);
+                                        }
+                                        setState((s) => ({
+                                            ...s,
+                                            showRecovery: !s.showRecovery,
+                                        }));
                                     }}
                                 >
-                                    {showRecovery
+                                    {state.showRecovery
                                         ? 'Sembunyikan Recovery Codes'
                                         : 'Tampilkan Recovery Codes'}
                                 </Button>
                                 <Button
                                     variant="destructive"
                                     onClick={() => confirmGuard(onDisable2FA)}
-                                    disabled={disable2faForm.processing}
+                                    disabled={forms.disable.processing}
                                 >
                                     Nonaktifkan 2FA
                                 </Button>
@@ -233,7 +257,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                     )}
 
                     {/* Enrollment */}
-                    {!summary.two_factor_enabled && enrolling && (
+                    {!summary.two_factor_enabled && state.enrolling && (
                         <div className="space-y-4">
                             <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-3">
@@ -241,18 +265,18 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                         Scan QR ini di aplikasi autentikator
                                         Anda:
                                     </p>
-                                    {qrSvg ? (
+                                    {state.qrSvg ? (
                                         <div
                                             className="flex justify-center rounded-md border p-3"
                                             dangerouslySetInnerHTML={{
-                                                __html: qrSvg,
+                                                __html: state.qrSvg,
                                             }}
                                         />
                                     ) : (
                                         <p className="text-sm">Memuat QR…</p>
                                     )}
                                     <p className="mt-2 text-center font-mono text-sm">
-                                        {manualSecret ?? ''}
+                                        {state.manualSecret ?? ''}
                                     </p>
                                 </div>
 
@@ -301,9 +325,9 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                                 inputMode="numeric"
                                                 pattern="[0-9]*"
                                                 autoComplete="one-time-code"
-                                                value={confirm2faForm.data.code}
+                                                value={forms.confirm.data.code}
                                                 onChange={(e) =>
-                                                    confirm2faForm.setData(
+                                                    forms.confirm.setData(
                                                         'code',
                                                         e.target.value
                                                             .replace(/\D+/g, '')
@@ -313,9 +337,9 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                                 placeholder="Masukkan 6 digit kode"
                                                 maxLength={6}
                                             />
-                                            {confirm2faForm.errors.code && (
+                                            {forms.confirm.errors.code && (
                                                 <p className="text-sm text-destructive">
-                                                    {confirm2faForm.errors.code}
+                                                    {forms.confirm.errors.code}
                                                 </p>
                                             )}
                                         </div>
@@ -323,7 +347,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                             <Button
                                                 type="submit"
                                                 disabled={
-                                                    confirm2faForm.processing
+                                                    forms.confirm.processing
                                                 }
                                             >
                                                 Konfirmasi
@@ -333,7 +357,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                                 variant="outline"
                                                 onClick={onCancelEnrollment}
                                                 disabled={
-                                                    confirm2faForm.processing
+                                                    forms.confirm.processing
                                                 }
                                             >
                                                 Batalkan
@@ -349,51 +373,52 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                     {summary.two_factor_enabled && (
                         <div className="space-y-4">
                             <Separator />
-                            {showRecovery && Array.isArray(recoveryCodes) && (
-                                <div className="rounded-md border p-3">
-                                    <div className="mb-2 flex items-center justify-between">
-                                        <p className="text-sm text-muted-foreground">
-                                            Simpan kode berikut di tempat aman.
-                                            Setiap kode hanya dapat digunakan
-                                            sekali.
-                                        </p>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Button
-                                                type="button"
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() =>
-                                                    confirmGuard(
-                                                        onRegenRecovery,
-                                                    )
-                                                }
-                                            >
-                                                <RefreshCw className="mr-2 h-4 w-4" />{' '}
-                                                Regenerate Codes
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={onCopyRecovery}
-                                            >
-                                                <Copy className="mr-2 h-4 w-4" />{' '}
-                                                Copy Codes
-                                            </Button>
+                            {state.showRecovery &&
+                                Array.isArray(state.recoveryCodes) && (
+                                    <div className="rounded-md border p-3">
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <p className="text-sm text-muted-foreground">
+                                                Simpan kode berikut di tempat
+                                                aman. Setiap kode hanya dapat
+                                                digunakan sekali.
+                                            </p>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        confirmGuard(
+                                                            onRegenRecovery,
+                                                        )
+                                                    }
+                                                >
+                                                    <RefreshCw className="mr-2 h-4 w-4" />{' '}
+                                                    Regenerate Codes
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={onCopyRecovery}
+                                                >
+                                                    <Copy className="mr-2 h-4 w-4" />{' '}
+                                                    Copy Codes
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2 md:grid-cols-2">
+                                            {state.recoveryCodes.map((c) => (
+                                                <code
+                                                    key={c}
+                                                    className="rounded bg-muted px-2 py-1 text-sm"
+                                                >
+                                                    {c}
+                                                </code>
+                                            ))}
                                         </div>
                                     </div>
-                                    <div className="grid gap-2 md:grid-cols-2">
-                                        {recoveryCodes.map((c) => (
-                                            <code
-                                                key={c}
-                                                className="rounded bg-muted px-2 py-1 text-sm"
-                                            >
-                                                {c}
-                                            </code>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                                )}
                         </div>
                     )}
                 </CardContent>

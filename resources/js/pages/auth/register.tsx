@@ -27,8 +27,10 @@ export default function Register() {
             password_confirmation: '',
         });
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+    const [show, setShow] = useState<{ password: boolean; confirm: boolean }>({
+        password: false,
+        confirm: false,
+    });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -136,7 +138,7 @@ export default function Register() {
                             <Input
                                 id="password"
                                 name="password"
-                                type={showPassword ? 'text' : 'password'}
+                                type={show.password ? 'text' : 'password'}
                                 autoComplete="new-password"
                                 value={data.password}
                                 placeholder="password"
@@ -151,15 +153,20 @@ export default function Register() {
                                 variant="ghost"
                                 size="icon"
                                 className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
-                                onClick={() => setShowPassword((s) => !s)}
+                                onClick={() =>
+                                    setShow((s) => ({
+                                        ...s,
+                                        password: !s.password,
+                                    }))
+                                }
                                 tabIndex={-1}
                                 aria-label={
-                                    showPassword
+                                    show.password
                                         ? 'Hide password'
                                         : 'Show password'
                                 }
                             >
-                                {showPassword ? (
+                                {show.password ? (
                                     <EyeOff className="h-4 w-4" />
                                 ) : (
                                     <Eye className="h-4 w-4" />
@@ -184,7 +191,7 @@ export default function Register() {
                             <Input
                                 id="password_confirmation"
                                 name="password_confirmation"
-                                type={showPasswordConfirm ? 'text' : 'password'}
+                                type={show.confirm ? 'text' : 'password'}
                                 autoComplete="new-password"
                                 value={data.password_confirmation}
                                 placeholder="confirm your password"
@@ -206,15 +213,18 @@ export default function Register() {
                                 className="absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
                                 tabIndex={-1}
                                 onClick={() =>
-                                    setShowPasswordConfirm((s) => !s)
+                                    setShow((s) => ({
+                                        ...s,
+                                        confirm: !s.confirm,
+                                    }))
                                 }
                                 aria-label={
-                                    showPasswordConfirm
+                                    show.confirm
                                         ? 'Hide password'
                                         : 'Show password'
                                 }
                             >
-                                {showPasswordConfirm ? (
+                                {show.confirm ? (
                                     <EyeOff className="h-4 w-4" />
                                 ) : (
                                     <Eye className="h-4 w-4" />

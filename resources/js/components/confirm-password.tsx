@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useConfirmPasswordDialog } from '@/hooks/use-confirm-password';
 import { Eye, EyeOff } from 'lucide-react';
+import * as React from 'react';
 export { useConfirmPasswordModal } from '@/hooks/use-confirm-password';
 
 export type ConfirmPasswordDialogProps = {
@@ -32,8 +33,9 @@ export function ConfirmPasswordDialog({
     confirmLabel = 'Konfirmasi',
     cancelLabel = 'Batal',
 }: ConfirmPasswordDialogProps) {
-    const { confirmForm, show, setShow, submitting, inputRef, onSubmit } =
+    const { confirmForm, submitting, inputRef, onSubmit } =
         useConfirmPasswordDialog(open, () => onOpenChange(false), onConfirmed);
+    const [show, setShow] = React.useState<boolean>(false);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

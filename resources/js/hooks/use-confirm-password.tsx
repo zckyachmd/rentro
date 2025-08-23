@@ -35,8 +35,6 @@ async function ensureXsrfToken(): Promise<string | null> {
 
 export type UseConfirmPasswordDialogReturn = {
     confirmForm: ReturnType<typeof useForm<{ password: string }>>;
-    show: boolean;
-    setShow: React.Dispatch<React.SetStateAction<boolean>>;
     submitting: boolean;
     inputRef: React.RefObject<HTMLInputElement | null>;
     onSubmit: (e: React.FormEvent) => Promise<void>;
@@ -52,86 +50,119 @@ export function useConfirmPasswordDialog(
     onConfirmed?: () => void,
 ): UseConfirmPasswordDialogReturn {
     const confirmForm = useForm<{ password: string }>({ password: '' });
-    const [show, setShow] = React.useState(false);
     const [submitting, setSubmitting] = React.useState(false);
     const inputRef = React.useRef<HTMLInputElement>(null);
+    const ctrlRef = React.useRef<AbortController | null>(null);
+    const mounted = React.useRef(true);
+
+    React.useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+            try {
+                ctrlRef.current?.abort();
+            } catch {
+                /* ignore */
+            }
+            ctrlRef.current = null;
+        };
+    }, []);
 
     React.useEffect(() => {
         if (open) {
-            setShow(false);
             confirmForm.reset('password');
             setTimeout(() => inputRef.current?.focus(), 0);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
-    const onSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (submitting) return;
+    const onSubmit = React.useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            if (submitting) return;
 
-        const token = await ensureXsrfToken();
-        if (!token) {
-            toast.error(
-                'Gagal mendapatkan CSRF token. Coba muat ulang halaman.',
-            );
-            return;
-        }
-
-        try {
-            setSubmitting(true);
-            const url = route('password.confirm');
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-XSRF-TOKEN': token,
-                    'X-Inertia': 'true',
-                },
-                body: JSON.stringify({ password: confirmForm.data.password }),
-                credentials: 'same-origin',
-            });
-
-            if (res.status === 204) {
-                confirmForm.clearErrors();
-                confirmForm.reset('password');
-                onClose();
-                onConfirmed?.();
+            const token = await ensureXsrfToken();
+            if (!token) {
+                toast.error(
+                    'Gagal mendapatkan CSRF token. Coba muat ulang halaman.',
+                );
                 return;
             }
 
-            if (res.status === 422) {
-                let message = 'Password tidak valid.';
-                try {
-                    const data = await res.json();
-                    const err = data?.errors?.password?.[0];
-                    if (typeof err === 'string') message = err;
-                } catch {
-                    /* ignore error */
+            const ctrl = new AbortController();
+            ctrlRef.current = ctrl;
+            try {
+                setSubmitting(true);
+                const url = route('password.confirm');
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-XSRF-TOKEN': token,
+                        'X-Inertia': 'true',
+                    },
+                    body: JSON.stringify({
+                        password: confirmForm.data.password,
+                    }),
+                    credentials: 'same-origin',
+                    signal: ctrl.signal,
+                });
+
+                if (res.status === 204) {
+                    confirmForm.clearErrors();
+                    confirmForm.reset('password');
+                    onClose();
+                    onConfirmed?.();
+                    return;
                 }
-                confirmForm.setError('password', message);
-                toast.error(message);
-                return;
-            }
 
-            if (res.status === 419) {
-                toast.error('Sesi kedaluwarsa. Silakan muat ulang halaman.');
-                return;
-            }
+                if (res.status === 422) {
+                    let message = 'Password tidak valid.';
+                    try {
+                        const data: unknown = await res.json();
+                        const err = (
+                            data as { errors?: { password?: unknown[] } }
+                        )?.errors?.password?.[0];
+                        if (typeof err === 'string') message = err;
+                    } catch {
+                        /* ignore */
+                    }
+                    confirmForm.setError('password', message);
+                    toast.error(message);
+                    return;
+                }
 
-            toast.error('Gagal mengkonfirmasi password. Coba lagi.');
-        } catch {
-            toast.error('Gagal mengkonfirmasi password. Periksa koneksi Anda.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
+                if (res.status === 419) {
+                    toast.error(
+                        'Sesi kedaluwarsa. Silakan muat ulang halaman.',
+                    );
+                    return;
+                }
+            } catch (err: unknown) {
+                const isAbort =
+                    err instanceof DOMException
+                        ? err.name === 'AbortError'
+                        : typeof err === 'object' &&
+                          err !== null &&
+                          'name' in err &&
+                          (err as { name?: unknown }).name === 'AbortError';
+                if (!isAbort) {
+                    toast.error(
+                        'Gagal mengkonfirmasi password. Periksa koneksi Anda.',
+                    );
+                }
+            } finally {
+                ctrlRef.current = null;
+                if (mounted.current) setSubmitting(false);
+            }
+        },
+        [submitting, confirmForm, onClose, onConfirmed],
+    );
 
     return {
         confirmForm,
-        show,
-        setShow,
         submitting,
         inputRef,
         onSubmit,
