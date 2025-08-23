@@ -63,7 +63,7 @@ class TwoFactorLoginController extends Controller
         unset($codesOriginal[$idx]);
 
         $codesOriginal                   = array_values($codesOriginal);
-        $user->two_factor_recovery_codes = $this->twofa->encryptRecoveryCodes($codesOriginal);
+        $user->two_factor_recovery_codes = $codesOriginal;
         $user->save();
 
         return true;

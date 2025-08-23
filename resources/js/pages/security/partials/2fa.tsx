@@ -71,16 +71,26 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
         });
     };
 
+    type RecoveryResponse = { codes: string[] };
     const fetchRecovery = async () => {
         try {
             const res = await fetch(route('security.2fa.recovery.index'));
-            if (res.ok) {
-                const data = await res.json();
-                const codes = JSON.parse(data?.codes ?? '[]');
-                setRecoveryCodes(codes);
+            if (!res.ok) return;
+            const data: RecoveryResponse = await res.json();
+
+            const first = Array.isArray(data.codes) ? data.codes[0] : '[]';
+
+            let codes: string[] = [];
+            try {
+                const parsed = JSON.parse(first ?? '[]');
+                codes = Array.isArray(parsed) ? parsed.map(String) : [];
+            } catch {
+                codes = [];
             }
+
+            setRecoveryCodes(codes);
         } catch {
-            // ignore fetch error (recovery codes fetch failure)
+            // ignore fetch error
         }
     };
 

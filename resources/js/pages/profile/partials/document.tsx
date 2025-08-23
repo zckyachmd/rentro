@@ -25,7 +25,7 @@ export type DocumentFormValue = {
     issued_at: string;
     expires_at: string;
     file: File | null;
-    file_url?: string | null;
+    has_file?: boolean | null;
     status?: 'pending' | 'approved' | 'rejected';
     notes?: string | null;
 };
@@ -259,7 +259,7 @@ export default function DocumentSection({
                                 <Label className="mb-1 block">
                                     File Dokumen{' '}
                                     <span className="text-destructive">
-                                        {!value.file_url ||
+                                        {!value.has_file ||
                                         value.status === 'rejected'
                                             ? '*'
                                             : ''}

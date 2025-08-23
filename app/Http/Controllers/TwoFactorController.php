@@ -99,15 +99,17 @@ class TwoFactorController extends Controller
         return back()->with('status', '2fa-disabled');
     }
 
-    public function recoveryCode(Request $request): HttpResponse
+    public function recoveryCode(Request $request, TFA $tfa): HttpResponse
     {
         $user = $request->user();
         if (empty($user->two_factor_secret) || empty($user->two_factor_confirmed_at)) {
             abort(404);
         }
 
+        $codes = $tfa->parseRecoveryCodes($user->two_factor_recovery_codes);
+
         return response()->json([
-            'codes' => (array) ($user->two_factor_recovery_codes ?? []),
+            'codes' => [json_encode(array_values($codes))],
         ]);
     }
 
@@ -118,7 +120,7 @@ class TwoFactorController extends Controller
             return back()->withErrors(['status' => 'Aktifkan & konfirmasi 2FA terlebih dahulu.']);
         }
 
-        $user->two_factor_recovery_codes = json_encode($tfa->generateRecoveryCodes());
+        $user->two_factor_recovery_codes = $tfa->generateRecoveryCodes();
         $user->save();
 
         $this->logEvent(event: 'security.2fa_recovery_regenerated', subject: $user, logName: 'security');

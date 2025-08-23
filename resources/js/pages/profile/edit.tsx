@@ -43,7 +43,7 @@ type DocumentDTO = {
     id?: number;
     type?: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | null;
     number?: string | null;
-    file_url?: string | null;
+    has_file?: boolean | null;
     issued_at?: string | null;
     expires_at?: string | null;
     status?: 'pending' | 'approved' | 'rejected' | null;
@@ -82,7 +82,7 @@ type FormData = {
         type: '' | 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
         number: string;
         file: File | null;
-        file_url?: string | null;
+        has_file?: boolean | null;
         issued_at: string;
         expires_at: string;
         status?: 'pending' | 'approved' | 'rejected';
@@ -121,7 +121,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
             type: document?.type ?? '',
             number: document?.number ?? '',
             file: null,
-            file_url: document?.file_url ?? null,
+            has_file: document?.has_file ?? null,
             issued_at: document?.issued_at ?? '',
             expires_at: document?.expires_at ?? '',
             status: document?.status ?? undefined,

@@ -90,7 +90,7 @@ trait HasDocument
      *
      * @return array|null
      */
-    public function getDocumentForFrontend(): ?array
+    public function getDocument(): ?array
     {
         /** @var \App\Models\UserDocument|null $doc */
         $doc = $this->document;
@@ -111,7 +111,7 @@ trait HasDocument
             'status'      => $doc->status,
             'verified_by' => $doc->verified_by,
             'verified_at' => $doc->verified_at,
-            'file_url'    => $doc->file_path ? $disk->url($doc->file_path) : null,
+            'has_file'    => !empty($doc->file_path),
         ];
     }
 }

@@ -27,7 +27,7 @@ export default function TwoFactorChallenge() {
                         </Label>
                         <Input
                             id="token"
-                            placeholder="Contoh: 123456 atau A89D-2030-6C77-6DD7"
+                            placeholder="Contoh: 123456 atau 12345678-ABCDEFGH"
                             value={form.data.token}
                             onChange={(e) =>
                                 form.setData('token', e.target.value)

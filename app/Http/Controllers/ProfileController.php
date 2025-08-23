@@ -58,7 +58,7 @@ class ProfileController extends Controller
                 'country',
                 'is_primary',
             ]),
-            'document' => $user->getDocumentForFrontend(),
+            'document' => $user->getDocument(),
             'contacts' => $user->emergencyContacts->map->only([
                 'id',
                 'name',
@@ -108,7 +108,7 @@ class ProfileController extends Controller
                 'province'     => $address->province,
                 'postal_code'  => $address->postal_code,
             ] : null,
-            'document'        => $user->getDocumentForFrontend(),
+            'document'        => $user->getDocument(),
             'mustVerifyEmail' => is_null($user->email_verified_at),
             'status'          => session('status'),
             'options'         => [
