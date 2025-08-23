@@ -26,9 +26,9 @@ import {
     Search,
     User,
 } from 'lucide-react';
-import { MenuGroups } from './menu';
-import type { MenuGroup } from './menu';
 import * as React from 'react';
+import type { MenuGroup } from './menu';
+import { MenuGroups } from './menu';
 
 type NavbarProps = {
     collapsed: boolean;
