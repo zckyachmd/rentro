@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\EmergencyContactController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SecurityController;
-use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\Profile\EmergencyContactController;
+use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Security\SecurityController;
+use App\Http\Controllers\Security\TwoFactorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;

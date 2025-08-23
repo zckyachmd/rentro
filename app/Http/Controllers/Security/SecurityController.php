@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Security;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Security\UpdatePasswordRequest;
 use App\Models\Session;
 use App\Traits\LogActivity;

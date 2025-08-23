@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Profile;
 
 use App\Enum\AddressLabel;
 use App\Enum\DocumentStatus;
 use App\Enum\DocumentType;
 use App\Enum\EmergencyRelationship;
 use App\Enum\Gender;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ConfirmPasswordRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
 use App\Models\UserAddress;

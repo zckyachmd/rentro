@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Security;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Security\ConfirmTwoFactorRequest;
 use App\Services\Contracts\TwoFactorServiceInterface as TFA;
 use App\Traits\LogActivity;

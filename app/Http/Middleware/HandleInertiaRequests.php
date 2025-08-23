@@ -32,22 +32,32 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'auth' => [
-                'user' => $request->user()
-                    ? $request->user()
-                    ->append('avatar_url')
-                    ->only([
-                        'id',
-                        'name',
-                        'first_name',
-                        'last_name',
-                        'username',
-                        'email',
-                        'phone',
-                        'avatar_url',
-                    ])
-                    : null,
-            ],
+            'auth' => (function () use ($request) {
+                $user = $request->user();
+
+                if (!$user) {
+                    return ['user' => null];
+                }
+
+                $base = $user->append('avatar_url')->only([
+                    'id',
+                    'name',
+                    'username',
+                    'email',
+                    'phone',
+                    'avatar_url',
+                ]);
+
+                $roles       = $user->getRoleNames();
+                $permissions = $user->getAllPermissions()->pluck('name');
+
+                return [
+                    'user' => array_merge($base, [
+                        'roles'       => $roles,
+                        'permissions' => $permissions,
+                    ]),
+                ];
+            })(),
             'ziggy' => fn () => [
                 ...(new Ziggy())->toArray(),
                 'location' => $request->url(),

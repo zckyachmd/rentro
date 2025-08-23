@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Enum\RoleName;
 use App\Models\EmergencyContact;
 use App\Policies\EmergencyContactPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -21,7 +23,13 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::before(function ($user) {
+            if ($user->hasRole(RoleName::SUPER_ADMIN->value)) {
+                return true;
+            }
+
+            return null;
+        });
     }
 
     /**
