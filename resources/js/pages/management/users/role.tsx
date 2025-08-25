@@ -82,9 +82,9 @@ export function RoleDialog({
         const roleIds = Array.from(selected);
 
         setSaving(true);
-        router.put(
+        router.post(
             route('management.users.roles.update', user.id),
-            { role_ids: roleIds },
+            { _method: 'put', role_ids: roleIds },
             {
                 preserveState: true,
                 preserveScroll: true,
@@ -101,9 +101,7 @@ export function RoleDialog({
                         'Gagal memperbarui peran';
                     toast.error(message);
                 },
-                onFinish: () => {
-                    setSaving(false);
-                },
+                onFinish: () => setSaving(false),
             },
         );
     }, [selected, user.id, onOpenChange, autoReload]);

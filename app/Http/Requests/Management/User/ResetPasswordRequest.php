@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Management\User;
 
 use App\Enum\RoleName;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ResetPasswordRequest extends FormRequest

@@ -58,8 +58,8 @@ class HandleInertiaRequests extends Middleware
                     'avatar_url',
                 ]);
 
-                $roles       = $user->getRoleNames();
-                $permissions = $user->getAllPermissions()->pluck('name');
+                $roles       = $user->getRoleNames()->values()->all();
+                $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
 
                 return [
                     'user' => array_merge($base, [

@@ -9,6 +9,7 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -192,31 +193,40 @@ export const createColumns = (
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                            <DropdownMenuItem
-                                onClick={() => opts?.onManageRoles?.(u)}
-                            >
-                                <ShieldCheck className="mr-2 h-4 w-4" /> Kelola
-                                Peran
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => opts?.onResetPassword?.(u)}
-                            >
-                                <KeyRound className="mr-2 h-4 w-4" /> Reset
-                                Password
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => opts?.onTwoFARecovery?.(u)}
-                            >
-                                <ScanFace className="mr-2 h-4 w-4" /> Kode
-                                Pemulihan 2FA
-                            </DropdownMenuItem>
+                            <Can all={['user.role.manage']}>
+                                <DropdownMenuItem
+                                    onClick={() => opts?.onManageRoles?.(u)}
+                                >
+                                    <ShieldCheck className="mr-2 h-4 w-4" />{' '}
+                                    Kelola Peran
+                                </DropdownMenuItem>
+                            </Can>
+                            <Can all={['user.password.reset']}>
+                                <DropdownMenuItem
+                                    onClick={() => opts?.onResetPassword?.(u)}
+                                >
+                                    <KeyRound className="mr-2 h-4 w-4" /> Reset
+                                    Password
+                                </DropdownMenuItem>
+                            </Can>
+                            <Can all={['user.two-factor']}>
+                                <DropdownMenuItem
+                                    onClick={() => opts?.onTwoFARecovery?.(u)}
+                                >
+                                    <ScanFace className="mr-2 h-4 w-4" /> Kode
+                                    Pemulihan 2FA
+                                </DropdownMenuItem>
+                            </Can>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                className="text-red-600 focus:text-red-600"
-                                onClick={() => opts?.onRevokeSession?.(u)}
-                            >
-                                <LogOut className="mr-2 h-4 w-4" /> Paksa Keluar
-                            </DropdownMenuItem>
+                            <Can all={['user.force-logout']}>
+                                <DropdownMenuItem
+                                    className="text-red-600 focus:text-red-600"
+                                    onClick={() => opts?.onRevokeSession?.(u)}
+                                >
+                                    <LogOut className="mr-2 h-4 w-4" /> Paksa
+                                    Keluar
+                                </DropdownMenuItem>
+                            </Can>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

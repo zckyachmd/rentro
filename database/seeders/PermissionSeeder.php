@@ -26,9 +26,9 @@ class PermissionSeeder extends Seeder
             RoleName::OWNER->value => [
                 PermissionName::USER_VIEW,
                 PermissionName::USER_CREATE,
-                PermissionName::USER_UPDATE,
-                PermissionName::USER_DELETE,
                 PermissionName::USER_ROLE_MANAGE,
+                PermissionName::USER_PASSWORD_RESET,
+                PermissionName::USER_TWO_FACTOR,
                 PermissionName::USER_FORCE_LOGOUT,
                 PermissionName::ROOM_VIEW,
                 PermissionName::ROOM_CREATE,
@@ -36,6 +36,8 @@ class PermissionSeeder extends Seeder
                 PermissionName::ROOM_DELETE,
             ],
             RoleName::MANAGER->value => [
+                PermissionName::USER_VIEW,
+                PermissionName::USER_CREATE,
                 PermissionName::ROOM_VIEW,
                 PermissionName::ROOM_CREATE,
                 PermissionName::ROOM_UPDATE,

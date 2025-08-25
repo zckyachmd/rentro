@@ -84,6 +84,10 @@ Route::middleware('auth')->group(function (): void {
                 ->middleware('can:' . PermissionName::USER_VIEW->value)
                 ->name('index');
 
+            Route::post('/', [UserManagementController::class, 'createUser'])
+                ->middleware('can:' . PermissionName::USER_CREATE->value)
+                ->name('store');
+
             Route::put('/{user}/roles', [UserManagementController::class, 'updateRoles'])
                 ->middleware('can:' . PermissionName::USER_ROLE_MANAGE->value)
                 ->name('roles.update');

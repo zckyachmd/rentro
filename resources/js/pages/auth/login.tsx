@@ -19,9 +19,11 @@ type LoginForm = {
 export default function Login({
     status,
     canResetPassword,
+    canRegister,
 }: {
     status?: string;
     canResetPassword: boolean;
+    canRegister: boolean;
 }) {
     const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm<LoginForm>({
@@ -147,17 +149,14 @@ export default function Login({
                                 </span>
                             </label>
 
-                            {canResetPassword &&
-                                typeof route === 'function' &&
-                                route().has &&
-                                route().has('password.request') && (
-                                    <Link
-                                        href={route('password.request')}
-                                        className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                                    >
-                                        Forgot password?
-                                    </Link>
-                                )}
+                            {canResetPassword && (
+                                <Link
+                                    href={route('password.request')}
+                                    className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                                >
+                                    Forgot password?
+                                </Link>
+                            )}
                         </div>
 
                         <Button
@@ -174,23 +173,20 @@ export default function Login({
                                 'Sign in'
                             )}
                         </Button>
-
-                        {typeof route === 'function' &&
-                            route().has &&
-                            route().has('register') && (
-                                <div className="space-y-3">
-                                    <Separator />
-                                    <p className="text-center text-sm text-muted-foreground">
-                                        Don’t have an account?{' '}
-                                        <Link
-                                            href={route('register')}
-                                            className="font-medium text-foreground underline underline-offset-4"
-                                        >
-                                            Create one
-                                        </Link>
-                                    </p>
-                                </div>
-                            )}
+                        {canRegister && (
+                            <div className="space-y-3">
+                                <Separator />
+                                <p className="text-center text-sm text-muted-foreground">
+                                    Don’t have an account?{' '}
+                                    <Link
+                                        href={route('register')}
+                                        className="font-medium text-foreground underline underline-offset-4"
+                                    >
+                                        Create one
+                                    </Link>
+                                </p>
+                            </div>
+                        )}
                     </form>
                 </>
             }

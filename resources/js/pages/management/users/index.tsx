@@ -2,6 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { RefreshCw, UserPlus } from 'lucide-react';
 import React from 'react';
 
+import { Can } from '@/components/acl';
 import type { Crumb } from '@/components/breadcrumbs';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,7 @@ import {
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
+import CreateUserDialog from './create-user';
 import ForceLogoutDialog from './force-logout';
 import ResetPasswordDialog from './reset-password';
 import { Role, RoleDialog } from './role';
@@ -72,7 +74,7 @@ type QueryState = {
     roleId: number | null;
 };
 
-type DialogKind = 'role' | 'reset' | 'twofa' | 'revoke';
+type DialogKind = 'create' | 'role' | 'reset' | 'twofa' | 'revoke';
 
 type DialogState = {
     kind: DialogKind | null;
@@ -146,15 +148,15 @@ export default function UsersIndex() {
             search?: string;
             sort?: string | null;
             dir?: 'asc' | 'desc' | null;
-            role_id?: number | undefined;
+            role_id?: number | null;
         }) => {
             const nextPage = next.page ?? page;
             const nextPerPage = next.per_page ?? perPage;
             const nextSearch = next.search ?? (search || undefined);
             const nextSort = next.sort ?? sort ?? undefined;
             const nextDir = next.dir ?? dir ?? undefined;
-            const nextRole =
-                next.role_id ?? (roleId !== null ? roleId : undefined);
+            const nextRoleRaw = next.role_id;
+            const nextRole = nextRoleRaw !== undefined ? nextRoleRaw : roleId;
 
             const same =
                 Number(page) === Number(nextPage) &&
@@ -162,7 +164,8 @@ export default function UsersIndex() {
                 (search || undefined) === nextSearch &&
                 (sort ?? undefined) === nextSort &&
                 (dir ?? undefined) === nextDir &&
-                (roleId ?? undefined) === nextRole;
+                (roleId === null ? null : roleId) ===
+                    (nextRole === null ? null : nextRole);
             if (same) return;
 
             router.get(
@@ -173,7 +176,7 @@ export default function UsersIndex() {
                     search: nextSearch,
                     sort: nextSort,
                     dir: nextDir,
-                    role_id: nextRole,
+                    role_id: nextRole === null ? undefined : nextRole,
                 },
                 {
                     preserveState: true,
@@ -201,10 +204,14 @@ export default function UsersIndex() {
     );
 
     const openDialog = React.useCallback(
-        (kind: DialogKind, u?: UserRow) => {
-            const pick = u ?? rows[0];
-            if (!pick) return;
-            setDialog({ kind, open: true, saving: false, user: pick });
+        (kind: DialogKind, u?: UserRow | null) => {
+            if (kind !== 'create') {
+                const pick = u ?? rows[0];
+                if (!pick) return;
+                setDialog({ kind, open: true, saving: false, user: pick });
+                return;
+            }
+            setDialog({ kind, open: true, saving: false, user: null });
         },
         [rows],
     );
@@ -241,14 +248,16 @@ export default function UsersIndex() {
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="flex w-full flex-1 items-center gap-2">
                                 <Select
-                                    value={q.roleId ? String(q.roleId) : 'all'}
+                                    value={
+                                        q.roleId !== null
+                                            ? String(q.roleId)
+                                            : 'all'
+                                    }
                                     onValueChange={(v) =>
                                         onQueryChange({
                                             page: 1,
                                             role_id:
-                                                v === 'all'
-                                                    ? undefined
-                                                    : Number(v),
+                                                v === 'all' ? null : Number(v),
                                         })
                                     }
                                 >
@@ -272,10 +281,15 @@ export default function UsersIndex() {
                                     <RefreshCw className="mr-2 h-4 w-4" /> Muat
                                     ulang
                                 </Button>
-                                <Button size="sm">
-                                    <UserPlus className="mr-2 h-4 w-4" /> Tambah
-                                    Pengguna
-                                </Button>
+                                <Can all={['user.create']}>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => openDialog('create')}
+                                    >
+                                        <UserPlus className="mr-2 h-4 w-4" />{' '}
+                                        Tambah Pengguna
+                                    </Button>
+                                </Can>
                             </div>
                         </div>
                     </CardContent>
@@ -303,6 +317,14 @@ export default function UsersIndex() {
                     </CardContent>
                 </Card>
             </div>
+
+            {dialog.kind === 'create' && (
+                <CreateUserDialog
+                    open={dialog.open}
+                    onOpenChange={(v) => setDialog((s) => ({ ...s, open: v }))}
+                    roles={roles}
+                />
+            )}
 
             {dialog.kind === 'role' && dialog.user && (
                 <RoleDialog

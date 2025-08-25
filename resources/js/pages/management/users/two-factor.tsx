@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import {
     Copy,
     Eye,
@@ -27,6 +28,7 @@ type TwoFADialogProps = {
     open: boolean;
     onOpenChange: (v: boolean) => void;
     user: UserRow;
+    autoReload?: boolean;
 };
 
 type RequestResponse = {
@@ -35,7 +37,12 @@ type RequestResponse = {
     error?: boolean | string;
 };
 
-export function TwoFADialog({ open, onOpenChange, user }: TwoFADialogProps) {
+export function TwoFADialog({
+    open,
+    onOpenChange,
+    user,
+    autoReload = true,
+}: TwoFADialogProps) {
     const [codes, setCodes] = React.useState<string[]>([]);
     const [loading, setLoading] = React.useState<
         'view' | 'regen' | 'disable' | null
@@ -129,6 +136,7 @@ export function TwoFADialog({ open, onOpenChange, user }: TwoFADialogProps) {
                 setCodes([]);
                 setEnabled(false);
                 toast.success(data.message ?? '2FA berhasil dinonaktifkan');
+                if (autoReload) router.reload({ preserveUrl: true });
             }
         } catch {
             toast.error('Gagal menonaktifkan 2FA');

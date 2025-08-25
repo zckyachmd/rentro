@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Management;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Management\User\CreateUserRequest;
 use App\Http\Requests\Management\User\ForceLogoutRequest;
 use App\Http\Requests\Management\User\ResetPasswordRequest;
 use App\Http\Requests\Management\User\TwoFactorRequest;
 use App\Http\Requests\Management\User\UpdateRolesRequest;
 use App\Models\Session;
 use App\Models\User;
+use App\Notifications\UserInvited;
 use App\Services\TwoFactorService;
 use App\Traits\DataTable;
 use Carbon\Carbon;
@@ -17,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -106,6 +109,65 @@ class UserManagementController extends Controller
                 'roleId'  => $request->query('role_id'),
             ],
         ]);
+    }
+
+    public function createUser(CreateUserRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $tempPassword = Str::random(12);
+
+        $attrs = [
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'phone'    => $validated['phone'] ?? null,
+            'password' => bcrypt($tempPassword),
+            'username' => User::generateUniqueUsername($validated['name']),
+        ];
+
+        $attrs['force_password_change'] = (bool) ($validated['force_password_change'] ?? true);
+
+        /** @var \App\Models\User $user */
+        $user = User::create($attrs);
+
+        // Assign roles
+        $guard = $user->getDefaultGuardName();
+        $roles = Role::query()
+            ->whereIn('id', $validated['roles'])
+            ->where('guard_name', $guard)
+            ->get();
+        $user->syncRoles($roles);
+
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker   = Password::broker();
+        $token    = $broker->createToken($user);
+        $resetUrl = route('password.reset', ['token' => $token, 'email' => $user->email]);
+
+        try {
+            $user->notify(new UserInvited($user->username, $tempPassword, $resetUrl));
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        $sendVerification = (bool) ($validated['send_verification'] ?? true);
+        if ($sendVerification && !$user->hasVerifiedEmail()) {
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
+        activity('system')
+            ->causedBy($request->user())
+            ->performedOn($user)
+            ->withProperties([
+                'roles'      => $roles->pluck('name')->values()->all(),
+                'invited_by' => $request->user()?->id,
+                'invited_at' => now(),
+            ])->log('invited_user');
+
+        return back()->with('success', 'Pengguna berhasil dibuat. Username & password sementara dikirim ke email beserta tautan ubah password.');
     }
 
     public function updateRoles(UpdateRolesRequest $request, User $user): RedirectResponse
@@ -225,7 +287,7 @@ class UserManagementController extends Controller
         };
     }
 
-    public function forceLogout(ForceLogoutRequest $request, User $user): JsonResponse
+    public function forceLogout(ForceLogoutRequest $request, User $user): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -243,7 +305,7 @@ class UserManagementController extends Controller
 
         $ids = $query->pluck('id');
         if ($ids->isEmpty()) {
-            return response()->json(['message' => 'Tidak ada sesi yang perlu dihapus.']);
+            return back()->with('success', 'Tidak ada sesi yang perlu dihapus.');
         }
 
         Session::query()->whereIn('id', $ids)->delete();
@@ -254,6 +316,6 @@ class UserManagementController extends Controller
             ->withProperties(['scope' => $scope, 'reason' => $validated['reason'] ?? null, 'count' => $ids->count()])
             ->log('revoke_user_sessions');
 
-        return response()->json(['message' => sprintf('Berhasil menghapus %d sesi pengguna.', $ids->count())]);
+        return back()->with('success', sprintf('Berhasil menghapus %d sesi pengguna.', $ids->count()));
     }
 }

@@ -68,3 +68,13 @@ jobs:
         with:
           commit_message: fix code style
           commit_options: '--no-verify'
+          file_pattern: |
+            app/**/*.php
+            config/**/*.php
+            routes/**/*.php
+            resources/js/**/*
+            resources/ts/**/*
+            !pnpm-lock.yaml
+            !package-lock.json
+            !composer.lock
+            !vendor/**

@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { AlertTriangle } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -18,7 +18,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 
 import { UserRow } from '.';
 
@@ -50,59 +49,29 @@ export default function ForceLogoutDialog({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
-    const onSubmit = React.useCallback(async () => {
+    const onSubmit = React.useCallback(() => {
         if (!user || submitting) return;
         setSubmitting(true);
-        try {
-            const xsrf = await ensureXsrfToken();
-            const resp = await fetch(
-                route('management.users.force-logout', user.id),
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        ...(xsrf ? { 'X-XSRF-TOKEN': xsrf } : {}),
-                    },
-                    body: JSON.stringify({
-                        scope: data.scope,
-                        reason: data.reason.trim() || null,
-                    }),
-                    credentials: 'same-origin',
-                },
-            );
-
-            const payload: Record<string, unknown> = await resp
-                .json()
-                .catch(() => ({}) as Record<string, unknown>);
-
-            if (!resp.ok) {
-                const errors = (payload?.errors || {}) as Record<
-                    string,
-                    string[] | string
-                >;
-                const pick = (v?: string[] | string) =>
-                    Array.isArray(v) ? v[0] : v;
+        router.delete(route('management.users.force-logout', user.id), {
+            data: {
+                scope: data.scope,
+                reason: data.reason.trim() || null,
+            },
+            onSuccess: (page) => {
+                const flash = (page.props as { flash?: { success?: string } })
+                    .flash;
+                if (flash?.success) toast.success(flash.success);
+                onOpenChange(false);
+            },
+            onError: (errs) => {
                 const message =
-                    pick(errors.scope) ||
-                    pick(errors.reason) ||
-                    (payload?.message as string | undefined) ||
+                    errs.scope?.[0] ||
+                    errs.reason?.[0] ||
                     'Gagal mencabut sesi pengguna';
                 toast.error(message);
-                return;
-            }
-
-            toast.success(
-                (payload?.message as string) ?? 'Sesi berhasil dicabut',
-            );
-            onOpenChange(false);
-        } catch (e) {
-            const err = e as Error;
-            toast.error(err.message || 'Terjadi kesalahan pada server.');
-        } finally {
-            setSubmitting(false);
-        }
+            },
+            onFinish: () => setSubmitting(false),
+        });
     }, [user, data.scope, data.reason, onOpenChange, submitting]);
 
     return (

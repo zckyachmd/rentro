@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 /**
  * @property array<int, string>|null $two_factor_recovery_codes
@@ -38,6 +39,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'password_changed_at',
+        'force_password_change',
         'phone',
         'dob',
         'gender',
@@ -94,5 +96,28 @@ class User extends Authenticatable implements MustVerifyEmail
     public function emergencyContacts(): HasMany
     {
         return $this->hasMany(EmergencyContact::class);
+    }
+
+    public static function generateUniqueUsername(string $name = ''): string
+    {
+        $base = Str::slug($name, '');
+        $base = substr($base, 0, 20);
+        if ($base === '') {
+            $base = strtolower(Str::random(6));
+        }
+
+        for ($i = 0; $i < 10; $i++) {
+            $suffix    = strtolower(Str::random(4));
+            $candidate = substr($base . $suffix, 0, 30);
+            if (!User::where('username', $candidate)->exists()) {
+                return $candidate;
+            }
+        }
+
+        do {
+            $username = strtolower(Str::random(8));
+        } while (User::where('username', $username)->exists());
+
+        return $username;
     }
 }
