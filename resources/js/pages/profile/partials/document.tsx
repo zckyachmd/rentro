@@ -1,3 +1,6 @@
+import { ShieldCheck } from 'lucide-react';
+import * as React from 'react';
+
 import { DatePickerInput } from '@/components/date-picker';
 import {
     Accordion,
@@ -16,8 +19,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { ShieldCheck } from 'lucide-react';
-import * as React from 'react';
 
 export type DocumentFormValue = {
     type: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | '';

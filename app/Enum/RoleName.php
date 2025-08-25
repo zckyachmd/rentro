@@ -4,8 +4,8 @@ namespace App\Enum;
 
 enum RoleName: string
 {
-    case SUPER_ADMIN = 'super-admin';
-    case OWNER       = 'owner';
-    case MANAGER     = 'manager';
-    case TENANT      = 'tenant';
+    case SUPER_ADMIN = 'Super Admin';
+    case OWNER       = 'Owner';
+    case MANAGER     = 'Manager';
+    case TENANT      = 'Tenant';
 }

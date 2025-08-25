@@ -181,7 +181,7 @@ class ProfileController extends Controller
                 'expires_at' => $docInput['expires_at'] ?? null,
             ];
 
-            $user->syncDocument($attributes, $docInput['file'], 'public', 'documents');
+            $user->syncDocument($attributes, $docInput['file']);
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

@@ -1,3 +1,8 @@
+import { router, usePage } from '@inertiajs/react';
+import { Phone, Users } from 'lucide-react';
+import React from 'react';
+import { toast } from 'sonner';
+
 import ShowMore from '@/components/show-more';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,10 +33,6 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { router, usePage } from '@inertiajs/react';
-import { Phone, Users } from 'lucide-react';
-import React from 'react';
-import { toast } from 'sonner';
 
 export type ContactDTO = {
     id: number;

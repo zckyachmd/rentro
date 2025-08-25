@@ -1,3 +1,8 @@
+import { router, useForm } from '@inertiajs/react';
+import { Copy, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
 import ConfirmPasswordDialog, {
     useConfirmPasswordModal,
 } from '@/components/confirm-password';
@@ -12,10 +17,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { router, useForm } from '@inertiajs/react';
-import { Copy, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 
 type Summary = {
     email_verified?: boolean;

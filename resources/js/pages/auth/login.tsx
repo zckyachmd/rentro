@@ -1,7 +1,6 @@
 import { Link, useForm } from '@inertiajs/react';
+import { AtSign, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
-
-import GuestLayout from '@/layouts/guest-layout';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { AtSign, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
+import GuestLayout from '@/layouts/guest-layout';
 
 type LoginForm = {
     login: string;

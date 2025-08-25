@@ -4,7 +4,6 @@ namespace App\Http\Requests\Security;
 
 use App\Rules\StrongPassword;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
 class UpdatePasswordRequest extends FormRequest
 {
@@ -13,7 +12,7 @@ class UpdatePasswordRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check();
+        return $this->user() !== null;
     }
 
     /**

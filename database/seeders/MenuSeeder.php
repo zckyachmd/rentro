@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enum\PermissionName;
 use App\Models\Menu;
 use App\Models\MenuGroup;
 use Illuminate\Database\Seeder;
@@ -79,9 +80,8 @@ class MenuSeeder extends Seeder
                         'label' => 'Pengaturan',
                         'icon' => 'Settings',
                         'children' => [
+                            ['label' => 'Keamanan', 'href' => route('security.index'), 'icon' => 'KeyRound'],
                             ['label' => 'Preferensi', 'href' => '#', 'icon' => 'Settings'],
-                            ['label' => 'Notifikasi', 'href' => '#', 'icon' => 'Bell'],
-                            ['label' => 'Integrasi', 'href' => '#', 'icon' => 'Settings'],
                         ],
                     ],
                 ],
@@ -94,7 +94,7 @@ class MenuSeeder extends Seeder
                         'label' => 'Akses & Peran',
                         'icon' => 'ShieldCheck',
                         'children' => [
-                            ['label' => 'Pengguna', 'href' => '#', 'icon' => 'Users'],
+                            ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
                             ['label' => 'Roles', 'href' => '#', 'icon' => 'KeySquare'],
                             ['label' => 'Audit Log', 'href' => '#', 'icon' => 'ShieldCheck'],
                         ],

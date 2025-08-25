@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import { AtSign, Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import GuestLayout from '@/layouts/guest-layout';
-import { Link } from '@inertiajs/react';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     useEffect(() => {

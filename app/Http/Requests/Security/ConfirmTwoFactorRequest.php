@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Security;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
 class ConfirmTwoFactorRequest extends FormRequest
 {
@@ -12,7 +11,7 @@ class ConfirmTwoFactorRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check();
+        return $this->user() !== null;
     }
 
     /**

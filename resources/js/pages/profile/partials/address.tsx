@@ -1,3 +1,5 @@
+import { usePage } from '@inertiajs/react';
+
 import {
     Accordion,
     AccordionContent,
@@ -14,7 +16,6 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { usePage } from '@inertiajs/react';
 
 export type AddressValue = {
     label: string;

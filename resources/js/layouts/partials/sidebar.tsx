@@ -1,5 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import * as React from 'react';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import type { MenuItem } from './menu';
 import { MenuGroups } from './menu';
@@ -30,10 +31,14 @@ function Sidebar({
     );
 
     React.useEffect(() => {
-        if (activeParentId !== openSection) {
+        if (collapsed) {
+            setOpenSection(undefined);
+            return;
+        }
+        if (openSection == null && activeParentId) {
             setOpenSection(activeParentId);
         }
-    }, [activeParentId, openSection]);
+    }, [collapsed, activeParentId, openSection]);
 
     const handleSectionChange = React.useCallback(
         (value: string | undefined) => {

@@ -15,7 +15,7 @@ function readXsrfCookie(): string | null {
     }
 }
 
-async function ensureXsrfToken(): Promise<string | null> {
+export async function ensureXsrfToken(): Promise<string | null> {
     let token = readXsrfCookie();
     if (token) return token;
 
@@ -40,10 +40,6 @@ export type UseConfirmPasswordDialogReturn = {
     onSubmit: (e: React.FormEvent) => Promise<void>;
 };
 
-/**
- * Hook untuk menangani seluruh logic pada ConfirmPasswordDialog
- * (state, effect focus/reset, dan submit handling).
- */
 export function useConfirmPasswordDialog(
     open: boolean,
     onClose: () => void,
@@ -169,11 +165,6 @@ export function useConfirmPasswordDialog(
     } as const;
 }
 
-/**
- * Controller untuk kebutuhan buka/tutup modal konfirmasi password
- * dan memutuskan apakah konfirmasi diperlukan dari backend.
- * Tidak merender JSX (hindari circular dependency dengan komponen).
- */
 export function useConfirmPasswordModal() {
     const [open, setOpen] = React.useState(false);
     const pendingRef = React.useRef<null | (() => void)>(null);

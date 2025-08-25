@@ -1,3 +1,7 @@
+import { Head, useForm } from '@inertiajs/react';
+import React from 'react';
+import { toast } from 'sonner';
+
 import { DatePickerInput } from '@/components/date-picker';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -11,9 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AuthLayout from '@/layouts/auth-layout';
-import { Head, useForm } from '@inertiajs/react';
-import React from 'react';
-import { toast } from 'sonner';
+
 import AddressSection from './partials/address';
 import DocumentSection from './partials/document';
 
@@ -56,6 +58,7 @@ type PageProps = {
     document?: DocumentDTO;
     status?: string | null;
     options: {
+        genders: string[];
         documentTypes: string[];
         documentStatuses: string[];
     };
@@ -366,12 +369,17 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                                 <SelectValue placeholder="Pilih gender" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="male">
-                                                    Laki-laki
-                                                </SelectItem>
-                                                <SelectItem value="female">
-                                                    Perempuan
-                                                </SelectItem>
+                                                {options.genders.map((g) => (
+                                                    <SelectItem
+                                                        key={g}
+                                                        value={g}
+                                                    >
+                                                        {g
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            g.slice(1)}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <input

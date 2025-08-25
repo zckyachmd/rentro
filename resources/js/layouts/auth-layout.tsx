@@ -1,17 +1,22 @@
+import { Head, usePage } from '@inertiajs/react';
+import type { LucideIcon } from 'lucide-react';
+import * as Icons from 'lucide-react';
+import React, {
+    PropsWithChildren,
+    ReactNode,
+    useCallback,
+    useState,
+} from 'react';
+
+import Breadcrumbs, { Crumb } from '@/components/breadcrumbs';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
-import { Head, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useCallback, useState } from 'react';
+import { getAppName } from '@/lib/env';
+
 import Footer from './partials/footer';
 import { hasChildren, MenuGroup } from './partials/menu';
 import Navbar from './partials/navbar';
 import Sidebar from './partials/sidebar';
-
-import Breadcrumbs, { Crumb } from '@/components/breadcrumbs';
-import { getAppName } from '@/lib/env';
-import type { LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
-import React from 'react';
 
 const LS_SIDEBAR = 'rentro:sidebar:collapsed';
 
@@ -78,7 +83,7 @@ export default function AuthLayout({
 
     const onSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // eslint-disable-next-line no-console
+
         console.log('search:', q);
     };
 

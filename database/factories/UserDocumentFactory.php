@@ -2,9 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enum\DocumentType;
+use App\Enum\DocumentStatus;
 use App\Models\UserDocument;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Enum\DocumentType;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserDocument>
@@ -47,7 +48,7 @@ class UserDocumentFactory extends Factory
             'file_path'   => 'documents/' . fake()->uuid() . '.jpg',
             'issued_at'   => $issuedAt,
             'expires_at'  => $expiresAt,
-            'status'      => fake()->randomElement(['pending', 'approved', 'rejected']),
+            'status'      => fake()->randomElement(DocumentStatus::values()),
             'verified_by' => null,
             'verified_at' => null,
             'notes'       => null,

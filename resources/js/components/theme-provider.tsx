@@ -1,6 +1,7 @@
+import { createContext, useContext, useMemo } from 'react';
+
 import type { Theme } from '@/hooks/use-appearance';
 import { useAppearance } from '@/hooks/use-appearance';
-import { createContext, useContext, useMemo } from 'react';
 
 export type ThemeProviderProps = {
     children: React.ReactNode;

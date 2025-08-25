@@ -1,3 +1,8 @@
+import { Head, router, usePage } from '@inertiajs/react';
+import { KeyRound, MailCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,10 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AuthLayout from '@/layouts/auth-layout';
-import { Head, router, usePage } from '@inertiajs/react';
-import { KeyRound, MailCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+
 import TwoFactorTab from './partials/2fa';
 import PasswordTab from './partials/password';
 import { SessionsTab } from './partials/sessions';

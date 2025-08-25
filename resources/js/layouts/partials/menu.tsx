@@ -1,3 +1,8 @@
+import { Link } from '@inertiajs/react';
+import type { LucideIcon } from 'lucide-react';
+import * as Icons from 'lucide-react';
+import * as React from 'react';
+
 import {
     Accordion,
     AccordionContent,
@@ -9,10 +14,6 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { Link } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
-import * as React from 'react';
 
 function isRouteActive(name?: string): boolean {
     try {
@@ -102,15 +103,33 @@ export function MenuGroups(props: MenuGroupsProps) {
     const isMobile = props.variant === 'mobile';
     const [flyoutOpen, setFlyoutOpen] = React.useState<string | null>(null);
 
+    const sidebarProps = props as SidebarProps;
+    const initialSection =
+        props.variant === 'sidebar'
+            ? (sidebarProps.openSection ?? sidebarProps.activeParentId)
+            : undefined;
+    const [sectionValue, setSectionValue] = React.useState<string | undefined>(
+        initialSection,
+    );
+
+    const { variant } = props;
+    const { openSection } = sidebarProps;
+
     React.useEffect(() => {
-        if (!isMobile && 'activeParentId' in props) {
+        if (variant !== 'sidebar') return;
+        if (openSection !== undefined) {
+            setSectionValue(openSection);
+        }
+    }, [variant, openSection]);
+
+    const { activeParentId, collapsed } = props as SidebarProps;
+    const hasActiveParentId = 'activeParentId' in props;
+
+    React.useEffect(() => {
+        if (!isMobile && hasActiveParentId) {
             setFlyoutOpen(null);
         }
-    }, [
-        isMobile,
-        (props as SidebarProps).activeParentId,
-        (props as SidebarProps).collapsed,
-    ]);
+    }, [isMobile, hasActiveParentId, activeParentId, collapsed]);
 
     return (
         <nav
@@ -437,33 +456,26 @@ export function MenuGroups(props: MenuGroupsProps) {
                                     <Accordion
                                         type="single"
                                         collapsible
-                                        value={
-                                            (props as SidebarProps).openSection
-                                        }
-                                        onValueChange={
-                                            (props as SidebarProps)
-                                                .onSectionChange
-                                        }
+                                        value={sectionValue}
+                                        onValueChange={(v) => {
+                                            setSectionValue(v);
+                                            (
+                                                props as SidebarProps
+                                            ).onSectionChange(v);
+                                        }}
                                         className="mt-1"
                                     >
                                         {group.items
                                             .filter(hasChildren)
                                             .map((parent) => {
                                                 const pid = `${group.id}:${parent.label}`;
-                                                const parentActive =
-                                                    (props as SidebarProps)
-                                                        .openSection === pid ||
-                                                    (props as SidebarProps)
-                                                        .activeParentId === pid;
                                                 return (
                                                     <AccordionItem
                                                         key={parent.label}
                                                         value={pid}
                                                         className="border-b-0"
                                                     >
-                                                        <AccordionTrigger
-                                                            className={`rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground ${parentActive ? 'bg-accent text-accent-foreground' : ''}`}
-                                                        >
+                                                        <AccordionTrigger className="rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
                                                             <span className="flex items-center gap-3">
                                                                 <IconOrFallback
                                                                     icon={

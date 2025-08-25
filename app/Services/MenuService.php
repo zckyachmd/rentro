@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enum\CacheKey;
 use App\Models\Menu;
 use App\Models\MenuGroup;
 use App\Models\User;
@@ -17,7 +18,7 @@ class MenuService implements MenuServiceInterface
      */
     public function forUser(?User $user): array
     {
-        $cacheKey = 'menu_for_user_' . ($user ? $user->id : 'guest');
+        $cacheKey = CacheKey::MenuForUser->forUser($user?->id);
 
         return Cache::remember($cacheKey, 3600, function () use ($user) {
             /** @var Collection<int, MenuGroup> $groups */

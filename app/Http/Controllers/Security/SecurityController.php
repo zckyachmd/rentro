@@ -20,29 +20,31 @@ class SecurityController extends Controller
 
     public function index(Request $request): InertiaResponse
     {
-        $user     = $request->user();
-        $sessions = $user->sessions()
+        $user = $request->user();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Session> $rawSessions */
+        $rawSessions = $user->sessions()
             ->orderByDesc('last_activity')
-            ->get()
-            ->map(function ($session) use ($request) {
-                $agent = new Agent();
-                $agent->setUserAgent($session->user_agent);
+            ->get();
 
-                $platform = $agent->platform();
-                $browser  = $agent->browser();
-                $device   = $agent->device();
+        $sessions = $rawSessions->map(function (\App\Models\Session $session) use ($request) {
+            $agent = new Agent();
+            $agent->setUserAgent((string) $session->user_agent);
 
-                $agentLabel = trim(($browser ?: 'Unknown Browser') . ' on ' . ($platform ?: ($device ?: 'Unknown Device')));
+            $platform = $agent->platform();
+            $browser  = $agent->browser();
+            $device   = $agent->device();
 
-                return [
-                    'id'          => $session->id,
-                    'ip_address'  => $session->ip_address,
-                    'user_agent'  => $session->user_agent,
-                    'agent_label' => $agentLabel,
-                    'last_active' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
-                    'current'     => $session->id === $request->session()->getId(),
-                ];
-            });
+            $agentLabel = trim(($browser ?: 'Unknown Browser') . ' on ' . ($platform ?: ($device ?: 'Unknown Device')));
+
+            return [
+                'id'          => $session->id,
+                'ip_address'  => $session->ip_address,
+                'user_agent'  => $session->user_agent,
+                'agent_label' => $agentLabel,
+                'last_active' => Carbon::createFromTimestamp((int) $session->last_activity)->diffForHumans(),
+                'current'     => $session->id === $request->session()->getId(),
+            ];
+        });
 
         return Inertia::render('security/index', [
             'status'  => session('status'),

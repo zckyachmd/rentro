@@ -1,3 +1,14 @@
+import { Link } from '@inertiajs/react';
+import {
+    Bell,
+    LogOut,
+    PanelLeft,
+    PanelRight,
+    Search,
+    User,
+} from 'lucide-react';
+import * as React from 'react';
+
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,16 +28,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { Link } from '@inertiajs/react';
-import {
-    Bell,
-    LogOut,
-    PanelLeft,
-    PanelRight,
-    Search,
-    User,
-} from 'lucide-react';
-import * as React from 'react';
+
 import type { MenuGroup } from './menu';
 import { MenuGroups } from './menu';
 

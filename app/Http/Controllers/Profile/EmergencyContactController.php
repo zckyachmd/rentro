@@ -20,8 +20,6 @@ class EmergencyContactController extends Controller
 
     public function update(EmergencyContactRequest $request, EmergencyContact $contact): RedirectResponse
     {
-        $this->authorize('update', $contact);
-
         $contact->update($request->validated());
 
         return back()->with('status', 'success');
@@ -29,8 +27,6 @@ class EmergencyContactController extends Controller
 
     public function destroy(EmergencyContact $contact): RedirectResponse
     {
-        $this->authorize('delete', $contact);
-
         $contact->delete();
 
         return back()->with('status', 'success');

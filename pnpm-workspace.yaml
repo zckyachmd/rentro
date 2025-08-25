@@ -1,5 +1,7 @@
+packages:
+  - resources/js
+
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - esbuild
-packages:
-  - 'resources/js'
+  - unrs-resolver

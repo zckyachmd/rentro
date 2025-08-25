@@ -12,7 +12,7 @@ trait HasDocument
     /**
      * Relationship: get the user's document.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\UserDocument>
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\UserDocument, $this>
      */
     public function document(): HasOne
     {
@@ -47,7 +47,7 @@ trait HasDocument
      * @param string $dir
      * @return array{document: \App\Models\UserDocument, changed: list<string>, created: bool}
      */
-    public function syncDocument(array $attributes, ?UploadedFile $file = null, string $disk = 'public', string $dir = 'documents'): array
+    public function syncDocument(array $attributes, ?UploadedFile $file = null, string $disk = 'local', string $dir = 'documents'): array
     {
         /** @var \App\Models\UserDocument|null $doc */
         $doc     = $this->document;
@@ -98,9 +98,6 @@ trait HasDocument
         if (!$doc) {
             return null;
         }
-
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
 
         return [
             'id'          => $doc->id,

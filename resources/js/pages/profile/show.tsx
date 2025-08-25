@@ -1,3 +1,8 @@
+import { router, usePage } from '@inertiajs/react';
+import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
+import React from 'react';
+import { toast } from 'sonner';
+
 import ShowMore from '@/components/show-more';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -13,10 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import AuthLayout from '@/layouts/auth-layout';
-import { router, usePage } from '@inertiajs/react';
-import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
-import React from 'react';
-import { toast } from 'sonner';
+
 import ContactSection, { ContactDTO } from './partials/contact';
 
 type UserDTO = {

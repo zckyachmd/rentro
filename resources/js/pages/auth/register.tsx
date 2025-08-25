@@ -1,13 +1,12 @@
 import { Link, useForm } from '@inertiajs/react';
+import { AtSign, Eye, EyeOff, Loader2, Lock, User } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
-
-import GuestLayout from '@/layouts/guest-layout';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { AtSign, Eye, EyeOff, Loader2, Lock, User } from 'lucide-react';
+import GuestLayout from '@/layouts/guest-layout';
 
 type RegisterForm = {
     name: string;

@@ -1,3 +1,7 @@
+import { router, useForm } from '@inertiajs/react';
+import { LogOut, MonitorSmartphone } from 'lucide-react';
+import { toast } from 'sonner';
+
 import ConfirmPasswordDialog, {
     useConfirmPasswordModal,
 } from '@/components/confirm-password';
@@ -10,9 +14,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { router, useForm } from '@inertiajs/react';
-import { LogOut, MonitorSmartphone } from 'lucide-react';
-import { toast } from 'sonner';
 
 type SessionItem = {
     id: string;

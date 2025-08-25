@@ -1,5 +1,7 @@
 <?php
 
+use App\Enum\PermissionName;
+use App\Http\Controllers\Management\UserManagementController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
@@ -72,6 +74,31 @@ Route::middleware('auth')->group(function (): void {
                     ->middleware('password.confirm')
                     ->name('regenerate');
             });
+        });
+    });
+
+    // Management
+    Route::prefix('management')->name('management.')->group(function (): void {
+        Route::prefix('users')->name('users.')->group(function (): void {
+            Route::get('/', [UserManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::USER_VIEW->value)
+                ->name('index');
+
+            Route::put('/{user}/roles', [UserManagementController::class, 'updateRoles'])
+                ->middleware('can:' . PermissionName::USER_ROLE_MANAGE->value)
+                ->name('roles.update');
+
+            Route::post('/{user}/reset-password', [UserManagementController::class, 'resetPasswordLink'])
+                ->middleware('can:' . PermissionName::USER_PASSWORD_RESET->value)
+                ->name('password.reset');
+
+            Route::post('/{user}/two-factor', [UserManagementController::class, 'twoFactor'])
+                ->middleware('can:' . PermissionName::USER_TWO_FACTOR->value)
+                ->name('two-factor');
+
+            Route::delete('/{user}/force-logout', [UserManagementController::class, 'forceLogout'])
+                ->middleware('can:' . PermissionName::USER_FORCE_LOGOUT->value)
+                ->name('force-logout');
         });
     });
 });

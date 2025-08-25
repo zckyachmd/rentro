@@ -1,3 +1,6 @@
+import { Head } from '@inertiajs/react';
+import { ReactNode } from 'react';
+
 import { ModeToggle } from '@/components/mode-toggle';
 import { ThemeProvider } from '@/components/theme-provider';
 import {
@@ -11,8 +14,6 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import Footer from '@/layouts/partials/footer';
 import { getAppName } from '@/lib/env';
-import { Head } from '@inertiajs/react';
-import { ReactNode } from 'react';
 
 type GuestLayoutProps = {
     title?: string;

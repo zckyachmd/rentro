@@ -1,3 +1,5 @@
+import React from 'react';
+
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -6,7 +8,6 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import React from 'react';
 
 export type Crumb = { label: string; href?: string };
 

@@ -2,13 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
+use App\Enum\Gender;
 use App\Models\User;
+use App\Enum\RoleName;
 use App\Models\UserAddress;
 use App\Models\UserDocument;
+use Illuminate\Database\Seeder;
 use App\Models\EmergencyContact;
-use App\Enum\RoleName;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserSeeder extends Seeder
 {
@@ -23,7 +24,7 @@ class UserSeeder extends Seeder
             'name'     => 'Admin',
             'username' => 'admin',
             'email'    => 'admin@mail.com',
-            'gender'   => 'male',
+            'gender'   => Gender::MALE->value,
             'password' => 'Admin1234!',
         ])
             ->has(UserAddress::factory()->count(1), 'addresses')
@@ -32,5 +33,7 @@ class UserSeeder extends Seeder
             ->create();
 
         $admin->assignRole(RoleName::SUPER_ADMIN->value);
+
+        User::factory()->count(25)->create()->each->assignRole(RoleName::TENANT->value);
     }
 }

@@ -28,13 +28,6 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasDocument;
 
     /**
-     * The guard name.
-     *
-     * @var string
-     */
-    protected $guard_name = 'web';
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -81,19 +74,21 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function sessions()
+    public function sessions(): HasMany
     {
         return $this->hasMany(Session::class);
+    }
+
+    public function latestSession(): HasOne
+    {
+        return $this->hasOne(Session::class)
+            ->latestOfMany('last_activity')
+            ->select(['sessions.id', 'sessions.user_id', 'sessions.last_activity']);
     }
 
     public function addresses(): HasMany
     {
         return $this->hasMany(UserAddress::class);
-    }
-
-    public function document(): HasOne
-    {
-        return $this->hasOne(UserDocument::class);
     }
 
     public function emergencyContacts(): HasMany
