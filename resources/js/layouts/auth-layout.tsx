@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 
 import Breadcrumbs, { Crumb } from '@/components/breadcrumbs';
+import FlashToaster from '@/components/flash-toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { getAppName } from '@/lib/env';
@@ -207,6 +208,7 @@ export default function AuthLayout({
                 </div>
 
                 <Toaster />
+                <FlashToaster />
             </ThemeProvider>
         </div>
     );

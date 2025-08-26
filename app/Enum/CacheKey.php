@@ -4,7 +4,9 @@ namespace App\Enum;
 
 enum CacheKey: string
 {
-    case MenuForUser = 'menu_for_user';
+    case MenuForUser    = 'menu_for_user';
+    case AllRoles       = 'all_roles';
+    case AllPermissions = 'all_permissions';
 
     /**
      * Build a cache key for a specific user id (or guest when null).

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enum\PermissionName;
+use App\Http\Controllers\Management\RoleManagementController;
 use App\Http\Controllers\Management\UserManagementController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
@@ -103,6 +104,28 @@ Route::middleware('auth')->group(function (): void {
             Route::delete('/{user}/force-logout', [UserManagementController::class, 'forceLogout'])
                 ->middleware('can:' . PermissionName::USER_FORCE_LOGOUT->value)
                 ->name('force-logout');
+        });
+
+        Route::prefix('roles')->name('roles.')->group(function (): void {
+            Route::get('/', [RoleManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::ROLE_VIEW->value)
+                ->name('index');
+
+            Route::post('/', [RoleManagementController::class, 'store'])
+                ->middleware('can:' . PermissionName::ROLE_CREATE->value)
+                ->name('store');
+
+            Route::put('/{role}', [RoleManagementController::class, 'update'])
+                ->middleware('can:' . PermissionName::ROLE_UPDATE->value)
+                ->name('update');
+
+            Route::delete('/{role}', [RoleManagementController::class, 'destroy'])
+                ->middleware('can:' . PermissionName::ROLE_DELETE->value)
+                ->name('destroy');
+
+            Route::put('/{role}/permissions', [RoleManagementController::class, 'updatePermissions'])
+                ->middleware('can:' . PermissionName::ROLE_PERMISSION_MANAGE->value)
+                ->name('permissions.update');
         });
     });
 });

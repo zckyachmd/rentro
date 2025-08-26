@@ -11,6 +11,14 @@ enum PermissionName: string
     case USER_PASSWORD_RESET = 'user.password.reset';
     case USER_TWO_FACTOR     = 'user.two-factor';
     case USER_FORCE_LOGOUT   = 'user.force-logout';
+    case USER_DISABLE        = 'user.disable';
+
+    // Role
+    case ROLE_VIEW              = 'role.view';
+    case ROLE_CREATE            = 'role.create';
+    case ROLE_UPDATE            = 'role.update';
+    case ROLE_DELETE            = 'role.delete';
+    case ROLE_PERMISSION_MANAGE = 'role.permission.manage';
 
     // Kamar
     case ROOM_VIEW   = 'room.view';

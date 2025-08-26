@@ -95,7 +95,7 @@ class MenuSeeder extends Seeder
                         'icon' => 'ShieldCheck',
                         'children' => [
                             ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
-                            ['label' => 'Roles', 'href' => '#', 'icon' => 'KeySquare'],
+                            ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare'],
                             ['label' => 'Audit Log', 'href' => '#', 'icon' => 'ShieldCheck'],
                         ],
                     ],

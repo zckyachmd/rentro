@@ -75,6 +75,23 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy())->toArray(),
                 'location' => $request->url(),
             ],
+
+            // Flash & callback helpers (success/error/data) for easy consumption on the frontend
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error'   => fn () => $request->session()->get('error'),
+                'warning' => fn () => $request->session()->get('warning'),
+                'info'    => fn () => $request->session()->get('info'),
+                'message' => fn () => $request->session()->get('message'),
+                'data'    => fn () => $request->session()->get('data'),
+            ],
+
+            // Aliases specifically for callback-like usage (optional, mirrors flash keys)
+            'cb' => [
+                'success' => fn () => $request->session()->get('success') ?? $request->session()->get('cb_success'),
+                'error'   => fn () => $request->session()->get('error') ?? $request->session()->get('cb_error'),
+                'data'    => fn () => $request->session()->get('data') ?? $request->session()->get('cb_data'),
+            ],
         ];
     }
 }

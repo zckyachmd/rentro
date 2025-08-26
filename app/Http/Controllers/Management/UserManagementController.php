@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Enum\CacheKey;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\User\CreateUserRequest;
 use App\Http\Requests\Management\User\ForceLogoutRequest;
@@ -91,8 +92,8 @@ class UserManagementController extends Controller
         $usersPayload = $this->tablePaginate($page);
 
         $roles = Cache::remember(
-            'roles:list',
-            3600,
+            CacheKey::AllRoles->value,
+            now()->addDay(),
             fn () => Role::orderBy('name')->get(['id', 'name'])
                 ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name])->all(),
         );

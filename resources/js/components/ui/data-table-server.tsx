@@ -16,6 +16,14 @@ export type PaginatorMeta = {
   per_page: number
 }
 
+export type QueryBag = {
+    page?: number;
+    perPage?: number;
+    sort?: string | null;
+    dir?: 'asc' | 'desc' | null;
+    search?: string | null;
+};
+
 type ServerDataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[]
   rows: TData[]

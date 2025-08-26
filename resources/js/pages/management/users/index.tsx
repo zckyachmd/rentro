@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { RefreshCw, UserPlus } from 'lucide-react';
 import React from 'react';
 
@@ -12,7 +12,10 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import type { PaginatorMeta } from '@/components/ui/data-table-server';
+import type {
+    PaginatorMeta,
+    QueryBag,
+} from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import {
     Select,
@@ -21,6 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
@@ -50,28 +54,10 @@ export type UserRow = {
 
 type UsersPaginator = { data: UserRow[] } & PaginatorMeta;
 
-type QueryBag = {
-    page?: number;
-    perPage?: number;
-    sort?: string | null;
-    dir?: 'asc' | 'desc' | null;
-    search?: string | null;
-    roleId?: number | null;
-};
-
 type PageProps = {
     users?: UsersPaginator;
     roles?: Role[];
-    query?: QueryBag;
-};
-
-type QueryState = {
-    page: number;
-    perPage: number;
-    search: string;
-    sort: string | null;
-    dir: 'asc' | 'desc' | null;
-    roleId: number | null;
+    query?: { roleId: number | null } & QueryBag;
 };
 
 type DialogKind = 'create' | 'role' | 'reset' | 'twofa' | 'revoke';
@@ -127,81 +113,13 @@ export default function UsersIndex() {
         user: null,
     });
 
-    const q: QueryState = React.useMemo(
-        () => ({
-            page: props.query?.page ?? paginator?.current_page ?? 1,
-            perPage: props.query?.perPage ?? paginator?.per_page ?? 20,
-            search: props.query?.search ?? '',
-            sort: props.query?.sort ?? null,
-            dir: props.query?.dir ?? null,
-            roleId: props.query?.roleId ?? null,
-        }),
-        [props.query, paginator?.current_page, paginator?.per_page],
-    );
-
-    const { page, perPage, search, sort, dir, roleId } = q;
-
-    const onQueryChange = React.useCallback(
-        (next: {
-            page?: number;
-            per_page?: number;
-            search?: string;
-            sort?: string | null;
-            dir?: 'asc' | 'desc' | null;
-            role_id?: number | null;
-        }) => {
-            const nextPage = next.page ?? page;
-            const nextPerPage = next.per_page ?? perPage;
-            const nextSearch = next.search ?? (search || undefined);
-            const nextSort = next.sort ?? sort ?? undefined;
-            const nextDir = next.dir ?? dir ?? undefined;
-            const nextRoleRaw = next.role_id;
-            const nextRole = nextRoleRaw !== undefined ? nextRoleRaw : roleId;
-
-            const same =
-                Number(page) === Number(nextPage) &&
-                Number(perPage) === Number(nextPerPage) &&
-                (search || undefined) === nextSearch &&
-                (sort ?? undefined) === nextSort &&
-                (dir ?? undefined) === nextDir &&
-                (roleId === null ? null : roleId) ===
-                    (nextRole === null ? null : nextRole);
-            if (same) return;
-
-            router.get(
-                currentPath,
-                {
-                    page: nextPage,
-                    per_page: nextPerPage,
-                    search: nextSearch,
-                    sort: nextSort,
-                    dir: nextDir,
-                    role_id: nextRole === null ? undefined : nextRole,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                    onStart: () => setProcessing(true),
-                    onFinish: () => setProcessing(false),
-                },
-            );
-        },
-        [page, perPage, search, sort, dir, roleId, currentPath],
-    );
-
-    const handleSortChange = React.useCallback(
-        ({
-            sort: s,
-            dir: d,
-        }: {
-            sort?: string | null;
-            dir?: 'asc' | 'desc' | null;
-        }) => {
-            onQueryChange({ page: 1, sort: s ?? null, dir: d ?? null });
-        },
-        [onQueryChange],
-    );
+    const { q, onQueryChange, handleSortChange } = useServerTable({
+        paginator: paginator ?? null,
+        initial: props.query,
+        currentPath,
+        onStart: () => setProcessing(true),
+        onFinish: () => setProcessing(false),
+    });
 
     const openDialog = React.useCallback(
         (kind: DialogKind, u?: UserRow | null) => {
@@ -233,8 +151,6 @@ export default function UsersIndex() {
             pageDescription="Kelola akun, peran, keamanan, dan sesi login"
             breadcrumbs={BREADCRUMBS}
         >
-            <Head title="Pengguna" />
-
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
@@ -256,7 +172,7 @@ export default function UsersIndex() {
                                     onValueChange={(v) =>
                                         onQueryChange({
                                             page: 1,
-                                            role_id:
+                                            roleId:
                                                 v === 'all' ? null : Number(v),
                                         })
                                     }

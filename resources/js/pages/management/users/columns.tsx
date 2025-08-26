@@ -13,7 +13,7 @@ import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { makeColumn } from '@/components/ui/data-table-column-header';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -46,14 +46,12 @@ export type ColumnFactoryOptions = {
 export const createColumns = (
     opts?: ColumnFactoryOptions,
 ): ColumnDef<UserRow>[] => [
-    {
+    makeColumn<UserRow>({
+        id: 'name',
         accessorKey: 'name',
-        meta: { label: 'Nama' },
-        header: ({ column }) => (
-            <div className={COL.name}>
-                <DataTableColumnHeader column={column} title="Nama" />
-            </div>
-        ),
+        title: 'Nama',
+        className: COL.name,
+        sortable: true,
         cell: ({ row }) => {
             const u = row.original;
             return (
@@ -95,15 +93,14 @@ export const createColumns = (
                 </div>
             );
         },
-    },
-    {
+        meta: { label: 'Nama' },
+    }),
+    makeColumn<UserRow>({
+        id: 'email',
         accessorKey: 'email',
-        meta: { label: 'Email' },
-        header: ({ column }) => (
-            <div className={COL.email}>
-                <DataTableColumnHeader column={column} title="Email" />
-            </div>
-        ),
+        title: 'Email',
+        className: COL.email,
+        sortable: true,
         cell: ({ row }) => {
             const u = row.original;
             return (
@@ -118,11 +115,14 @@ export const createColumns = (
                 </div>
             );
         },
-    },
-    {
+        meta: { label: 'Email' },
+    }),
+    makeColumn<UserRow>({
         id: 'roles',
-        meta: { label: 'Peran' },
-        header: () => <div className={COL.roles}>Peran</div>,
+        accessorKey: 'roles',
+        title: 'Peran',
+        className: COL.roles,
+        sortable: false,
         cell: ({ row }) => {
             const roles = row.original.roles || [];
             if (!roles.length) {
@@ -143,11 +143,13 @@ export const createColumns = (
                 </div>
             );
         },
-    },
-    {
+        meta: { label: 'Peran' },
+    }),
+    makeColumn<UserRow>({
         id: 'twofa',
-        meta: { label: '2FA' },
-        header: () => <div className={COL.twofa}>2FA</div>,
+        title: '2FA',
+        className: COL.twofa,
+        sortable: false,
         cell: ({ row }) => (
             <div className={COL.twofa}>
                 <Badge
@@ -159,24 +161,23 @@ export const createColumns = (
                 </Badge>
             </div>
         ),
-    },
-    {
-        accessorKey: 'last_active_at',
-        meta: { label: 'Aktif Terakhir' },
-        header: ({ column }) => (
-            <div className={COL.last}>
-                <DataTableColumnHeader column={column} title="Aktif Terakhir" />
-            </div>
-        ),
+        meta: { label: '2FA' },
+    }),
+    makeColumn<UserRow>({
+        id: 'last_active_at',
+        title: 'Aktif Terakhir',
+        className: COL.last,
+        sortable: true,
         cell: ({ row }) => {
             const value = row.original.last_active_at;
             return <div className={`${COL.last} truncate`}>{value ?? '—'}</div>;
         },
-    },
-    {
+    }),
+    makeColumn<UserRow>({
         id: 'actions',
-        meta: { label: 'Aksi' },
-        header: () => <div className={`text-right ${COL.actions}`}>Aksi</div>,
+        title: 'Aksi',
+        className: `text-right ${COL.actions}`,
+        sortable: false,
         cell: ({ row }) => {
             const u = row.original;
             return (
@@ -232,7 +233,8 @@ export const createColumns = (
                 </div>
             );
         },
-    },
+        meta: { label: 'Aksi' },
+    }),
 ];
 
 export const columns: ColumnDef<UserRow>[] = createColumns();
