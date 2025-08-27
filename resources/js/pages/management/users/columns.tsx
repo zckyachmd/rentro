@@ -23,7 +23,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { UserRow } from '.';
+import { UserItem } from '.';
 
 const COL = {
     name: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
@@ -34,19 +34,20 @@ const COL = {
     actions: 'shrink-0 w-10 md:w-[48px]',
 } as const;
 
-export type ManageRolesHandler = (user: UserRow) => void;
-export type ResetPasswordHandler = (user: UserRow) => void;
+export type ManageRolesHandler = (user: UserItem) => void;
+export type ResetPasswordHandler = (user: UserItem) => void;
+
 export type ColumnFactoryOptions = {
     onManageRoles?: ManageRolesHandler;
     onResetPassword?: ResetPasswordHandler;
-    onTwoFARecovery?: (user: UserRow) => void;
-    onRevokeSession?: (user: UserRow) => void;
+    onTwoFARecovery?: (user: UserItem) => void;
+    onRevokeSession?: (user: UserItem) => void;
 };
 
 export const createColumns = (
     opts?: ColumnFactoryOptions,
-): ColumnDef<UserRow>[] => [
-    makeColumn<UserRow>({
+): ColumnDef<UserItem>[] => [
+    makeColumn<UserItem>({
         id: 'name',
         accessorKey: 'name',
         title: 'Nama',
@@ -93,9 +94,8 @@ export const createColumns = (
                 </div>
             );
         },
-        meta: { label: 'Nama' },
     }),
-    makeColumn<UserRow>({
+    makeColumn<UserItem>({
         id: 'email',
         accessorKey: 'email',
         title: 'Email',
@@ -115,14 +115,12 @@ export const createColumns = (
                 </div>
             );
         },
-        meta: { label: 'Email' },
     }),
-    makeColumn<UserRow>({
+    makeColumn<UserItem>({
         id: 'roles',
         accessorKey: 'roles',
         title: 'Peran',
         className: COL.roles,
-        sortable: false,
         cell: ({ row }) => {
             const roles = row.original.roles || [];
             if (!roles.length) {
@@ -143,13 +141,11 @@ export const createColumns = (
                 </div>
             );
         },
-        meta: { label: 'Peran' },
     }),
-    makeColumn<UserRow>({
+    makeColumn<UserItem>({
         id: 'twofa',
         title: '2FA',
         className: COL.twofa,
-        sortable: false,
         cell: ({ row }) => (
             <div className={COL.twofa}>
                 <Badge
@@ -161,9 +157,8 @@ export const createColumns = (
                 </Badge>
             </div>
         ),
-        meta: { label: '2FA' },
     }),
-    makeColumn<UserRow>({
+    makeColumn<UserItem>({
         id: 'last_active_at',
         title: 'Aktif Terakhir',
         className: COL.last,
@@ -173,11 +168,10 @@ export const createColumns = (
             return <div className={`${COL.last} truncate`}>{value ?? '—'}</div>;
         },
     }),
-    makeColumn<UserRow>({
+    makeColumn<UserItem>({
         id: 'actions',
         title: 'Aksi',
         className: `text-right ${COL.actions}`,
-        sortable: false,
         cell: ({ row }) => {
             const u = row.original;
             return (
@@ -233,8 +227,7 @@ export const createColumns = (
                 </div>
             );
         },
-        meta: { label: 'Aksi' },
     }),
 ];
 
-export const columns: ColumnDef<UserRow>[] = createColumns();
+export const columns: ColumnDef<UserItem>[] = createColumns();

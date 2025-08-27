@@ -22,12 +22,12 @@ import {
 } from '@/components/ui/dialog';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 
-import { UserRow } from '.';
+import { UserItem } from '.';
 
 type TwoFADialogProps = {
     open: boolean;
     onOpenChange: (v: boolean) => void;
-    user: UserRow;
+    user: UserItem;
     autoReload?: boolean;
 };
 

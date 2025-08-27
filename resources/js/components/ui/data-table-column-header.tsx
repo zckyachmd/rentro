@@ -3,7 +3,6 @@
 
 import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
-import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 
@@ -14,43 +13,42 @@ type Props = {
   title: string
 }
 
-export const DataTableColumnHeader = React.memo(
-  function DataTableColumnHeader({ column, title }: Props) {
-    const sorted = column.getIsSorted()
-    const canSort = column.getCanSort?.() ?? false
+export function DataTableColumnHeader({ column, title }: Props) {
+  const sorted = column.getIsSorted()
+  const canSort = column.getCanSort?.() ?? false
 
-    if (!canSort) {
-      return (
-        <div
-          className="inline-flex h-8 items-center font-medium cursor-default select-text"
-          aria-sort="none"
-        >
-          {title}
-        </div>
-      )
-    }
-
-    const isAsc = sorted === "asc"
-    const isDesc = sorted === "desc"
-    const nextDir = isAsc ? "desc" : "asc"
-
+  if (!canSort) {
     return (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(isAsc)}
-        className="h-8 px-0"
-        aria-label={`Urutkan ${title} ${nextDir}`}
-        aria-sort={isAsc ? "ascending" : isDesc ? "descending" : "none"}
-        data-state={sorted || "none"}
+      <div
+        className="inline-flex h-8 items-center font-medium cursor-default select-text"
+        aria-sort="none"
       >
         {title}
-        {sorted === false && <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden />}
-        {sorted === "asc" && <ArrowUp className="ml-2 h-4 w-4" aria-hidden />}
-        {sorted === "desc" && <ArrowDown className="ml-2 h-4 w-4" aria-hidden />}
-      </Button>
+      </div>
     )
   }
-)
+
+  const isAsc = sorted === "asc"
+  const isDesc = sorted === "desc"
+  const nextDir = isAsc ? "desc" : "asc"
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      onClick={() => column.toggleSorting(isAsc)}
+      className="h-8 px-0"
+      aria-label={`Urutkan ${title} ${nextDir}`}
+      aria-sort={isAsc ? "ascending" : isDesc ? "descending" : "none"}
+      data-state={sorted || "none"}
+    >
+      {title}
+      {sorted === false && <ArrowUpDown className="ml-2 h-4 w-4" aria-hidden />}
+      {sorted === "asc" && <ArrowUp className="ml-2 h-4 w-4" aria-hidden />}
+      {sorted === "desc" && <ArrowDown className="ml-2 h-4 w-4" aria-hidden />}
+    </Button>
+  )
+}
 
 type MakeColumnOptions<TData> = {
   id: string

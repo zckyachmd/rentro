@@ -1,6 +1,7 @@
 <?php
 
 use App\Enum\PermissionName;
+use App\Http\Controllers\Management\AuditLogController;
 use App\Http\Controllers\Management\RoleManagementController;
 use App\Http\Controllers\Management\UserManagementController;
 use App\Http\Controllers\Profile\EmergencyContactController;
@@ -126,6 +127,12 @@ Route::middleware('auth')->group(function (): void {
             Route::put('/{role}/permissions', [RoleManagementController::class, 'updatePermissions'])
                 ->middleware('can:' . PermissionName::ROLE_PERMISSION_MANAGE->value)
                 ->name('permissions.update');
+        });
+
+        Route::prefix('audit-logs')->name('audit-logs.')->group(function (): void {
+            Route::get('/', [AuditLogController::class, 'index'])
+                ->middleware('can:' . PermissionName::AUDIT_LOG_VIEW->value)
+                ->name('index');
         });
     });
 });

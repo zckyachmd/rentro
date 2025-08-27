@@ -20,6 +20,9 @@ enum PermissionName: string
     case ROLE_DELETE            = 'role.delete';
     case ROLE_PERMISSION_MANAGE = 'role.permission.manage';
 
+    // Audit Log
+    case AUDIT_LOG_VIEW = 'audit-log.view';
+
     // Kamar
     case ROOM_VIEW   = 'room.view';
     case ROOM_CREATE = 'room.create';

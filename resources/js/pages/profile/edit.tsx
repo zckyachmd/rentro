@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import { toast } from 'sonner';
 
+import { Crumb } from '@/components/breadcrumbs';
 import { DatePickerInput } from '@/components/date-picker';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -93,16 +94,12 @@ type FormData = {
     };
 };
 
-export default function Edit({ user, address, document, options }: PageProps) {
-    const breadcrumbs = React.useMemo(
-        () => [
-            { label: 'Akun', href: '#' },
-            { label: 'Profil', href: route('profile.show') },
-            { label: 'Edit Profil' },
-        ],
-        [],
-    );
+const BREADCRUMBS: Crumb[] = [
+    { label: 'Profil', href: route('profile.show') },
+    { label: 'Edit Profil' },
+];
 
+export default function Edit({ user, address, document, options }: PageProps) {
     const initialData: FormData = {
         name: user.name ?? '',
         username: user.username ?? '',
@@ -173,7 +170,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
     };
 
     return (
-        <AuthLayout pageTitle="Edit Profil" breadcrumbs={breadcrumbs}>
+        <AuthLayout pageTitle="Edit Profil" breadcrumbs={BREADCRUMBS}>
             <Head title="Edit Profil" />
 
             <div className="mb-4 flex items-center justify-between">

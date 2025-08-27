@@ -9,6 +9,7 @@ use App\Http\Requests\Management\Role\StoreRoleRequest;
 use App\Http\Requests\Management\Role\UpdateRolePermissionsRequest;
 use App\Http\Requests\Management\Role\UpdateRoleRequest;
 use App\Traits\DataTable;
+use App\Traits\LogActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,32 +20,24 @@ use Spatie\Permission\Models\Role;
 class RoleManagementController extends Controller
 {
     use DataTable;
+    use LogActivity;
 
     public function index(Request $request)
     {
         $query = Role::query()
             ->select(['id', 'name', 'guard_name', 'created_at'])
-            ->withCount(['users', 'permissions'])
-            ->with(['permissions:id']);
+            ->withCount(['users', 'permissions']);
 
         $options = [
-            'search_param' => 'q',
+            'with'         => ['permissions:id'],
+            'search_param' => 'search',
             'searchable'   => ['name', 'guard_name'],
             'sortable'     => [
                 'name'        => 'name',
-                'guard'       => 'guard_name',
                 'users'       => fn ($q, string $dir) => $q->orderBy('users_count', $dir),
                 'permissions' => fn ($q, string $dir) => $q->orderBy('permissions_count', $dir),
-                'created_at'  => 'created_at',
             ],
             'default_sort' => ['name', 'asc'],
-            'filters'      => [
-                'guard' => function ($q, $guard) {
-                    if (!empty($guard)) {
-                        $q->where('guard_name', $guard);
-                    }
-                },
-            ],
         ];
 
         /** @var \Illuminate\Pagination\LengthAwarePaginator<\Spatie\Permission\Models\Role> $page */
@@ -104,6 +97,18 @@ class RoleManagementController extends Controller
 
         $role->syncPermissions($perms);
 
+        /** @var \Spatie\Permission\Models\Role $subject */
+        $subject = $role;
+        $this->logEvent(
+            event: 'role_permissions_updated',
+            causer: $request->user(),
+            subject: $subject,
+            properties: [
+                'permission_ids' => $perms->pluck('id')->values()->all(),
+                'count'          => $perms->count(),
+            ],
+        );
+
         return back()->with('success', 'Permissions role berhasil diperbarui.');
     }
 
@@ -125,7 +130,19 @@ class RoleManagementController extends Controller
             return back()->with('error', 'Nama role sudah dipakai pada guard yang sama.')->withInput();
         }
 
-        Role::create($data);
+        $role = Role::create($data);
+
+        /** @var \Spatie\Permission\Models\Role $subject */
+        $subject = $role;
+        $this->logEvent(
+            event: 'role_created',
+            causer: $request->user(),
+            subject: $subject,
+            properties: [
+                'name'       => $role->name,
+                'guard_name' => $role->guard_name,
+            ],
+        );
 
         return back()->with('success', 'Role berhasil dibuat.');
     }
@@ -143,7 +160,22 @@ class RoleManagementController extends Controller
             return back()->with('error', 'Role super-admin tidak boleh diubah.');
         }
 
+        $original = $role->only(['name', 'guard_name']);
         $role->update($data);
+
+        $changes = [
+            'before' => $original,
+            'after'  => $role->only(['name', 'guard_name']),
+        ];
+
+        /** @var \Spatie\Permission\Models\Role $subject */
+        $subject = $role;
+        $this->logEvent(
+            event: 'role_updated',
+            causer: $request->user(),
+            subject: $subject,
+            properties: $changes,
+        );
 
         return back()->with('success', 'Role berhasil diperbarui.');
     }
@@ -162,7 +194,17 @@ class RoleManagementController extends Controller
             return back()->with('error', "Role tidak bisa dihapus karena masih terkait dengan {$assignedCount} pengguna. Ganti role pengguna tersebut terlebih dahulu.");
         }
 
+        $snapshot = $role->only(['id', 'name', 'guard_name']);
+        /** @var \Spatie\Permission\Models\Role $subject */
+        $subject = $role;
         $role->delete();
+
+        $this->logEvent(
+            event: 'role_deleted',
+            causer: request()->user(),
+            subject: $subject,
+            properties: $snapshot,
+        );
 
         return back()->with('success', 'Role berhasil dihapus.');
     }

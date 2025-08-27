@@ -111,13 +111,14 @@ export function MenuGroups(props: MenuGroupsProps) {
     const [sectionValue, setSectionValue] = React.useState<string | undefined>(
         initialSection,
     );
+    const userOverrodeRef = React.useRef(false);
 
     const { variant } = props;
     const { openSection } = sidebarProps;
 
     React.useEffect(() => {
         if (variant !== 'sidebar') return;
-        if (openSection !== undefined) {
+        if (openSection !== undefined && !userOverrodeRef.current) {
             setSectionValue(openSection);
         }
     }, [variant, openSection]);
@@ -130,6 +131,12 @@ export function MenuGroups(props: MenuGroupsProps) {
             setFlyoutOpen(null);
         }
     }, [isMobile, hasActiveParentId, activeParentId, collapsed]);
+
+    React.useEffect(() => {
+        if (hasActiveParentId) {
+            userOverrodeRef.current = false;
+        }
+    }, [hasActiveParentId, activeParentId]);
 
     return (
         <nav
@@ -458,6 +465,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                         collapsible
                                         value={sectionValue}
                                         onValueChange={(v) => {
+                                            userOverrodeRef.current = true;
                                             setSectionValue(v);
                                             (
                                                 props as SidebarProps

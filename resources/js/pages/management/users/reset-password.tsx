@@ -17,12 +17,12 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 
-import { UserRow } from '.';
+import { UserItem } from '.';
 
 type ResetDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    user: UserRow;
+    user: UserItem;
 };
 
 type ResetState = {

@@ -29,14 +29,35 @@ import {
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
-import { createColumns, type RoleItem } from './columns';
+import { createColumns } from './columns';
 import PermissionsDialog, { Permission } from './permissions';
 import RoleUpsertDialog from './role';
 
 const BREADCRUMBS: Crumb[] = [
-    { label: 'Management', href: '#' },
+    { label: 'Akses & Peran', href: '#' },
     { label: 'Roles' },
 ];
+
+export type RoleItem = {
+    id: number;
+    name: string;
+    guard_name: string;
+    users_count?: number;
+    permissions_count?: number;
+    permission_ids?: number[];
+    created_at?: string;
+    updated_at?: string;
+};
+
+type RoleDialogSlice = { open: boolean; role: RoleItem | null };
+
+export type RoleDialogs = {
+    edit: RoleDialogSlice;
+    perm: RoleDialogSlice;
+    del: RoleDialogSlice;
+};
+
+type DialogKey = keyof RoleDialogs;
 
 type RolePaginator = { data: RoleItem[] } & PaginatorMeta;
 
@@ -57,59 +78,38 @@ export default function RolesIndex() {
     );
 
     const reload = React.useCallback(() => {
-        router.reload({ preserveUrl: true });
+        setProcessing(true);
+        router.reload({
+            preserveUrl: true,
+            onFinish: () => setProcessing(false),
+        });
     }, []);
 
     const [processing, setProcessing] = React.useState(false);
-
-    const onStart = React.useCallback(() => setProcessing(true), []);
-    const onFinish = React.useCallback(() => setProcessing(false), []);
 
     const { q, onQueryChange, handleSortChange } = useServerTable({
         paginator: roles,
         initial: query,
         currentPath,
-        onStart,
-        onFinish,
+        onStart: () => setProcessing(true),
+        onFinish: () => setProcessing(false),
     });
 
-    const [dialog, setDialog] = React.useState<{
-        edit: { open: boolean; role: RoleItem | null };
-        perm: { open: boolean; role: RoleItem | null };
-        del: { open: boolean; role: RoleItem | null };
-    }>({
+    const [dialog, setDialog] = React.useState<RoleDialogs>({
         edit: { open: false, role: null },
         perm: { open: false, role: null },
         del: { open: false, role: null },
     });
 
-    type dialogKey = keyof typeof dialog;
-
     const openDialog = React.useCallback(
-        (key: dialogKey, role: RoleItem | null = null) =>
+        (key: DialogKey, role: RoleItem | null = null) =>
             setDialog((s) => ({ ...s, [key]: { open: true, role } })),
         [],
-    );
-
-    const actions = React.useMemo(
-        () => ({
-            toEdit: (role: RoleItem) => openDialog('edit', role),
-            toPermissions: (role: RoleItem) => openDialog('perm', role),
-            onDelete: (role: RoleItem) => openDialog('del', role),
-        }),
-        [openDialog],
     );
 
     const openCreate = React.useCallback(
         () => openDialog('edit', null),
         [openDialog],
-    );
-
-    const handleSearchChange = React.useCallback(
-        (v: string) => {
-            onQueryChange({ page: 1, search: v });
-        },
-        [onQueryChange],
     );
 
     const handleConfirmDelete = React.useCallback(() => {
@@ -124,7 +124,15 @@ export default function RolesIndex() {
         });
     }, [dialog.del.role?.id]);
 
-    const columns = React.useMemo(() => createColumns(actions), [actions]);
+    const tableColumns = React.useMemo(
+        () =>
+            createColumns({
+                onEdit: (role: RoleItem) => openDialog('edit', role),
+                onPermissions: (role: RoleItem) => openDialog('perm', role),
+                onDelete: (role: RoleItem) => openDialog('del', role),
+            }),
+        [openDialog],
+    );
 
     return (
         <AuthLayout
@@ -133,7 +141,6 @@ export default function RolesIndex() {
             breadcrumbs={BREADCRUMBS}
         >
             <div className="space-y-3">
-                {/* Header & actions card */}
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle>Daftar Role</CardTitle>
@@ -144,10 +151,8 @@ export default function RolesIndex() {
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            {/* Left area (reserved for future filters) */}
                             <div className="flex w-full flex-1 items-center gap-2" />
 
-                            {/* Right actions */}
                             <div className="flex items-center gap-2">
                                 <Button
                                     type="button"
@@ -171,15 +176,16 @@ export default function RolesIndex() {
                     </CardContent>
                 </Card>
 
-                {/* Table card */}
                 <Card>
                     <CardContent className="pt-6">
                         <DataTableServer<RoleItem, unknown>
-                            columns={columns}
+                            columns={tableColumns}
                             rows={roles.data}
                             paginator={roles}
                             search={q.search}
-                            onSearchChange={handleSearchChange}
+                            onSearchChange={(v) =>
+                                onQueryChange({ page: 1, search: v })
+                            }
                             searchKey="name"
                             searchPlaceholder="Cari nama role…"
                             sort={q.sort}
@@ -191,68 +197,71 @@ export default function RolesIndex() {
                         />
                     </CardContent>
                 </Card>
-                <RoleUpsertDialog
-                    open={dialog.edit.open}
-                    role={dialog.edit.role}
-                    onOpenChange={(open: boolean) => {
-                        if (!open) {
-                            setDialog((s) => ({
-                                ...s,
-                                edit: { ...s.edit, open: false },
-                            }));
-                        }
-                    }}
-                />
-                <PermissionsDialog
-                    open={dialog.perm.open}
-                    role={dialog.perm.role}
-                    permissions={permissions}
-                    preselected={dialog.perm.role?.permission_ids ?? []}
-                    onOpenChange={(open: boolean) => {
-                        if (!open) {
-                            setDialog((s) => ({
-                                ...s,
-                                perm: { ...s.perm, open: false },
-                            }));
-                        }
-                    }}
-                />
-                <AlertDialog
-                    open={dialog.del.open}
-                    onOpenChange={(open: boolean) => {
-                        if (!open) {
-                            setDialog((s) => ({
-                                ...s,
-                                del: { ...s.del, open: false },
-                            }));
-                        }
-                    }}
-                >
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Hapus Role</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Apakah Anda yakin ingin menghapus role{' '}
-                                <span className="font-medium">
-                                    {dialog.del.role?.name}
-                                </span>
-                                ? Tindakan ini tidak dapat dibatalkan.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="flex items-center justify-between gap-2">
-                            <AlertDialogCancel className="mt-2 sm:mt-0">
-                                Batal
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={handleConfirmDelete}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                                Hapus
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
             </div>
+
+            <RoleUpsertDialog
+                open={dialog.edit.open}
+                role={dialog.edit.role}
+                onOpenChange={(open: boolean) => {
+                    if (!open) {
+                        setDialog((s) => ({
+                            ...s,
+                            edit: { ...s.edit, open: false },
+                        }));
+                    }
+                }}
+            />
+
+            <PermissionsDialog
+                open={dialog.perm.open}
+                role={dialog.perm.role}
+                permissions={permissions}
+                preselected={dialog.perm.role?.permission_ids ?? []}
+                onOpenChange={(open: boolean) => {
+                    if (!open) {
+                        setDialog((s) => ({
+                            ...s,
+                            perm: { ...s.perm, open: false },
+                        }));
+                    }
+                }}
+            />
+
+            <AlertDialog
+                open={dialog.del.open}
+                onOpenChange={(open: boolean) => {
+                    if (!open) {
+                        setDialog((s) => ({
+                            ...s,
+                            del: { ...s.del, open: false },
+                        }));
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus Role</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus role{' '}
+                            <span className="font-medium">
+                                {dialog.del.role?.name}
+                            </span>
+                            ? Tindakan ini tidak dapat dibatalkan.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex items-center justify-between gap-2">
+                        <AlertDialogCancel className="mt-2 sm:mt-0">
+                            Batal
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Hapus
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AuthLayout>
     );
 }

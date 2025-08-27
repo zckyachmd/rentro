@@ -35,12 +35,11 @@ import { Role, RoleDialog } from './role';
 import { TwoFADialog } from './two-factor';
 
 const BREADCRUMBS: Crumb[] = [
-    { label: 'Administrasi', href: '#' },
     { label: 'Akses & Peran', href: '#' },
     { label: 'Pengguna' },
 ];
 
-export type UserRow = {
+export type UserItem = {
     id: number;
     name: string;
     email: string;
@@ -52,7 +51,7 @@ export type UserRow = {
     initials?: string | null;
 };
 
-type UsersPaginator = { data: UserRow[] } & PaginatorMeta;
+type UsersPaginator = { data: UserItem[] } & PaginatorMeta;
 
 type PageProps = {
     users?: UsersPaginator;
@@ -66,7 +65,7 @@ type DialogState = {
     kind: DialogKind | null;
     open: boolean;
     saving: boolean;
-    user: UserRow | (UserRow & { two_factor_enabled?: boolean }) | null;
+    user: UserItem | (UserItem & { two_factor_enabled?: boolean }) | null;
 };
 
 const computeInitials = (name?: string | null) =>
@@ -76,7 +75,8 @@ export default function UsersIndex() {
     const { props } = usePage<PageProps>();
     const roles: Role[] = React.useMemo(() => props.roles ?? [], [props.roles]);
     const paginator = props.users;
-    const rows: UserRow[] = React.useMemo(
+
+    const rows: UserItem[] = React.useMemo(
         () =>
             (paginator?.data ?? []).map((u) => ({
                 ...u,
@@ -91,7 +91,11 @@ export default function UsersIndex() {
     );
 
     const reload = React.useCallback(() => {
-        router.reload({ preserveUrl: true });
+        setProcessing(true);
+        router.reload({
+            preserveUrl: true,
+            onFinish: () => setProcessing(false),
+        });
     }, []);
 
     const rolesOptions = React.useMemo(
@@ -122,7 +126,7 @@ export default function UsersIndex() {
     });
 
     const openDialog = React.useCallback(
-        (kind: DialogKind, u?: UserRow | null) => {
+        (kind: DialogKind, u?: UserItem | null) => {
             if (kind !== 'create') {
                 const pick = u ?? rows[0];
                 if (!pick) return;
@@ -213,7 +217,7 @@ export default function UsersIndex() {
 
                 <Card>
                     <CardContent className="pt-6">
-                        <DataTableServer<UserRow, unknown>
+                        <DataTableServer<UserItem, unknown>
                             columns={tableColumns}
                             rows={rows}
                             paginator={paginator ?? null}

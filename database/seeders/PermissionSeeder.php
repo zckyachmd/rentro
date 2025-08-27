@@ -34,6 +34,7 @@ class PermissionSeeder extends Seeder
                 PermissionName::ROOM_CREATE,
                 PermissionName::ROOM_UPDATE,
                 PermissionName::ROOM_DELETE,
+                PermissionName::AUDIT_LOG_VIEW,
             ],
             RoleName::MANAGER->value => [
                 PermissionName::USER_VIEW,

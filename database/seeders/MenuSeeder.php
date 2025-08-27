@@ -80,8 +80,9 @@ class MenuSeeder extends Seeder
                         'label' => 'Pengaturan',
                         'icon' => 'Settings',
                         'children' => [
+                            ['label' => 'Notifikasi', 'href' => '#', 'icon' => 'Bell'],
                             ['label' => 'Keamanan', 'href' => route('security.index'), 'icon' => 'KeyRound'],
-                            ['label' => 'Preferensi', 'href' => '#', 'icon' => 'Settings'],
+                            ['label' => 'Preferensi', 'href' => '#', 'icon' => 'Settings2'],
                         ],
                     ],
                 ],
@@ -96,7 +97,7 @@ class MenuSeeder extends Seeder
                         'children' => [
                             ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
                             ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare'],
-                            ['label' => 'Audit Log', 'href' => '#', 'icon' => 'ShieldCheck'],
+                            ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck'],
                         ],
                     ],
                 ],

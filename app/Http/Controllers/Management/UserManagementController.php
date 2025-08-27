@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\UserInvited;
 use App\Services\TwoFactorService;
 use App\Traits\DataTable;
+use App\Traits\LogActivity;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,7 @@ use Spatie\Permission\Models\Role;
 class UserManagementController extends Controller
 {
     use DataTable;
+    use LogActivity;
 
     public function __construct(private TwoFactorService $twofa)
     {
@@ -34,20 +36,16 @@ class UserManagementController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::query()
-            ->select(['id', 'name', 'email', 'phone', 'two_factor_secret', 'two_factor_confirmed_at', 'avatar_path'])
-            ->with(['roles:id,name', 'latestSession']);
+        $query = User::query();
 
         $options = [
+            'select'       => ['id', 'name', 'email', 'phone', 'two_factor_secret', 'two_factor_confirmed_at', 'avatar_path'],
+            'with'         => ['roles:id,name', 'latestSession'],
             'search_param' => 'search',
             'searchable'   => ['name', 'email', 'phone'],
             'sortable'     => [
-                'name'               => 'name',
-                'email'              => 'email',
-                'phone'              => 'phone',
-                'two_factor_enabled' => function ($q, string $dir) {
-                    $q->orderByRaw('CASE WHEN two_factor_secret IS NULL THEN 0 ELSE 1 END ' . ($dir === 'desc' ? 'DESC' : 'ASC'));
-                },
+                'name'  => 'name',
+                'email' => 'email',
             ],
             'default_sort' => ['name', 'asc'],
             'filters'      => [
@@ -159,14 +157,16 @@ class UserManagementController extends Controller
             }
         }
 
-        activity('system')
-            ->causedBy($request->user())
-            ->performedOn($user)
-            ->withProperties([
+        $this->logEvent(
+            event: 'invited_user',
+            causer: $request->user(),
+            subject: $user,
+            properties: [
                 'roles'      => $roles->pluck('name')->values()->all(),
                 'invited_by' => $request->user()?->id,
                 'invited_at' => now(),
-            ])->log('invited_user');
+            ],
+        );
 
         return back()->with('success', 'Pengguna berhasil dibuat. Username & password sementara dikirim ke email beserta tautan ubah password.');
     }
@@ -213,12 +213,23 @@ class UserManagementController extends Controller
         $mode = $validated['mode'] ?? 'send';
 
         return match ($mode) {
-            'generate' => (function () use ($broker, $user) {
+            'generate' => (function () use ($broker, $user, $request) {
                 $token    = $broker->createToken($user);
                 $resetUrl = route('password.reset', [
                     'token' => $token,
                     'email' => $user->email,
                 ]);
+
+                $this->logEvent(
+                    event: 'password_reset_link_generated',
+                    causer: $request->user(),
+                    subject: $user,
+                    properties: [
+                        'mode'     => 'generate',
+                        'delivery' => 'manual',
+                        'email'    => $user->email,
+                    ],
+                );
 
                 return response()->json([
                     'message'   => 'Tautan reset berhasil digenerate.',
@@ -226,22 +237,57 @@ class UserManagementController extends Controller
                 ]);
             })(),
 
-            'send' => (function () use ($broker, $user) {
+            'send' => (function () use ($broker, $user, $request) {
                 $status = $broker->sendResetLink(['email' => $user->email]);
                 if ($status === Password::RESET_LINK_SENT) {
+                    $this->logEvent(
+                        event: 'password_reset_link_sent',
+                        causer: $request->user(),
+                        subject: $user,
+                        properties: [
+                            'mode'     => 'send',
+                            'delivery' => 'email',
+                            'email'    => $user->email,
+                            'status'   => $status,
+                        ],
+                    );
+
                     return response()->json([
                         'message' => 'Tautan reset dikirim ke email pengguna.',
                     ]);
                 }
+
+                $this->logEvent(
+                    event: 'password_reset_link_send_failed',
+                    causer: $request->user(),
+                    subject: $user,
+                    properties: [
+                        'mode'     => 'send',
+                        'delivery' => 'email',
+                        'email'    => $user->email,
+                        'status'   => $status,
+                    ],
+                );
 
                 return response()->json([
                     'error' => __($status),
                 ], 400);
             })(),
 
-            default => response()->json([
-                'error' => 'Invalid mode for reset password link.',
-            ], 400),
+            default => (function () use ($request, $validated, $user) {
+                $this->logEvent(
+                    event: 'password_reset_invalid_mode',
+                    causer: $request->user(),
+                    subject: $user,
+                    properties: [
+                        'mode' => $validated['mode'] ?? null,
+                    ],
+                );
+
+                return response()->json([
+                    'error' => 'Invalid mode for reset password link.',
+                ], 400);
+            })(),
         };
     }
 
@@ -251,19 +297,37 @@ class UserManagementController extends Controller
         $mode      = $validated['mode'] ?? null;
 
         return match ($mode) {
-            'disable' => (function () use ($user) {
+            'disable' => (function () use ($user, $request) {
                 $user->two_factor_secret         = null;
                 $user->two_factor_recovery_codes = null;
                 $user->two_factor_confirmed_at   = null;
                 $user->save();
+
+                $this->logEvent(
+                    event: 'two_factor_disabled',
+                    causer: $request->user(),
+                    subject: $user,
+                    properties: [
+                        'method' => 'totp',
+                    ],
+                );
 
                 return response()->json([
                     'message' => 'Two-factor authentication has been disabled.',
                 ]);
             })(),
 
-            'recovery_show' => (function () use ($user) {
+            'recovery_show' => (function () use ($user, $request) {
                 $codes = $this->twofa->parseRecoveryCodes($user->two_factor_recovery_codes);
+
+                $this->logEvent(
+                    event: 'two_factor_recovery_viewed',
+                    causer: $request->user(),
+                    subject: $user,
+                    properties: [
+                        'codes_count' => count($codes),
+                    ],
+                );
 
                 return response()->json([
                     'message' => 'Recovery codes retrieved successfully.',
@@ -271,10 +335,19 @@ class UserManagementController extends Controller
                 ]);
             })(),
 
-            'recovery_regenerate' => (function () use ($user) {
+            'recovery_regenerate' => (function () use ($user, $request) {
                 $newCodes                        = $this->twofa->generateRecoveryCodes(8);
                 $user->two_factor_recovery_codes = $newCodes;
                 $user->save();
+
+                $this->logEvent(
+                    event: 'two_factor_recovery_regenerated',
+                    causer: $request->user(),
+                    subject: $user,
+                    properties: [
+                        'generated' => 8,
+                    ],
+                );
 
                 return response()->json([
                     'message' => 'Recovery codes have been regenerated.',
@@ -282,9 +355,20 @@ class UserManagementController extends Controller
                 ]);
             })(),
 
-            default => response()->json([
-                'message' => 'Invalid mode.',
-            ], 400),
+            default => (function () use ($request, $validated, $user) {
+                $this->logEvent(
+                    event: 'two_factor_invalid_mode',
+                    causer: $request->user(),
+                    subject: $user,
+                    properties: [
+                        'mode' => $validated['mode'] ?? null,
+                    ],
+                );
+
+                return response()->json([
+                    'message' => 'Invalid mode.',
+                ], 400);
+            })(),
         };
     }
 
@@ -311,11 +395,16 @@ class UserManagementController extends Controller
 
         Session::query()->whereIn('id', $ids)->delete();
 
-        activity('system')
-            ->performedOn($user)
-            ->causedBy($request->user())
-            ->withProperties(['scope' => $scope, 'reason' => $validated['reason'] ?? null, 'count' => $ids->count()])
-            ->log('revoke_user_sessions');
+        $this->logEvent(
+            event: 'revoke_user_sessions',
+            causer: $request->user(),
+            subject: $user,
+            properties: [
+                'scope'  => $scope,
+                'reason' => $validated['reason'] ?? null,
+                'count'  => $ids->count(),
+            ],
+        );
 
         return back()->with('success', sprintf('Berhasil menghapus %d sesi pengguna.', $ids->count()));
     }

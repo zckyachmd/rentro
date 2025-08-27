@@ -96,53 +96,60 @@ export default function Navbar({
                                 <PanelRight className="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" className="w-80 p-0">
-                            <SheetHeader className="sr-only">
-                                <SheetTitle>Menu Navigasi</SheetTitle>
-                                <SheetDescription>
-                                    Akses menu aplikasi
-                                </SheetDescription>
-                            </SheetHeader>
-                            <div className="flex h-14 items-center border-b px-4">
-                                <span className="font-semibold">
-                                    {brandLabel}
-                                </span>
-                            </div>
-                            <div className="space-y-3 p-4 pt-3">
-                                {/* Mobile search */}
-                                <form
-                                    onSubmit={onSearchSubmit}
-                                    role="search"
-                                    className="flex items-center gap-2"
-                                >
-                                    <div className="relative w-full">
-                                        <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            value={q}
-                                            onChange={(e) =>
-                                                setQ(e.target.value)
-                                            }
-                                            placeholder="Cari…"
-                                            className="h-9 pl-8"
-                                        />
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        variant="secondary"
-                                        className="h-9"
+                        <SheetContent
+                            side="left"
+                            className="w-80 overflow-hidden p-0"
+                        >
+                            <div className="flex h-full min-h-0 flex-col">
+                                <SheetHeader className="sr-only">
+                                    <SheetTitle>Menu Navigasi</SheetTitle>
+                                    <SheetDescription>
+                                        Akses menu aplikasi
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <div className="flex h-14 shrink-0 items-center border-b px-4">
+                                    <span className="truncate font-semibold">
+                                        {brandLabel}
+                                    </span>
+                                </div>
+                                <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden p-4 pt-3">
+                                    {/* Mobile search */}
+                                    <form
+                                        onSubmit={onSearchSubmit}
+                                        role="search"
+                                        className="flex items-center gap-2"
                                     >
-                                        Go
-                                    </Button>
-                                </form>
+                                        <div className="relative w-full">
+                                            <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                value={q}
+                                                onChange={(e) =>
+                                                    setQ(e.target.value)
+                                                }
+                                                placeholder="Cari…"
+                                                className="h-9 pl-8"
+                                            />
+                                        </div>
+                                        <Button
+                                            type="submit"
+                                            variant="secondary"
+                                            className="h-9"
+                                        >
+                                            Go
+                                        </Button>
+                                    </form>
 
-                                {/* Mobile nav grouped with accordions */}
-                                <MenuGroups
-                                    variant="mobile"
-                                    menuGroups={menuGroups}
-                                    sectionValue={mobileSection}
-                                    onSectionChange={handleMobileSectionChange}
-                                    onNavigate={handleNavigate}
-                                />
+                                    {/* Mobile nav grouped with accordions */}
+                                    <MenuGroups
+                                        variant="mobile"
+                                        menuGroups={menuGroups}
+                                        sectionValue={mobileSection}
+                                        onSectionChange={
+                                            handleMobileSectionChange
+                                        }
+                                        onNavigate={handleNavigate}
+                                    />
+                                </div>
                             </div>
                         </SheetContent>
                     </Sheet>

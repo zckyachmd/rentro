@@ -20,14 +20,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { UserRow } from '.';
+import { UserItem } from '.';
 
 export type Role = { id: number; name: string };
 
 type RoleDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    user: UserRow;
+    user: UserItem;
     roles: Role[];
     autoReload?: boolean;
 };
