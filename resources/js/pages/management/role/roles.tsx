@@ -22,7 +22,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-import type { RoleItem } from './columns';
+import { RoleItem } from '.';
 
 export type RoleUpsertDialogProps = {
     open: boolean;

@@ -1,8 +1,14 @@
 <?php
 
 use App\Enum\PermissionName;
+use App\Http\Controllers\Management\AmenityManagementController;
 use App\Http\Controllers\Management\AuditLogController;
+use App\Http\Controllers\Management\BuildingManagementController;
+use App\Http\Controllers\Management\FloorManagementController;
 use App\Http\Controllers\Management\RoleManagementController;
+use App\Http\Controllers\Management\RoomManagementController;
+use App\Http\Controllers\Management\RoomPhotoController;
+use App\Http\Controllers\Management\RoomTypeManagementController;
 use App\Http\Controllers\Management\UserManagementController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
@@ -133,6 +139,120 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/', [AuditLogController::class, 'index'])
                 ->middleware('can:' . PermissionName::AUDIT_LOG_VIEW->value)
                 ->name('index');
+        });
+
+        // Rooms
+        Route::prefix('rooms')->name('rooms.')->group(function (): void {
+            Route::get('/', [RoomManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('index');
+
+            Route::post('/', [RoomManagementController::class, 'store'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('store');
+
+            Route::put('/{room}', [RoomManagementController::class, 'update'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('update');
+
+            Route::delete('/{room}', [RoomManagementController::class, 'destroy'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('destroy');
+
+            // Room Photos
+            Route::prefix('{room}/photos')->name('photos.')->group(function (): void {
+                Route::get('/', [RoomPhotoController::class, 'index'])
+                    ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                    ->name('index');
+
+                Route::post('/', [RoomPhotoController::class, 'store'])
+                    ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                    ->name('store');
+
+                Route::put('/{photo}/cover', [RoomPhotoController::class, 'cover'])
+                    ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                    ->name('cover');
+
+                Route::delete('/{photo}', [RoomPhotoController::class, 'destroy'])
+                    ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                    ->name('destroy');
+            });
+        });
+
+        // Buildings
+        Route::prefix('buildings')->name('buildings.')->group(function (): void {
+            Route::get('/', [BuildingManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('index');
+
+            Route::post('/', [BuildingManagementController::class, 'store'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('store');
+
+            Route::put('/{building}', [BuildingManagementController::class, 'update'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('update');
+
+            Route::delete('/{building}', [BuildingManagementController::class, 'destroy'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('destroy');
+        });
+
+        // Floors
+        Route::prefix('floors')->name('floors.')->group(function (): void {
+            Route::get('/', [FloorManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('index');
+
+            Route::post('/', [FloorManagementController::class, 'store'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('store');
+
+            Route::put('/{floor}', [FloorManagementController::class, 'update'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('update');
+
+            Route::delete('/{floor}', [FloorManagementController::class, 'destroy'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('destroy');
+        });
+
+        // Room Types
+        Route::prefix('room-types')->name('room-types.')->group(function (): void {
+            Route::get('/', [RoomTypeManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('index');
+
+            Route::post('/', [RoomTypeManagementController::class, 'store'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('store');
+
+            Route::put('/{room_type}', [RoomTypeManagementController::class, 'update'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('update');
+
+            Route::delete('/{room_type}', [RoomTypeManagementController::class, 'destroy'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('destroy');
+        });
+
+        // Amenities
+        Route::prefix('amenities')->name('amenities.')->group(function (): void {
+            Route::get('/', [AmenityManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('index');
+
+            Route::post('/', [AmenityManagementController::class, 'store'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('store');
+
+            Route::put('/{amenity}', [AmenityManagementController::class, 'update'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('update');
+
+            Route::delete('/{amenity}', [AmenityManagementController::class, 'destroy'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('destroy');
         });
     });
 });

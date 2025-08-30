@@ -24,8 +24,8 @@ enum PermissionName: string
     case AUDIT_LOG_VIEW = 'audit-log.view';
 
     // Kamar
-    case ROOM_VIEW   = 'room.view';
-    case ROOM_CREATE = 'room.create';
-    case ROOM_UPDATE = 'room.update';
-    case ROOM_DELETE = 'room.delete';
+    case ROOM_MANAGE_VIEW   = 'room.manage.view';
+    case ROOM_MANAGE_CREATE = 'room.manage.create';
+    case ROOM_MANAGE_UPDATE = 'room.manage.update';
+    case ROOM_MANAGE_DELETE = 'room.manage.delete';
 }

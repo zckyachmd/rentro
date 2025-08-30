@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import type { RoleItem } from './columns';
+import type { RoleItem } from '.';
 
 export type Permission = { id: number; name: string; guard_name: string };
 

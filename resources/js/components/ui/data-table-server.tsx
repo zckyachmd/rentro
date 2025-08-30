@@ -47,6 +47,7 @@ type ServerDataTableProps<TData, TValue> = {
   // selection
   rowSelection?: boolean
   showSubmitButton?: boolean
+  showColumn?: boolean
 }
 
 export function DataTableServer<TData, TValue>({
@@ -65,7 +66,8 @@ export function DataTableServer<TData, TValue>({
   loading,
   emptyText = "Tidak ada data.",
   rowSelection = false,
-  showSubmitButton = true
+  showSubmitButton = true,
+  showColumn = true
 }: ServerDataTableProps<TData, TValue>) {
   const meta: PaginatorMeta = React.useMemo(() => (
     paginator ?? {
@@ -143,6 +145,7 @@ export function DataTableServer<TData, TValue>({
           value={search}
           onValueChange={onSearchChange ?? noop}
           showSubmitButton={showSubmitButton}
+          showColumn={showColumn}
         />
       )}
       // footer

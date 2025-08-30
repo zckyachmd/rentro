@@ -19,7 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import AuthLayout from '@/layouts/auth-layout';
 
-import ContactSection, { ContactDTO } from './partials/contact';
+import ContactSection, { ContactDTO } from './contact';
 
 type UserDTO = {
     id: number;
