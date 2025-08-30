@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "bacon/bacon-qr-code": "^3.0",
+        "godruoyi/php-snowflake": "^3.2",
         "inertiajs/inertia-laravel": "^2.0",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^12.0",

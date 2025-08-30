@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSnowflakeId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RoomPhoto extends Model
 {
     use HasFactory;
+    use HasSnowflakeId;
+
+    public $incrementing = false;
+    protected $keyType   = 'int';
 
     protected $fillable = [
         'room_id',

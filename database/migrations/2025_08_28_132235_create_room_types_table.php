@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('room_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');                    // Standard, Deluxe
+            $table->unsignedBigInteger('id')->primary();
+            $table->string('name');
             $table->string('slug')->unique();
             $table->unsignedTinyInteger('capacity')->default(1);
             $table->decimal('size_m2', 6, 2)->nullable();
-            $table->boolean('shared_bathroom')->default(false);
+            $table->unsignedBigInteger('price_cents')->default(0);
+            $table->unsignedBigInteger('deposit_cents')->default(0);
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

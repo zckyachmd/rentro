@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('room_photos', function (Blueprint $table) {
-            $table->id();
+            $table->unsignedBigInteger('id')->primary();
             $table->foreignId('room_id')->constrained()->cascadeOnDelete();
             $table->string('path');
             $table->boolean('is_cover')->default(false);

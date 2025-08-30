@@ -25,12 +25,12 @@ export interface Floor {
     building_id: number;
 }
 export interface RoomType {
-    id: number;
+    id: string;
     name: string;
 }
 
 export interface RoomItem {
-    id: number;
+    id: string;
     number: string;
     name?: string | null;
     status: 'vacant' | 'reserved' | 'occupied' | 'maintenance' | 'inactive';
@@ -95,7 +95,6 @@ export const createColumns = (
         id: 'building',
         title: 'Gedung',
         className: COL.building,
-        // sort by nested building name via back-end when possible; FE just displays
         cell: ({ row }) => (
             <div className={COL.building}>
                 {row.original.building?.name ?? '-'}
@@ -160,7 +159,7 @@ export const createColumns = (
     makeColumn<RoomItem>({
         id: 'amenities',
         accessorKey: 'amenities_count',
-        title: 'Amenitas',
+        title: 'Fasilitas',
         className: COL.amenities,
         sortable: true,
         cell: ({ getValue }) => (

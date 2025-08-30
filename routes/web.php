@@ -7,7 +7,7 @@ use App\Http\Controllers\Management\BuildingManagementController;
 use App\Http\Controllers\Management\FloorManagementController;
 use App\Http\Controllers\Management\RoleManagementController;
 use App\Http\Controllers\Management\RoomManagementController;
-use App\Http\Controllers\Management\RoomPhotoController;
+use App\Http\Controllers\Management\RoomPhotoManagementController;
 use App\Http\Controllers\Management\RoomTypeManagementController;
 use App\Http\Controllers\Management\UserManagementController;
 use App\Http\Controllers\Profile\EmergencyContactController;
@@ -147,6 +147,18 @@ Route::middleware('auth')->group(function (): void {
                 ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
                 ->name('index');
 
+            Route::get('/create', [RoomManagementController::class, 'create'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('create');
+
+            Route::get('/{room}', [RoomManagementController::class, 'show'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('show');
+
+            Route::get('/{room}/edit', [RoomManagementController::class, 'edit'])
+                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
+                ->name('edit');
+
             Route::post('/', [RoomManagementController::class, 'store'])
                 ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
                 ->name('store');
@@ -161,19 +173,19 @@ Route::middleware('auth')->group(function (): void {
 
             // Room Photos
             Route::prefix('{room}/photos')->name('photos.')->group(function (): void {
-                Route::get('/', [RoomPhotoController::class, 'index'])
+                Route::get('/', [RoomPhotoManagementController::class, 'index'])
                     ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
                     ->name('index');
 
-                Route::post('/', [RoomPhotoController::class, 'store'])
+                Route::post('/', [RoomPhotoManagementController::class, 'store'])
                     ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
                     ->name('store');
 
-                Route::put('/{photo}/cover', [RoomPhotoController::class, 'cover'])
+                Route::post('/batch', [RoomPhotoManagementController::class, 'batch'])
                     ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
-                    ->name('cover');
+                    ->name('batch');
 
-                Route::delete('/{photo}', [RoomPhotoController::class, 'destroy'])
+                Route::delete('/{photo}', [RoomPhotoManagementController::class, 'destroy'])
                     ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
                     ->name('destroy');
             });
