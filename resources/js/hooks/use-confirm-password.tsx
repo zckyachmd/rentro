@@ -2,16 +2,15 @@ import { useForm } from '@inertiajs/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-function readXsrfCookie(): string | null {
-    const match = document.cookie
+export function readXsrfCookie(): string | null {
+    const raw = document.cookie
         .split('; ')
         .find((c) => c.startsWith('XSRF-TOKEN='));
-    if (!match) return null;
-    const raw = match.split('=')[1];
+    if (!raw) return null;
     try {
-        return decodeURIComponent(raw);
+        return decodeURIComponent(raw.split('=')[1] || '');
     } catch {
-        return raw;
+        return null;
     }
 }
 

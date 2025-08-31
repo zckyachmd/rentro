@@ -96,10 +96,21 @@ class MenuSeeder extends Seeder
                         'icon' => 'ShieldCheck',
                         'children' => [
                             ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
-                            ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare'],
-                            ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck'],
+                            ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
+                            ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
                         ],
                     ],
+                    [
+                        'label' => 'Kamar',
+                        'icon'  => 'Bed',
+                        'children' => [
+                            ['label' => 'Daftar Kamar', 'href' => route('management.rooms.index'), 'icon' => 'BedDouble', 'permission' => PermissionName::ROOM_MANAGE_VIEW],
+                            ['label' => 'Gedung', 'href' => '#', 'icon' => 'Building2',],
+                            ['label' => 'Lantai', 'href' => '#', 'icon' => 'Layers',],
+                            ['label' => 'Tipe Kamar', 'href' => '#', 'icon' => 'Tags',],
+                            ['label' => 'Fasilitas', 'href' => '#', 'icon' => 'AirVent',],
+                        ],
+                    ]
                 ],
             ],
             [

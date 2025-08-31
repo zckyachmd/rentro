@@ -68,7 +68,7 @@ class RoleManagementController extends Controller
             fn () => Permission::query()->orderBy('name')->get(),
         );
 
-        return Inertia::render('management/roles/index', [
+        return Inertia::render('management/role/index', [
             'roles'       => $rolesPayload,
             'permissions' => $permissions,
             'query'       => [

@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasAudit;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Building extends Model
+{
+    use HasFactory;
+    use SoftDeletes;
+    use HasAudit;
+
+    protected $fillable = [
+        'name',
+        'code',
+        'address',
+        'is_active',
+    ];
+
+    public function floors()
+    {
+        return $this->hasMany(Floor::class);
+    }
+
+    public function rooms()
+    {
+        return $this->hasMany(Room::class);
+    }
+}

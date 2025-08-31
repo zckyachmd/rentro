@@ -1,0 +1,114 @@
+<?php
+
+namespace App\Http\Controllers\Management;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Management\Room\BatchRoomPhotoRequest;
+use App\Http\Requests\Management\Room\StoreRoomPhotoRequest;
+use App\Models\Room;
+use App\Models\RoomPhoto;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+class RoomPhotoManagementController extends Controller
+{
+    public function index(Room $room)
+    {
+        return response()->json([
+            'photos' => $room->photos()->get(['id', 'path', 'is_cover', 'ordering']),
+        ]);
+    }
+
+    public function store(StoreRoomPhotoRequest $request, Room $room)
+    {
+        $validated = $request->validated();
+
+        /** @var array<int, UploadedFile>|UploadedFile|null $filesRaw */
+        $filesRaw = $validated['photos'] ?? null;
+        $files    = is_array($filesRaw) ? $filesRaw : (isset($filesRaw) ? [$filesRaw] : []);
+
+        $stored = [];
+        foreach ($files as $file) {
+            $path     = $file->store("rooms/{$room->id}", 'public');
+            $stored[] = $room->photos()->create(['path' => $path]);
+        }
+
+        return back()->with('success', 'Foto berhasil ditambahkan.');
+    }
+
+    public function destroy(Room $room, RoomPhoto $photo)
+    {
+        if ((int) $photo->room_id !== (int) $room->id) {
+            abort(404);
+        }
+
+        DB::transaction(function () use ($room, $photo): void {
+            $path     = $photo->path;
+            $wasCover = (bool) $photo->is_cover;
+            $photo->delete();
+
+            if ($path && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            if ($wasCover) {
+                /** @var RoomPhoto|null $first */
+                $first = RoomPhoto::query()
+                    ->where('room_id', $room->id)
+                    ->orderBy('ordering')
+                    ->first();
+                if ($first) {
+                    RoomPhoto::query()->where('room_id', $room->id)->update(['is_cover' => false]);
+                    $first->is_cover = true;
+                    $first->save();
+                }
+            }
+        });
+
+        return back()->with('success', 'Foto berhasil dihapus.');
+    }
+
+    public function batch(BatchRoomPhotoRequest $request, Room $room)
+    {
+        $data = $request->validated();
+
+        try {
+            DB::transaction(function () use ($data, $room): void {
+                $toDelete = collect($data['deleted_ids'] ?? [])->map(fn ($v) => (int) $v)->values();
+                if ($toDelete->isNotEmpty()) {
+                    $photos = RoomPhoto::query()->where('room_id', $room->id)->whereIn('id', $toDelete)->get();
+                    foreach ($photos as $p) {
+                        $path = $p->path;
+                        $p->delete();
+                        if ($path && Storage::disk('public')->exists($path)) {
+                            Storage::disk('public')->delete($path);
+                        }
+                    }
+                }
+
+                $ordered = collect($data['ordered_ids'] ?? [])->map(fn ($v) => (int) $v)->values();
+                if ($ordered->isNotEmpty()) {
+                    $exists  = RoomPhoto::query()->where('room_id', $room->id)->whereIn('id', $ordered)->pluck('id')->values();
+                    $ordered = $ordered->filter(fn ($id) => $exists->contains($id))->values();
+                    foreach ($ordered as $i => $pid) {
+                        RoomPhoto::query()->where('id', $pid)->update(['ordering' => $i]);
+                    }
+                }
+
+                if (!empty($data['cover_id'])) {
+                    $coverId = (int) $data['cover_id'];
+                    $exists  = RoomPhoto::query()->where('room_id', $room->id)->where('id', $coverId)->exists();
+                    if ($exists) {
+                        RoomPhoto::query()->where('room_id', $room->id)->update(['is_cover' => false]);
+                        RoomPhoto::query()->where('id', $coverId)->update(['is_cover' => true]);
+                    }
+                }
+            });
+
+            return back()->with('success', 'Perubahan foto berhasil disimpan.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal menyimpan perubahan foto.');
+        }
+    }
+}

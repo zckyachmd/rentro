@@ -96,7 +96,7 @@ class UserManagementController extends Controller
                 ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name])->all(),
         );
 
-        return Inertia::render('management/users/index', [
+        return Inertia::render('management/user/index', [
             'users' => $usersPayload,
             'roles' => $roles,
             'query' => [

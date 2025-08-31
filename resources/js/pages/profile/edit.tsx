@@ -17,8 +17,8 @@ import {
 } from '@/components/ui/select';
 import AuthLayout from '@/layouts/auth-layout';
 
-import AddressSection from './partials/address';
-import DocumentSection from './partials/document';
+import AddressSection from './address';
+import DocumentSection from './document';
 
 type UserDTO = {
     id: number;

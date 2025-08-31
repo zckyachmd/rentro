@@ -25,9 +25,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AuthLayout from '@/layouts/auth-layout';
 
-import TwoFactorTab from './partials/2fa';
-import PasswordTab from './partials/password';
-import { SessionsTab } from './partials/sessions';
+import TwoFactorTab from './2fa';
+import PasswordTab from './password';
+import { SessionsTab } from './sessions';
 
 type SessionItem = {
     id: string;

@@ -43,6 +43,8 @@ type AuthLayoutProps = PropsWithChildren<{
     pageTitle?: string;
     pageDescription?: string;
     breadcrumbs?: Crumb[];
+    actions?: ReactNode;
+    titleIcon?: ReactNode | string;
 }>;
 
 interface AppPageProps {
@@ -57,6 +59,8 @@ export default function AuthLayout({
     pageTitle = 'Dashboard',
     pageDescription,
     breadcrumbs,
+    actions,
+    titleIcon,
 }: AuthLayoutProps) {
     const brandLabel = getAppName();
 
@@ -162,6 +166,8 @@ export default function AuthLayout({
                         />
 
                         {(header ||
+                            actions ||
+                            titleIcon ||
                             effectiveBreadcrumbs.length > 0 ||
                             pageTitle ||
                             pageDescription) && (
@@ -169,25 +175,68 @@ export default function AuthLayout({
                                 <div className="container mx-auto space-y-2 px-4 py-3 md:py-4">
                                     {(pageTitle ||
                                         pageDescription ||
-                                        header) && (
-                                        <div className="space-y-1">
-                                            {pageTitle && (
-                                                <h1 className="text-xl font-semibold leading-tight tracking-tight">
-                                                    {pageTitle}
-                                                </h1>
+                                        header ||
+                                        actions ||
+                                        titleIcon) && (
+                                        <div className="grid grid-cols-[1fr,auto] items-center gap-3">
+                                            <div className="min-w-0">
+                                                <div
+                                                    className={
+                                                        titleIcon
+                                                            ? 'grid grid-cols-[auto,1fr] items-center gap-3'
+                                                            : ''
+                                                    }
+                                                >
+                                                    {titleIcon && (
+                                                        <div className="h-6 w-6 place-self-center">
+                                                            {typeof titleIcon !==
+                                                            'string'
+                                                                ? titleIcon
+                                                                : (() => {
+                                                                      const DynIcon =
+                                                                          getIconByName(
+                                                                              titleIcon,
+                                                                          );
+                                                                      return DynIcon ? (
+                                                                          <DynIcon className="h-6 w-6" />
+                                                                      ) : null;
+                                                                  })()}
+                                                        </div>
+                                                    )}
+                                                    <div className="min-w-0 space-y-1">
+                                                        {pageTitle && (
+                                                            <h1 className="truncate text-xl font-semibold leading-tight tracking-tight">
+                                                                {pageTitle}
+                                                            </h1>
+                                                        )}
+                                                        {pageDescription && (
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {
+                                                                    pageDescription
+                                                                }
+                                                            </p>
+                                                        )}
+                                                        {header}
+                                                    </div>
+                                                </div>
+                                                {effectiveBreadcrumbs.length >
+                                                    0 && (
+                                                    <div className="mt-1">
+                                                        <Breadcrumbs
+                                                            items={
+                                                                effectiveBreadcrumbs
+                                                            }
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {actions && (
+                                                <div className="shrink-0 self-center">
+                                                    {actions}
+                                                </div>
                                             )}
-                                            {pageDescription && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    {pageDescription}
-                                                </p>
-                                            )}
-                                            {header}
                                         </div>
-                                    )}
-                                    {effectiveBreadcrumbs.length > 0 && (
-                                        <Breadcrumbs
-                                            items={effectiveBreadcrumbs}
-                                        />
                                     )}
                                 </div>
                             </div>

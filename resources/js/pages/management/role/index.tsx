@@ -31,7 +31,7 @@ import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
 import PermissionsDialog, { Permission } from './permissions';
-import RoleUpsertDialog from './role';
+import RoleUpsertDialog from './roles';
 
 const BREADCRUMBS: Crumb[] = [
     { label: 'Akses & Peran', href: '#' },
