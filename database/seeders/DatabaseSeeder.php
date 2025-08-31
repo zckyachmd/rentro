@@ -9,10 +9,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            MenuSeeder::class,
+            AppSettingSeeder::class,
             PermissionSeeder::class,
+            MenuSeeder::class,
             UserSeeder::class,
-            RoomSeeder::class
+            RoomSeeder::class,
+            ContractSeeder::class,
         ]);
     }
 }

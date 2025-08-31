@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enum\BillingPeriod;
+use App\Enum\ContractStatus;
 use App\Enum\GenderPolicy;
 use App\Enum\RoomStatus;
 use App\Models\Concerns\HasAudit;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -90,5 +92,18 @@ class Room extends Model
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(Amenity::class)->withTimestamps();
+    }
+
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
+    }
+
+    public function currentContract(): HasOne
+    {
+        return $this->hasOne(Contract::class)
+            ->ofMany(['start_date' => 'max'], function ($query) {
+                $query->where('status', ContractStatus::ACTIVE->value);
+            });
     }
 }

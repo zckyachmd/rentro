@@ -9,12 +9,9 @@ use App\Models\UserAddress;
 use App\Models\UserDocument;
 use Illuminate\Database\Seeder;
 use App\Models\EmergencyContact;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Run the database seeds.
      */

@@ -92,12 +92,12 @@ class MenuSeeder extends Seeder
                 'label' => 'Administrasi',
                 'items' => [
                     [
-                        'label' => 'Akses & Peran',
-                        'icon' => 'ShieldCheck',
+                        'label' => 'Kontrak',
+                        'icon'  => 'Handshake',
                         'children' => [
-                            ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
-                            ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
-                            ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
+                            ['label' => 'Kontrak', 'href' => '#', 'icon' => 'ScrollText'],
+                            ['label' => 'Tagihan', 'href' => '#', 'icon' => 'ReceiptText'],
+                            ['label' => 'Pembayaran', 'href' => '#', 'icon' => 'CreditCard'],
                         ],
                     ],
                     [
@@ -110,7 +110,16 @@ class MenuSeeder extends Seeder
                             ['label' => 'Tipe Kamar', 'href' => '#', 'icon' => 'Tags',],
                             ['label' => 'Fasilitas', 'href' => '#', 'icon' => 'AirVent',],
                         ],
-                    ]
+                    ],
+                    [
+                        'label' => 'Akses',
+                        'icon' => 'ShieldCheck',
+                        'children' => [
+                            ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
+                            ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
+                            ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
+                        ],
+                    ],
                 ],
             ],
             [

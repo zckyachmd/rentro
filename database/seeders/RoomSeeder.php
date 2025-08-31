@@ -11,12 +11,9 @@ use App\Models\RoomType;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class RoomSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     public function run(): void
     {
         // 1) Buat 1 building
