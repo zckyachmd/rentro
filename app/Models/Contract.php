@@ -6,6 +6,7 @@ use App\Enum\BillingPeriod;
 use App\Enum\ContractStatus;
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasSnowflakeId;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -78,5 +79,14 @@ class Contract extends Model
             'id',          // Local key on contracts
             'id',           // Local key on invoices
         );
+    }
+
+    public static function monthlyEndDate(Carbon $start, int $months, bool $prorata): string
+    {
+        if ($prorata && $start->day !== 1 && $months >= 2) {
+            return $start->copy()->endOfMonth()->addMonthsNoOverflow($months)->toDateString();
+        }
+
+        return $start->copy()->addMonthsNoOverflow($months)->toDateString();
     }
 }

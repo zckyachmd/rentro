@@ -31,6 +31,6 @@ class UserSeeder extends Seeder
 
         $admin->assignRole(RoleName::SUPER_ADMIN->value);
 
-        User::factory()->count(25)->create()->each->assignRole(RoleName::TENANT->value);
+        User::factory()->count(30)->create()->each->assignRole(RoleName::TENANT->value);
     }
 }

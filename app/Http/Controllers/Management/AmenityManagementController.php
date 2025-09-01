@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Management;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogActivity;
 use Illuminate\Http\Request;
 
 class AmenityManagementController extends Controller
 {
+    use LogActivity;
+
     /**
      * Display a listing of the resource.
      */

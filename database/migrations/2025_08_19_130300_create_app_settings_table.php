@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('app_settings', function (Blueprint $table): void {
             $table->id();
             $table->string('key', 100)->unique();
-            $table->json('value')->nullable();
+            $table->json('value');
+            $table->string('type', 20);
             $table->timestamps();
         });
     }
@@ -21,4 +22,3 @@ return new class extends Migration
         Schema::dropIfExists('app_settings');
     }
 };
-

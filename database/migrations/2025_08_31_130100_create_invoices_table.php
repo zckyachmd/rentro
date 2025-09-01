@@ -15,11 +15,11 @@ return new class extends Migration
             $table->string('number', 50)->unique();
             $table->date('period_start')->nullable();
             $table->date('period_end')->nullable();
-            $table->date('due_date');
+            $table->timestamp('due_date');
             $table->unsignedBigInteger('amount_cents');
+            $table->json('items')->nullable();
             $table->string('status', 20)->default(InvoiceStatus::PENDING->value)->index();
             $table->timestamp('paid_at')->nullable();
-            $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
@@ -32,4 +32,3 @@ return new class extends Migration
         Schema::dropIfExists('invoices');
     }
 };
-

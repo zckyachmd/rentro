@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
             UserSeeder::class,
             RoomSeeder::class,
-            ContractSeeder::class,
         ]);
     }
 }

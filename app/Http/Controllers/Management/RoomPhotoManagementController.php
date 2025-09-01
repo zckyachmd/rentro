@@ -7,12 +7,15 @@ use App\Http\Requests\Management\Room\BatchRoomPhotoRequest;
 use App\Http\Requests\Management\Room\StoreRoomPhotoRequest;
 use App\Models\Room;
 use App\Models\RoomPhoto;
+use App\Traits\LogActivity;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class RoomPhotoManagementController extends Controller
 {
+    use LogActivity;
+
     public function index(Room $room)
     {
         return response()->json([

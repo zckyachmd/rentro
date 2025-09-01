@@ -303,8 +303,10 @@ export default function RoomDetailDialog({
                                             ) : (
                                                 <div className="space-y-3">
                                                     {/* Main slider with fixed ratio */}
-                                                    <div className="relative overflow-hidden rounded-md border max-h-64 sm:max-h-72 lg:max-h-80">
-                                                        <AspectRatio ratio={4 / 3}>
+                                                    <div className="relative max-h-64 overflow-hidden rounded-md border sm:max-h-72 lg:max-h-80">
+                                                        <AspectRatio
+                                                            ratio={4 / 3}
+                                                        >
                                                             <img
                                                                 key={
                                                                     currentPhoto?.id

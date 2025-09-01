@@ -33,7 +33,6 @@ class InvoiceFactory extends Factory
             'amount_cents' => $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]) * 100,
             'status'       => InvoiceStatus::PENDING->value,
             'paid_at'      => null,
-            'notes'        => null,
         ];
     }
 

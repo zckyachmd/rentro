@@ -12,6 +12,7 @@ use App\Models\Floor;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Traits\DataTable;
+use App\Traits\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +21,7 @@ use Inertia\Inertia;
 class RoomManagementController extends Controller
 {
     use DataTable;
+    use LogActivity;
 
     public function index(Request $request)
     {
