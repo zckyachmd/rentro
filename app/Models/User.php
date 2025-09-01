@@ -10,6 +10,7 @@ use App\Models\Concerns\HasRoles;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -97,6 +98,25 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(EmergencyContact::class);
     }
+
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class, 'user_id');
+    }
+
+    public function invoices(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Invoice::class,
+            Contract::class,
+            'user_id',      // Foreign key on contracts...
+            'contract_id',  // Foreign key on invoices...
+            'id',           // Local key on users...
+            'id',            // Local key on contracts...
+        );
+    }
+
+    // Payments: traverse via invoices() -> payments() when needed.
 
     public static function generateUniqueUsername(string $name = ''): string
     {

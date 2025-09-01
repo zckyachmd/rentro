@@ -11,17 +11,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-
-function formatDate(date: Date | undefined, locale?: string) {
-    if (!date) {
-        return '';
-    }
-    return date.toLocaleDateString(locale || 'en-US', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    });
-}
+import { formatDate } from '@/lib/format';
 
 function isValidDate(date: Date | undefined) {
     if (!date) {
@@ -32,14 +22,23 @@ function isValidDate(date: Date | undefined) {
 
 function parseISODate(str?: string | null): Date | undefined {
     if (!str) return undefined;
-    const d = new Date(str);
-    return isValidDate(d) ? d : undefined;
+    // Expect YYYY-MM-DD; parse as LOCAL date to avoid TZ shift
+    const parts = str.split('-');
+    if (parts.length !== 3) return undefined;
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+    const d = Number(parts[2]);
+    if (!y || !m || !d) return undefined;
+    const local = new Date(y, m - 1, d); // local midnight
+    return isValidDate(local) ? local : undefined;
 }
 
 function toISODateString(date: Date | undefined): string | null {
     if (!date || !isValidDate(date)) return null;
-    // YYYY-MM-DD
-    return date.toISOString().slice(0, 10);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
 }
 
 export interface DatePickerInputProps {
@@ -84,14 +83,16 @@ export function DatePickerInput(props: DatePickerInputProps) {
         }
     }, [value, selectedDate]);
 
-    const displayValue = selectedDate ? formatDate(selectedDate, locale) : '';
+    const displayValue = selectedDate
+        ? formatDate(selectedDate, false, locale)
+        : '';
 
     // min/max as Date, if provided
     const minDate = min ? parseISODate(min) : undefined;
     const maxDate = max ? parseISODate(max) : undefined;
 
     return (
-        <div className="relative flex gap-2">
+        <div className="relative">
             {/* Visible input (readOnly) */}
             <Input
                 id={id}
@@ -127,11 +128,11 @@ export function DatePickerInput(props: DatePickerInputProps) {
                     <Button
                         id={id ? `${id}-picker` : 'date-picker'}
                         variant="ghost"
-                        className="absolute right-2 top-1/2 size-6 -translate-y-1/2"
+                        className="absolute right-3 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
                         tabIndex={-1}
                         disabled={disabled}
                     >
-                        <CalendarIcon className="size-3.5" />
+                        <CalendarIcon className="size-4" />
                         <span className="sr-only">Select date</span>
                     </Button>
                 </PopoverTrigger>
@@ -147,11 +148,21 @@ export function DatePickerInput(props: DatePickerInputProps) {
                         captionLayout="dropdown"
                         month={month}
                         onMonthChange={setMonth}
+                        disabled={[
+                            ...(minDate ? [{ before: minDate }] : []),
+                            ...(maxDate ? [{ after: maxDate }] : []),
+                        ]}
                         onSelect={(date) => {
-                            setOpen(false);
-                            if (onChange) {
-                                onChange(toISODateString(date));
+                            // Guard: ignore selection if out of range
+                            if (
+                                date &&
+                                ((minDate && date < minDate) ||
+                                    (maxDate && date > maxDate))
+                            ) {
+                                return; // do nothing
                             }
+                            setOpen(false);
+                            onChange?.(toISODateString(date));
                         }}
                         fromDate={minDate}
                         toDate={maxDate}

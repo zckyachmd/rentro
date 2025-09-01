@@ -28,4 +28,52 @@ enum PermissionName: string
     case ROOM_MANAGE_CREATE = 'room.manage.create';
     case ROOM_MANAGE_UPDATE = 'room.manage.update';
     case ROOM_MANAGE_DELETE = 'room.manage.delete';
+
+    // Room Photos
+    case ROOM_PHOTO_VIEW   = 'room.photo.view';
+    case ROOM_PHOTO_CREATE = 'room.photo.create';
+    case ROOM_PHOTO_DELETE = 'room.photo.delete';
+
+    // Buildings
+    case BUILDING_VIEW   = 'building.view';
+    case BUILDING_CREATE = 'building.create';
+    case BUILDING_UPDATE = 'building.update';
+    case BUILDING_DELETE = 'building.delete';
+
+    // Floors
+    case FLOOR_VIEW   = 'floor.view';
+    case FLOOR_CREATE = 'floor.create';
+    case FLOOR_UPDATE = 'floor.update';
+    case FLOOR_DELETE = 'floor.delete';
+
+    // Room Types
+    case ROOM_TYPE_VIEW   = 'room-type.view';
+    case ROOM_TYPE_CREATE = 'room-type.create';
+    case ROOM_TYPE_UPDATE = 'room-type.update';
+    case ROOM_TYPE_DELETE = 'room-type.delete';
+
+    // Amenities
+    case AMENITY_VIEW   = 'amenity.view';
+    case AMENITY_CREATE = 'amenity.create';
+    case AMENITY_UPDATE = 'amenity.update';
+    case AMENITY_DELETE = 'amenity.delete';
+
+    // Contracts
+    case CONTRACT_VIEW   = 'contract.view';
+    case CONTRACT_CREATE = 'contract.create';
+    case CONTRACT_EXTEND = 'contract.extend';
+    case CONTRACT_CANCEL = 'contract.cancel';
+    case CONTRACT_RENEW  = 'contract.renew';
+
+    // Invoices
+    case INVOICE_VIEW   = 'invoice.view';
+    case INVOICE_CREATE = 'invoice.create';
+    case INVOICE_UPDATE = 'invoice.update';
+    case INVOICE_DELETE = 'invoice.delete';
+
+    // Payments
+    case PAYMENT_VIEW   = 'payment.view';
+    case PAYMENT_CREATE = 'payment.create';
+    case PAYMENT_UPDATE = 'payment.update';
+    case PAYMENT_DELETE = 'payment.delete';
 }

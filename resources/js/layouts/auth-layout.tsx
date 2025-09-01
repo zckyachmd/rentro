@@ -7,11 +7,13 @@ import React, {
     useCallback,
     useState,
 } from 'react';
+import { toast } from 'sonner';
 
 import Breadcrumbs, { Crumb } from '@/components/breadcrumbs';
 import FlashToaster from '@/components/flash-toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { initClipboard } from '@/lib/clipboard';
 import { getAppName } from '@/lib/env';
 
 import Footer from './partials/footer';
@@ -137,6 +139,16 @@ export default function AuthLayout({
         }
         return undefined;
     }, [menuGroups]);
+
+    React.useEffect(() => {
+        const instance = initClipboard('.js-copy', {
+            success: () => toast.success('Teks berhasil disalin'),
+            error: () => toast.error('Gagal menyalin teks'),
+        });
+        return () => {
+            instance?.destroy?.();
+        };
+    }, []);
 
     return (
         <div className="min-h-screen bg-background text-foreground">

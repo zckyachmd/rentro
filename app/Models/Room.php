@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enum\BillingPeriod;
+use App\Enum\ContractStatus;
 use App\Enum\GenderPolicy;
 use App\Enum\RoomStatus;
 use App\Models\Concerns\HasAudit;
@@ -90,5 +91,20 @@ class Room extends Model
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(Amenity::class)->withTimestamps();
+    }
+
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
+    }
+
+    public function holdingContracts(): HasMany
+    {
+        return $this->hasMany(Contract::class)
+            ->whereIn('status', [
+                ContractStatus::PENDING_PAYMENT->value,
+                ContractStatus::BOOKED->value,
+                ContractStatus::ACTIVE->value,
+            ]);
     }
 }

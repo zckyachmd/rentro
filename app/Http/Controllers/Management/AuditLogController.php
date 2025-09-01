@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Management;
 
 use App\Http\Controllers\Controller;
 use App\Traits\DataTable;
+use App\Traits\LogActivity;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Activitylog\Models\Activity;
@@ -11,6 +12,7 @@ use Spatie\Activitylog\Models\Activity;
 class AuditLogController extends Controller
 {
     use DataTable;
+    use LogActivity;
 
     /**
      * List audit logs using reusable DataTable trait (filter, search, sort, paginate).

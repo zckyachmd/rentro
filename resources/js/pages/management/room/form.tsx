@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { readXsrfCookie } from '@/hooks/use-confirm-password';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
+import { formatIDR } from '@/lib/format';
 
 type Option = { id: number | string; name: string };
 type RoomTypeOption = Option & {
@@ -109,18 +110,6 @@ type FormData = {
 type StringKeys<T> = {
     [K in keyof T]-?: T[K] extends string ? K : never;
 }[keyof T];
-
-const formatIDR = (val?: string | number | null) => {
-    if (val === null || val === undefined) return '';
-    const n = typeof val === 'string' ? Number(val) : val;
-    const num = Number.isFinite(n)
-        ? (n as number)
-        : Number(String(val).replace(/[^\d.-]/g, ''));
-    if (!Number.isFinite(num) || num <= 0) return '';
-    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(
-        Math.trunc(num),
-    );
-};
 
 const getXsrfToken = () => {
     const cookieVal =
@@ -490,7 +479,595 @@ export default function RoomUpsertForm({
     };
 
     return (
-        <form className="grid gap-6" onSubmit={onSubmit}>
+        <>
+            <form className="grid gap-6" onSubmit={onSubmit}>
+                {/* Identitas Kamar */}
+                <div className="space-y-3">
+                    <div className="text-sm font-medium text-foreground">
+                        Identitas Kamar
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label>Nomor</Label>
+                            <Input
+                                value={data.number}
+                                onChange={onChange('number')}
+                                placeholder="cth: 201"
+                                disabled={processing}
+                                className="h-9"
+                            />
+                            <InputError message={errors.number} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Nama</Label>
+                            <Input
+                                value={data.name}
+                                onChange={onChange('name')}
+                                placeholder="cth: Kamar 201"
+                                disabled={processing}
+                                className="h-9"
+                            />
+                            <InputError message={errors.name} />
+                        </div>
+                    </div>
+                    <Separator className="my-3" />
+                </div>
+
+                {/* Lokasi & Klasifikasi */}
+                <div className="space-y-3">
+                    <div className="text-sm font-medium text-foreground">
+                        Lokasi & Klasifikasi
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label>Gedung</Label>
+                            <Select
+                                value={data.building_id}
+                                onValueChange={(v) => {
+                                    setData('building_id', v);
+                                    const matchFloors = floors.filter(
+                                        (f) => String(f.building_id) === v,
+                                    );
+                                    setData(
+                                        'floor_id',
+                                        matchFloors.length === 1
+                                            ? String(matchFloors[0].id)
+                                            : '',
+                                    );
+                                }}
+                                disabled={processing}
+                            >
+                                <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Pilih gedung" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {buildings.map((b) => (
+                                            <SelectItem
+                                                key={b.id}
+                                                value={String(b.id)}
+                                            >
+                                                {b.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.building_id} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Lantai</Label>
+                            <Select
+                                value={data.floor_id}
+                                onValueChange={(v) => setData('floor_id', v)}
+                                disabled={processing}
+                            >
+                                <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Pilih lantai" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {filteredFloors.map((f) => (
+                                            <SelectItem
+                                                key={f.id}
+                                                value={String(f.id)}
+                                            >
+                                                Lantai {f.level}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.floor_id} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Tipe Kamar</Label>
+                            <Select
+                                value={data.room_type_id}
+                                onValueChange={(v) => {
+                                    setData('room_type_id', v);
+                                    const t = types.find(
+                                        (tt) => String(tt.id) === v,
+                                    );
+                                    const price =
+                                        t?.price_cents != null
+                                            ? String(
+                                                  Math.round(
+                                                      (t!
+                                                          .price_cents as number) /
+                                                          100,
+                                                  ),
+                                              )
+                                            : '';
+                                    const deposit =
+                                        t?.deposit_cents != null
+                                            ? String(
+                                                  Math.round(
+                                                      (t!
+                                                          .deposit_cents as number) /
+                                                          100,
+                                                  ),
+                                              )
+                                            : '';
+                                    const size =
+                                        t?.size_m2 != null
+                                            ? String(t!.size_m2)
+                                            : '';
+                                    setData((prev) => ({
+                                        ...prev,
+                                        price_rupiah: price,
+                                        deposit_rupiah: deposit,
+                                        size_m2: size,
+                                    }));
+                                }}
+                                disabled={processing}
+                            >
+                                <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Pilih tipe" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {types.map((t) => (
+                                            <SelectItem
+                                                key={t.id}
+                                                value={String(t.id)}
+                                            >
+                                                {t.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.room_type_id} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Status</Label>
+                            <Select
+                                value={data.status}
+                                onValueChange={(v) => setData('status', v)}
+                                disabled={processing}
+                            >
+                                <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Pilih status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {(statuses ?? []).map((s) => (
+                                            <SelectItem
+                                                key={s.value}
+                                                value={s.value}
+                                            >
+                                                {s.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.status} />
+                        </div>
+                    </div>
+                    <Separator className="my-3" />
+                </div>
+
+                {/* Kebijakan & Penagihan */}
+                <div className="space-y-3">
+                    <div className="text-sm font-medium text-foreground">
+                        Kebijakan & Penagihan
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-2">
+                            <Label>Kebijakan Gender</Label>
+                            <Select
+                                value={data.gender_policy}
+                                onValueChange={(v) =>
+                                    setData('gender_policy', v)
+                                }
+                                disabled={processing}
+                            >
+                                <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Pilih kebijakan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {genderPolicies.map((g) => (
+                                            <SelectItem
+                                                key={g.value}
+                                                value={g.value}
+                                            >
+                                                {g.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.gender_policy} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Periode Penagihan</Label>
+                            <Select
+                                value={data.billing_period}
+                                onValueChange={(v) =>
+                                    setData('billing_period', v)
+                                }
+                                disabled={processing}
+                            >
+                                <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Pilih periode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {billingPeriods.map((p) => (
+                                            <SelectItem
+                                                key={p.value}
+                                                value={p.value}
+                                            >
+                                                {p.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.billing_period} />
+                        </div>
+                    </div>
+                    <Separator className="my-3" />
+                </div>
+
+                {/* Kapasitas, Harga, Deposit, Luas */}
+                <div className="grid gap-4 md:grid-cols-12">
+                    <div className="col-span-12 grid gap-2 md:col-span-3">
+                        <Label>Kapasitas (orang)</Label>
+                        <Input
+                            type="number"
+                            min={1}
+                            placeholder="cth: 1"
+                            value={data.max_occupancy}
+                            onChange={onChange('max_occupancy')}
+                            className="h-9"
+                            disabled={processing}
+                        />
+                        <div className="min-h-[20px] text-xs text-muted-foreground" />
+                        <div className="min-h-[20px]">
+                            <InputError message={errors.max_occupancy} />
+                        </div>
+                    </div>
+
+                    <div className="col-span-12 grid gap-2 sm:col-span-6 md:col-span-3">
+                        <Label>Harga (Rp/bulan)</Label>
+                        <Input
+                            type="number"
+                            min={0}
+                            placeholder="Otomatis setelah pilih tipe"
+                            value={data.price_rupiah}
+                            onChange={onChange('price_rupiah')}
+                            className="h-9"
+                            disabled={processing || !data.room_type_id}
+                        />
+                        <div className="min-h-[20px] text-xs text-muted-foreground">
+                            {formatIDR(data.price_rupiah) ? (
+                                <span>
+                                    Pratinjau:{' '}
+                                    <span className="font-medium">
+                                        Rp {formatIDR(data.price_rupiah)}
+                                    </span>{' '}
+                                    / bulan
+                                </span>
+                            ) : null}
+                        </div>
+                        <div className="min-h-[20px]">
+                            <InputError message={errors.price_rupiah} />
+                        </div>
+                    </div>
+
+                    <div className="col-span-12 grid gap-2 sm:col-span-6 md:col-span-3">
+                        <Label>Deposit (Rp)</Label>
+                        <Input
+                            type="number"
+                            min={0}
+                            placeholder="Otomatis setelah pilih tipe"
+                            value={data.deposit_rupiah}
+                            onChange={(e) =>
+                                setData('deposit_rupiah', e.target.value)
+                            }
+                            className="h-9"
+                            disabled={processing || !data.room_type_id}
+                        />
+                        <div className="min-h-[20px] text-xs text-muted-foreground">
+                            {formatIDR(data.deposit_rupiah) ? (
+                                <span>
+                                    Pratinjau:{' '}
+                                    <span className="font-medium">
+                                        Rp {formatIDR(data.deposit_rupiah)}
+                                    </span>
+                                </span>
+                            ) : null}
+                        </div>
+                        <div className="min-h-[20px]">
+                            <InputError
+                                message={
+                                    (
+                                        errors as unknown as Record<
+                                            string,
+                                            string
+                                        >
+                                    ).deposit_rupiah
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    <div className="col-span-12 grid gap-2 md:col-span-3">
+                        <Label>Luas (m²)</Label>
+                        <Input
+                            type="number"
+                            min={0}
+                            step="0.1"
+                            placeholder="Otomatis setelah pilih tipe"
+                            value={data.size_m2}
+                            onChange={(e) => setData('size_m2', e.target.value)}
+                            className="h-9"
+                            disabled={processing || !data.room_type_id}
+                        />
+                        <div className="min-h-[20px] text-xs text-muted-foreground" />
+                        <div className="min-h-[20px]">
+                            <InputError
+                                message={
+                                    (
+                                        errors as unknown as Record<
+                                            string,
+                                            string
+                                        >
+                                    ).size_m2
+                                }
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Ringkasan angka harga, deposit, luas */}
+                <p className="-mt-12 text-xs text-muted-foreground">
+                    Catatan: Harga, Deposit dan Luas kamar terisi otomatis dari{' '}
+                    <span className="font-medium">Tipe Kamar</span>. Anda tetap
+                    bisa mengubahnya (override) jika diperlukan.
+                </p>
+
+                <div className="space-y-2">
+                    <div className="text-sm font-medium text-foreground">
+                        Catatan
+                    </div>
+                    <Textarea
+                        value={data.notes}
+                        onChange={(e) => setData('notes', e.target.value)}
+                        placeholder="Informasi tambahan terkait kamar (opsional)"
+                        disabled={processing}
+                    />
+                    <InputError message={errors.notes} />
+                    <Separator className="my-3" />
+                </div>
+
+                {/* Fasilitas */}
+                <div className="space-y-3">
+                    <div className="text-sm font-medium text-foreground">
+                        Fasilitas Kamar
+                    </div>
+                    {amenities.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            Belum ada data fasilitas. Tambahkan terlebih dahulu
+                            di manajemen fasilitas.
+                        </p>
+                    ) : (
+                        <ScrollArea className="max-h-[60vh] rounded-md border md:h-40 lg:h-28">
+                            <div className="grid gap-2 p-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                {amenities.map((a) => {
+                                    const sid = String(a.id);
+                                    const checked = (
+                                        data.amenities ?? []
+                                    ).includes(sid);
+                                    const inputId = `amenity-${a.id}`;
+                                    return (
+                                        <div
+                                            key={a.id}
+                                            className={`flex items-center gap-2 rounded-md border p-2 text-sm transition hover:bg-muted ${checked ? 'border-primary' : 'border-input'}`}
+                                        >
+                                            <Checkbox
+                                                id={inputId}
+                                                checked={checked}
+                                                onCheckedChange={() =>
+                                                    toggleAmenity(a.id)
+                                                }
+                                                disabled={processing}
+                                            />
+                                            <Label
+                                                htmlFor={inputId}
+                                                className="cursor-pointer truncate"
+                                            >
+                                                {a.name}
+                                            </Label>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </ScrollArea>
+                    )}
+                    <InputError message={errors.amenities} />
+                    <Separator className="my-3" />
+                </div>
+
+                {/* Foto Saat Ini (mode edit) */}
+                {mode === 'edit' && (photos?.length ?? 0) > 0 ? (
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm font-medium text-foreground">
+                                Foto Saat Ini
+                            </div>
+                            {photosDirty ? (
+                                <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+                                    <span>Perubahan belum disimpan</span>
+                                </div>
+                            ) : null}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                            {(photos ?? []).map((p, idx) => (
+                                <div
+                                    key={p.id}
+                                    className={`group relative overflow-hidden rounded-md border bg-card shadow-sm ${overIndex === idx ? 'ring-2 ring-primary' : ''}`}
+                                    draggable
+                                    onDragStart={() => setDragIndex(idx)}
+                                    onDragEnter={() => setOverIndex(idx)}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDragEnd={() => {
+                                        setDragIndex(null);
+                                        setOverIndex(null);
+                                    }}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        if (
+                                            dragIndex === null ||
+                                            dragIndex === idx
+                                        ) {
+                                            setDragIndex(null);
+                                            setOverIndex(null);
+                                            return;
+                                        }
+                                        const next = [...photos];
+                                        const [moved] = next.splice(
+                                            dragIndex,
+                                            1,
+                                        );
+                                        next.splice(idx, 0, moved);
+                                        setDragIndex(null);
+                                        setOverIndex(null);
+                                        setPhotos(next);
+                                    }}
+                                >
+                                    <div className="relative aspect-square">
+                                        <img
+                                            src={p.url}
+                                            alt="foto kamar"
+                                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                            onClick={() => {
+                                                setPreviewIdx(idx);
+                                                setPreviewOpen(true);
+                                            }}
+                                        />
+                                        {p.is_cover ? (
+                                            <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                                                Cover
+                                            </span>
+                                        ) : null}
+                                        <div className="pointer-events-none absolute inset-x-1 top-1 flex items-center justify-end gap-1">
+                                            <div className="pointer-events-auto flex gap-1">
+                                                <Button
+                                                    type="button"
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    className="h-7 w-7"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setAsCover(p.id);
+                                                    }}
+                                                    title="Jadikan cover"
+                                                >
+                                                    <ImageIcon className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    className="h-7 w-7"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        deletePhoto(p.id);
+                                                    }}
+                                                    title="Hapus foto"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
+                                            <GripVertical className="h-3.5 w-3.5" />
+                                            <span>Seret untuk urutan</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <ImageSpotlight
+                            open={previewOpen}
+                            onOpenChange={setPreviewOpen}
+                            items={previewItems}
+                            index={previewIdx}
+                            onIndexChange={setPreviewIdx}
+                        />
+                    </div>
+                ) : null}
+
+                {/* Upload Foto Baru */}
+                <div className="space-y-2">
+                    <div className="text-sm font-medium text-foreground">
+                        Tambah Foto
+                    </div>
+                    <ImageDropzone
+                        files={data.photos}
+                        onFilesChange={(files) => setData('photos', files)}
+                        disabled={processing}
+                        reorderable
+                        enableCover={mode === 'create'}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Foto baru akan diunggah setelah simpan.
+                    </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            if (mode === 'create') {
+                                reset();
+                                clearErrors();
+                            } else {
+                                reset();
+                                clearErrors();
+                                setPhotos(initialPhotosRef.current);
+                            }
+                        }}
+                        disabled={processing}
+                    >
+                        Reset
+                    </Button>
+                    <Button type="submit" disabled={processing}>
+                        {mode === 'create' ? 'Simpan' : 'Simpan Perubahan'}
+                    </Button>
+                </div>
+            </form>
+
             <LeaveGuardDialog
                 open={leaveOpen}
                 onOpenChange={setLeaveOpen}
@@ -506,574 +1083,6 @@ export default function RoomUpsertForm({
                 confirmText="Keluar Halaman"
                 cancelText="Batal"
             />
-            {/* Identitas Kamar */}
-            <div className="space-y-3">
-                <div className="text-sm font-medium text-foreground">
-                    Identitas Kamar
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
-                        <Label>Nomor</Label>
-                        <Input
-                            value={data.number}
-                            onChange={onChange('number')}
-                            placeholder="cth: 201"
-                            disabled={processing}
-                            className="h-9"
-                        />
-                        <InputError message={errors.number} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label>Nama</Label>
-                        <Input
-                            value={data.name}
-                            onChange={onChange('name')}
-                            placeholder="cth: Kamar 201"
-                            disabled={processing}
-                            className="h-9"
-                        />
-                        <InputError message={errors.name} />
-                    </div>
-                </div>
-                <Separator className="my-3" />
-            </div>
-
-            {/* Lokasi & Klasifikasi */}
-            <div className="space-y-3">
-                <div className="text-sm font-medium text-foreground">
-                    Lokasi & Klasifikasi
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
-                        <Label>Gedung</Label>
-                        <Select
-                            value={data.building_id}
-                            onValueChange={(v) => {
-                                setData('building_id', v);
-                                const matchFloors = floors.filter(
-                                    (f) => String(f.building_id) === v,
-                                );
-                                setData(
-                                    'floor_id',
-                                    matchFloors.length === 1
-                                        ? String(matchFloors[0].id)
-                                        : '',
-                                );
-                            }}
-                            disabled={processing}
-                        >
-                            <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Pilih gedung" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {buildings.map((b) => (
-                                        <SelectItem
-                                            key={b.id}
-                                            value={String(b.id)}
-                                        >
-                                            {b.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.building_id} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Lantai</Label>
-                        <Select
-                            value={data.floor_id}
-                            onValueChange={(v) => setData('floor_id', v)}
-                            disabled={processing}
-                        >
-                            <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Pilih lantai" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {filteredFloors.map((f) => (
-                                        <SelectItem
-                                            key={f.id}
-                                            value={String(f.id)}
-                                        >
-                                            Lantai {f.level}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.floor_id} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Tipe Kamar</Label>
-                        <Select
-                            value={data.room_type_id}
-                            onValueChange={(v) => {
-                                setData('room_type_id', v);
-                                const t = types.find(
-                                    (tt) => String(tt.id) === v,
-                                );
-                                const price =
-                                    t?.price_cents != null
-                                        ? String(
-                                              Math.round(
-                                                  (t!.price_cents as number) /
-                                                      100,
-                                              ),
-                                          )
-                                        : '';
-                                const deposit =
-                                    t?.deposit_cents != null
-                                        ? String(
-                                              Math.round(
-                                                  (t!.deposit_cents as number) /
-                                                      100,
-                                              ),
-                                          )
-                                        : '';
-                                const size =
-                                    t?.size_m2 != null
-                                        ? String(t!.size_m2)
-                                        : '';
-                                setData((prev) => ({
-                                    ...prev,
-                                    price_rupiah: price,
-                                    deposit_rupiah: deposit,
-                                    size_m2: size,
-                                }));
-                            }}
-                            disabled={processing}
-                        >
-                            <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Pilih tipe" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {types.map((t) => (
-                                        <SelectItem
-                                            key={t.id}
-                                            value={String(t.id)}
-                                        >
-                                            {t.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.room_type_id} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label>Status</Label>
-                        <Select
-                            value={data.status}
-                            onValueChange={(v) => setData('status', v)}
-                            disabled={processing}
-                        >
-                            <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Pilih status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {(statuses ?? []).map((s) => (
-                                        <SelectItem
-                                            key={s.value}
-                                            value={s.value}
-                                        >
-                                            {s.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.status} />
-                    </div>
-                </div>
-                <Separator className="my-3" />
-            </div>
-
-            {/* Kebijakan & Penagihan */}
-            <div className="space-y-3">
-                <div className="text-sm font-medium text-foreground">
-                    Kebijakan & Penagihan
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
-                        <Label>Kebijakan Gender</Label>
-                        <Select
-                            value={data.gender_policy}
-                            onValueChange={(v) => setData('gender_policy', v)}
-                            disabled={processing}
-                        >
-                            <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Pilih kebijakan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {genderPolicies.map((g) => (
-                                        <SelectItem
-                                            key={g.value}
-                                            value={g.value}
-                                        >
-                                            {g.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.gender_policy} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label>Periode Penagihan</Label>
-                        <Select
-                            value={data.billing_period}
-                            onValueChange={(v) => setData('billing_period', v)}
-                            disabled={processing}
-                        >
-                            <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Pilih periode" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {billingPeriods.map((p) => (
-                                        <SelectItem
-                                            key={p.value}
-                                            value={p.value}
-                                        >
-                                            {p.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.billing_period} />
-                    </div>
-                </div>
-                <Separator className="my-3" />
-            </div>
-
-            {/* Kapasitas, Harga, Deposit, Luas */}
-            <div className="grid gap-4 md:grid-cols-12">
-                <div className="col-span-12 grid gap-2 md:col-span-3">
-                    <Label>Kapasitas (orang)</Label>
-                    <Input
-                        type="number"
-                        min={1}
-                        placeholder="cth: 1"
-                        value={data.max_occupancy}
-                        onChange={onChange('max_occupancy')}
-                        className="h-9"
-                        disabled={processing}
-                    />
-                    <div className="min-h-[20px] text-xs text-muted-foreground" />
-                    <div className="min-h-[20px]">
-                        <InputError message={errors.max_occupancy} />
-                    </div>
-                </div>
-
-                <div className="col-span-12 grid gap-2 sm:col-span-6 md:col-span-3">
-                    <Label>Harga (Rp/bulan)</Label>
-                    <Input
-                        type="number"
-                        min={0}
-                        placeholder="Otomatis setelah pilih tipe"
-                        value={data.price_rupiah}
-                        onChange={onChange('price_rupiah')}
-                        className="h-9"
-                        disabled={processing || !data.room_type_id}
-                    />
-                    <div className="min-h-[20px] text-xs text-muted-foreground">
-                        {formatIDR(data.price_rupiah) ? (
-                            <span>
-                                Pratinjau:{' '}
-                                <span className="font-medium">
-                                    Rp {formatIDR(data.price_rupiah)}
-                                </span>{' '}
-                                / bulan
-                            </span>
-                        ) : null}
-                    </div>
-                    <div className="min-h-[20px]">
-                        <InputError message={errors.price_rupiah} />
-                    </div>
-                </div>
-
-                <div className="col-span-12 grid gap-2 sm:col-span-6 md:col-span-3">
-                    <Label>Deposit (Rp)</Label>
-                    <Input
-                        type="number"
-                        min={0}
-                        placeholder="Otomatis setelah pilih tipe"
-                        value={data.deposit_rupiah}
-                        onChange={(e) =>
-                            setData('deposit_rupiah', e.target.value)
-                        }
-                        className="h-9"
-                        disabled={processing || !data.room_type_id}
-                    />
-                    <div className="min-h-[20px] text-xs text-muted-foreground">
-                        {formatIDR(data.deposit_rupiah) ? (
-                            <span>
-                                Pratinjau:{' '}
-                                <span className="font-medium">
-                                    Rp {formatIDR(data.deposit_rupiah)}
-                                </span>
-                            </span>
-                        ) : null}
-                    </div>
-                    <div className="min-h-[20px]">
-                        <InputError
-                            message={
-                                (errors as unknown as Record<string, string>)
-                                    .deposit_rupiah
-                            }
-                        />
-                    </div>
-                </div>
-
-                <div className="col-span-12 grid gap-2 md:col-span-3">
-                    <Label>Luas (m²)</Label>
-                    <Input
-                        type="number"
-                        min={0}
-                        step="0.1"
-                        placeholder="Otomatis setelah pilih tipe"
-                        value={data.size_m2}
-                        onChange={(e) => setData('size_m2', e.target.value)}
-                        className="h-9"
-                        disabled={processing || !data.room_type_id}
-                    />
-                    <div className="min-h-[20px] text-xs text-muted-foreground" />
-                    <div className="min-h-[20px]">
-                        <InputError
-                            message={
-                                (errors as unknown as Record<string, string>)
-                                    .size_m2
-                            }
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Ringkasan angka harga, deposit, luas */}
-            <p className="-mt-12 text-xs text-muted-foreground">
-                Catatan: Harga, Deposit dan Luas kamar terisi otomatis dari{' '}
-                <span className="font-medium">Tipe Kamar</span>. Anda tetap bisa
-                mengubahnya (override) jika diperlukan.
-            </p>
-
-            <div className="space-y-2">
-                <div className="text-sm font-medium text-foreground">
-                    Catatan
-                </div>
-                <Textarea
-                    value={data.notes}
-                    onChange={(e) => setData('notes', e.target.value)}
-                    placeholder="Informasi tambahan terkait kamar (opsional)"
-                    disabled={processing}
-                />
-                <InputError message={errors.notes} />
-                <Separator className="my-3" />
-            </div>
-
-            {/* Fasilitas */}
-            <div className="space-y-3">
-                <div className="text-sm font-medium text-foreground">
-                    Fasilitas Kamar
-                </div>
-                {amenities.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        Belum ada data fasilitas. Tambahkan terlebih dahulu di
-                        manajemen fasilitas.
-                    </p>
-                ) : (
-                    <ScrollArea className="max-h-[60vh] rounded-md border md:h-40 lg:h-28">
-                        <div className="grid gap-2 p-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                            {amenities.map((a) => {
-                                const sid = String(a.id);
-                                const checked = (data.amenities ?? []).includes(
-                                    sid,
-                                );
-                                const inputId = `amenity-${a.id}`;
-                                return (
-                                    <div
-                                        key={a.id}
-                                        className={`flex items-center gap-2 rounded-md border p-2 text-sm transition hover:bg-muted ${checked ? 'border-primary' : 'border-input'}`}
-                                    >
-                                        <Checkbox
-                                            id={inputId}
-                                            checked={checked}
-                                            onCheckedChange={() =>
-                                                toggleAmenity(a.id)
-                                            }
-                                            disabled={processing}
-                                        />
-                                        <Label
-                                            htmlFor={inputId}
-                                            className="cursor-pointer truncate"
-                                        >
-                                            {a.name}
-                                        </Label>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </ScrollArea>
-                )}
-                <InputError message={errors.amenities} />
-                <Separator className="my-3" />
-            </div>
-
-            {/* Foto Saat Ini (mode edit) */}
-            {mode === 'edit' && (photos?.length ?? 0) > 0 ? (
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium text-foreground">
-                            Foto Saat Ini
-                        </div>
-                        {photosDirty ? (
-                            <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-                                <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-                                <span>Perubahan belum disimpan</span>
-                            </div>
-                        ) : null}
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                        {(photos ?? []).map((p, idx) => (
-                            <div
-                                key={p.id}
-                                className={`group relative overflow-hidden rounded-md border bg-card shadow-sm ${overIndex === idx ? 'ring-2 ring-primary' : ''}`}
-                                draggable
-                                onDragStart={() => setDragIndex(idx)}
-                                onDragEnter={() => setOverIndex(idx)}
-                                onDragOver={(e) => e.preventDefault()}
-                                onDragEnd={() => {
-                                    setDragIndex(null);
-                                    setOverIndex(null);
-                                }}
-                                onDrop={(e) => {
-                                    e.preventDefault();
-                                    if (
-                                        dragIndex === null ||
-                                        dragIndex === idx
-                                    ) {
-                                        setDragIndex(null);
-                                        setOverIndex(null);
-                                        return;
-                                    }
-                                    const next = [...photos];
-                                    const [moved] = next.splice(dragIndex, 1);
-                                    next.splice(idx, 0, moved);
-                                    setDragIndex(null);
-                                    setOverIndex(null);
-                                    setPhotos(next);
-                                }}
-                            >
-                                <div className="relative aspect-square">
-                                    <img
-                                        src={p.url}
-                                        alt="foto kamar"
-                                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                        onClick={() => {
-                                            setPreviewIdx(idx);
-                                            setPreviewOpen(true);
-                                        }}
-                                    />
-                                    {p.is_cover ? (
-                                        <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                                            Cover
-                                        </span>
-                                    ) : null}
-                                    <div className="pointer-events-none absolute inset-x-1 top-1 flex items-center justify-end gap-1">
-                                        <div className="pointer-events-auto flex gap-1">
-                                            <Button
-                                                type="button"
-                                                size="icon"
-                                                variant="secondary"
-                                                className="h-7 w-7"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setAsCover(p.id);
-                                                }}
-                                                title="Jadikan cover"
-                                            >
-                                                <ImageIcon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                size="icon"
-                                                variant="secondary"
-                                                className="h-7 w-7"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    deletePhoto(p.id);
-                                                }}
-                                                title="Hapus foto"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
-                                        <GripVertical className="h-3.5 w-3.5" />
-                                        <span>Seret untuk urutan</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <ImageSpotlight
-                        open={previewOpen}
-                        onOpenChange={setPreviewOpen}
-                        items={previewItems}
-                        index={previewIdx}
-                        onIndexChange={setPreviewIdx}
-                    />
-                </div>
-            ) : null}
-
-            {/* Upload Foto Baru */}
-            <div className="space-y-2">
-                <div className="text-sm font-medium text-foreground">
-                    Tambah Foto
-                </div>
-                <ImageDropzone
-                    files={data.photos}
-                    onFilesChange={(files) => setData('photos', files)}
-                    disabled={processing}
-                    reorderable
-                    enableCover={mode === 'create'}
-                />
-                <p className="text-xs text-muted-foreground">
-                    Foto baru akan diunggah setelah simpan.
-                </p>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                        if (mode === 'create') {
-                            reset();
-                            clearErrors();
-                        } else {
-                            reset();
-                            clearErrors();
-                            setPhotos(initialPhotosRef.current);
-                        }
-                    }}
-                    disabled={processing}
-                >
-                    Reset
-                </Button>
-                <Button type="submit" disabled={processing}>
-                    {mode === 'create' ? 'Simpan' : 'Simpan Perubahan'}
-                </Button>
-            </div>
-        </form>
+        </>
     );
 }

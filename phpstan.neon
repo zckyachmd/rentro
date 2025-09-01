@@ -17,6 +17,7 @@ parameters:
   tmpDir: storage/tmp/phpstan
 
   reportUnmatchedIgnoredErrors: false
+  treatPhpDocTypesAsCertain: false
 
   excludePaths:
     - database/*

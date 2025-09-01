@@ -12,6 +12,7 @@ use App\Models\Floor;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Traits\DataTable;
+use App\Traits\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +21,7 @@ use Inertia\Inertia;
 class RoomManagementController extends Controller
 {
     use DataTable;
+    use LogActivity;
 
     public function index(Request $request)
     {
@@ -160,7 +162,7 @@ class RoomManagementController extends Controller
         $data = $request->validated();
 
         $priceCents = array_key_exists('price_rupiah', $data) && $data['price_rupiah'] !== null
-            ? (int) round(((float) $data['price_rupiah']) * 100)
+            ? (int) round(((float) $data['price_rupiah']))
             : null;
 
         $attrs = [
@@ -349,7 +351,7 @@ class RoomManagementController extends Controller
         $data = $request->validated();
 
         $priceCents = array_key_exists('price_rupiah', $data) && $data['price_rupiah'] !== null
-            ? (int) round(((float) $data['price_rupiah']) * 100)
+            ? (int) round(((float) $data['price_rupiah']))
             : null;
 
         $attrs = [

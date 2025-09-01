@@ -9,12 +9,9 @@ use App\Models\UserAddress;
 use App\Models\UserDocument;
 use Illuminate\Database\Seeder;
 use App\Models\EmergencyContact;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Run the database seeds.
      */
@@ -34,6 +31,6 @@ class UserSeeder extends Seeder
 
         $admin->assignRole(RoleName::SUPER_ADMIN->value);
 
-        User::factory()->count(25)->create()->each->assignRole(RoleName::TENANT->value);
+        User::factory()->count(30)->create()->each->assignRole(RoleName::TENANT->value);
     }
 }
