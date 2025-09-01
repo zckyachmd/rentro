@@ -24,13 +24,21 @@ class AppSettingSeeder extends Seeder
             ['contract.monthly_allowed_terms',  [3, 6, 12], 'array'],
 
             // Billing behavior
-            ['billing.prorata',                 false,      'bool'],
+            ['billing.prorata',                 true,      'bool'],
             ['billing.release_day_of_month',    1,          'int'],   // anchor day for monthly cycle start
             ['billing.due_day_of_month',        7,          'int'],   // default due day
             ['billing.deposit_upfront',         true,       'bool'],
 
             // Scheduler / automation
             ['contract.auto_renew_lead_days',   7,          'int'],
+
+            // Queue preferences for jobs
+            ['queue.mark_overdue.queue',               'default', 'string'],
+            ['queue.mark_overdue.backoff_seconds',     3,         'int'],
+            ['queue.mark_overdue.retry_until_minutes', 30,        'int'],
+            ['queue.cancel_overdue.queue',             'high',    'string'],
+            ['queue.cancel_overdue.backoff_seconds',   5,         'int'],
+            ['queue.cancel_overdue.retry_until_minutes', 60,      'int'],
         ];
 
         foreach ($settings as [$key, $value, $type]) {

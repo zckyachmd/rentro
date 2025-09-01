@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Models\Contract;
+use App\Models\Invoice;
 
 interface ContractServiceInterface
 {
@@ -19,8 +20,29 @@ interface ContractServiceInterface
     public function create(array $data): Contract;
 
     /**
-     * Cancel a contract: set status to Cancelled, stop auto-renew,
-     * cancel pending invoices/payments, and free the room.
+     * Mark a contract as OVERDUE when there is at least one pending invoice whose due_date has passed
+     * and no invoice has been fully paid yet. Idempotent and guarded by checks.
      */
-    public function cancel(\App\Models\Contract $contract): void;
+    public function markOverdue(Contract $contract): void;
+
+    /**
+     * Extend the due date of the latest pending/overdue invoice on a contract.
+     * Returns the updated invoice, or null when none found.
+     */
+    public function extendDue(Contract $contract, string $dueDate): ?Invoice;
+
+    /**
+     * Cancel a contract: set status to Cancelled, stop auto-renew,
+     * cancel unpaid invoices/payments, and free the room.
+     * Notes:
+     * - Contracts with any fully paid invoice are not cancellable here.
+     * - Invoices that already have any completed payments (e.g., deposit) are left as-is
+     *   for payment/refund handling by the payment workflow.
+     */
+    public function cancel(Contract $contract): void;
+
+    /**
+     * Set auto-renew state on a contract.
+     */
+    public function setAutoRenew(Contract $contract, bool $enabled): void;
 }

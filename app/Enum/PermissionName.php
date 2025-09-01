@@ -61,8 +61,9 @@ enum PermissionName: string
     // Contracts
     case CONTRACT_VIEW   = 'contract.view';
     case CONTRACT_CREATE = 'contract.create';
-    case CONTRACT_UPDATE = 'contract.update';
-    case CONTRACT_DELETE = 'contract.delete';
+    case CONTRACT_EXTEND = 'contract.extend';
+    case CONTRACT_CANCEL = 'contract.cancel';
+    case CONTRACT_RENEW  = 'contract.renew';
 
     // Invoices
     case INVOICE_VIEW   = 'invoice.view';

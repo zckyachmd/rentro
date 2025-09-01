@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { readXsrfCookie } from '@/hooks/use-confirm-password';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
+import { formatIDR } from '@/lib/format';
 
 type Option = { id: number | string; name: string };
 type RoomTypeOption = Option & {
@@ -109,18 +110,6 @@ type FormData = {
 type StringKeys<T> = {
     [K in keyof T]-?: T[K] extends string ? K : never;
 }[keyof T];
-
-const formatIDR = (val?: string | number | null) => {
-    if (val === null || val === undefined) return '';
-    const n = typeof val === 'string' ? Number(val) : val;
-    const num = Number.isFinite(n)
-        ? (n as number)
-        : Number(String(val).replace(/[^\d.-]/g, ''));
-    if (!Number.isFinite(num) || num <= 0) return '';
-    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(
-        Math.trunc(num),
-    );
-};
 
 const getXsrfToken = () => {
     const cookieVal =

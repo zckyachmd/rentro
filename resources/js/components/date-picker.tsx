@@ -11,17 +11,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-
-function formatDate(date: Date | undefined, locale?: string) {
-    if (!date) {
-        return '';
-    }
-    return date.toLocaleDateString(locale || 'en-US', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    });
-}
+import { formatDate } from '@/lib/format';
 
 function isValidDate(date: Date | undefined) {
     if (!date) {
@@ -93,7 +83,9 @@ export function DatePickerInput(props: DatePickerInputProps) {
         }
     }, [value, selectedDate]);
 
-    const displayValue = selectedDate ? formatDate(selectedDate, locale) : '';
+    const displayValue = selectedDate
+        ? formatDate(selectedDate, false, locale)
+        : '';
 
     // min/max as Date, if provided
     const minDate = min ? parseISODate(min) : undefined;
@@ -136,7 +128,7 @@ export function DatePickerInput(props: DatePickerInputProps) {
                     <Button
                         id={id ? `${id}-picker` : 'date-picker'}
                         variant="ghost"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-0 h-6 w-6"
+                        className="absolute right-3 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
                         tabIndex={-1}
                         disabled={disabled}
                     >

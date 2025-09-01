@@ -4,9 +4,9 @@ namespace App\Enum;
 
 enum BillingPeriod: string
 {
-    case DAILY   = 'daily';
-    case WEEKLY  = 'weekly';
-    case MONTHLY = 'monthly';
+    case DAILY   = 'Daily';
+    case WEEKLY  = 'Weekly';
+    case MONTHLY = 'Monthly';
 
     public static function options(): array
     {

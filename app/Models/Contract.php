@@ -35,6 +35,7 @@ class Contract extends Model
         'billing_day',
         'auto_renew',
         'renewal_cancelled_at',
+        'paid_in_full_at',
         'deposit_refund_cents',
         'deposit_refunded_at',
         'status',
@@ -51,6 +52,7 @@ class Contract extends Model
         'status'               => ContractStatus::class,
         'auto_renew'           => 'boolean',
         'renewal_cancelled_at' => 'datetime',
+        'paid_in_full_at'      => 'datetime',
         'deposit_refunded_at'  => 'datetime',
     ];
 

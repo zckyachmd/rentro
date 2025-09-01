@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -99,11 +98,13 @@ class Room extends Model
         return $this->hasMany(Contract::class);
     }
 
-    public function currentContract(): HasOne
+    public function holdingContracts(): HasMany
     {
-        return $this->hasOne(Contract::class)
-            ->ofMany(['start_date' => 'max'], function ($query) {
-                $query->where('status', ContractStatus::ACTIVE->value);
-            });
+        return $this->hasMany(Contract::class)
+            ->whereIn('status', [
+                ContractStatus::PENDING_PAYMENT->value,
+                ContractStatus::BOOKED->value,
+                ContractStatus::ACTIVE->value,
+            ]);
     }
 }

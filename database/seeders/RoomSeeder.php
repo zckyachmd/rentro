@@ -24,7 +24,7 @@ class RoomSeeder extends Seeder
             ->sequence(
                 ['level' => 1, 'name' => 'Lantai 1'],
                 ['level' => 2, 'name' => 'Lantai 2'],
-                ['level' => 3, 'name' => 'Lantai 2'],
+                ['level' => 3, 'name' => 'Lantai 3'],
             )
             ->create();
 

@@ -8,8 +8,9 @@ use App\Enum\InvoiceStatus;
 use App\Enum\RoleName;
 use App\Enum\RoomStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Management\Contract\ExtendDueRequest;
+use App\Http\Requests\Management\Contract\SetAutoRenewRequest;
 use App\Http\Requests\Management\Contract\StoreContractRequest;
-use App\Http\Requests\Management\Contract\UpdateContractRequest;
 use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\Room;
@@ -17,8 +18,8 @@ use App\Models\User;
 use App\Services\Contracts\ContractServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 class ContractManagementController extends Controller
@@ -211,79 +212,113 @@ class ContractManagementController extends Controller
         return redirect()->route('management.contracts.index')->with('success', 'Kontrak berhasil dibuat.');
     }
 
-    public function update(UpdateContractRequest $request, Contract $contract)
+    public function show(Contract $contract)
+    {
+        $contract->load([
+            'tenant:id,name,email,phone',
+            'room:id,number,name,billing_period,price_cents,room_type_id,building_id,floor_id',
+            'room.type:id,name,deposit_cents,price_cents',
+            'room.building:id,name,code',
+            'room.floor:id,level,building_id',
+        ]);
+
+        /** @var \App\Models\User|null $tenant */
+        $tenant = $contract->tenant;
+        /** @var \App\Models\Room|null $room */
+        $room = $contract->room;
+
+        $contractDTO = [
+            'id'                   => (string) $contract->id,
+            'start_date'           => $contract->start_date->toDateString(),
+            'end_date'             => $contract->end_date?->toDateString(),
+            'rent_cents'           => (int) $contract->rent_cents,
+            'deposit_cents'        => (int) $contract->deposit_cents,
+            'billing_period'       => $contract->billing_period->value,
+            'billing_day'          => $contract->billing_day,
+            'auto_renew'           => (bool) $contract->auto_renew,
+            'status'               => $contract->status->value,
+            'notes'                => $contract->notes,
+            'paid_in_full_at'      => $contract->paid_in_full_at?->toDateTimeString(),
+            'deposit_refund_cents' => $contract->deposit_refund_cents,
+            'deposit_refunded_at'  => $contract->deposit_refunded_at?->toDateTimeString(),
+            'created_at'           => $contract->created_at->toDateTimeString(),
+            'updated_at'           => $contract->updated_at->toDateTimeString(),
+        ];
+
+        $tenantDTO = $tenant ? [
+            'id'    => (string) $tenant->id,
+            'name'  => $tenant->name,
+            'email' => $tenant->email,
+            'phone' => $tenant->phone,
+        ] : null;
+
+        $roomDTO = $room ? [
+            'id'             => (string) $room->id,
+            'number'         => $room->number,
+            'name'           => $room->name,
+            'billing_period' => $room->billing_period->value,
+            'price_cents'    => $room->price_cents,
+            'type'           => $room->type ? [
+                'id'            => (string) $room->type->id,
+                'name'          => $room->type->name,
+                'deposit_cents' => $room->type->deposit_cents,
+                'price_cents'   => $room->type->price_cents,
+            ] : null,
+            'building' => $room->building ? [
+                'id'   => (string) $room->building->id,
+                'name' => $room->building->name,
+                'code' => $room->building->code,
+            ] : null,
+            'floor' => $room->floor ? [
+                'id'    => (string) $room->floor->id,
+                'level' => $room->floor->level,
+            ] : null,
+        ] : null;
+
+        $invoices = $contract->invoices()
+            ->select('id', 'number', 'status', 'due_date', 'period_start', 'period_end', 'amount_cents', 'paid_at')
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
+        $invoices = $invoices->through(function (Model $m, int $index): array {
+            /** @var \App\Models\Invoice $i */
+            $i = $m;
+
+            return [
+                'id'           => (string) $i->id,
+                'number'       => $i->number,
+                'status'       => $i->status->value,
+                'due_date'     => $i->due_date->toDateString(),
+                'period_start' => $i->period_start?->toDateString(),
+                'period_end'   => $i->period_end?->toDateString(),
+                'amount_cents' => (int) $i->amount_cents,
+                'paid_at'      => $i->paid_at?->toDateTimeString(),
+            ];
+        });
+
+        return Inertia::render('management/contract/detail', [
+            'contract' => $contractDTO,
+            'tenant'   => $tenantDTO,
+            'room'     => $roomDTO,
+            'invoices' => [
+                'data'         => $invoices->items(),
+                'current_page' => $invoices->currentPage(),
+                'per_page'     => $invoices->perPage(),
+                'total'        => $invoices->total(),
+            ],
+        ]);
+    }
+
+    public function extendDue(ExtendDueRequest $request, Contract $contract)
     {
         $data = $request->validated();
-        $contract->update($data);
 
-        $this->logModel('contract_updated', $contract, [
-            'id' => (string) $contract->id,
-        ]);
-
-        return back()->with('success', 'Kontrak berhasil diperbarui.');
-    }
-
-    public function destroy(Contract $contract)
-    {
-        $snapshot = $contract->only(['id', 'user_id', 'room_id', 'start_date', 'end_date', 'status']);
-        $contract->delete();
-
-        $this->logEvent(
-            event: 'contract_deleted',
-            causer: request()->user(),
-            subject: $contract,
-            properties: $snapshot,
-        );
-
-        return back()->with('success', 'Kontrak berhasil dihapus.');
-    }
-
-    public function cancel(Request $request, Contract $contract)
-    {
-        if (in_array($contract->status->value, [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value], true)) {
-            return back()->with('error', 'Kontrak sudah tidak aktif.');
-        }
-
-        $this->contracts->cancel($contract);
-
-        $this->logEvent(
-            event: 'contract_cancelled',
-            causer: $request->user(),
-            subject: $contract,
-        );
-
-        return back()->with('success', 'Kontrak dibatalkan.');
-    }
-
-    public function extendDue(Request $request, Contract $contract)
-    {
-        $data = $request->validate([
-            'due_date' => ['required', 'date', 'after:today'],
-        ]);
-
-        /** @var \App\Models\Invoice|null $invoice */
-        $invoice = $contract->invoices()
-            ->where('status', InvoiceStatus::PENDING->value)
-            ->orderByDesc('due_date')
-            ->first();
+        $invoice = $this->contracts->extendDue($contract, $data['due_date']);
 
         if (!$invoice) {
-            return back()->with('error', 'Tidak ada invoice pending untuk diperpanjang.');
+            return back()->with('error', 'Tidak ada invoice untuk diperpanjang.');
         }
 
-        $invoice->due_date = Carbon::parse($data['due_date'])->startOfDay();
-        $invoice->save();
-
-        $today = Carbon::now()->startOfDay();
-        if ($invoice->due_date && $invoice->due_date->greaterThanOrEqualTo($today)) {
-            $contract->status = ContractStatus::PENDING_PAYMENT;
-            $contract->save();
-            if ($contract->room) {
-                $contract->room->update(['status' => RoomStatus::RESERVED->value]);
-            }
-        }
-
-        /* @var \App\Models\Invoice $invoice */
         $this->logEvent(
             event: 'contract_due_extended',
             causer: $request->user(),
@@ -297,41 +332,48 @@ class ContractManagementController extends Controller
         return back()->with('success', 'Masa tenggat berhasil diperpanjang.');
     }
 
-    public function stopAutoRenew(Request $request, Contract $contract)
+    public function cancel(Request $request, Contract $contract)
     {
-        if (!$contract->auto_renew) {
-            return back()->with('success', 'Auto‑renew sudah nonaktif.');
+        if (!in_array($contract->status, [ContractStatus::PENDING_PAYMENT, ContractStatus::BOOKED], true)) {
+            return back()->with('error', 'Kontrak tidak dapat dibatalkan. Hanya kontrak Pending Payment atau Booked yang dapat dibatalkan.');
         }
 
-        $contract->auto_renew           = false;
-        $contract->renewal_cancelled_at = now();
-        $contract->save();
+        $hasPaidInvoice = $contract->invoices()
+            ->where('status', InvoiceStatus::PAID->value)
+            ->exists();
+        if ($hasPaidInvoice) {
+            return back()->with('error', 'Kontrak tidak dapat dibatalkan karena sudah ada invoice yang lunas.');
+        }
 
-        $this->logEvent(
-            event: 'contract_auto_renew_stopped',
-            causer: $request->user(),
-            subject: $contract,
-        );
+        $this->contracts->cancel($contract);
+        $contract->refresh();
 
-        return back()->with('success', 'Auto‑renew dihentikan.');
+        if ($contract->status === ContractStatus::CANCELLED) {
+            $this->logEvent(
+                event: 'contract_cancelled',
+                causer: $request->user(),
+                subject: $contract,
+            );
+
+            return back()->with('success', 'Kontrak dibatalkan.');
+        }
+
+        return back()->with('error', 'Kontrak tidak dapat dibatalkan.');
     }
 
-    public function startAutoRenew(Request $request, Contract $contract)
+    public function setAutoRenew(SetAutoRenewRequest $request, Contract $contract)
     {
-        if ($contract->auto_renew) {
-            return back()->with('success', 'Auto‑renew sudah aktif.');
-        }
+        $data    = $request->validated();
+        $enabled = (bool) $data['auto_renew'];
 
-        $contract->auto_renew           = true;
-        $contract->renewal_cancelled_at = null;
-        $contract->save();
+        $this->contracts->setAutoRenew($contract, $enabled);
 
         $this->logEvent(
-            event: 'contract_auto_renew_started',
+            event: $enabled ? 'contract_auto_renew_started' : 'contract_auto_renew_stopped',
             causer: $request->user(),
             subject: $contract,
         );
 
-        return back()->with('success', 'Auto‑renew dinyalakan.');
+        return back()->with('success', $enabled ? 'Auto‑renew dinyalakan.' : 'Auto‑renew dihentikan.');
     }
 }

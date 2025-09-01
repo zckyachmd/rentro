@@ -25,16 +25,14 @@ class InvoiceService implements InvoiceServiceInterface
     {
         $start      = Carbon::parse($contract->start_date)->startOfDay();
         $end        = Carbon::parse($contract->end_date)->startOfDay();
-        $period     = strtolower((string) $contract->billing_period->value);
+        $period     = (string) $contract->billing_period->value;
         $months     = (int) $data['duration_count'];
         $rent       = (int) $data['rent_cents'];
         $deposit    = (int) ($data['deposit_cents'] ?? 0);
         $prorata    = AppSetting::config('billing.prorata', false);
-        $dueDom     = AppSetting::config('billing.due_day_of_month', 5);
         $releaseDom = (int) AppSetting::config('billing.release_day_of_month', 1);
-        $dueHours   = AppSetting::config('contract.invoice_due_hours', 48);
+        $dueHours   = (int) AppSetting::config('contract.invoice_due_hours', 48);
         $dueAt      = Carbon::now()->addHours(max(1, $dueHours));
-        $dueAtStr   = $dueAt->toDateString();
 
         $invoices = collect();
 
@@ -48,7 +46,7 @@ class InvoiceService implements InvoiceServiceInterface
                         $contract,
                         $start,
                         $end,
-                        Invoice::sameMonthDueDate($start, $dueDom) ?? $dueAtStr,
+                        $dueAt->toDateTimeString(),
                         $items,
                     ),
                 );
@@ -63,7 +61,7 @@ class InvoiceService implements InvoiceServiceInterface
                             $contract,
                             $start,
                             $firstPeriodEnd,
-                            Invoice::nextDueDayFrom($start, $dueDom),
+                            $dueAt->toDateTimeString(),
                             $items,
                         ),
                     );
@@ -75,7 +73,7 @@ class InvoiceService implements InvoiceServiceInterface
                             $contract,
                             $start,
                             $firstEnd,
-                            Invoice::sameMonthDueDate($start, $dueDom) ?? $dueAtStr,
+                            $dueAt->toDateTimeString(),
                             $items,
                         ),
                     );
@@ -90,7 +88,7 @@ class InvoiceService implements InvoiceServiceInterface
                     $contract,
                     $start,
                     $end,
-                    $dueAtStr,
+                    $dueAt->toDateTimeString(),
                     $items,
                 ),
             );
@@ -211,14 +209,14 @@ class InvoiceService implements InvoiceServiceInterface
     /**
      * Persist a single invoice record with items and computed total.
      */
-    protected function createInvoiceRecord(Contract $contract, Carbon $periodStart, Carbon $periodEnd, string $dueDate, array $items): Invoice
+    protected function createInvoiceRecord(Contract $contract, Carbon $periodStart, Carbon $periodEnd, string $dueDateTime, array $items): Invoice
     {
         return Invoice::create([
             'contract_id'  => $contract->id,
             'number'       => Invoice::makeNumber(),
             'period_start' => $periodStart->toDateString(),
             'period_end'   => $periodEnd->toDateString(),
-            'due_date'     => $dueDate,
+            'due_date'     => $dueDateTime,
             'amount_cents' => Invoice::sumItems($items),
             'items'        => $items,
             'status'       => InvoiceStatus::PENDING,

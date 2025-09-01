@@ -93,20 +93,11 @@ export default function ContractIndex(props: ContractsPageProps) {
         String((query as { q?: string | null }).q ?? ''),
     );
 
-    type QueryInit = Partial<{
-        page: number;
-        per_page: number;
-        perPage: number;
-        sort: string | null;
-        dir: 'asc' | 'desc' | null;
-        status: string | null;
-        q: string | null;
-    }>;
     const qinit = (query as QueryInit) || {};
     const initial: QueryBag | undefined = Object.keys(qinit).length
         ? {
               page: qinit.page,
-              perPage: qinit.per_page ?? qinit.perPage,
+              perPage: qinit.per_page,
               sort: qinit.sort ?? null,
               dir: qinit.dir ?? null,
               ...(qinit.status ? { status: qinit.status } : {}),
@@ -316,6 +307,59 @@ export default function ContractIndex(props: ContractsPageProps) {
                 </Card>
             </div>
 
+            {/* Extend Due Dialog */}
+            <Dialog
+                open={!!extendTarget}
+                onOpenChange={(v) => !v && setExtendTarget(null)}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Perpanjang Tenggat Pembayaran</DialogTitle>
+                        <DialogDescription>
+                            Atur tanggal jatuh tempo baru untuk invoice pending
+                            dari kontrak ini.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                        <Label>Tanggal Jatuh Tempo Baru</Label>
+                        <DatePickerInput
+                            value={extendDueDate}
+                            onChange={(v) => setExtendDueDate(v ?? '')}
+                            min={defaultTomorrow}
+                            placeholder="Pilih tanggal jatuh tempo"
+                            required
+                        />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setExtendTarget(null)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                const c = extendTarget;
+                                if (!c || !extendDueDate) return;
+                                router.post(
+                                    route('management.contracts.extendDue', {
+                                        contract: c.id,
+                                    }),
+                                    { due_date: extendDueDate },
+                                    {
+                                        preserveScroll: true,
+                                        onFinish: () => setExtendTarget(null),
+                                    },
+                                );
+                            }}
+                            disabled={!extendDueDate}
+                        >
+                            Simpan
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             {/* Cancel Contract Dialog */}
             <AlertDialog
                 open={!!cancelTarget}
@@ -377,12 +421,12 @@ export default function ContractIndex(props: ContractsPageProps) {
                             onClick={() => {
                                 const c = toggleTarget;
                                 if (!c) return;
-                                const routeName = c.auto_renew
-                                    ? 'management.contracts.stopAutoRenew'
-                                    : 'management.contracts.startAutoRenew';
+                                const next = !c.auto_renew;
                                 router.post(
-                                    route(routeName, { contract: c.id }),
-                                    {},
+                                    route('management.contracts.setAutoRenew', {
+                                        contract: c.id,
+                                    }),
+                                    { auto_renew: next },
                                     {
                                         preserveScroll: true,
                                         onFinish: () => setToggleTarget(null),
@@ -395,62 +439,6 @@ export default function ContractIndex(props: ContractsPageProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {/* Extend Due Dialog */}
-            <Dialog
-                open={!!extendTarget}
-                onOpenChange={(v) => !v && setExtendTarget(null)}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Perpanjang Tenggat Pembayaran</DialogTitle>
-                        <DialogDescription>
-                            Atur tanggal jatuh tempo baru untuk invoice pending
-                            dari kontrak ini.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-2">
-                        <Label>Tanggal Jatuh Tempo Baru</Label>
-                        <DatePickerInput
-                            value={extendDueDate}
-                            onChange={(v) => setExtendDueDate(v ?? '')}
-                            min={defaultTomorrow}
-                            placeholder="Pilih tanggal jatuh tempo"
-                            required
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Wajib setelah hari ini.
-                        </p>
-                    </div>
-                    <div className="flex justify-end gap-2 pt-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => setExtendTarget(null)}
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                const c = extendTarget;
-                                if (!c || !extendDueDate) return;
-                                router.post(
-                                    route('management.contracts.extendDue', {
-                                        contract: c.id,
-                                    }),
-                                    { due_date: extendDueDate },
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () => setExtendTarget(null),
-                                    },
-                                );
-                            }}
-                            disabled={!extendDueDate}
-                        >
-                            Simpan
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </AuthLayout>
     );
 }

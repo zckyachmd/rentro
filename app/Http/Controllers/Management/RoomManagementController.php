@@ -162,7 +162,7 @@ class RoomManagementController extends Controller
         $data = $request->validated();
 
         $priceCents = array_key_exists('price_rupiah', $data) && $data['price_rupiah'] !== null
-            ? (int) round(((float) $data['price_rupiah']) * 100)
+            ? (int) round(((float) $data['price_rupiah']))
             : null;
 
         $attrs = [
@@ -351,7 +351,7 @@ class RoomManagementController extends Controller
         $data = $request->validated();
 
         $priceCents = array_key_exists('price_rupiah', $data) && $data['price_rupiah'] !== null
-            ? (int) round(((float) $data['price_rupiah']) * 100)
+            ? (int) round(((float) $data['price_rupiah']))
             : null;
 
         $attrs = [

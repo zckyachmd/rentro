@@ -62,8 +62,9 @@ class PermissionSeeder extends Seeder
                 // Contracts
                 PermissionName::CONTRACT_VIEW,
                 PermissionName::CONTRACT_CREATE,
-                PermissionName::CONTRACT_UPDATE,
-                PermissionName::CONTRACT_DELETE,
+                PermissionName::CONTRACT_EXTEND,
+                PermissionName::CONTRACT_CANCEL,
+                PermissionName::CONTRACT_RENEW,
                 // Invoices
                 PermissionName::INVOICE_VIEW,
                 PermissionName::INVOICE_CREATE,
@@ -108,7 +109,8 @@ class PermissionSeeder extends Seeder
                 // Contracts
                 PermissionName::CONTRACT_VIEW,
                 PermissionName::CONTRACT_CREATE,
-                PermissionName::CONTRACT_UPDATE,
+                PermissionName::CONTRACT_EXTEND,
+                PermissionName::CONTRACT_RENEW,
                 // Invoices
                 PermissionName::INVOICE_VIEW,
                 PermissionName::INVOICE_CREATE,

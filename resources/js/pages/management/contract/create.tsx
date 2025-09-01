@@ -36,6 +36,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
 import AuthLayout from '@/layouts/auth-layout';
+import { formatIDR } from '@/lib/format';
 
 type PageOptions = {
     tenants?: TenantOption[];
@@ -125,20 +126,6 @@ const buildRoomBaseLabel = (r: RoomOption) => {
     return nm ? `${num} / ${nm}` : `${num}`;
 };
 
-const formatRupiah = (val: string) => {
-    const n = Number(val || '');
-    if (Number.isNaN(n)) return 'Rp -';
-    try {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(n);
-    } catch {
-        return `Rp ${n.toLocaleString('id-ID')}`;
-    }
-};
-
 export default function ContractCreate() {
     const { props } = usePage<{ options?: PageOptions }>();
     const opt = props.options;
@@ -175,7 +162,7 @@ export default function ContractCreate() {
         end_date: '',
         rent_rupiah: '',
         deposit_rupiah: '',
-        billing_period: 'monthly',
+        billing_period: 'Monthly',
         billing_day: todayDay,
         auto_renew: autoRenewDefault,
         notes: '',
@@ -253,7 +240,7 @@ export default function ContractCreate() {
         const count = Math.max(1, Number(data.duration_count));
         let nextEnd = '';
         if (startISO) {
-            if (data.billing_period === 'monthly') {
+            if (data.billing_period === 'Monthly') {
                 const d = new Date(startISO + 'T00:00:00');
                 const startDay = d.getDate();
                 if (prorata && count >= 2 && startDay !== 1) {
@@ -286,7 +273,7 @@ export default function ContractCreate() {
             ? String(new Date(nextEnd + 'T00:00:00').getDate())
             : '';
         if (
-            data.billing_period === 'monthly' &&
+            data.billing_period === 'Monthly' &&
             prorata &&
             count >= 2 &&
             startISO &&
@@ -309,6 +296,7 @@ export default function ContractCreate() {
         data.billing_day,
         periods,
         addDaysISO,
+        toISO,
         setData,
         prorata,
         contractSettings.release_day_of_month,
@@ -318,8 +306,7 @@ export default function ContractCreate() {
 
     React.useEffect(() => {
         if (!autoRenewAuto) return;
-        const isMonthly =
-            (data.billing_period || '').toLowerCase() === 'monthly';
+        const isMonthly = data.billing_period === 'Monthly';
         if (data.auto_renew !== isMonthly) {
             setData('auto_renew', isMonthly);
         }
@@ -365,15 +352,15 @@ export default function ContractCreate() {
             return;
         }
 
-        if (data.billing_period === 'weekly' && dur > weeklyMax) {
+        if (data.billing_period === 'Weekly' && dur > weeklyMax) {
             toast.error(`Durasi melebihi batas minggu (maks ${weeklyMax}).`);
             return;
         }
-        if (data.billing_period === 'daily' && dur > dailyMax) {
+        if (data.billing_period === 'Daily' && dur > dailyMax) {
             toast.error(`Durasi melebihi batas hari (maks ${dailyMax}).`);
             return;
         }
-        if (data.billing_period === 'monthly') {
+        if (data.billing_period === 'Monthly') {
             const allowed = new Set(monthlyTerms.map(Number));
             if (!allowed.has(dur)) {
                 toast.error(
@@ -405,11 +392,12 @@ export default function ContractCreate() {
 
     const handleConfirmSubmit = () => {
         const rentCents = data.rent_rupiah
-            ? Math.round(Number(data.rent_rupiah) * 100)
+            ? Math.round(Number(data.rent_rupiah))
             : 0;
         const depositCents = data.deposit_rupiah
-            ? Math.round(Number(data.deposit_rupiah) * 100)
+            ? Math.round(Number(data.deposit_rupiah))
             : 0;
+
         guard.skipWhile(() =>
             router.post(route('management.contracts.store'), {
                 user_id: data.user_id || undefined,
@@ -424,7 +412,7 @@ export default function ContractCreate() {
                 notes: data.notes || undefined,
                 duration_count: Number(data.duration_count),
                 monthly_payment_mode:
-                    data.billing_period === 'monthly'
+                    data.billing_period === 'Monthly'
                         ? data.monthly_payment_mode
                         : undefined,
             }),
@@ -514,7 +502,7 @@ export default function ContractCreate() {
                             </div>
 
                             {/* Durasi */}
-                            {data.billing_period === 'monthly' ? (
+                            {data.billing_period === 'Monthly' ? (
                                 <div className="space-y-2">
                                     <Label>
                                         Durasi (bulan){' '}
@@ -554,7 +542,7 @@ export default function ContractCreate() {
                                 <div className="space-y-2">
                                     <Label>
                                         Durasi (
-                                        {data.billing_period === 'weekly'
+                                        {data.billing_period === 'Weekly'
                                             ? 'minggu'
                                             : 'hari'}
                                         )
@@ -566,7 +554,7 @@ export default function ContractCreate() {
                                         type="number"
                                         min={1}
                                         max={
-                                            data.billing_period === 'weekly'
+                                            data.billing_period === 'Weekly'
                                                 ? weeklyMax
                                                 : dailyMax
                                         }
@@ -579,14 +567,14 @@ export default function ContractCreate() {
                                         }
                                         className="h-9"
                                         placeholder={
-                                            data.billing_period === 'weekly'
+                                            data.billing_period === 'Weekly'
                                                 ? 'cth. 2'
                                                 : 'cth. 3'
                                         }
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         Maksimal{' '}
-                                        {data.billing_period === 'weekly'
+                                        {data.billing_period === 'Weekly'
                                             ? weeklyMax + ' minggu'
                                             : dailyMax + ' hari'}
                                         .
@@ -634,7 +622,7 @@ export default function ContractCreate() {
                                     className="h-9"
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Pratinjau: {formatRupiah(data.rent_rupiah)}
+                                    Pratinjau: {formatIDR(data.rent_rupiah)}
                                 </p>
                                 <InputError message={errors.rent_cents} />
                             </div>
@@ -656,13 +644,11 @@ export default function ContractCreate() {
                                     className="h-9"
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Pratinjau:{' '}
-                                    {formatRupiah(data.deposit_rupiah)}
+                                    Pratinjau: {formatIDR(data.deposit_rupiah)}
                                 </p>
                                 <InputError message={errors.deposit_cents} />
                             </div>
                         </div>
-
 
                         <div className="space-y-2 md:col-span-2">
                             <Label>Catatan Kontrak</Label>
@@ -678,7 +664,7 @@ export default function ContractCreate() {
                         </div>
 
                         {/* Pembayaran & Auto-renew (rapat tapi nyaman) */}
-                        {data.billing_period === 'monthly' && (
+                        {data.billing_period === 'Monthly' && (
                             <div className="space-y-3 md:col-span-2">
                                 <div className="space-y-2">
                                     <Label>Pembayaran</Label>
@@ -773,7 +759,7 @@ export default function ContractCreate() {
                 tenantOptions={tenantOptions}
                 roomOptions={roomOptions}
                 periodLabel={selectedPeriod?.label ?? data.billing_period}
-                formatRupiah={formatRupiah}
+                formatRupiah={formatIDR}
                 processing={processing}
                 onConfirm={handleConfirmSubmit}
             />
@@ -1113,9 +1099,9 @@ function ContractPreviewDialog(props: {
                                 </span>
                             </div>
                             {/* Payment mode tile */}
-                            {(data.billing_period === 'monthly' ||
-                                data.billing_period === 'weekly' ||
-                                data.billing_period === 'daily') && (
+                            {(data.billing_period === 'Monthly' ||
+                                data.billing_period === 'Weekly' ||
+                                data.billing_period === 'Daily') && (
                                 <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                     <span className="text-muted-foreground">
                                         Pembayaran
@@ -1123,7 +1109,7 @@ function ContractPreviewDialog(props: {
                                     <span
                                         className="min-w-0 justify-self-end truncate text-right font-medium"
                                         title={
-                                            data.billing_period === 'monthly'
+                                            data.billing_period === 'Monthly'
                                                 ? data.monthly_payment_mode ===
                                                   'full'
                                                     ? 'Lunas'
@@ -1131,7 +1117,7 @@ function ContractPreviewDialog(props: {
                                                 : 'Lunas'
                                         }
                                     >
-                                        {data.billing_period === 'monthly'
+                                        {data.billing_period === 'Monthly'
                                             ? data.monthly_payment_mode ===
                                               'full'
                                                 ? 'Lunas'
@@ -1140,6 +1126,19 @@ function ContractPreviewDialog(props: {
                                     </span>
                                 </div>
                             )}
+                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                                <span className="text-muted-foreground">
+                                    Auto-renew
+                                </span>
+                                <span
+                                    className="min-w-0 justify-self-end truncate text-right font-medium"
+                                    title={
+                                        data.auto_renew ? 'Aktif' : 'Nonaktif'
+                                    }
+                                >
+                                    {data.auto_renew ? 'Aktif' : 'Nonaktif'}
+                                </span>
+                            </div>
                             <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Tanggal Penagihan
@@ -1173,17 +1172,6 @@ function ContractPreviewDialog(props: {
                                     {data.end_date || '-'}
                                 </span>
                             </div>
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
-                                <span className="text-muted-foreground">
-                                    Biaya Sewa
-                                </span>
-                                <span
-                                    className="min-w-0 justify-self-end truncate text-right font-medium"
-                                    title={formatRupiah(data.rent_rupiah)}
-                                >
-                                    {formatRupiah(data.rent_rupiah)}
-                                </span>
-                            </div>
                             {/* Deposit & Auto-renew row */}
                             <div className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
                                 <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
@@ -1201,17 +1189,13 @@ function ContractPreviewDialog(props: {
                                 </div>
                                 <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                     <span className="text-muted-foreground">
-                                        Auto-renew
+                                        Biaya Sewa
                                     </span>
                                     <span
                                         className="min-w-0 justify-self-end truncate text-right font-medium"
-                                        title={
-                                            data.auto_renew
-                                                ? 'Aktif'
-                                                : 'Nonaktif'
-                                        }
+                                        title={formatRupiah(data.rent_rupiah)}
                                     >
-                                        {data.auto_renew ? 'Aktif' : 'Nonaktif'}
+                                        {formatRupiah(data.rent_rupiah)}
                                     </span>
                                 </div>
                             </div>

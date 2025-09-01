@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('status', 20)->default(ContractStatus::ACTIVE->value)->index();
             $table->boolean('auto_renew')->default(true)->index();
             $table->timestamp('renewal_cancelled_at')->nullable();
+            $table->timestamp('paid_in_full_at')->nullable();
             $table->unsignedBigInteger('deposit_refund_cents')->nullable();
             $table->timestamp('deposit_refunded_at')->nullable();
             $table->text('notes')->nullable();

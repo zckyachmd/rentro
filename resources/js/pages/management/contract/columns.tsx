@@ -1,7 +1,14 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import {
+    Clock3,
+    Eye,
+    MoreHorizontal,
+    RefreshCcw,
+    RefreshCw,
+    Trash2,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +21,21 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { formatIDR } from '@/lib/format';
+
+const CS = {
+    PENDING_PAYMENT: 'Pending Payment',
+    BOOKED: 'Booked',
+    PAID: 'Paid',
+    ACTIVE: 'Active',
+    COMPLETED: 'Completed',
+    OVERDUE: 'Overdue',
+    CANCELLED: 'Cancelled',
+} as const;
+
+const CANCELABLE: ReadonlyArray<string> = [CS.PENDING_PAYMENT, CS.BOOKED];
+const EXTENDABLE: ReadonlyArray<string> = [CS.OVERDUE, CS.PENDING_PAYMENT];
+const RENEW_ALLOWED: ReadonlyArray<string> = [CS.BOOKED, CS.PAID, CS.ACTIVE];
 
 export interface ContractItem {
     id: string;
@@ -45,12 +67,6 @@ const statusColor: Record<
     Active: 'default',
     Completed: 'secondary',
     Cancelled: 'destructive',
-};
-
-const formatIDR = (cents?: number | null) => {
-    if (!cents) return '-';
-    const idr = Math.round((cents as number) / 100);
-    return 'Rp ' + new Intl.NumberFormat('id-ID').format(idr);
 };
 
 export type ColumnFactoryOptions = {
@@ -145,49 +161,94 @@ export const createColumns = (
         id: 'actions',
         title: 'Aksi',
         className: COL.actions + ' flex justify-end items-center',
-        cell: ({ row }) => (
-            <div className={COL.actions + ' flex items-center justify-end'}>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Aksi kontrak ${row.original.id}`}
-                        >
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {/* Batalkan kontrak (Pending/Booked) */}
-                        {['Pending Payment', 'Booked'].includes(row.original.status) && (
-                            <DropdownMenuItem onClick={() => opts?.onCancel?.(row.original)}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Batalkan
+        cell: ({ row }) => {
+            const s = row.original.status;
+            const canCancel = CANCELABLE.includes(s);
+            const canExtendDue = EXTENDABLE.includes(s);
+            const canToggleRenew = RENEW_ALLOWED.includes(s);
+
+            return (
+                <div className={COL.actions + ' flex items-center justify-end'}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={`Aksi kontrak ${row.original.id}`}
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    (window.location.href = route(
+                                        'management.contracts.show',
+                                        { contract: row.original.id },
+                                    ))
+                                }
+                            >
+                                <Eye className="mr-2 h-4 w-4" /> Lihat detail
                             </DropdownMenuItem>
-                        )}
-                        {/* Perpanjang tenggat (Overdue atau Pending) */}
-                        {['Overdue', 'Pending Payment'].includes(row.original.status) && (
-                            <DropdownMenuItem onClick={() => opts?.onExtendDue?.(row.original)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Perpanjang tenggat
-                            </DropdownMenuItem>
-                        )}
-                        {/* Toggle auto-renew (hanya jika belum selesai/dibatalkan) */}
-                        {!['Completed', 'Cancelled'].includes(row.original.status) && (
-                            row.original.auto_renew ? (
-                                <DropdownMenuItem onClick={() => opts?.onStopAutoRenew?.(row.original)}>
-                                    <Pencil className="mr-2 h-4 w-4" /> Hentikan Auto‑renew
+
+                            {canExtendDue && (
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        opts?.onExtendDue?.(row.original)
+                                    }
+                                >
+                                    <Clock3 className="mr-2 h-4 w-4" />{' '}
+                                    Perpanjang jatuh tempo
                                 </DropdownMenuItem>
-                            ) : (
-                                <DropdownMenuItem onClick={() => opts?.onStartAutoRenew?.(row.original)}>
-                                    <Pencil className="mr-2 h-4 w-4" /> Nyalakan Auto‑renew
-                                </DropdownMenuItem>
-                            )
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        ),
+                            )}
+
+                            {canToggleRenew &&
+                                (row.original.auto_renew ? (
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onStopAutoRenew?.(
+                                                row.original,
+                                            )
+                                        }
+                                    >
+                                        <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                        Hentikan perpanjangan otomatis
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onStartAutoRenew?.(
+                                                row.original,
+                                            )
+                                        }
+                                    >
+                                        <RefreshCw className="mr-2 h-4 w-4" />{' '}
+                                        Nyalakan perpanjangan otomatis
+                                    </DropdownMenuItem>
+                                ))}
+
+                            {canCancel && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onCancel?.(row.original)
+                                        }
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />{' '}
+                                        Batalkan kontrak
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            );
+        },
     }),
 ];
 

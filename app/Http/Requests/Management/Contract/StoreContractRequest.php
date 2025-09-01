@@ -37,7 +37,7 @@ class StoreContractRequest extends FormRequest
 
             'duration_count'       => ['required', 'integer', 'min:1'],
             'monthly_payment_mode' => [
-                Rule::requiredIf(fn () => strtolower((string) request()->input('billing_period')) === BillingPeriod::MONTHLY->value),
+                Rule::requiredIf(fn () => (string) request()->input('billing_period') === BillingPeriod::MONTHLY->value),
                 Rule::in(['full', 'per_month']),
             ],
 

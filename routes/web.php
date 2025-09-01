@@ -169,26 +169,18 @@ Route::middleware('auth')->group(function (): void {
             Route::post('/', [ContractManagementController::class, 'store'])
                 ->middleware('can:' . PermissionName::CONTRACT_CREATE->value)
                 ->name('store');
-            Route::put('/{contract}', [ContractManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::CONTRACT_UPDATE->value)
-                ->name('update');
-            Route::delete('/{contract}', [ContractManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::CONTRACT_DELETE->value)
-                ->name('destroy');
-
-            // Contract actions
-            Route::post('/{contract}/cancel', [ContractManagementController::class, 'cancel'])
-                ->middleware('can:' . PermissionName::CONTRACT_UPDATE->value)
-                ->name('cancel');
+            Route::get('/{contract}', [ContractManagementController::class, 'show'])
+                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
+                ->name('show');
             Route::post('/{contract}/extend-due', [ContractManagementController::class, 'extendDue'])
-                ->middleware('can:' . PermissionName::CONTRACT_UPDATE->value)
+                ->middleware('can:' . PermissionName::CONTRACT_EXTEND->value)
                 ->name('extendDue');
-            Route::post('/{contract}/stop-auto-renew', [ContractManagementController::class, 'stopAutoRenew'])
-                ->middleware('can:' . PermissionName::CONTRACT_UPDATE->value)
-                ->name('stopAutoRenew');
-            Route::post('/{contract}/start-auto-renew', [ContractManagementController::class, 'startAutoRenew'])
-                ->middleware('can:' . PermissionName::CONTRACT_UPDATE->value)
-                ->name('startAutoRenew');
+            Route::post('/{contract}/cancel', [ContractManagementController::class, 'cancel'])
+                ->middleware('can:' . PermissionName::CONTRACT_CANCEL->value)
+                ->name('cancel');
+            Route::post('/{contract}/set-auto-renew', [ContractManagementController::class, 'setAutoRenew'])
+                ->middleware('can:' . PermissionName::CONTRACT_RENEW->value)
+                ->name('setAutoRenew');
         });
 
         // Invoices

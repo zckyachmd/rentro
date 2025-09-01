@@ -84,6 +84,23 @@ class InvoiceManagementController extends Controller
     {
         $invoice->update($request->validated());
 
+        // If this invoice is now marked Paid and it covers the full term,
+        // mark the related contract as fully paid.
+        try {
+            $invoice->refresh();
+            if ($invoice->status === \App\Enum\InvoiceStatus::PAID) {
+                /** @var \App\Models\Contract|null $contract */
+                $contract = $invoice->contract;
+                if ($contract && !$contract->paid_in_full_at) {
+                    if ($this->invoiceCoversFullTerm($invoice)) {
+                        $contract->forceFill(['paid_in_full_at' => now()])->save();
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // no-op: we don't want to block API on this flag update
+        }
+
         return response()->json(['success' => true]);
     }
 
@@ -92,5 +109,38 @@ class InvoiceManagementController extends Controller
         $invoice->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Determine if an invoice covers the full contract term.
+     * Rules:
+     * - For non-monthly contracts (daily/weekly), the single invoice always covers the term.
+     * - For monthly contracts, when the RENT item has qty > 1 (pay-in-full upfront), it covers the term.
+     */
+    protected function invoiceCoversFullTerm(Invoice $invoice): bool
+    {
+        $contract = $invoice->contract;
+        if (!$contract) {
+            return false;
+        }
+        /** @var \App\Models\Contract $contract */
+
+        $period = strtolower((string) $contract->billing_period->value);
+        if ($period !== strtolower('Monthly')) { // daily/weekly: always full-term in this system
+            return true;
+        }
+
+        $items = (array) ($invoice->items ?? []);
+        foreach ($items as $it) {
+            if ((string) ($it['code'] ?? '') !== 'RENT') {
+                continue;
+            }
+            $qty = (int) (($it['meta']['qty'] ?? 1));
+            if ($qty > 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
