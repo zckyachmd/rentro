@@ -2,31 +2,66 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Enum\BillingPeriod;
+use App\Enum\ContractStatus;
+use App\Enum\InvoiceStatus;
+use App\Enum\PaymentStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Management\Invoice\StoreInvoiceRequest;
-use App\Http\Requests\Management\Invoice\UpdateInvoiceRequest;
+use App\Http\Requests\Management\Invoice\CancelInvoiceRequest;
+use App\Http\Requests\Management\Invoice\GenerateInvoiceRequest;
 use App\Models\Contract;
 use App\Models\Invoice;
+use App\Models\User;
+use App\Services\Contracts\InvoiceServiceInterface;
+use App\Traits\DataTable;
 use App\Traits\LogActivity;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class InvoiceManagementController extends Controller
 {
+    use DataTable;
     use LogActivity;
+
+    public function __construct(private InvoiceServiceInterface $invoices)
+    {
+    }
 
     public function index(Request $request)
     {
-        $q = Invoice::query()->with(['contract:id,user_id,room_id', 'contract.tenant:id,name', 'contract.room:id,number']);
+        $query = Invoice::query()
+            ->with([
+                'contract:id,user_id,room_id',
+                'contract.tenant:id,name',
+                'contract.room:id,number',
+            ]);
 
-        if ($request->filled('status')) {
-            $q->where('status', $request->string('status'));
-        }
+        $options = [
+            'search_param' => 'search',
+            'searchable'   => [
+                'number',
+                'contract.tenant.name',
+                'contract.room.number',
+            ],
+            'sortable' => [
+                'number'       => 'number',
+                'due_date'     => 'due_date',
+                'amount_cents' => 'amount_cents',
+                'status'       => 'status',
+            ],
+            'default_sort' => ['due_date', 'desc'],
+            'filters'      => [
+                'status' => function ($q, $status) {
+                    $q->where('status', $status);
+                },
+            ],
+        ];
 
-        $invoices = $q->orderByDesc('due_date')->paginate(15);
-        $mapped   = $invoices->getCollection()->map(function ($inv) {
-            /** @var \App\Models\Invoice $inv */
+        /** @var \Illuminate\Pagination\LengthAwarePaginator<\App\Models\Invoice> $page */
+        $page = $this->applyTable($query, $request, $options);
+
+        $mapped = $page->getCollection()->map(function (Invoice $inv) {
             /** @var \App\Models\Contract|null $contract */
             $contract = $inv->contract;
             /** @var \App\Models\User|null $tenant */
@@ -37,110 +72,212 @@ class InvoiceManagementController extends Controller
             return [
                 'id'           => (string) $inv->id,
                 'number'       => $inv->number,
-                'due_date'     => $inv->due_date->format('Y-m-d'),
-                'amount_cents' => $inv->amount_cents,
+                'due_date'     => optional($inv->due_date)->format('Y-m-d'),
+                'amount_cents' => (int) $inv->amount_cents,
                 'status'       => $inv->status->value,
                 'tenant'       => $tenant?->name,
                 'room_number'  => $room?->number,
             ];
         });
-        $invoicesDTO = $mapped->all();
+        $page->setCollection($mapped);
+        $invoicesPayload = $this->tablePaginate($page);
+
+        $contracts = Contract::query()
+            ->select('id', 'user_id', 'status', 'billing_period')
+            ->with(['tenant:id,name'])
+            ->whereNotIn('status', [\App\Enum\ContractStatus::CANCELLED->value, \App\Enum\ContractStatus::COMPLETED->value])
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get()
+            ->map(function (Contract $c) {
+                /** @var User|null $t */
+                $t = $c->tenant;
+
+                return [
+                    'id'     => (string) $c->id,
+                    'name'   => $t?->name ? ($t->name . ' — #' . $c->id) : ('#' . $c->id),
+                    'period' => (string) $c->billing_period->value,
+                ];
+            });
+
+        $statusOptions = collect(InvoiceStatus::cases())->map(fn ($s) => $s->value);
 
         return Inertia::render('management/invoice/index', [
-            'invoices' => [
-                'data'         => $invoicesDTO,
-                'current_page' => $invoices->currentPage(),
-                'per_page'     => $invoices->perPage(),
-                'total'        => $invoices->total(),
+            'invoices' => $invoicesPayload,
+            'options'  => [
+                'statuses'  => $statusOptions,
+                'contracts' => $contracts,
             ],
-            'filters' => [
-                'status' => $request->query('status'),
+            'query' => [
+                'page'    => $invoicesPayload['current_page'],
+                'perPage' => $invoicesPayload['per_page'],
+                'sort'    => $request->query('sort'),
+                'dir'     => $request->query('dir'),
+                'search'  => $request->query('search'),
+                'status'  => $request->query('status'),
             ],
         ]);
     }
 
-    public function store(StoreInvoiceRequest $request)
+    public function show(Request $request, Invoice $invoice)
+    {
+        $invoice->load(['contract:id,user_id,room_id,start_date,end_date', 'contract.tenant:id,name,email,phone', 'contract.room:id,number,name']);
+
+        /** @var Contract|null $c */
+        $c = $invoice->contract;
+        /** @var \App\Models\User|null $tenant */
+        $tenant = $c?->tenant;
+        /** @var \App\Models\Room|null $room */
+        $room = $c?->room;
+
+        $dto = [
+            'id'           => (string) $invoice->id,
+            'number'       => $invoice->number,
+            'status'       => $invoice->status->value,
+            'due_date'     => $invoice->due_date->toDateString(),
+            'period_start' => $invoice->period_start->toDateString(),
+            'period_end'   => $invoice->period_end->toDateString(),
+            'amount_cents' => (int) $invoice->amount_cents,
+            'items'        => (array) ($invoice->items ?? []),
+            'paid_at'      => $invoice->paid_at?->toDateTimeString(),
+            'created_at'   => $invoice->created_at->toDateTimeString(),
+            'updated_at'   => $invoice->updated_at->toDateTimeString(),
+        ];
+
+        $contractDTO = $c ? [
+            'id'         => (string) $c->id,
+            'start_date' => $c->start_date->toDateString(),
+            'end_date'   => $c->end_date->toDateString(),
+        ] : null;
+        $tenantDTO = $tenant ? [
+            'id'    => (string) $tenant->id,
+            'name'  => $tenant->name,
+            'email' => $tenant->email,
+            'phone' => $tenant->phone,
+        ] : null;
+        $roomDTO = $room ? [
+            'id'     => (string) $room->id,
+            'number' => $room->number,
+            'name'   => $room->name,
+        ] : null;
+
+        // Since the standalone detail page is removed, serve JSON for the dialog.
+        return response()->json([
+            'invoice'  => $dto,
+            'contract' => $contractDTO,
+            'tenant'   => $tenantDTO,
+            'room'     => $roomDTO,
+        ]);
+    }
+
+    public function cancel(CancelInvoiceRequest $request, Invoice $invoice)
+    {
+        $prev = (string) $invoice->status->value;
+
+        $data   = $request->validated();
+        $reason = (string) ($data['reason'] ?? '');
+
+        if ($invoice->status === InvoiceStatus::PAID) {
+            return back()->with('error', 'Invoice sudah dibayar dan tidak dapat dibatalkan.');
+        }
+
+        $hasCompletedPayment = $invoice->payments()
+            ->where('status', PaymentStatus::COMPLETED->value)
+            ->exists();
+        if ($hasCompletedPayment) {
+            return back()->with('error', 'Invoice memiliki pembayaran yang sudah selesai dan tidak dapat dibatalkan.');
+        }
+
+        if ($invoice->status === InvoiceStatus::CANCELLED) {
+            return back()->with('info', 'Invoice sudah dalam status Cancelled.');
+        }
+
+        try {
+            $changed = $this->invoices->cancel($invoice, $reason);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal membatalkan invoice.');
+        }
+
+        $invoice->refresh();
+
+        $this->logEvent(
+            event: 'invoice_cancelled',
+            causer: $request->user(),
+            subject: $invoice,
+            properties: [
+                'previous_status' => $prev,
+                'current_status'  => (string) $invoice->status->value,
+                'reason'          => $reason,
+            ],
+        );
+
+        if ($changed) {
+            return back()->with('success', 'Invoice dibatalkan.');
+        }
+
+        return back()->with('info', 'Invoice sudah dalam status Cancelled.');
+    }
+
+    public function generate(GenerateInvoiceRequest $request)
     {
         $data     = $request->validated();
         $contract = Contract::findOrFail($data['contract_id']);
 
-        $invoice = DB::transaction(function () use ($data, $contract) {
-            return Invoice::create([
-                'contract_id'  => $contract->id,
-                'number'       => $data['number'],
-                'period_start' => $data['period_start'] ?? null,
-                'period_end'   => $data['period_end'] ?? null,
-                'due_date'     => $data['due_date'],
-                'amount_cents' => $data['amount_cents'],
-                'status'       => $data['status'] ?? \App\Enum\InvoiceStatus::PENDING,
-                'notes'        => $data['notes'] ?? null,
-            ]);
-        });
+        // Business validation: contract must not be Cancelled or Completed
+        if (in_array((string) $contract->status->value, [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value], true)) {
+            return back()->with('error', 'Kontrak tidak valid untuk generate invoice.');
+        }
 
-        return response()->json(['id' => (string) $invoice->id], 201);
-    }
+        // Enforce mode based on billing period: daily/weekly must be full
+        $period = (string) $contract->billing_period->value;
+        $mode   = (string) $data['mode'];
+        $target = (string) ($data['target'] ?? 'next');
+        if (in_array($period, [BillingPeriod::DAILY->value, BillingPeriod::WEEKLY->value], true)) {
+            $mode   = 'full';
+            $target = 'next';
+        }
 
-    public function update(UpdateInvoiceRequest $request, Invoice $invoice)
-    {
-        $invoice->update($request->validated());
-
-        // If this invoice is now marked Paid and it covers the full term,
-        // mark the related contract as fully paid.
         try {
-            $invoice->refresh();
-            if ($invoice->status === \App\Enum\InvoiceStatus::PAID) {
-                /** @var \App\Models\Contract|null $contract */
-                $contract = $invoice->contract;
-                if ($contract && !$contract->paid_in_full_at) {
-                    if ($this->invoiceCoversFullTerm($invoice)) {
-                        $contract->forceFill(['paid_in_full_at' => now()])->save();
-                    }
-                }
-            }
+            $invoice = $this->invoices->generateNextInvoice($contract, $mode, $target);
         } catch (\Throwable $e) {
-            // no-op: we don't want to block API on this flag update
+            return back()->with('error', $e->getMessage() ?: 'Gagal generate invoice.');
         }
 
-        return response()->json(['success' => true]);
+        $this->logEvent(
+            event: 'invoice_generated',
+            causer: $request->user(),
+            subject: $invoice,
+            properties: [
+                'contract_id' => (string) $contract->id,
+                'mode'        => $mode,
+                'target'      => $target,
+                'reason'      => (string) $data['reason'],
+            ],
+        );
+
+        // Redirect back to index; dialog can be opened manually if needed.
+        return redirect()->route('management.invoices.index')->with('success', 'Invoice berhasil dibuat.');
     }
 
-    public function destroy(Invoice $invoice)
+    public function print(Request $request, Invoice $invoice)
     {
-        $invoice->delete();
+        $auto = (bool) $request->boolean('auto');
+        $html = view('pdf.invoice', [
+            'invoice'   => $invoice->fresh(['contract.tenant', 'contract.room']),
+            'autoPrint' => $auto,
+        ])->render();
 
-        return response()->json(['success' => true]);
-    }
+        if (!$auto && class_exists(Pdf::class)) {
+            try {
+                /** @var \Barryvdh\DomPDF\PDF $pdf */
+                $pdf = Pdf::loadHTML($html);
 
-    /**
-     * Determine if an invoice covers the full contract term.
-     * Rules:
-     * - For non-monthly contracts (daily/weekly), the single invoice always covers the term.
-     * - For monthly contracts, when the RENT item has qty > 1 (pay-in-full upfront), it covers the term.
-     */
-    protected function invoiceCoversFullTerm(Invoice $invoice): bool
-    {
-        $contract = $invoice->contract;
-        if (!$contract) {
-            return false;
-        }
-        /** @var \App\Models\Contract $contract */
-
-        $period = strtolower((string) $contract->billing_period->value);
-        if ($period !== strtolower('Monthly')) { // daily/weekly: always full-term in this system
-            return true;
-        }
-
-        $items = (array) ($invoice->items ?? []);
-        foreach ($items as $it) {
-            if ((string) ($it['code'] ?? '') !== 'RENT') {
-                continue;
-            }
-            $qty = (int) (($it['meta']['qty'] ?? 1));
-            if ($qty > 1) {
-                return true;
+                return $pdf->stream($invoice->number . '.pdf');
+            } catch (\Throwable $e) {
+                // fallthrough to HTML
             }
         }
 
-        return false;
+        return response($html);
     }
 }

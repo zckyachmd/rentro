@@ -188,15 +188,27 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/', [InvoiceManagementController::class, 'index'])
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
                 ->name('index');
+            Route::get('/{invoice}', [InvoiceManagementController::class, 'show'])
+                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->name('show');
             Route::post('/', [InvoiceManagementController::class, 'store'])
                 ->middleware('can:' . PermissionName::INVOICE_CREATE->value)
                 ->name('store');
+            Route::post('/generate', [InvoiceManagementController::class, 'generate'])
+                ->middleware('can:' . PermissionName::INVOICE_CREATE->value)
+                ->name('generate');
             Route::put('/{invoice}', [InvoiceManagementController::class, 'update'])
                 ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
                 ->name('update');
             Route::delete('/{invoice}', [InvoiceManagementController::class, 'destroy'])
                 ->middleware('can:' . PermissionName::INVOICE_DELETE->value)
                 ->name('destroy');
+            Route::post('/{invoice}/cancel', [InvoiceManagementController::class, 'cancel'])
+                ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->name('cancel');
+            Route::get('/{invoice}/print', [InvoiceManagementController::class, 'print'])
+                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->name('print');
         });
 
         // Payments

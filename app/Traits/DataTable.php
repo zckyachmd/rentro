@@ -44,14 +44,78 @@ trait DataTable
             }
         }
 
-        // Search (LIKE vs ILIKE for pgsql)
+        // Search (LIKE vs ILIKE for pgsql) — supports:
+        // - plain columns: 'number'
+        // - relation columns: 'contract.tenant.name' or ['relation' => 'contract.tenant', 'column' => 'name']
+        // - custom callbacks: function (Builder $q, string $term, string $like) { ... }
         $search = trim((string) $request->query($searchParam, ''));
         if ($search !== '' && !empty($searchable)) {
             $like = $this->tableLikeOperator();
             $query->where(function (Builder $q) use ($search, $like, $searchable) {
-                foreach ($searchable as $i => $col) {
-                    $method = $i === 0 ? 'where' : 'orWhere';
-                    $q->{$method}($col, $like, "%{$search}%");
+                $first = true;
+
+                $applyPlain = function (Builder $q, string $col, string $term, string $like, bool &$first): void {
+                    if ($first) {
+                        $q->where($col, $like, "%{$term}%");
+                        $first = false;
+                    } else {
+                        $q->orWhere($col, $like, "%{$term}%");
+                    }
+                };
+
+                $applyRelation = function (Builder $q, string $relation, string $col, string $term, string $like, bool &$first): void {
+                    if ($first) {
+                        $q->whereHas($relation, function ($qq) use ($col, $term, $like) {
+                            $qq->where($col, $like, "%{$term}%");
+                        });
+                        $first = false;
+                    } else {
+                        $q->orWhereHas($relation, function ($qq) use ($col, $term, $like) {
+                            $qq->where($col, $like, "%{$term}%");
+                        });
+                    }
+                };
+
+                foreach ($searchable as $col) {
+                    // Callback: receives (Builder $q, string $term, string $like)
+                    if (is_callable($col)) {
+                        if ($first) {
+                            $q->where(function (Builder $nq) use ($col, $search, $like) {
+                                $col($nq, $search, $like);
+                            });
+                            $first = false;
+                        } else {
+                            $q->orWhere(function (Builder $nq) use ($col, $search, $like) {
+                                $col($nq, $search, $like);
+                            });
+                        }
+                        continue;
+                    }
+
+                    // Array form: ['relation' => 'contract.tenant', 'column' => 'name']
+                    if (is_array($col) && isset($col['relation'], $col['column'])) {
+                        $relation = (string) $col['relation'];
+                        $field    = (string) $col['column'];
+                        $applyRelation($q, $relation, $field, $search, $like, $first);
+                        continue;
+                    }
+
+                    // String: relation path or plain column
+                    if (is_string($col) && str_contains($col, '.')) {
+                        // treat last segment as column, others as relation path
+                        $parts    = explode('.', $col);
+                        $field    = array_pop($parts);
+                        $relation = implode('.', $parts);
+                        if ($relation !== '' && $field !== '') {
+                            $applyRelation($q, $relation, $field, $search, $like, $first);
+                            continue;
+                        }
+                    }
+
+                    // Fallback: plain column string
+                    if (is_string($col) && $col !== '') {
+                        $applyPlain($q, $col, $search, $like, $first);
+                    }
                 }
             });
         }

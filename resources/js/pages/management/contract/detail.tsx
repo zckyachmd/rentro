@@ -357,9 +357,13 @@ export default function ContractDetailPage(props: {
                                             <TableRow key={inv.id}>
                                                 <TableCell className="font-mono text-xs">
                                                     <div className="flex items-center gap-2">
-                                                        <span>
+                                                        <a
+                                                            href={`${route('management.invoices.index')}?open=${inv.id}`}
+                                                            className="hover:underline"
+                                                            title="Lihat detail invoice"
+                                                        >
                                                             {inv.number}
-                                                        </span>
+                                                        </a>
                                                         <Button
                                                             type="button"
                                                             size="icon"

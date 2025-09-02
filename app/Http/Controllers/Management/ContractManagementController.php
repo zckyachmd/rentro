@@ -57,8 +57,9 @@ class ContractManagementController extends Controller
                 'end_date'   => 'end_date',
                 'rent'       => 'rent_cents',
                 'status'     => 'status',
+                'created_at' => 'created_at',
             ],
-            'default_sort' => ['start_date', 'desc'],
+            'default_sort' => ['created_at', 'desc'],
             'filters'      => [
                 'status' => fn ($q, $v) => $q->where('status', $v),
                 'q'      => function ($q, $v) {

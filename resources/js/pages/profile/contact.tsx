@@ -3,7 +3,7 @@ import { Phone, Users } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import ShowMore from '@/components/show-more';
+import ShowMore from '@/components/ui/show-more';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

@@ -3,7 +3,7 @@ import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import ShowMore from '@/components/show-more';
+import ShowMore from '@/components/ui/show-more';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

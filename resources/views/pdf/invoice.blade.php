@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Invoice {{ $invoice->number }}</title>
+    <style>
+        @page {
+            margin: 24px 28px;
+        }
+
+        body {
+            font-family: DejaVu Sans, Arial, Helvetica, sans-serif;
+            color: #111;
+            font-size: 12px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 4px;
+            position: relative;
+        }
+
+        .row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .col {
+            flex: 1 1 0;
+        }
+
+        .header {
+            margin-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            align-items: start;
+            column-gap: 16px;
+        }
+
+        .header-row .left {}
+
+        .header-row .right {
+            text-align: right;
+        }
+
+        .title {
+            line-height: 1.1;
+            margin: 0;
+        }
+
+        .brand {
+            margin-bottom: 4px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .meta-inline .item .label {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .meta-inline .item .value {
+            font-weight: 700;
+        }
+
+        .header-row .left,
+        .header-row .right {
+            margin-top: 0;
+        }
+
+        .meta-inline {
+            margin-top: 0;
+        }
+
+        .brand {
+            margin-top: 0;
+        }
+
+        .muted {
+            color: #555;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .value {
+            font-weight: 600;
+        }
+
+        .k-v {
+            margin-bottom: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+        }
+
+        th,
+        td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+        }
+
+        th {
+            background: #fafafa;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        td {
+            font-size: 12px;
+            vertical-align: top;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .subtotal {
+            font-weight: 700;
+            background: #fbfbfb;
+        }
+
+        .note {
+            color: #666;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 18px;
+            border-top: 1px dashed #e5e7eb;
+            padding-top: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .meta-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            justify-content: flex-end;
+        }
+
+        .meta-inline .item {
+            font-size: 12px;
+            color: #333;
+        }
+
+        .billed-name {
+            font-weight: 700;
+            font-size: 13px;
+            color: #111;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 9999px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .badge-paid {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .badge-cancelled {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #7f1d1d;
+        }
+
+        .badge-overdue {
+            background: #fff7ed;
+            border-color: #f59e0b;
+            color: #7c2d12;
+        }
+
+        .badge-pending {
+            background: #f5f5f5;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .table-items th,
+        .table-items td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+        }
+
+        .table-items th {
+            background: #fafafa;
+            text-align: left;
+        }
+
+        .table-items td.right,
+        .table-items th.right {
+            text-align: right;
+        }
+
+        .small-muted {
+            color: #666;
+            font-size: 11px;
+        }
+    </style>
+    @if(!empty($autoPrint))
+    <script>
+        window.addEventListener('load', function(){
+                try { window.print(); } catch (e) {}
+            });
+    </script>
+    @endif
+    <?php
+        $fmt = fn($n) => 'Rp ' . number_format((int) $n, 0, ',', '.');
+        $appName = config('app.name');
+        $appUrl  = rtrim((string) config('app.url'), '/');
+        $fromName = config('mail.from.name');
+        $fromAddr = config('mail.from.address');
+        $tenant   = optional(optional($invoice->contract)->tenant);
+        $room     = optional(optional($invoice->contract)->room);
+        $status   = strtolower((string) $invoice->status->value);
+        $issuedAt = optional($invoice->created_at)->format('Y-m-d');
+        $dueAt    = optional($invoice->due_date)->format('Y-m-d');
+        $period   = [optional($invoice->period_start)->format('Y-m-d'), optional($invoice->period_end)->format('Y-m-d')];
+        $grandTotal = (int) ($invoice->amount_cents ?? 0);
+
+        $formatDate = function ($dateStr) {
+            if (!$dateStr) return '—';
+            try {
+                return \Carbon\Carbon::parse($dateStr)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return (string) $dateStr;
+            }
+        };
+    ?>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header: Application info (left) and Invoice meta (right) on the same line -->
+        <div class="header header-row">
+            <div class="left">
+                <div class="brand">{{ $appName }}</div>
+                @if($appUrl)
+                <div class="muted">{{ $appUrl }}</div>
+                @endif
+                @if($fromName || $fromAddr)
+                <div class="muted">{{ trim(($fromName ? ($fromName.' • ') : '').$fromAddr, ' •') }}</div>
+                @endif
+            </div>
+            <div class="right">
+                <div class="meta-inline">
+                    <div class="item"><span class="label">Nomor</span> <span class="value">{{ $invoice->number }}</span>
+                    </div>
+                    <div class="item"><span class="label">Terbit</span> <span class="value">{{ $issuedAt ?: '—'
+                            }}</span></div>
+                    <div class="item"><span class="label">Jatuh Tempo</span> <span class="value">{{ $dueAt ?: '—'
+                            }}</span></div>
+                    <div class="item"><span class="label">Status</span> <span class="value">{{ ucfirst($status)
+                            }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Billed To -->
+        <div style="margin-bottom: 8px;">
+            <div class="label">Ditagihkan kepada</div>
+            <div class="billed-name">{{ $tenant->name ?? '—' }}</div>
+            @if($tenant?->email)
+            <div class="muted">{{ $tenant->email }}</div>
+            @endif
+            @if($tenant?->phone)
+            <div class="muted">{{ $tenant->phone }}</div>
+            @endif
+        </div>
+
+        <!-- Context: contract, room, period -->
+        <div class="muted" style="margin-bottom: 8px;">
+            Kontrak #{{ optional($invoice->contract)->id ?? '—' }} • Kamar {{ $room->number ?? '—' }} • Periode {{
+            ($period[0] ?: '—') }} s/d {{ ($period[1] ?: '—') }}
+        </div>
+
+        <!-- Items -->
+        <table class="table-items">
+            <thead>
+                <tr>
+                    <th style="width:55%">Deskripsi</th>
+                    <th class="right" style="width:15%">Qty</th>
+                    <th class="right" style="width:15%">Harga Satuan</th>
+                    <th class="right" style="width:15%">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php($items = (array) ($invoice->items ?? []))
+                @if(empty($items))
+                <tr>
+                    <td colspan="4" class="muted">Tidak ada item tagihan.</td>
+                </tr>
+                @else
+                @foreach($items as $item)
+                @php($meta = (array) ($item['meta'] ?? []))
+                @php($rawLabel = (string) ($item['label'] ?? ''))
+                @php($baseLabel = str_contains($rawLabel, '×') ? trim(explode('×', $rawLabel)[0]) : $rawLabel)
+                @php($displayLabel = preg_replace('/^Sewa\s+1\s+(bulan|hari|minggu)\b/i', 'Sewa kamar', $baseLabel))
+                @php($displayLabel = preg_replace('/^Prorata\s+awal\b/i', 'Prorata sewa kamar', $displayLabel))
+                @php($desc = $meta['description'] ?? ($meta['desc'] ?? ($meta['note'] ?? '')))
+                @php($dateStart = isset($meta['date_start']) ? (string) $meta['date_start'] : null)
+                @php($dateEndInc = isset($meta['date_end']) ? (string) $meta['date_end'] : null)
+                @php($endExclusive = $dateEndInc ? \Carbon\Carbon::parse($dateEndInc)->copy()->addDay()->toDateString()
+                : null)
+                @php($daysFromRange = ($dateStart && $endExclusive) ? max(1, (int)
+                \Carbon\Carbon::parse($dateStart)->diffInDays(\Carbon\Carbon::parse($endExclusive))) : null)
+                @php($qty = is_numeric($meta['qty'] ?? null) ? (int) $meta['qty'] : ($daysFromRange ?? 1))
+                @php($totalDays = is_numeric($meta['days'] ?? null) ? (int) $meta['days'] : null)
+                @php($freeDays = is_numeric($meta['free_days'] ?? null) ? (int) $meta['free_days'] : null)
+                @php($amount = (int) ($item['amount_cents'] ?? 0))
+                @php($unitPrice = is_numeric($meta['unit_price_cents'] ?? null) ? (int) $meta['unit_price_cents'] :
+                (int) round($amount / max(1, $qty)))
+                @php($isProrata = strtoupper((string) ($item['code'] ?? '')) === 'PRORATA' || preg_match('/prorata/i',
+                $displayLabel))
+                <tr>
+                    <td>
+                        <div><strong>{{ $displayLabel ?: '-' }}</strong></div>
+                        @if(!empty($desc))
+                        <div class="muted">{{ $desc }}</div>
+                        @endif
+                        @if($isProrata && ($dateStart || $endExclusive))
+                        <div class="small-muted">({{ $formatDate($dateStart) }} s/d {{ $formatDate($endExclusive) }})
+                        </div>
+                        @endif
+                        @if($isProrata && !is_null($freeDays) && $freeDays > 0 && !is_null($totalDays))
+                        <div class="small-muted">{{ 'Total ' . $totalDays . ' hari; gratis ' . min($freeDays,
+                            $totalDays) . ' hari; ditagih ' . $qty . ' hari.' }}</div>
+                        @endif
+                    </td>
+                    <td class="right mono">{{ $qty }}</td>
+                    <td class="right mono">{{ $fmt($unitPrice) }}</td>
+                    <td class="right mono">{{ $fmt($amount) }}</td>
+                </tr>
+                @endforeach
+                <tr class="subtotal">
+                    <td class="right" colspan="3">Total</td>
+                    <td class="right mono">{{ $fmt($grandTotal) }}</td>
+                </tr>
+                @endif
+            </tbody>
+        </table>
+
+        <!-- Notes / Payment Info -->
+        <div style="margin-top:12px;" class="note">
+            @if($status === 'paid')
+            Dibayar pada {{ optional($invoice->paid_at)->format('Y-m-d H:i') ?? '—' }}. Terima kasih.
+            @elseif($status === 'cancelled')
+            Invoice ini telah dibatalkan.
+            @else
+            Mohon selesaikan pembayaran sebelum tanggal jatuh tempo.
+            @endif
+        </div>
+
+        <div class="footer">{{ $appName }} — {{ $appUrl }} • Dicetak pada {{ now()->format('Y-m-d H:i') }}</div>
+    </div>
+</body>
+
+</html>
