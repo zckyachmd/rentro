@@ -14,10 +14,13 @@ class GenerateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'contract_id' => ['required', 'integer', 'exists:contracts,id'],
-            'mode'        => ['required', 'in:per_month,full'],
-            'reason'      => ['required', 'string', 'min:3', 'max:500'],
-            'target'      => ['nullable', 'in:current,next'],
+            'contract_id'  => ['required', 'integer', 'exists:contracts,id'],
+            'mode'         => ['required', 'in:per_month,full'],
+            'reason'       => ['required', 'string', 'min:3', 'max:500'],
+            'period_month' => ['nullable', 'date_format:Y-m'],
+            'range'        => ['nullable', 'array'],
+            'range.from'   => ['nullable', 'date_format:Y-m-d'],
+            'range.to'     => ['nullable', 'date_format:Y-m-d'],
         ];
     }
 }

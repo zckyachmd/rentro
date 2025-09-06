@@ -28,90 +28,90 @@ class ContractsCancelOverdue extends Command
         $threshold = Carbon::now()->startOfDay()->subDays(max(0, $graceDays))->toDateString();
         $count     = 0;
 
-        // Case 1: Contracts already OVERDUE with overdue invoices past threshold and no paid invoices
+        $dryRun = (bool) $this->option('dry-run');
+
         Contract::query()
-            ->select('id')
-            ->where('status', ContractStatus::OVERDUE->value)
-            ->whereHas('invoices', function ($q) use ($threshold) {
-                $q->where('status', InvoiceStatus::OVERDUE->value)
-                    ->where('due_date', '<=', $threshold);
+            ->select('contracts.id')
+            ->where('contracts.status', ContractStatus::OVERDUE->value)
+            ->where(function ($q) use ($threshold) {
+                $q->whereHas('invoices', function ($iq) {
+                    $iq->whereIn('status', [
+                        InvoiceStatus::OVERDUE->value,
+                        InvoiceStatus::CANCELLED->value,
+                    ]);
+                })
+                    ->orWhere(function ($w) use ($threshold) {
+                        $w->whereDate('contracts.start_date', '<=', $threshold)
+                            ->whereDoesntHave('invoices', function ($iq) {
+                                $iq->whereIn('status', [
+                                    InvoiceStatus::PENDING->value,
+                                    InvoiceStatus::OVERDUE->value,
+                                ]);
+                            });
+                    });
             })
-            ->whereDoesntHave('invoices', function ($q) {
-                $q->where('status', InvoiceStatus::PAID->value);
-            })
-            ->orderBy('id')
-            ->chunkById($chunkSize, function ($rows) use (&$count, $contracts, $threshold): void {
-                foreach ($rows as $row) {
-                    $count++;
-                    if (!$this->option('dry-run')) {
-                        $contract = Contract::find($row->id);
-                        if ($contract) {
-                            $contracts->cancel($contract);
-                            // Explicit audit log for scheduler-driven cancellation (overdue past threshold)
-                            $this->logEvent(
-                                event: 'contract_cancelled_by_scheduler',
-                                subject: $contract,
-                                properties: [
-                                    'reason'    => 'overdue_invoices_past_threshold',
-                                    'threshold' => $threshold,
-                                ],
-                                description: 'Contract cancelled by scheduler (overdue past threshold)',
-                            );
-                        }
-                    }
-                }
+            ->distinct()
+            ->orderBy('contracts.id')
+            ->chunkById($chunkSize, function ($rows) use (&$count, $contracts, $threshold, $graceDays, $dryRun): void {
+                $this->processChunk($rows, 'contract_overdue_with_overdue_or_cancelled_invoices_or_past_threshold_without_payables', $count, $contracts, $threshold, $graceDays, $dryRun);
             });
 
-        // Case 2: Contracts past grace period with no payable invoices (all invoices cancelled) and no paid invoices
-        Contract::query()
-            ->select('id')
-            ->whereIn('status', [
-                ContractStatus::PENDING_PAYMENT->value,
-                ContractStatus::BOOKED->value,
-                ContractStatus::OVERDUE->value,
-            ])
-            ->whereDate('start_date', '<=', $threshold)
-            // has at least one cancelled invoice OR no invoices at all
-            ->where(function ($q) {
-                $q->whereDoesntHave('invoices')
-                  ->orWhereHas('invoices', function ($iq) {
-                      $iq->where('status', InvoiceStatus::CANCELLED->value);
-                  });
-            })
-            // no payable invoices remaining
-            ->whereDoesntHave('invoices', function ($q) {
-                $q->whereIn('status', [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value]);
-            })
-            // no paid invoices
-            ->whereDoesntHave('invoices', function ($q) {
-                $q->where('status', InvoiceStatus::PAID->value);
-            })
-            ->orderBy('id')
-            ->chunkById($chunkSize, function ($rows) use (&$count, $contracts, $threshold, $graceDays): void {
-                foreach ($rows as $row) {
-                    $count++;
-                    if (!$this->option('dry-run')) {
-                        $contract = Contract::find($row->id);
-                        if ($contract) {
-                            $contracts->cancel($contract);
-                            // Explicit audit log for scheduler-driven cancellation (no payable invoices past grace)
-                            $this->logEvent(
-                                event: 'contract_cancelled_by_scheduler',
-                                subject: $contract,
-                                properties: [
-                                    'reason'     => 'no_payable_invoices_past_grace',
-                                    'threshold'  => $threshold,
-                                    'grace_days' => $graceDays,
-                                ],
-                                description: 'Contract cancelled by scheduler (no payable invoices past grace)',
-                            );
-                        }
-                    }
-                }
-            });
-
-        $this->info(($this->option('dry-run') ? '[dry-run] ' : '') . "Queued cancellation jobs for {$count} contract(s). ");
+        $this->info(($dryRun ? '[dry-run] ' : '') . "Queued cancellation jobs for {$count} contract(s). ");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Proses satu chunk hasil query: batch-fetch contracts untuk hindari N+1, lalu batalkan sesuai reason.
+     *
+     * @param iterable<int, object> $rows Daftar rows yang minimal punya properti id
+     * @param string $reason Alasan pembatalan (untuk audit log)
+     * @param int $count (by-ref) penghitung kontrak yang diproses
+     * @param \App\Services\Contracts\ContractServiceInterface $contracts Service kontrak
+     * @param string $threshold Tanggal ambang (Y-m-d)
+     * @param int $graceDays Masa tenggang (hari)
+     * @param bool $dryRun Jika true, hanya menghitung tanpa eksekusi
+     * @return void
+     */
+    private function processChunk(
+        iterable $rows,
+        string $reason,
+        int &$count,
+        ContractServiceInterface $contracts,
+        string $threshold,
+        int $graceDays,
+        bool $dryRun,
+    ): void {
+        $ids = collect($rows)->pluck('id')->all();
+        if (empty($ids)) {
+            return;
+        }
+
+        $found = Contract::whereIn('id', $ids)->get()->keyBy('id');
+
+        foreach ($ids as $id) {
+            $count++;
+            if ($dryRun) {
+                continue;
+            }
+            /** @var Contract|null $contract */
+            $contract = $found->get($id);
+            if (!$contract) {
+                continue;
+            }
+
+            $contracts->cancel($contract);
+
+            $this->logEvent(
+                event: 'contract_cancelled_by_scheduler',
+                subject: $contract,
+                properties: [
+                    'reason'     => $reason,
+                    'threshold'  => $threshold,
+                    'grace_days' => $graceDays,
+                ],
+                description: 'Contract cancelled by scheduler (' . $reason . ')',
+            );
+        }
     }
 }

@@ -211,7 +211,9 @@ export default function ContractDetailPage(props: {
                                                 </span>
                                             </div>
                                         ) : (
-                                            <span className="text-muted-foreground">-</span>
+                                            <span className="text-muted-foreground">
+                                                -
+                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -358,9 +360,14 @@ export default function ContractDetailPage(props: {
                                                 <TableCell className="font-mono text-xs">
                                                     <div className="flex items-center gap-2">
                                                         <a
-                                                            href={`${route('management.invoices.index')}?open=${inv.id}`}
+                                                            href={route(
+                                                                'management.invoices.print',
+                                                                inv.id,
+                                                            )}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                             className="hover:underline"
-                                                            title="Lihat detail invoice"
+                                                            title="Lihat halaman cetak invoice"
                                                         >
                                                             {inv.number}
                                                         </a>

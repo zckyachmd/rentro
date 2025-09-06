@@ -1,8 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Eye, FileDown, MoreHorizontal, XCircle } from 'lucide-react';
-import React from 'react';
+import { Clock3, Eye, FileDown, MoreHorizontal, XCircle } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,21 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
 
-import type { CreateColumnsOpts, InvoiceRow } from './types';
+type BaseInvoiceRow = {
+    id: string;
+    number: string;
+    due_date: string;
+    amount_cents: number;
+    status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
+    tenant?: string | null;
+    room_number?: string | null;
+};
+
+type CreateColumnsOpts<T extends BaseInvoiceRow> = {
+    onCancel?: (inv: T) => void;
+    onShowDetail?: (inv: T) => void;
+    onExtendDue?: (inv: T) => void;
+};
 
 const COL = {
     number: 'shrink-0 w-[220px] md:w-[260px] lg:w-[280px]',
@@ -29,8 +42,10 @@ const COL = {
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 } as const;
 
-export const createColumns = (opts?: CreateColumnsOpts): ColumnDef<InvoiceRow>[] => [
-    makeColumn<InvoiceRow>({
+export const createColumns = <T extends BaseInvoiceRow>(
+    opts?: CreateColumnsOpts<T>,
+): ColumnDef<T>[] => [
+    makeColumn<T>({
         id: 'number',
         title: 'Nomor',
         className: COL.number,
@@ -41,7 +56,7 @@ export const createColumns = (opts?: CreateColumnsOpts): ColumnDef<InvoiceRow>[]
                 <div className={`flex items-center gap-2 ${COL.number}`}>
                     <button
                         type="button"
-                        className="font-mono text-xs text-left hover:underline"
+                        className="text-left font-mono text-xs hover:underline"
                         onClick={() => opts?.onShowDetail?.(inv)}
                         aria-label={`Lihat detail ${inv.number}`}
                     >
@@ -51,30 +66,36 @@ export const createColumns = (opts?: CreateColumnsOpts): ColumnDef<InvoiceRow>[]
             );
         },
     }),
-    makeColumn<InvoiceRow>({
+    makeColumn<T>({
         id: 'tenant',
         title: 'Penyewa',
         className: COL.tenant,
         cell: ({ row }) => (
-            <div className={`${COL.tenant} truncate`}>{row.original.tenant ?? '—'}</div>
+            <div className={`${COL.tenant} truncate`}>
+                {row.original.tenant ?? '—'}
+            </div>
         ),
     }),
-    makeColumn<InvoiceRow>({
+    makeColumn<T>({
         id: 'room',
         title: 'Kamar',
         className: COL.room,
         cell: ({ row }) => (
-            <div className={`${COL.room} truncate`}>{row.original.room_number ?? '—'}</div>
+            <div className={`${COL.room} truncate`}>
+                {row.original.room_number ?? '—'}
+            </div>
         ),
     }),
-    makeColumn<InvoiceRow>({
+    makeColumn<T>({
         id: 'due_date',
         title: 'Jatuh Tempo',
         className: COL.due,
         sortable: true,
-        cell: ({ row }) => <div className={COL.due}>{row.original.due_date}</div>,
+        cell: ({ row }) => (
+            <div className={COL.due}>{row.original.due_date}</div>
+        ),
     }),
-    makeColumn<InvoiceRow>({
+    makeColumn<T>({
         id: 'status',
         title: 'Status',
         className: COL.status,
@@ -96,16 +117,18 @@ export const createColumns = (opts?: CreateColumnsOpts): ColumnDef<InvoiceRow>[]
             </div>
         ),
     }),
-    makeColumn<InvoiceRow>({
+    makeColumn<T>({
         id: 'amount_cents',
         title: 'Jumlah',
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
-            <div className={COL.amount}>{formatIDR(row.original.amount_cents)}</div>
+            <div className={COL.amount}>
+                {formatIDR(row.original.amount_cents)}
+            </div>
         ),
     }),
-    makeColumn<InvoiceRow>({
+    makeColumn<T>({
         id: 'actions',
         title: 'Aksi',
         className: COL.actions,
@@ -115,13 +138,19 @@ export const createColumns = (opts?: CreateColumnsOpts): ColumnDef<InvoiceRow>[]
                 <div className={COL.actions}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" aria-label={`Aksi untuk ${inv.number}`}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={`Aksi untuk ${inv.number}`}
+                            >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-44">
                             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => opts?.onShowDetail?.(inv)}>
+                            <DropdownMenuItem
+                                onClick={() => opts?.onShowDetail?.(inv)}
+                            >
                                 <Eye className="mr-2 h-4 w-4" /> Lihat Detail
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
@@ -130,13 +159,28 @@ export const createColumns = (opts?: CreateColumnsOpts): ColumnDef<InvoiceRow>[]
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    <FileDown className="mr-2 h-4 w-4" /> Cetak PDF
+                                    <FileDown className="mr-2 h-4 w-4" /> Cetak
+                                    PDF
                                 </a>
                             </DropdownMenuItem>
+                            {(inv.status === 'Pending' ||
+                                inv.status === 'Overdue') && (
+                                <DropdownMenuItem
+                                    onClick={() => opts?.onExtendDue?.(inv)}
+                                >
+                                    <Clock3 className="mr-2 h-4 w-4" />
+                                    Perpanjang jatuh tempo
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
-                            {(inv.status === 'Pending' || inv.status === 'Overdue') && (
-                                <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => opts?.onCancel?.(inv)}>
-                                    <XCircle className="mr-2 h-4 w-4" /> Batalkan
+                            {(inv.status === 'Pending' ||
+                                inv.status === 'Overdue') && (
+                                <DropdownMenuItem
+                                    className="text-red-600 focus:text-red-600"
+                                    onClick={() => opts?.onCancel?.(inv)}
+                                >
+                                    <XCircle className="mr-2 h-4 w-4" />{' '}
+                                    Batalkan
                                 </DropdownMenuItem>
                             )}
                         </DropdownMenuContent>
@@ -146,5 +190,5 @@ export const createColumns = (opts?: CreateColumnsOpts): ColumnDef<InvoiceRow>[]
         },
     }),
 ];
-
-export const columns: ColumnDef<InvoiceRow>[] = createColumns();
+// Convenience export (not used elsewhere); kept for parity
+export const columns: ColumnDef<BaseInvoiceRow>[] = createColumns();

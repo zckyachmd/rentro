@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { FilePlus2, RefreshCw } from 'lucide-react';
 import React from 'react';
 
+import { DatePickerInput } from '@/components/date-picker';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,6 +20,14 @@ import type {
     QueryBag,
 } from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -32,9 +41,25 @@ import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
-import GenerateInvoiceDialog from './generate-dialog';
 import InvoiceDetailDialog from './detail-dialog';
-import type { ContractOption, InvoiceRow } from './types';
+import GenerateInvoiceDialog from './generate-dialog';
+type InvoiceRow = {
+    id: string;
+    number: string;
+    due_date: string;
+    amount_cents: number;
+    status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
+    tenant?: string | null;
+    room_number?: string | null;
+};
+
+type ContractOption = {
+    id: string;
+    name: string;
+    period?: 'Monthly' | 'Weekly' | 'Daily' | string;
+    start_date?: string | null;
+    end_date?: string | null;
+};
 
 type PageProps = {
     invoices?: { data: InvoiceRow[] } & PaginatorMeta;
@@ -85,44 +110,77 @@ export default function InvoiceIndex() {
         });
     }, []);
 
-    const [cancelTarget, setCancelTarget] = React.useState<InvoiceRow | null>(
-        null,
-    );
-    const [cancelReason, setCancelReason] = React.useState('');
-    const [detailTarget, setDetailTarget] = React.useState<{
+    type CancelState = { target: InvoiceRow | null; reason: string };
+    type ExtendState = {
+        target: InvoiceRow | null;
+        dueDate: string;
+        reason: string;
+    };
+
+    const [cancel, setCancel] = React.useState<CancelState>({
+        target: null,
+        reason: '',
+    });
+    const [extend, setExtend] = React.useState<ExtendState>({
+        target: null,
+        dueDate: '',
+        reason: '',
+    });
+
+    const defaultTomorrow = React.useMemo(() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+    }, []);
+
+    const [detail, setDetail] = React.useState<{
         id: string;
         number: string;
     } | null>(null);
-    const onCancel = React.useCallback((inv: InvoiceRow) => {
-        setCancelTarget(inv);
-    }, []);
-
-    React.useEffect(() => {
-        if (cancelTarget) setCancelReason('');
-    }, [cancelTarget]);
-
-    React.useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const params = new URLSearchParams(window.location.search);
-        const openId = params.get('open') || params.get('invoice');
-        if (openId) {
-            setDetailTarget({ id: openId, number: '' });
-            params.delete('open');
-            params.delete('invoice');
-            const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
-            window.history.replaceState({}, '', next);
-        }
-    }, []);
-
     const tableColumns = React.useMemo(
         () =>
-            createColumns({
-                onCancel,
+            createColumns<InvoiceRow>({
+                onCancel: (inv) => setCancel({ target: inv, reason: '' }),
                 onShowDetail: (inv) =>
-                    setDetailTarget({ id: inv.id, number: inv.number }),
+                    setDetail({ id: inv.id, number: inv.number }),
+                onExtendDue: (inv) =>
+                    setExtend({
+                        target: inv,
+                        dueDate: defaultTomorrow,
+                        reason: '',
+                    }),
             }),
-        [onCancel],
+        [defaultTomorrow],
     );
+
+    const onExtendCancel = React.useCallback(() => {
+        setExtend({ target: null, dueDate: '', reason: '' });
+    }, []);
+
+    const canExtendSave = !!extend.dueDate && extend.reason.trim().length >= 3;
+
+    const onExtendSubmit = React.useCallback(() => {
+        const inv = extend.target;
+        if (!inv || !extend.dueDate) return;
+        setProcessing(true);
+        router.post(
+            route('management.invoices.extendDue', inv.id),
+            {
+                due_date: extend.dueDate,
+                reason: extend.reason,
+            },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setProcessing(false);
+                    setExtend({ target: null, dueDate: '', reason: '' });
+                },
+            },
+        );
+    }, [extend]);
 
     return (
         <AuthLayout
@@ -168,6 +226,7 @@ export default function InvoiceIndex() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button
+                                    type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={reload}
@@ -176,6 +235,7 @@ export default function InvoiceIndex() {
                                     ulang
                                 </Button>
                                 <Button
+                                    type="button"
                                     size="sm"
                                     onClick={() => setGenOpen(true)}
                                 >
@@ -218,11 +278,10 @@ export default function InvoiceIndex() {
 
             {/* Cancel Invoice Dialog */}
             <AlertDialog
-                open={!!cancelTarget}
+                open={!!cancel.target}
                 onOpenChange={(v) => {
                     if (!v) {
-                        setCancelTarget(null);
-                        setCancelReason('');
+                        setCancel({ target: null, reason: '' });
                     }
                 }}
             >
@@ -230,11 +289,11 @@ export default function InvoiceIndex() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Batalkan Invoice</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {cancelTarget ? (
+                            {cancel.target ? (
                                 <>
                                     Anda akan membatalkan invoice{' '}
                                     <span className="font-mono font-semibold">
-                                        {cancelTarget.number}
+                                        {cancel.target.number}
                                     </span>
                                     . Tindakan ini tidak dapat dibatalkan.
                                 </>
@@ -244,8 +303,13 @@ export default function InvoiceIndex() {
                     <div className="space-y-2 py-2">
                         <Label>Alasan pembatalan</Label>
                         <Textarea
-                            value={cancelReason}
-                            onChange={(e) => setCancelReason(e.target.value)}
+                            value={cancel.reason}
+                            onChange={(e) =>
+                                setCancel((s) => ({
+                                    ...s,
+                                    reason: e.target.value,
+                                }))
+                            }
                             placeholder="Contoh: duplikasi tagihan, salah nominal, dll."
                             required
                             rows={3}
@@ -254,26 +318,28 @@ export default function InvoiceIndex() {
                         />
                         <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
                             <span>Wajib diisi. Jelaskan secara singkat.</span>
-                            <span>{cancelReason.length}/200</span>
+                            <span>{cancel.reason.length}/200</span>
                         </div>
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
-                            disabled={!cancelReason.trim()}
+                            disabled={!cancel.reason.trim()}
                             onClick={() => {
-                                const inv = cancelTarget;
+                                const inv = cancel.target;
                                 if (!inv) return;
                                 setProcessing(true);
                                 router.post(
                                     route('management.invoices.cancel', inv.id),
-                                    { reason: cancelReason },
+                                    { reason: cancel.reason },
                                     {
                                         preserveScroll: true,
                                         onFinish: () => {
                                             setProcessing(false);
-                                            setCancelTarget(null);
-                                            setCancelReason('');
+                                            setCancel({
+                                                target: null,
+                                                reason: '',
+                                            });
                                         },
                                     },
                                 );
@@ -286,9 +352,82 @@ export default function InvoiceIndex() {
             </AlertDialog>
 
             <InvoiceDetailDialog
-                target={detailTarget}
-                onClose={() => setDetailTarget(null)}
+                target={detail}
+                onClose={() => setDetail(null)}
             />
+
+            {/* Extend Due Dialog */}
+            <Dialog
+                open={!!extend.target}
+                onOpenChange={(v) => {
+                    if (!v) {
+                        setExtend({ target: null, dueDate: '', reason: '' });
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Perpanjang Jatuh Tempo</DialogTitle>
+                        <DialogDescription>
+                            Atur tanggal jatuh tempo baru untuk invoice
+                            Pending/Overdue ini dan berikan alasan.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 py-2">
+                        <div className="space-y-2">
+                            <Label>Tanggal Jatuh Tempo Baru</Label>
+                            <DatePickerInput
+                                value={extend.dueDate}
+                                onChange={(v) =>
+                                    setExtend((s) => ({
+                                        ...s,
+                                        dueDate: v ?? '',
+                                    }))
+                                }
+                                min={defaultTomorrow}
+                                placeholder="Pilih tanggal"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Alasan perpanjangan</Label>
+                            <Textarea
+                                value={extend.reason}
+                                onChange={(e) =>
+                                    setExtend((s) => ({
+                                        ...s,
+                                        reason: e.target.value,
+                                    }))
+                                }
+                                placeholder="Contoh: memberi keringanan, kendala transfer, dsb."
+                                rows={3}
+                                required
+                                maxLength={200}
+                            />
+                            <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+                                {extend.reason.length}/200
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onExtendCancel}
+                            disabled={processing}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="button"
+                            disabled={!canExtendSave || processing}
+                            onClick={onExtendSubmit}
+                        >
+                            Simpan
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AuthLayout>
     );
 }

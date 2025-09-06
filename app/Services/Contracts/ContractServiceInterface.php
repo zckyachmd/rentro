@@ -26,12 +26,6 @@ interface ContractServiceInterface
     public function markOverdue(Contract $contract): void;
 
     /**
-     * Extend the due date of the latest pending/overdue invoice on a contract.
-     * Returns the updated invoice, or null when none found.
-     */
-    public function extendDue(Contract $contract, string $dueDate): ?Invoice;
-
-    /**
      * Cancel a contract: set status to Cancelled, stop auto-renew,
      * cancel unpaid invoices/payments, and free the room.
      * Notes:

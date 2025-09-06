@@ -83,8 +83,22 @@ class ContractService implements ContractServiceInterface
                     'notes'          => $data['notes'] ?? null,
                 ]);
 
-                // Generate invoice(s) according to billing period and plan
-                $this->invoices->createInitialInvoices($contract, $data);
+                // Generate initial invoice using the new general API for predictability.
+                // Strategy:
+                // - First invoice includes deposit and (when applicable) prorata based on app settings.
+                // - For Monthly contracts: first invoice covers prorata (jika perlu) + 1 bulan penuh.
+                // - For Daily/Weekly: first invoice menagih sisa durasi awal kontrak.
+                // - InvoiceService::generate() will guard overlaps.
+                try {
+                    $this->invoices->generate($contract, ['first' => true]);
+                } catch (\Throwable $e) {
+                    // Log and rethrow to surface error to controller layer
+                    Log::error('Initial invoice generation failed', [
+                        'contract_id' => $contract->id,
+                        'error'       => $e->getMessage(),
+                    ]);
+                    throw $e;
+                }
 
                 // Initial creation sets status to PENDING_PAYMENT → room becomes RESERVED
                 $newRoomStatus = RoomStatus::RESERVED->value;
@@ -109,14 +123,21 @@ class ContractService implements ContractServiceInterface
     {
         try {
             DB::transaction(function () use ($contract): void {
-                $today = now()->startOfDay()->toDateString();
+                $todayDate = now()->startOfDay()->toDateString();
+                $now       = now();
 
                 $contract->invoices()
                     ->where('status', InvoiceStatus::PENDING->value)
-                    ->where('due_date', '<', $today)
-                    ->update(['status' => InvoiceStatus::OVERDUE->value]);
+                    ->where('due_date', '<', $todayDate)
+                    ->update([
+                        'status'     => InvoiceStatus::OVERDUE->value,
+                        'updated_at' => $now,
+                    ]);
 
-                $contract->forceFill(['status' => ContractStatus::OVERDUE])->save();
+                if ($contract->status !== ContractStatus::OVERDUE) {
+                    $contract->forceFill(['status' => ContractStatus::OVERDUE]);
+                    $contract->save();
+                }
             });
         } catch (\Throwable $e) {
             Log::error('ContractService::markOverdue failed', [
@@ -128,49 +149,7 @@ class ContractService implements ContractServiceInterface
         }
     }
 
-    public function extendDue(Contract $contract, string $dueDate): ?Invoice
-    {
-        try {
-            return DB::transaction(function () use ($contract, $dueDate): ?Invoice {
-                /** @var Invoice|null $invoice */
-                $invoice = $contract->invoices()
-                    ->whereIn('status', [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value])
-                    ->orderByDesc('due_date')
-                    ->first();
-
-                if (!$invoice) {
-                    return null;
-                }
-
-                $newDue            = Carbon::parse($dueDate)->startOfDay();
-                $invoice->due_date = $newDue;
-
-                $today = Carbon::now()->startOfDay();
-                if ($newDue->greaterThanOrEqualTo($today)) {
-                    if ($invoice->status === InvoiceStatus::OVERDUE) {
-                        $invoice->status = InvoiceStatus::PENDING;
-                    }
-                    $contract->status = ContractStatus::PENDING_PAYMENT;
-                    $contract->save();
-                    if ($contract->room) {
-                        $contract->room->update(['status' => RoomStatus::RESERVED->value]);
-                    }
-                }
-
-                $invoice->save();
-
-                return $invoice;
-            });
-        } catch (\Throwable $e) {
-            Log::error('ContractService::extendDue failed', [
-                'error'       => $e->getMessage(),
-                'trace'       => $e->getTraceAsString(),
-                'contract_id' => $contract->id,
-                'due_date'    => $dueDate,
-            ]);
-            throw $e;
-        }
-    }
+    // extendDue moved to InvoiceService
 
     public function cancel(Contract $contract): void
     {

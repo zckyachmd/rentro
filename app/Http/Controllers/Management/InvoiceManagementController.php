@@ -8,7 +8,9 @@ use App\Enum\InvoiceStatus;
 use App\Enum\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\Invoice\CancelInvoiceRequest;
+use App\Http\Requests\Management\Invoice\ExtendDueRequest;
 use App\Http\Requests\Management\Invoice\GenerateInvoiceRequest;
+use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\User;
@@ -16,6 +18,7 @@ use App\Services\Contracts\InvoiceServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -72,7 +75,7 @@ class InvoiceManagementController extends Controller
             return [
                 'id'           => (string) $inv->id,
                 'number'       => $inv->number,
-                'due_date'     => optional($inv->due_date)->format('Y-m-d'),
+                'due_date'     => $inv->due_date->format('Y-m-d'),
                 'amount_cents' => (int) $inv->amount_cents,
                 'status'       => $inv->status->value,
                 'tenant'       => $tenant?->name,
@@ -83,9 +86,9 @@ class InvoiceManagementController extends Controller
         $invoicesPayload = $this->tablePaginate($page);
 
         $contracts = Contract::query()
-            ->select('id', 'user_id', 'status', 'billing_period')
+            ->select('id', 'user_id', 'status', 'billing_period', 'start_date', 'end_date')
             ->with(['tenant:id,name'])
-            ->whereNotIn('status', [\App\Enum\ContractStatus::CANCELLED->value, \App\Enum\ContractStatus::COMPLETED->value])
+            ->whereNotIn('status', [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value])
             ->orderByDesc('id')
             ->limit(50)
             ->get()
@@ -94,9 +97,11 @@ class InvoiceManagementController extends Controller
                 $t = $c->tenant;
 
                 return [
-                    'id'     => (string) $c->id,
-                    'name'   => $t?->name ? ($t->name . ' — #' . $c->id) : ('#' . $c->id),
-                    'period' => (string) $c->billing_period->value,
+                    'id'         => (string) $c->id,
+                    'name'       => $t?->name ? ($t->name . ' — #' . $c->id) : ('#' . $c->id),
+                    'period'     => (string) $c->billing_period->value,
+                    'start_date' => $c->start_date->toDateString(),
+                    'end_date'   => $c->end_date->toDateString(),
                 ];
             });
 
@@ -142,6 +147,7 @@ class InvoiceManagementController extends Controller
             'paid_at'      => $invoice->paid_at?->toDateTimeString(),
             'created_at'   => $invoice->created_at->toDateTimeString(),
             'updated_at'   => $invoice->updated_at->toDateTimeString(),
+            'release_day'  => (int) AppSetting::config('billing.release_day_of_month', 1),
         ];
 
         $contractDTO = $c ? [
@@ -168,6 +174,176 @@ class InvoiceManagementController extends Controller
             'tenant'   => $tenantDTO,
             'room'     => $roomDTO,
         ]);
+    }
+
+    public function generate(GenerateInvoiceRequest $request)
+    {
+        $data     = $request->validated();
+        $contract = Contract::findOrFail($data['contract_id']);
+
+        // Business validation: contract must not be Cancelled or Completed
+        if (in_array((string) $contract->status->value, [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value], true)) {
+            return back()->with('error', 'Kontrak tidak valid untuk generate invoice.');
+        }
+
+        // Enforce mode based on billing period: daily/weekly must be full
+        $period  = (string) $contract->billing_period->value;
+        $mode    = (string) $data['mode'];
+        $options = [];
+        $range   = $data['range'] ?? null;
+        if (is_array($range) && (!empty($range['from']) && !empty($range['to']))) {
+            $options = ['range' => ['from' => (string) $range['from'], 'to' => (string) $range['to']]];
+            // mode ignored when range provided
+        } elseif (in_array($period, [BillingPeriod::DAILY->value, BillingPeriod::WEEKLY->value], true)) {
+            $mode    = 'full';
+            $options = ['full' => true];
+        } elseif ($period === BillingPeriod::MONTHLY->value && $mode === 'per_month') {
+            $periodMonth = (string) ($data['period_month'] ?? '');
+            if ($periodMonth === '') {
+                return back()->with('error', 'Bulan periode wajib dipilih untuk mode Bulanan.');
+            }
+            // Ensure selected month within contract duration
+            try {
+                $monthStart = Carbon::createFromFormat('Y-m', $periodMonth)->startOfMonth();
+            } catch (\Throwable $e) {
+                return back()->with('error', 'Format bulan periode tidak valid.');
+            }
+            $contractStart = Carbon::parse($contract->start_date)->startOfDay();
+            $contractEnd   = Carbon::parse($contract->end_date)->startOfDay();
+            if ($monthStart->greaterThan($contractEnd) || $monthStart->lessThan($contractStart->startOfMonth())) {
+                return back()->with('error', 'Bulan yang dipilih berada di luar masa kontrak.');
+            }
+            $options = ['month' => $periodMonth];
+        } else {
+            // Monthly + full
+            $options = ['full' => true];
+        }
+
+        try {
+            $invoice = $this->invoices->generate($contract, $options);
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage() ?: 'Gagal generate invoice.');
+        }
+
+        $this->logEvent(
+            event: 'invoice_generated',
+            causer: $request->user(),
+            subject: $invoice,
+            properties: [
+                'contract_id' => (string) $contract->id,
+                'mode'        => $mode,
+                'options'     => $options,
+                'reason'      => (string) $data['reason'],
+            ],
+        );
+
+        // Redirect back to index; dialog can be opened manually if needed.
+        return redirect()->route('management.invoices.index')->with('success', 'Invoice berhasil dibuat.');
+    }
+
+    public function print(Request $request, Invoice $invoice)
+    {
+        $auto = (bool) $request->boolean('auto');
+        $inv  = $invoice->fresh(['contract.tenant', 'contract.room']);
+        /** @var \App\Models\Invoice $inv */
+        $c = $inv->contract;
+        /** @var \App\Models\Contract|null $c */
+        $tenant = $c?->tenant;
+        /** @var \App\Models\User|null $tenant */
+        $room = $c?->room;
+        /** @var \App\Models\Room|null $room */
+
+        $dto = [
+            'number'       => $inv->number,
+            'status'       => $inv->status->value,
+            'issued_at'    => $inv->created_at->toDateString(),
+            'due_date'     => $inv->due_date->toDateString(),
+            'period_start' => $inv->period_start->toDateString(),
+            'period_end'   => $inv->period_end->toDateString(),
+            'amount_cents' => (int) $inv->amount_cents,
+            'items'        => (array) ($inv->items ?? []),
+            'tenant'       => $tenant ? [
+                'name'  => $tenant->name,
+                'email' => $tenant->email,
+                'phone' => $tenant->phone,
+            ] : null,
+            'room' => $room ? [
+                'number' => $room->number,
+                'name'   => $room->name,
+            ] : null,
+            'contract_id' => $c?->id ? (string) $c->id : null,
+        ];
+
+        $html = view('pdf.invoice', [
+            'invoice'   => $dto,
+            'autoPrint' => $auto,
+        ])->render();
+
+        if (!$auto && class_exists(Pdf::class)) {
+            try {
+                /** @var \Barryvdh\DomPDF\PDF $pdf */
+                $pdf = Pdf::loadHTML($html);
+
+                return $pdf->stream($invoice->number . '.pdf');
+            } catch (\Throwable $e) {
+                // fallthrough to HTML
+            }
+        }
+
+        return response($html);
+    }
+
+    public function extendDue(ExtendDueRequest $request, Invoice $invoice)
+    {
+        $data   = $request->validated();
+        $reason = (string) ($data['reason'] ?? '');
+
+        // Only allow Pending or Overdue
+        if (!in_array((string) $invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true)) {
+            return back()->with('error', 'Hanya invoice Pending atau Overdue yang dapat diperpanjang.');
+        }
+
+        $prevDue = $invoice->due_date->toDateString();
+
+        try {
+            $newDue = Carbon::parse((string) $data['due_date'])->startOfDay();
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Format tanggal jatuh tempo tidak valid.');
+        }
+
+        $currentDue = $invoice->due_date->copy()->startOfDay();
+        if ($currentDue && $newDue->lessThanOrEqualTo($currentDue)) {
+            return back()->with('error', 'Tanggal jatuh tempo baru harus lebih besar dari tanggal sebelumnya (' . $currentDue->toDateString() . ').');
+        }
+
+        try {
+            $updated = $this->invoices->extendDue($invoice, $newDue->toDateString(), $reason);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal memperpanjang jatuh tempo.');
+        }
+
+        if (!$updated) {
+            return back()->with('error', 'Invoice tidak dapat diperpanjang.');
+        }
+
+        $invoice->refresh();
+
+        /** @var \App\Models\Contract|null $contract */
+        $contract = $invoice->contract;
+        $this->logEvent(
+            event: 'invoice_due_extended',
+            causer: $request->user(),
+            subject: $invoice,
+            properties: [
+                'invoice_id'  => (string) $invoice->id,
+                'from_due'    => $prevDue,
+                'to_due'      => $invoice->due_date->toDateString(),
+                'reason'      => $reason,
+                'contract_id' => $contract?->id ? (string) $contract->id : null,
+            ],
+        );
+
+        return back()->with('success', 'Masa tenggat invoice berhasil diperpanjang.');
     }
 
     public function cancel(CancelInvoiceRequest $request, Invoice $invoice)
@@ -216,68 +392,5 @@ class InvoiceManagementController extends Controller
         }
 
         return back()->with('info', 'Invoice sudah dalam status Cancelled.');
-    }
-
-    public function generate(GenerateInvoiceRequest $request)
-    {
-        $data     = $request->validated();
-        $contract = Contract::findOrFail($data['contract_id']);
-
-        // Business validation: contract must not be Cancelled or Completed
-        if (in_array((string) $contract->status->value, [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value], true)) {
-            return back()->with('error', 'Kontrak tidak valid untuk generate invoice.');
-        }
-
-        // Enforce mode based on billing period: daily/weekly must be full
-        $period = (string) $contract->billing_period->value;
-        $mode   = (string) $data['mode'];
-        $target = (string) ($data['target'] ?? 'next');
-        if (in_array($period, [BillingPeriod::DAILY->value, BillingPeriod::WEEKLY->value], true)) {
-            $mode   = 'full';
-            $target = 'next';
-        }
-
-        try {
-            $invoice = $this->invoices->generateNextInvoice($contract, $mode, $target);
-        } catch (\Throwable $e) {
-            return back()->with('error', $e->getMessage() ?: 'Gagal generate invoice.');
-        }
-
-        $this->logEvent(
-            event: 'invoice_generated',
-            causer: $request->user(),
-            subject: $invoice,
-            properties: [
-                'contract_id' => (string) $contract->id,
-                'mode'        => $mode,
-                'target'      => $target,
-                'reason'      => (string) $data['reason'],
-            ],
-        );
-
-        // Redirect back to index; dialog can be opened manually if needed.
-        return redirect()->route('management.invoices.index')->with('success', 'Invoice berhasil dibuat.');
-    }
-
-    public function print(Request $request, Invoice $invoice)
-    {
-        $auto = (bool) $request->boolean('auto');
-        $html = view('pdf.invoice', [
-            'invoice'   => $invoice->fresh(['contract.tenant', 'contract.room']),
-            'autoPrint' => $auto,
-        ])->render();
-
-        if (!$auto && class_exists(Pdf::class)) {
-            try {
-                /** @var \Barryvdh\DomPDF\PDF $pdf */
-                $pdf = Pdf::loadHTML($html);
-
-                return $pdf->stream($invoice->number . '.pdf');
-            } catch (\Throwable $e) {
-                // fallthrough to HTML
-            }
-        }
-
-        return response($html);
     }
 }

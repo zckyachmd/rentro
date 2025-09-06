@@ -3,7 +3,6 @@ import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import ShowMore from '@/components/ui/show-more';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import ShowMore from '@/components/ui/show-more';
 import AuthLayout from '@/layouts/auth-layout';
 
 import ContactSection, { ContactDTO } from './contact';

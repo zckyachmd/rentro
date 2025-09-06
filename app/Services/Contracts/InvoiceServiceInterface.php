@@ -2,30 +2,22 @@
 
 namespace App\Services\Contracts;
 
-use App\Models\Contract;
-use Illuminate\Support\Collection;
-
 interface InvoiceServiceInterface
 {
     /**
-     * Create initial invoices for a freshly created contract.
-     * Returns a collection of Invoice models (persisted).
-     *
-     * @param Contract $contract
-     * @param array $data Validated request data (rent_cents, deposit_cents, billing_period, duration_count, monthly_payment_mode)
-     * @return Collection<int, \App\Models\Invoice>
+     * General-purpose invoice generation entrypoint (new API).
+     * Options:
+     * - ['month' => 'YYYY-MM'] for a single monthly invoice (Monthly contracts only)
+     * - ['full' => true] for a full remaining coverage invoice.
      */
-    public function createInitialInvoices(Contract $contract, array $data): Collection;
+    public function generate(\App\Models\Contract $contract, array $options = []);
 
     /**
-     * Generate the next invoice for a contract starting from the day after the last invoice period_end
-     * (or contract start if no invoices), using the provided mode.
-     *
-     * @param Contract $contract
-     * @param string $mode 'per_month' | 'full'
-     * @return \App\Models\Invoice
+     * Extend due date for a specific invoice.
+     * Only allowed for Pending or Overdue invoices.
+     * Returns updated invoice on success, or null when not applicable.
      */
-    public function generateNextInvoice(Contract $contract, string $mode, string $target = 'next');
+    public function extendDue(\App\Models\Invoice $invoice, string $dueDate, ?string $reason = null): ?\App\Models\Invoice;
 
     /**
      * Cancel a single invoice.

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Invoice {{ $invoice->number }}</title>
+    <title>Invoice {{ $invoice['number'] ?? '-' }}</title>
     <style>
         @page {
             margin: 24px 28px;
@@ -242,13 +242,14 @@
         $appUrl  = rtrim((string) config('app.url'), '/');
         $fromName = config('mail.from.name');
         $fromAddr = config('mail.from.address');
-        $tenant   = optional(optional($invoice->contract)->tenant);
-        $room     = optional(optional($invoice->contract)->room);
-        $status   = strtolower((string) $invoice->status->value);
-        $issuedAt = optional($invoice->created_at)->format('Y-m-d');
-        $dueAt    = optional($invoice->due_date)->format('Y-m-d');
-        $period   = [optional($invoice->period_start)->format('Y-m-d'), optional($invoice->period_end)->format('Y-m-d')];
-        $grandTotal = (int) ($invoice->amount_cents ?? 0);
+        $status     = strtolower((string) ($invoice['status'] ?? ''));
+        $issuedAt   = !empty($invoice['issued_at']) ? (string) $invoice['issued_at'] : null;
+        $dueAt      = !empty($invoice['due_date']) ? (string) $invoice['due_date'] : null;
+        $period     = [($invoice['period_start'] ?? null), ($invoice['period_end'] ?? null)];
+        $grandTotal = (int) ($invoice['amount_cents'] ?? 0);
+        $tenant     = $invoice['tenant'] ?? null;
+        $room       = $invoice['room'] ?? null;
+        $releaseDay = (int) \App\Models\AppSetting::config('billing.release_day_of_month', 1);
 
         $formatDate = function ($dateStr) {
             if (!$dateStr) return '—';
@@ -276,12 +277,13 @@
             </div>
             <div class="right">
                 <div class="meta-inline">
-                    <div class="item"><span class="label">Nomor</span> <span class="value">{{ $invoice->number }}</span>
-                    </div>
-                    <div class="item"><span class="label">Terbit</span> <span class="value">{{ $issuedAt ?: '—'
+                    <div class="item"><span class="label">Nomor</span> <span class="value">{{ $invoice['number'] ?? '-'
+                            }}</span></div>
+                    <div class="item"><span class="label">Rilis Tagihan</span> <span class="value">{{ $issuedAt ?: '—'
                             }}</span></div>
                     <div class="item"><span class="label">Jatuh Tempo</span> <span class="value">{{ $dueAt ?: '—'
                             }}</span></div>
+
                     <div class="item"><span class="label">Status</span> <span class="value">{{ ucfirst($status)
                             }}</span></div>
                 </div>
@@ -291,19 +293,19 @@
         <!-- Billed To -->
         <div style="margin-bottom: 8px;">
             <div class="label">Ditagihkan kepada</div>
-            <div class="billed-name">{{ $tenant->name ?? '—' }}</div>
-            @if($tenant?->email)
-            <div class="muted">{{ $tenant->email }}</div>
+            <div class="billed-name">{{ $tenant['name'] ?? '—' }}</div>
+            @if(!empty($tenant['email']))
+            <div class="muted">{{ $tenant['email'] }}</div>
             @endif
-            @if($tenant?->phone)
-            <div class="muted">{{ $tenant->phone }}</div>
+            @if(!empty($tenant['phone']))
+            <div class="muted">{{ $tenant['phone'] }}</div>
             @endif
         </div>
 
         <!-- Context: contract, room, period -->
         <div class="muted" style="margin-bottom: 8px;">
-            Kontrak #{{ optional($invoice->contract)->id ?? '—' }} • Kamar {{ $room->number ?? '—' }} • Periode {{
-            ($period[0] ?: '—') }} s/d {{ ($period[1] ?: '—') }}
+            Kontrak #{{ $invoice['contract_id'] ?? '—' }} • Kamar {{ $room['number'] ?? '—' }} • Periode {{ ($period[0]
+            ?: '—') }} s/d {{ ($period[1] ?: '—') }}
         </div>
 
         <!-- Items -->
@@ -317,7 +319,7 @@
                 </tr>
             </thead>
             <tbody>
-                @php($items = (array) ($invoice->items ?? []))
+                @php($items = (array) ($invoice['items'] ?? []))
                 @if(empty($items))
                 <tr>
                     <td colspan="4" class="muted">Tidak ada item tagihan.</td>
@@ -375,7 +377,7 @@
         <!-- Notes / Payment Info -->
         <div style="margin-top:12px;" class="note">
             @if($status === 'paid')
-            Dibayar pada {{ optional($invoice->paid_at)->format('Y-m-d H:i') ?? '—' }}. Terima kasih.
+            Dibayar pada {{ !empty($invoice['paid_at']) ? (string) $invoice['paid_at'] : '—' }}. Terima kasih.
             @elseif($status === 'cancelled')
             Invoice ini telah dibatalkan.
             @else
