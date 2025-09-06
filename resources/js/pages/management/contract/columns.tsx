@@ -2,7 +2,6 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import {
-    Clock3,
     Eye,
     MoreHorizontal,
     RefreshCcw,
@@ -34,7 +33,6 @@ const CS = {
 } as const;
 
 const CANCELABLE: ReadonlyArray<string> = [CS.PENDING_PAYMENT, CS.BOOKED];
-const EXTENDABLE: ReadonlyArray<string> = [CS.OVERDUE, CS.PENDING_PAYMENT];
 const RENEW_ALLOWED: ReadonlyArray<string> = [CS.BOOKED, CS.PAID, CS.ACTIVE];
 
 export interface ContractItem {
@@ -71,7 +69,6 @@ const statusColor: Record<
 
 export type ColumnFactoryOptions = {
     onCancel?: (c: ContractItem) => void;
-    onExtendDue?: (c: ContractItem) => void;
     onStopAutoRenew?: (c: ContractItem) => void;
     onStartAutoRenew?: (c: ContractItem) => void;
 };
@@ -164,7 +161,6 @@ export const createColumns = (
         cell: ({ row }) => {
             const s = row.original.status;
             const canCancel = CANCELABLE.includes(s);
-            const canExtendDue = EXTENDABLE.includes(s);
             const canToggleRenew = RENEW_ALLOWED.includes(s);
 
             return (
@@ -193,17 +189,6 @@ export const createColumns = (
                             >
                                 <Eye className="mr-2 h-4 w-4" /> Lihat detail
                             </DropdownMenuItem>
-
-                            {canExtendDue && (
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        opts?.onExtendDue?.(row.original)
-                                    }
-                                >
-                                    <Clock3 className="mr-2 h-4 w-4" />{' '}
-                                    Perpanjang jatuh tempo
-                                </DropdownMenuItem>
-                            )}
 
                             {canToggleRenew &&
                                 (row.original.auto_renew ? (

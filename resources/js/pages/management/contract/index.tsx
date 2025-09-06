@@ -2,7 +2,6 @@ import { router } from '@inertiajs/react';
 import { Filter, Plus, RefreshCw, Search } from 'lucide-react';
 import React from 'react';
 
-import { DatePickerInput } from '@/components/date-picker';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,13 +19,6 @@ import {
     type PaginatorMeta,
     type QueryBag,
 } from '@/components/ui/data-table-server';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -162,33 +154,18 @@ export default function ContractIndex(props: ContractsPageProps) {
         safeOnQueryChange({ page: 1, status: null, q: null } as SafePayload);
     }, [safeOnQueryChange]);
 
-    // Action dialog states
     type Target = ContractItem | null;
     const [cancelTarget, setCancelTarget] = React.useState<Target>(null);
     const [toggleTarget, setToggleTarget] = React.useState<Target>(null);
-    const [extendTarget, setExtendTarget] = React.useState<Target>(null);
-    const defaultTomorrow = React.useMemo(() => {
-        const d = new Date();
-        d.setDate(d.getDate() + 1);
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${dd}`;
-    }, []);
-    const [extendDueDate, setExtendDueDate] = React.useState<string>('');
 
     const tableColumns = React.useMemo(
         () =>
             createColumns({
                 onCancel: (c) => setCancelTarget(c),
-                onExtendDue: (c) => {
-                    setExtendTarget(c);
-                    setExtendDueDate(defaultTomorrow);
-                },
                 onStopAutoRenew: (c) => setToggleTarget(c),
                 onStartAutoRenew: (c) => setToggleTarget(c),
             }),
-        [defaultTomorrow],
+        [],
     );
 
     const headerActions = (
@@ -306,59 +283,6 @@ export default function ContractIndex(props: ContractsPageProps) {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Extend Due Dialog */}
-            <Dialog
-                open={!!extendTarget}
-                onOpenChange={(v) => !v && setExtendTarget(null)}
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Perpanjang Tenggat Pembayaran</DialogTitle>
-                        <DialogDescription>
-                            Atur tanggal jatuh tempo baru untuk invoice pending
-                            dari kontrak ini.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-2">
-                        <Label>Tanggal Jatuh Tempo Baru</Label>
-                        <DatePickerInput
-                            value={extendDueDate}
-                            onChange={(v) => setExtendDueDate(v ?? '')}
-                            min={defaultTomorrow}
-                            placeholder="Pilih tanggal jatuh tempo"
-                            required
-                        />
-                    </div>
-                    <div className="flex justify-end gap-2 pt-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => setExtendTarget(null)}
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                const c = extendTarget;
-                                if (!c || !extendDueDate) return;
-                                router.post(
-                                    route('management.contracts.extendDue', {
-                                        contract: c.id,
-                                    }),
-                                    { due_date: extendDueDate },
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () => setExtendTarget(null),
-                                    },
-                                );
-                            }}
-                            disabled={!extendDueDate}
-                        >
-                            Simpan
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
 
             {/* Cancel Contract Dialog */}
             <AlertDialog

@@ -8,7 +8,6 @@ use App\Enum\InvoiceStatus;
 use App\Enum\RoleName;
 use App\Enum\RoomStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Management\Contract\ExtendDueRequest;
 use App\Http\Requests\Management\Contract\SetAutoRenewRequest;
 use App\Http\Requests\Management\Contract\StoreContractRequest;
 use App\Models\AppSetting;
@@ -57,8 +56,9 @@ class ContractManagementController extends Controller
                 'end_date'   => 'end_date',
                 'rent'       => 'rent_cents',
                 'status'     => 'status',
+                'created_at' => 'created_at',
             ],
-            'default_sort' => ['start_date', 'desc'],
+            'default_sort' => ['created_at', 'desc'],
             'filters'      => [
                 'status' => fn ($q, $v) => $q->where('status', $v),
                 'q'      => function ($q, $v) {
@@ -307,29 +307,6 @@ class ContractManagementController extends Controller
                 'total'        => $invoices->total(),
             ],
         ]);
-    }
-
-    public function extendDue(ExtendDueRequest $request, Contract $contract)
-    {
-        $data = $request->validated();
-
-        $invoice = $this->contracts->extendDue($contract, $data['due_date']);
-
-        if (!$invoice) {
-            return back()->with('error', 'Tidak ada invoice untuk diperpanjang.');
-        }
-
-        $this->logEvent(
-            event: 'contract_due_extended',
-            causer: $request->user(),
-            subject: $contract,
-            properties: [
-                'invoice_id' => $invoice->id,
-                'due_date'   => $invoice->due_date ? $invoice->due_date->toDateString() : null,
-            ],
-        );
-
-        return back()->with('success', 'Masa tenggat berhasil diperpanjang.');
     }
 
     public function cancel(Request $request, Contract $contract)

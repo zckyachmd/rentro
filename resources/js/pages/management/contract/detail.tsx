@@ -211,7 +211,9 @@ export default function ContractDetailPage(props: {
                                                 </span>
                                             </div>
                                         ) : (
-                                            <span className="text-muted-foreground">-</span>
+                                            <span className="text-muted-foreground">
+                                                -
+                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -357,9 +359,18 @@ export default function ContractDetailPage(props: {
                                             <TableRow key={inv.id}>
                                                 <TableCell className="font-mono text-xs">
                                                     <div className="flex items-center gap-2">
-                                                        <span>
+                                                        <a
+                                                            href={route(
+                                                                'management.invoices.print',
+                                                                inv.id,
+                                                            )}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="hover:underline"
+                                                            title="Lihat halaman cetak invoice"
+                                                        >
                                                             {inv.number}
-                                                        </span>
+                                                        </a>
                                                         <Button
                                                             type="button"
                                                             size="icon"

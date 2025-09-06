@@ -25,6 +25,8 @@ class AppSettingSeeder extends Seeder
 
             // Billing behavior
             ['billing.prorata',                 true,      'bool'],
+            ['billing.prorata_charging',        'threshold',     'string'], // full|free|threshold
+            ['billing.prorata_free_threshold_days', 7,      'int'],    // only for threshold mode
             ['billing.release_day_of_month',    1,          'int'],   // anchor day for monthly cycle start
             ['billing.due_day_of_month',        7,          'int'],   // default due day
             ['billing.deposit_upfront',         true,       'bool'],

@@ -172,9 +172,6 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/{contract}', [ContractManagementController::class, 'show'])
                 ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
                 ->name('show');
-            Route::post('/{contract}/extend-due', [ContractManagementController::class, 'extendDue'])
-                ->middleware('can:' . PermissionName::CONTRACT_EXTEND->value)
-                ->name('extendDue');
             Route::post('/{contract}/cancel', [ContractManagementController::class, 'cancel'])
                 ->middleware('can:' . PermissionName::CONTRACT_CANCEL->value)
                 ->name('cancel');
@@ -188,15 +185,21 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/', [InvoiceManagementController::class, 'index'])
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
                 ->name('index');
-            Route::post('/', [InvoiceManagementController::class, 'store'])
+            Route::get('/{invoice}', [InvoiceManagementController::class, 'show'])
+                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->name('show');
+            Route::post('/generate', [InvoiceManagementController::class, 'generate'])
                 ->middleware('can:' . PermissionName::INVOICE_CREATE->value)
-                ->name('store');
-            Route::put('/{invoice}', [InvoiceManagementController::class, 'update'])
+                ->name('generate');
+            Route::get('/{invoice}/print', [InvoiceManagementController::class, 'print'])
+                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->name('print');
+            Route::post('/{invoice}/extend-due', [InvoiceManagementController::class, 'extendDue'])
                 ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
-                ->name('update');
-            Route::delete('/{invoice}', [InvoiceManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::INVOICE_DELETE->value)
-                ->name('destroy');
+                ->name('extendDue');
+            Route::post('/{invoice}/cancel', [InvoiceManagementController::class, 'cancel'])
+                ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->name('cancel');
         });
 
         // Payments
