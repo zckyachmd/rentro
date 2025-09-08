@@ -12,6 +12,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import AttachmentPreviewDialog from '@/components/ui/attachment-preview-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {
@@ -33,9 +34,8 @@ import AuthLayout from '@/layouts/auth-layout';
 import { formatIDR } from '@/lib/format';
 
 import { createColumns } from './columns';
-import ManualPaymentDialog from './manual';
 import PaymentDetailDialog from './detail-dialog';
-import AttachmentPreviewDialog from '@/components/ui/attachment-preview-dialog';
+import ManualPaymentDialog from './manual';
 
 export type PaymentRow = {
     id: string;
@@ -78,15 +78,12 @@ export default function PaymentIndex() {
     const [processing, setProcessing] = React.useState(false);
     const [open, setOpen] = React.useState(false);
     const [detail, setDetail] = React.useState<null | { id: string }>(null);
-    const [preview, setPreview] = React.useState<
-        | null
-        | {
-              url: string;
-              title?: string;
-              description?: string;
-              details?: { label: string; value: string }[];
-          }
-    >(null);
+    const [preview, setPreview] = React.useState<null | {
+        url: string;
+        title?: string;
+        description?: string;
+        details?: { label: string; value: string }[];
+    }>(null);
     const [voiding, setVoiding] = React.useState<{
         target: PaymentRow | null;
         reason: string;

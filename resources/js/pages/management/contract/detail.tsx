@@ -168,7 +168,11 @@ export default function ContractDetailPage(props: {
                                         Status
                                     </div>
                                     <div className="text-right">
-                                        <Badge variant={variantForContractStatus(contract.status)}>
+                                        <Badge
+                                            variant={variantForContractStatus(
+                                                contract.status,
+                                            )}
+                                        >
                                             {contract.status}
                                         </Badge>
                                     </div>
@@ -339,19 +343,19 @@ export default function ContractDetailPage(props: {
                                         invoices.data.map((inv) => (
                                             <TableRow key={inv.id}>
                                                 <TableCell className="font-mono text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <a
-                                                        href={`${route('management.invoices.index')}?search=${encodeURIComponent(inv.number)}`}
-                                                        className="hover:underline"
-                                                        title="Cari invoice ini di menu Invoice"
-                                                    >
-                                                        {inv.number}
-                                                    </a>
-                                                    <Button
-                                                        type="button"
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        className="js-copy h-7 w-7"
+                                                    <div className="flex items-center gap-2">
+                                                        <a
+                                                            href={`${route('management.invoices.index')}?search=${encodeURIComponent(inv.number)}`}
+                                                            className="hover:underline"
+                                                            title="Cari invoice ini di menu Invoice"
+                                                        >
+                                                            {inv.number}
+                                                        </a>
+                                                        <Button
+                                                            type="button"
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="js-copy h-7 w-7"
                                                             data-clipboard-text={
                                                                 inv.number
                                                             }
@@ -374,7 +378,11 @@ export default function ContractDetailPage(props: {
                                                     {formatDate(inv.due_date)}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={variantForContractStatus(inv.status)}>
+                                                    <Badge
+                                                        variant={variantForContractStatus(
+                                                            inv.status,
+                                                        )}
+                                                    >
                                                         {inv.status}
                                                     </Badge>
                                                 </TableCell>

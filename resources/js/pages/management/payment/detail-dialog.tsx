@@ -29,6 +29,8 @@ type PaymentDetailData = {
         note?: string | null;
         recorded_by?: string | null;
         attachment?: string | null;
+        attachment_name?: string | null;
+        attachment_uploaded_at?: string | null;
         pre_outstanding_cents?: number | null;
     };
     invoice: {
@@ -70,7 +72,8 @@ function usePaymentDetailLoader(target: Target) {
                 if (!res.ok) throw new Error('Gagal memuat detail pembayaran');
                 const json = (await res.json()) as PaymentDetailData;
                 setData(json);
-            } catch {
+            } catch (err) {
+                console.error(err);
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
             }
@@ -126,77 +129,7 @@ export default function PaymentDetailDialog({
                             Memuat…
                         </div>
                     ) : (
-                        <PaymentDetailBody
-                            data={data}
-                            onPreview={() => {
-                                onClose();
-                                if (onRequestPreview && data?.payment?.id) {
-                                    const details: {
-                                        label: string;
-                                        value: string;
-                                    }[] = [
-                                        {
-                                            label: 'Invoice',
-                                            value: data.invoice?.number ?? '-',
-                                        },
-                                        {
-                                            label: 'Nominal',
-                                            value: formatIDR(
-                                                data.payment.amount_cents,
-                                            ),
-                                        },
-                                        {
-                                            label: 'Metode',
-                                            value: data.payment.method,
-                                        },
-                                        {
-                                            label: 'Tanggal Bayar',
-                                            value:
-                                                formatDate(
-                                                    data.payment.paid_at ??
-                                                        null,
-                                                ) || '-',
-                                        },
-                                        {
-                                            label: 'Referensi',
-                                            value:
-                                                data.payment.reference || '-',
-                                        },
-                                        {
-                                            label: 'Provider/Bank',
-                                            value:
-                                                data.payment.provider ||
-                                                (data.payment.method === 'Cash'
-                                                    ? 'Kasir'
-                                                    : '-'),
-                                        },
-                                        {
-                                            label: 'Nama Berkas',
-                                            value:
-                                                (data.payment as any)
-                                                    .attachment_name || '-',
-                                        },
-                                        {
-                                            label: 'Diunggah Pada',
-                                            value:
-                                                (data.payment as any)
-                                                    .attachment_uploaded_at ||
-                                                '-',
-                                        },
-                                    ];
-                                    onRequestPreview({
-                                        url: route(
-                                            'management.payments.attachment',
-                                            data.payment.id,
-                                        ),
-                                        title: 'Bukti Pembayaran',
-                                        description: `Lampiran bukti pembayaran untuk invoice ${data.invoice?.number ?? '-'}`,
-                                        // @ts-ignore - extended prop supported by component
-                                        details,
-                                    } as any);
-                                }
-                            }}
-                        />
+                        <PaymentDetailBody data={data} />
                     )}
                 </div>
 
@@ -246,13 +179,7 @@ export default function PaymentDetailDialog({
     );
 }
 
-function PaymentDetailBody({
-    data,
-    onPreview,
-}: {
-    data: PaymentDetailData;
-    onPreview: () => void;
-}) {
+function PaymentDetailBody({ data }: { data: PaymentDetailData }) {
     const p = data.payment;
     return (
         <div className="space-y-4">

@@ -11,6 +11,8 @@ use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\MenuServiceInterface;
 use App\Services\Contracts\TwoFactorServiceInterface;
 use App\Services\ContractService;
+use App\Services\Gateway\Contracts\MidtransGatewayInterface;
+use App\Services\Gateway\MidtransService;
 use App\Services\InvoiceService;
 use App\Services\MenuService;
 use App\Services\TwoFactorService;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuServiceInterface::class, MenuService::class);
         $this->app->bind(ContractServiceInterface::class, ContractService::class);
         $this->app->bind(InvoiceServiceInterface::class, InvoiceService::class);
+        $this->app->bind(MidtransGatewayInterface::class, MidtransService::class);
     }
 
     /**

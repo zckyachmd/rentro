@@ -14,6 +14,7 @@ use App\Http\Controllers\Management\RoomManagementController;
 use App\Http\Controllers\Management\RoomPhotoManagementController;
 use App\Http\Controllers\Management\RoomTypeManagementController;
 use App\Http\Controllers\Management\UserManagementController;
+use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Security\TwoFactorController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
+use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -94,9 +96,32 @@ Route::middleware('auth')->group(function (): void {
 
     // Tenant
     Route::prefix('tenant')->name('tenant.')->middleware(['role:' . RoleName::TENANT->value])->group(function (): void {
-        Route::get('/bookings', [TenantBookingController::class, 'index'])->name('bookings.index');
-        Route::get('/contracts', [TenantContractController::class, 'index'])->name('contracts.index');
-        Route::get('/invoices', [TenantInvoiceController::class, 'index'])->name('invoices.index');
+        // Bookings
+        Route::prefix('bookings')->name('bookings.')->group(function (): void {
+            Route::get('/', [TenantBookingController::class, 'index'])->name('index');
+        });
+
+        // Contracts
+        Route::prefix('contracts')->name('contracts.')->group(function (): void {
+            Route::get('/', [TenantContractController::class, 'index'])->name('index');
+            Route::get('/{contract}', [TenantContractController::class, 'show'])->name('show');
+            Route::post('/{contract}/stop-auto-renew', [TenantContractController::class, 'stopAutoRenew'])
+                ->name('stopAutoRenew');
+        });
+
+        // Invoices
+        Route::prefix('invoices')->name('invoices.')->group(function (): void {
+            Route::get('/', [TenantInvoiceController::class, 'index'])->name('index');
+            Route::get('/{invoice}', [TenantInvoiceController::class, 'show'])
+                ->whereNumber('invoice')
+                ->name('show');
+            Route::get('/{invoice}/print', [TenantInvoiceController::class, 'print'])
+                ->whereNumber('invoice')
+                ->name('print');
+            Route::post('/{invoice}/pay/midtrans', [TenantMidtransController::class, 'pay'])
+                ->whereNumber('invoice')
+                ->name('pay.midtrans');
+        });
     });
 
     // Management
@@ -360,3 +385,6 @@ Route::middleware('auth')->group(function (): void {
 });
 
 require __DIR__ . '/auth.php';
+
+// Midtrans redirect endpoint (public)
+Route::get('/payments/midtrans/finish', [PaymentRedirectController::class, 'finish'])->name('payments.midtrans.finish');

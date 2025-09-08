@@ -13,8 +13,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
 import { variantForPaymentStatus } from '@/lib/status';
+
 import type { PaymentRow } from '.';
 
 const COL = {

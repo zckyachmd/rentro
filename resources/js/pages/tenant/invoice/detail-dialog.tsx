@@ -1,3 +1,15 @@
+// Strongly-typed meta for invoice items
+export type InvoiceItemMeta = {
+    qty?: number;
+    days?: number;
+    free_days?: number;
+    unit_price_cents?: number;
+    description?: string;
+    desc?: string;
+    note?: string;
+    date_start?: string;
+    date_end?: string;
+};
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -16,12 +28,11 @@ import { formatDate, formatIDR } from '@/lib/format';
 import { variantForInvoiceStatus } from '@/lib/status';
 
 type InvoiceDetailTarget = { id: string; number: string } | null;
-
 type InvoiceItem = {
     code: string;
     label: string;
     amount_cents: number;
-    meta?: Record<string, string | number | boolean | null | undefined>;
+    meta?: InvoiceItemMeta;
 };
 
 type InvoiceDetailData = {
@@ -35,7 +46,7 @@ type InvoiceDetailData = {
         amount_cents: number;
         items: InvoiceItem[];
         paid_at?: string | null;
-        release_day?: number;
+        created_at?: string | null;
     };
     contract: {
         id: string;
@@ -77,7 +88,7 @@ function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
             setData(null);
             try {
                 const res = await fetch(
-                    route('management.invoices.show', target.id),
+                    route('tenant.invoices.show', target.id),
                     {
                         headers: { Accept: 'application/json' },
                         credentials: 'same-origin',
@@ -88,7 +99,7 @@ function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
                 const json = await res.json();
                 setData(json);
             } catch {
-                // abaikan error saat dibatalkan
+                // ignore
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
             }
@@ -100,7 +111,7 @@ function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
     return { loading, data } as const;
 }
 
-export default function InvoiceDetailDialog({
+export default function TenantInvoiceDetailDialog({
     target,
     onClose,
 }: {
@@ -128,14 +139,12 @@ export default function InvoiceDetailDialog({
                         ) : null}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Ringkasan tagihan &amp; item.
+                        Ringkasan tagihan & item.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {loading || !data ? (
-                        <div className="text-sm text-muted-foreground">
-                            Memuat…
-                        </div>
+                        <div className="h-48 animate-pulse rounded-md border"></div>
                     ) : (
                         <InvoiceDetailBody data={data} />
                     )}
@@ -143,7 +152,9 @@ export default function InvoiceDetailDialog({
                 <DialogFooter>
                     {target ? (
                         <a
-                            href={`${route('management.invoices.print', target.id)}?auto=1`}
+                            href={route('tenant.invoices.print', {
+                                invoice: target.id,
+                            })}
                             target="_blank"
                             rel="noreferrer"
                         >
@@ -191,16 +202,11 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
                         Rilis Tagihan
                     </div>
                     <div className="font-semibold">
-                        {formatDate(
-                            (
-                                data.invoice as
-                                    | { created_at?: string }
-                                    | undefined
-                            )?.created_at ?? null,
-                        )}
+                        {formatDate(data.invoice?.created_at ?? null)}
                     </div>
                 </div>
             </div>
+
             <Separator />
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -219,7 +225,7 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
                 </div>
                 <div className="space-y-1">
                     <Label className="text-muted-foreground">
-                        Kontrak &amp; Kamar
+                        Kontrak & Kamar
                     </Label>
                     <div className="text-sm">
                         Kamar {data.room?.number ?? '—'}
@@ -251,10 +257,7 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
                     </thead>
                     <tbody>
                         {inv.items.map((it, idx) => {
-                            const meta = (it.meta ?? {}) as Record<
-                                string,
-                                string | number | boolean | null | undefined
-                            >;
+                            const meta: InvoiceItemMeta = it.meta ?? {};
                             const rawLabel = it.label ?? '';
                             const baseLabel = rawLabel.includes('×')
                                 ? rawLabel.split('×')[0].trim()
@@ -293,26 +296,24 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
                                           ),
                                       )
                                     : null;
-                            const qty = (
+                            const qty =
                                 typeof meta.qty === 'number'
                                     ? meta.qty
-                                    : (daysFromRange ?? 1)
-                            ) as number;
+                                    : (daysFromRange ?? 1);
                             const totalDays =
                                 typeof meta.days === 'number'
-                                    ? (meta.days as number)
+                                    ? meta.days
                                     : null;
                             const freeDays =
                                 typeof meta.free_days === 'number'
-                                    ? (meta.free_days as number)
+                                    ? meta.free_days
                                     : null;
-                            const unitPrice = (
+                            const unitPrice =
                                 typeof meta.unit_price_cents === 'number'
                                     ? meta.unit_price_cents
                                     : Math.round(
                                           it.amount_cents / Math.max(1, qty),
-                                      )
-                            ) as number;
+                                      );
                             const desc = (meta.description ??
                                 meta.desc ??
                                 meta.note ??

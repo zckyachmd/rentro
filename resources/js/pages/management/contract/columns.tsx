@@ -58,7 +58,6 @@ const COL = {
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 };
 
-
 export type ColumnFactoryOptions = {
     onCancel?: (c: ContractItem) => void;
     onStopAutoRenew?: (c: ContractItem) => void;
