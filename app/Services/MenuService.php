@@ -37,13 +37,13 @@ class MenuService implements MenuServiceInterface
                 $menus = $g->menus;
 
                 /** @return array{label:string,href:?string,icon:?string,children:?array<int, array{label:string,href:?string,icon:?string}>} */
-                $mapMenu = function (Menu $m) use ($user): array {
+                $mapMenu = function (Menu $m) use ($user): ?array {
                     /** @var Collection<int, Menu> $childrenCol */
                     $childrenCol = $m->children;
 
                     /** @return bool */
                     $filterChild = function (Menu $c) use ($user): bool {
-                        return !$c->permission_name || ($user && $user->can($c->permission_name));
+                        return $this->visibleForUser($c, $user);
                     };
 
                     $childrenArr = $childrenCol
@@ -58,6 +58,11 @@ class MenuService implements MenuServiceInterface
                         ->values()
                         ->all();
 
+                    $hasHref = !empty($m->href) && $m->href !== '#';
+                    if (!$hasHref && empty($childrenArr)) {
+                        return null;
+                    }
+
                     return [
                         'label'    => $m->label,
                         'href'     => $m->href,
@@ -68,12 +73,13 @@ class MenuService implements MenuServiceInterface
 
                 /** @return bool */
                 $filterMenu = function (Menu $m) use ($user): bool {
-                    return !$m->permission_name || ($user && $user->can($m->permission_name));
+                    return $this->visibleForUser($m, $user);
                 };
 
                 $itemsArr = $menus
                     ->filter($filterMenu)
                     ->map($mapMenu)
+                    ->filter()
                     ->values()
                     ->all();
 
@@ -84,7 +90,39 @@ class MenuService implements MenuServiceInterface
                 ];
             };
 
-            return $groups->map($mapGroup)->values()->all();
+            return $groups
+                ->map($mapGroup)
+                ->filter(fn (array $grp) => !empty($grp['items']))
+                ->values()
+                ->all();
         });
+    }
+
+    /**
+     * Determine if a menu item is visible to a user based on roles/permissions.
+     */
+    protected function visibleForUser(Menu $menu, ?User $user): bool
+    {
+        $allowedRoles   = (array) ($menu->allowed_roles ?? []);
+        $excludedRoles  = (array) ($menu->excluded_roles ?? []);
+        $permissionName = $menu->permission_name;
+
+        if (!empty($excludedRoles) && $user && $user->hasAnyRole($excludedRoles)) {
+            return false;
+        }
+
+        if (!empty($allowedRoles)) {
+            if (!$user || !$user->hasAnyRole($allowedRoles)) {
+                return false;
+            }
+        }
+
+        if (!empty($permissionName)) {
+            if (!$user || !$user->can($permissionName)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

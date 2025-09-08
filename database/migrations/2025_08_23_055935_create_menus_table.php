@@ -26,9 +26,11 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('label', 100);
-            $table->string('href')->nullable();       // fallback URL absolute/relative
-            $table->string('icon')->nullable();       // simpan nama icon lucide, mis. 'Home', 'Wrench'
-            $table->string('permission_name')->nullable(); // mis. 'view dashboard'
+            $table->string('href')->nullable();
+            $table->string('icon')->nullable();
+            $table->string('permission_name')->nullable();
+            $table->json('allowed_roles')->nullable();
+            $table->json('excluded_roles')->nullable();
             $table->unsignedInteger('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
 

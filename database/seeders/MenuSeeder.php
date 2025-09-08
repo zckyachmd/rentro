@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enum\PermissionName;
+use App\Enum\RoleName;
 use App\Models\Menu;
 use App\Models\MenuGroup;
 use Illuminate\Database\Seeder;
@@ -21,6 +22,9 @@ class MenuSeeder extends Seeder
                 'label' => 'Ringkasan',
                 'items' => [
                     ['label' => 'Dashboard', 'href' => route('dashboard'), 'icon' => 'Home'],
+                    ['label' => 'Booking', 'href' => '#', 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
+                    ['label' => 'Kontrak', 'href' => route('tenant.contracts.index'), 'icon' => 'ScrollText', 'roles' => [RoleName::TENANT->value]],
+                    ['label' => 'Tagihan', 'href' => route('tenant.invoices.index'), 'icon' => 'ReceiptText', 'roles' => [RoleName::TENANT->value]],
                 ],
             ],
 
@@ -29,7 +33,7 @@ class MenuSeeder extends Seeder
                 'label' => 'Sewa',
                 'items' => [
                     ['label' => 'Booking', 'href' => '#', 'icon' => 'CalendarCheck'],
-                    ['label' => 'Kontrak', 'href' => route('management.contracts.index'), 'icon' => 'ScrollText'],
+                    ['label' => 'Kontrak', 'href' => route('management.contracts.index'), 'icon' => 'ScrollText', 'permission' => PermissionName::CONTRACT_VIEW],
                 ],
             ],
 
@@ -37,16 +41,10 @@ class MenuSeeder extends Seeder
                 'id' => 'keuangan',
                 'label' => 'Keuangan',
                 'items' => [
-                    [
-                        'label' => 'Transaksi',
-                        'icon'  => 'Wallet',
-                        'children' => [
-                            ['label' => 'Tagihan', 'href' => route('management.invoices.index'), 'icon' => 'ReceiptText'],
-                            ['label' => 'Pembayaran', 'href' => route('management.payments.index'), 'icon' => 'CreditCard'],
-                            ['label' => 'Rekonsiliasi', 'href' => '#', 'icon' => 'FileBarChart2'],
-                            ['label' => 'Laporan', 'href' => '#', 'icon' => 'BarChart3'],
-                        ],
-                    ],
+                    ['label' => 'Tagihan', 'href' => route('management.invoices.index'), 'icon' => 'ReceiptText', 'permission' => PermissionName::INVOICE_VIEW],
+                    ['label' => 'Pembayaran', 'href' => route('management.payments.index'), 'icon' => 'CreditCard', 'permission' => PermissionName::PAYMENT_VIEW],
+                    ['label' => 'Rekonsiliasi', 'href' => '#', 'icon' => 'FileBarChart2'],
+                    ['label' => 'Laporan', 'href' => '#', 'icon' => 'BarChart3'],
                 ],
             ],
 
@@ -59,28 +57,18 @@ class MenuSeeder extends Seeder
                         'icon'  => 'Bed',
                         'children' => [
                             ['label' => 'Daftar Kamar', 'href' => route('management.rooms.index'), 'icon' => 'BedDouble', 'permission' => PermissionName::ROOM_MANAGE_VIEW],
-                            ['label' => 'Tipe Kamar', 'href' => route('management.room-types.index'), 'icon' => 'Tags'],
-                            ['label' => 'Fasilitas', 'href' => route('management.amenities.index'), 'icon' => 'AirVent'],
+                            ['label' => 'Tipe Kamar', 'href' => '#', 'icon' => 'Tags', 'permission'],
+                            ['label' => 'Fasilitas', 'href' => '#', 'icon' => 'AirVent'],
                         ],
                     ],
                     [
                         'label' => 'Struktur Gedung',
                         'icon'  => 'Building2',
                         'children' => [
-                            ['label' => 'Gedung', 'href' => route('management.buildings.index'), 'icon' => 'Building2'],
-                            ['label' => 'Lantai', 'href' => route('management.floors.index'), 'icon' => 'Layers'],
+                            ['label' => 'Gedung', 'href' => '#', 'icon' => 'Building2'],
+                            ['label' => 'Lantai', 'href' => '#', 'icon' => 'Layers'],
                         ],
                     ],
-                ],
-            ],
-
-            [
-                'id' => 'tenant',
-                'label' => 'Tenant',
-                'items' => [
-                    ['label' => 'Booking Saya', 'href' => route('tenant.bookings.index'), 'icon' => 'CalendarCheck'],
-                    ['label' => 'Kontrak Saya', 'href' => route('tenant.contracts.index'), 'icon' => 'ScrollText'],
-                    ['label' => 'Tagihan Saya', 'href' => route('tenant.invoices.index'), 'icon' => 'ReceiptText'],
                 ],
             ],
 
@@ -117,15 +105,9 @@ class MenuSeeder extends Seeder
                 'id' => 'admin',
                 'label' => 'Administrasi',
                 'items' => [
-                    [
-                        'label' => 'Akses',
-                        'icon' => 'ShieldCheck',
-                        'children' => [
-                            ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
-                            ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
-                            ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
-                        ],
-                    ],
+                    ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
+                    ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
+                    ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
                 ],
             ],
 
@@ -189,6 +171,19 @@ class MenuSeeder extends Seeder
      */
     protected function upsertMenuItem(int $groupId, array $item, int $order, ?int $parentId): void
     {
+        $hrefProvided = array_key_exists('href', $item);
+        $href         = $hrefProvided ? ($item['href'] ?? null) : null;
+
+        $isPlaceholder = $hrefProvided && $href === '#';
+        if (app()->environment('production') && $isPlaceholder) {
+            return;
+        }
+
+        $isActive = true;
+        if ($isPlaceholder) {
+            $isActive = false;
+        }
+
         $menu = Menu::updateOrCreate(
             [
                 'menu_group_id' => $groupId,
@@ -196,11 +191,13 @@ class MenuSeeder extends Seeder
                 'parent_id' => $parentId,
             ],
             [
-                'href' => $item['href'] ?? '#',
+                'href' => $href,
                 'icon' => $item['icon'] ?? 'Circle',
                 'permission_name' => $item['permission'] ?? null,
+                'allowed_roles'   => $item['roles'] ?? null,
+                'excluded_roles'  => $item['exclude_roles'] ?? null,
                 'sort_order' => $order,
-                'is_active' => true,
+                'is_active' => $isActive,
             ]
         );
 

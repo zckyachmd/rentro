@@ -15,14 +15,18 @@ class Menu extends Model
         'href',
         'icon',
         'permission_name',
+        'allowed_roles',
+        'excluded_roles',
         'sort_order',
         'is_active',
     ];
 
     protected $casts = [
-        'is_active'  => 'boolean',
-        'sort_order' => 'integer',
-        'meta'       => 'array',
+        'is_active'      => 'boolean',
+        'sort_order'     => 'integer',
+        'meta'           => 'array',
+        'allowed_roles'  => 'array',
+        'excluded_roles' => 'array',
     ];
 
     public function group(): BelongsTo
