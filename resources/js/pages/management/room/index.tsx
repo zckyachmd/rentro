@@ -452,7 +452,11 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 <Button type="button" onClick={applyFilters}>
                                     Terapkan
                                 </Button>
-                                <Button type="button" variant="outline" onClick={resetFilter}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={resetFilter}
+                                >
                                     Reset
                                 </Button>
                             </div>

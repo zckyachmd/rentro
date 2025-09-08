@@ -2,7 +2,6 @@ import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import React from 'react';
 
-import type { Crumb } from '@/components/breadcrumbs';
 import {
     AlertDialog,
     AlertDialogAction,

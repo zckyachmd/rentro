@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -13,7 +12,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
-import { variantForPaymentStatus } from '@/lib/status';
 
 type Target = { id: string } | null;
 

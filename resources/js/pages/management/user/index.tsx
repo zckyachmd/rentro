@@ -1,9 +1,8 @@
-import { router, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { UserPlus } from 'lucide-react';
 import React from 'react';
 
 import { Can } from '@/components/acl';
-import type { Crumb } from '@/components/breadcrumbs';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -84,7 +83,6 @@ export default function UsersIndex() {
         () => (typeof window !== 'undefined' ? window.location.pathname : '/'),
         [],
     );
-
 
     const rolesOptions = React.useMemo(
         () =>

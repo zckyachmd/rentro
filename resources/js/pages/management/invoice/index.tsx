@@ -103,14 +103,6 @@ export default function InvoiceIndex() {
     const statusValue: string =
         (q as QueryBag & { status?: string | null }).status ?? 'all';
 
-    const reload = React.useCallback(() => {
-        setProcessing(true);
-        router.reload({
-            preserveUrl: true,
-            onFinish: () => setProcessing(false),
-        });
-    }, []);
-
     type CancelState = { target: InvoiceRow | null; reason: string };
     type ExtendState = {
         target: InvoiceRow | null;
@@ -257,7 +249,7 @@ export default function InvoiceIndex() {
                             onQueryChange={onQueryChange}
                             loading={processing}
                             emptyText="Tidak ada invoice."
-                            autoRefreshDefault='1m'
+                            autoRefreshDefault="1m"
                             showRefresh={true}
                         />
                     </CardContent>

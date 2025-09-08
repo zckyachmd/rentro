@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/data-table-server';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -30,6 +29,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import {
@@ -257,7 +257,11 @@ export default function ContractIndex(props: ContractsPageProps) {
                             <Button type="button" onClick={applyFilters}>
                                 Terapkan
                             </Button>
-                            <Button type="button" variant="outline" onClick={resetFilter}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={resetFilter}
+                            >
                                 Reset
                             </Button>
                         </div>
@@ -277,7 +281,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                             loading={processing}
                             emptyText="Tidak ada kontrak."
                             showColumn={false}
-                            autoRefreshDefault='1m'
+                            autoRefreshDefault="1m"
                             showRefresh={false}
                         />
                     </CardContent>

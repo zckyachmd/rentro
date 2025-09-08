@@ -109,14 +109,6 @@ export default function PaymentIndex() {
     const statusValue: string =
         (q as QueryBag & { status?: string | null }).status ?? 'all';
 
-    const reload = React.useCallback(() => {
-        setProcessing(true);
-        router.reload({
-            preserveUrl: true,
-            onFinish: () => setProcessing(false),
-        });
-    }, []);
-
     return (
         <AuthLayout
             pageTitle="Pembayaran"
