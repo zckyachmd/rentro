@@ -115,8 +115,9 @@ class ContractController extends Controller
 
         return Inertia::render('tenant/contract/detail', [
             'contract' => [
-                'id'   => (string) $contract->id,
-                'room' => $r ? [
+                'id'         => (string) $contract->id,
+                'updated_at' => $contract->updated_at?->toDateTimeString(),
+                'room'       => $r ? [
                     'id'             => (string) $r->id,
                     'number'         => (string) $r->number,
                     'name'           => (string) ($r->name ?? ''),

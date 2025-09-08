@@ -12,7 +12,6 @@ export type InvoiceItemMeta = {
 };
 import React from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -25,7 +24,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
-import { variantForInvoiceStatus } from '@/lib/status';
 
 type InvoiceDetailTarget = { id: string; number: string } | null;
 type InvoiceItem = {
@@ -127,16 +125,6 @@ export default function TenantInvoiceDetailDialog({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         Invoice {target?.number ?? ''}
-                        {data?.invoice?.status ? (
-                            <Badge
-                                variant={variantForInvoiceStatus(
-                                    data.invoice.status,
-                                )}
-                                className="ml-1"
-                            >
-                                {data.invoice.status}
-                            </Badge>
-                        ) : null}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
                         Ringkasan tagihan & item.

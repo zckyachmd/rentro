@@ -92,8 +92,6 @@ type Paginator<T> = {
     total: number;
 };
 
-// use shared status variants
-
 export default function ContractDetailPage(props: {
     contract: ContractDTO;
     tenant: TenantDTO;
@@ -108,7 +106,6 @@ export default function ContractDetailPage(props: {
             pageDescription="Detail lengkap kontrak, penyewa, kamar, dan invoice."
             breadcrumbs={BREADCRUMBS}
         >
-            {/* Header ringkas dengan status & ID copyable */}
             <div className="mb-2 flex items-center justify-end gap-3">
                 <div className="hidden text-xs text-muted-foreground md:block">
                     Terakhir diperbarui: {formatDate(contract.updated_at, true)}
@@ -150,7 +147,7 @@ export default function ContractDetailPage(props: {
                                         </Badge>
                                     </div>
                                     <div className="text-muted-foreground">
-                                        Hari Tagihan
+                                        Tanggal Penagihan
                                     </div>
                                     <div className="text-right">
                                         {contract.billing_day ?? '-'}

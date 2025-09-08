@@ -1,7 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { Eye, MoreHorizontal } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -142,6 +142,16 @@ export const createColumns = (
                         <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                             <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    (window.location.href = route(
+                                        'tenant.contracts.show',
+                                        { contract: r.id },
+                                    ))
+                                }
+                            >
+                                <Eye className="mr-2 h-4 w-4" /> Lihat detail
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                                 disabled={!r.auto_renew}
                                 onClick={() => opts?.onStopAutoRenew?.(r)}

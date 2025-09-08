@@ -1,8 +1,5 @@
-import { router } from '@inertiajs/react';
-import React from 'react';
-
+import { Crumb } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatDate, formatIDR } from '@/lib/format';
@@ -11,8 +8,14 @@ import {
     variantForInvoiceStatus,
 } from '@/lib/status';
 
+const BREADCRUMBS: Crumb[] = [
+    { label: 'Kontrak', href: route('tenant.contracts.index') },
+    { label: 'Detail Kontrak', href: '#' },
+];
+
 type ContractDetail = {
     id: string;
+    updated_at?: string | null;
     room: {
         id: string;
         number: string;
@@ -56,13 +59,19 @@ type PageProps = { contract: ContractDetail; invoices: Paginator<InvoiceItem> };
 
 export default function TenantContractDetail(props: PageProps) {
     const { contract, invoices } = props;
-    const stopAllowed = Boolean(contract.auto_renew);
-    const [processing, setProcessing] = React.useState(false);
+
     return (
         <AuthLayout
             pageTitle={`Kontrak #${contract.id}`}
             pageDescription="Detail kontrak Anda."
+            breadcrumbs={BREADCRUMBS}
         >
+            <div className="mb-2 flex items-center justify-end gap-3">
+                <div className="hidden text-xs text-muted-foreground md:block">
+                    Terakhir diperbarui: {formatDate(contract.updated_at, true)}
+                </div>
+            </div>
+
             <div className="grid gap-6 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
@@ -115,7 +124,7 @@ export default function TenantContractDetail(props: PageProps) {
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="text-muted-foreground">
-                                Hari Tagih
+                                Tanggal Penagihan
                             </div>
                             <div>{contract.billing_day ?? '-'}</div>
                         </div>
@@ -129,39 +138,6 @@ export default function TenantContractDetail(props: PageProps) {
                                 >
                                     {contract.status}
                                 </Badge>
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="text-muted-foreground">
-                                Auto‑Renew
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span>
-                                    {contract.auto_renew ? 'Ya' : 'Tidak'}
-                                </span>
-                                {stopAllowed && (
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        disabled={processing}
-                                        onClick={() => {
-                                            setProcessing(true);
-                                            router.post(
-                                                route(
-                                                    'tenant.contracts.stopAutoRenew',
-                                                    { contract: contract.id },
-                                                ),
-                                                {},
-                                                {
-                                                    onFinish: () =>
-                                                        setProcessing(false),
-                                                },
-                                            );
-                                        }}
-                                    >
-                                        Hentikan Perpanjangan Otomatis
-                                    </Button>
-                                )}
                             </div>
                         </div>
                     </CardContent>
@@ -199,7 +175,6 @@ export default function TenantContractDetail(props: PageProps) {
                     </CardContent>
                 </Card>
             </div>
-
             {/* Invoice */}
             <Card className="mt-6">
                 <CardHeader className="pb-3">
