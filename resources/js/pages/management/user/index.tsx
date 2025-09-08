@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { RefreshCw, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import React from 'react';
 
 import { Can } from '@/components/acl';
@@ -33,11 +33,6 @@ import ForceLogoutDialog from './force-logout';
 import ResetPasswordDialog from './reset-password';
 import { Role, RoleDialog } from './role';
 import { TwoFADialog } from './two-factor';
-
-const BREADCRUMBS: Crumb[] = [
-    { label: 'Akses & Peran', href: '#' },
-    { label: 'Pengguna' },
-];
 
 export type UserItem = {
     id: number;
@@ -90,13 +85,6 @@ export default function UsersIndex() {
         [],
     );
 
-    const reload = React.useCallback(() => {
-        setProcessing(true);
-        router.reload({
-            preserveUrl: true,
-            onFinish: () => setProcessing(false),
-        });
-    }, []);
 
     const rolesOptions = React.useMemo(
         () =>
@@ -153,7 +141,6 @@ export default function UsersIndex() {
         <AuthLayout
             pageTitle="Pengguna"
             pageDescription="Kelola akun, peran, keamanan, dan sesi login"
-            breadcrumbs={BREADCRUMBS}
         >
             <div className="space-y-6">
                 <Card>
@@ -193,14 +180,6 @@ export default function UsersIndex() {
                                 </Select>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={reload}
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" /> Muat
-                                    ulang
-                                </Button>
                                 <Can all={['user.create']}>
                                     <Button
                                         size="sm"

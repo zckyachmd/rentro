@@ -11,6 +11,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { variantForPaymentStatus } from '@/lib/status';
@@ -39,9 +40,23 @@ export const createColumns = (opts?: {
         title: 'Tanggal',
         className: COL.date,
         sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.date}>{row.original.paid_at ?? '—'}</div>
-        ),
+        cell: ({ row }) => {
+            const p = row.original;
+            const clickable = p.status === 'Completed' && !!p.paid_at;
+            if (!clickable) {
+                return <div className={COL.date}>{p.paid_at ?? '—'}</div>;
+            }
+            return (
+                <button
+                    type="button"
+                    onClick={() => opts?.onShowDetail?.(p)}
+                    className={`${COL.date} truncate text-left text-primary hover:underline`}
+                    title="Lihat detail pembayaran"
+                >
+                    {p.paid_at}
+                </button>
+            );
+        },
     }),
     makeColumn<PaymentRow>({
         id: 'invoice',
@@ -134,6 +149,7 @@ export const createColumns = (opts?: {
                                         <Printer className="mr-2 h-4 w-4" />{' '}
                                         Cetak Kwitansi
                                     </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         className="text-destructive focus:text-destructive"
                                         onClick={() => opts?.onVoid?.(p)}

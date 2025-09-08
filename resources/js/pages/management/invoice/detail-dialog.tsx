@@ -116,16 +116,6 @@ export default function InvoiceDetailDialog({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         Invoice {target?.number ?? ''}
-                        {data?.invoice?.status ? (
-                            <Badge
-                                variant={variantForInvoiceStatus(
-                                    data.invoice.status,
-                                )}
-                                className="ml-1"
-                            >
-                                {data.invoice.status}
-                            </Badge>
-                        ) : null}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
                         Ringkasan tagihan &amp; item.

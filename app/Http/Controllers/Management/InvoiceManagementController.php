@@ -46,6 +46,11 @@ class InvoiceManagementController extends Controller
                 'number',
                 'contract.tenant.name',
                 'contract.room.number',
+                function ($q, string $term) {
+                    if (preg_match('/^contract:(\d+)$/i', trim($term), $m)) {
+                        $q->orWhere('contract_id', (int) $m[1]);
+                    }
+                },
             ],
             'sortable' => [
                 'number'       => 'number',

@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import {
     Eye,
     MoreHorizontal,
+    ReceiptText,
     RefreshCcw,
     RefreshCw,
     Trash2,
@@ -179,6 +180,19 @@ export const createColumns = (
                                 }
                             >
                                 <Eye className="mr-2 h-4 w-4" /> Lihat detail
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    const url = route(
+                                        'management.invoices.index',
+                                    );
+                                    const qs = `?search=${encodeURIComponent(`contract:${row.original.id}`)}`;
+                                    window.location.href = url + qs;
+                                }}
+                            >
+                                <ReceiptText className="mr-2 h-4 w-4" /> Lihat
+                                invoice
                             </DropdownMenuItem>
 
                             {canToggleRenew &&

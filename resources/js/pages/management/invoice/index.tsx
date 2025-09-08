@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { FilePlus2, RefreshCw } from 'lucide-react';
+import { FilePlus2 } from 'lucide-react';
 import React from 'react';
 
 import { DatePickerInput } from '@/components/date-picker';
@@ -228,15 +228,6 @@ export default function InvoiceIndex() {
                             <div className="flex items-center gap-2">
                                 <Button
                                     type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={reload}
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" /> Muat
-                                    ulang
-                                </Button>
-                                <Button
-                                    type="button"
                                     size="sm"
                                     onClick={() => setGenOpen(true)}
                                 >
@@ -266,6 +257,8 @@ export default function InvoiceIndex() {
                             onQueryChange={onQueryChange}
                             loading={processing}
                             emptyText="Tidak ada invoice."
+                            autoRefreshDefault='1m'
+                            showRefresh={true}
                         />
                     </CardContent>
                 </Card>

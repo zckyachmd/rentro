@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import React from 'react';
 
 import type { Crumb } from '@/components/breadcrumbs';
@@ -32,11 +32,6 @@ import AuthLayout from '@/layouts/auth-layout';
 import { createColumns } from './columns';
 import PermissionsDialog, { Permission } from './permissions';
 import RoleUpsertDialog from './roles';
-
-const BREADCRUMBS: Crumb[] = [
-    { label: 'Akses & Peran', href: '#' },
-    { label: 'Roles' },
-];
 
 export type RoleItem = {
     id: number;
@@ -76,14 +71,6 @@ export default function RolesIndex() {
         () => (typeof window !== 'undefined' ? window.location.pathname : '/'),
         [],
     );
-
-    const reload = React.useCallback(() => {
-        setProcessing(true);
-        router.reload({
-            preserveUrl: true,
-            onFinish: () => setProcessing(false),
-        });
-    }, []);
 
     const [processing, setProcessing] = React.useState(false);
 
@@ -138,7 +125,6 @@ export default function RolesIndex() {
         <AuthLayout
             pageTitle="Role Management"
             pageDescription="Kelola roles, hapus, dan atur permissions untuk akses aplikasi."
-            breadcrumbs={BREADCRUMBS}
         >
             <div className="space-y-3">
                 <Card>
@@ -154,15 +140,6 @@ export default function RolesIndex() {
                             <div className="flex w-full flex-1 items-center gap-2" />
 
                             <div className="flex items-center gap-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={reload}
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" /> Muat
-                                    ulang
-                                </Button>
                                 <Button
                                     type="button"
                                     size="sm"

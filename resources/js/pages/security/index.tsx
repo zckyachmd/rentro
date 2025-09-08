@@ -3,7 +3,6 @@ import { KeyRound, MailCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Crumb } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,11 +65,6 @@ function setTabInUrl(value: TabKey) {
     window.history.replaceState({}, '', url.toString());
 }
 
-const BREADCRUMBS: Crumb[] = [
-    { label: 'Pengaturan', href: '#' },
-    { label: 'Keamanan' },
-];
-
 export default function SecurityIndex() {
     const page = usePage<PageProps>();
     const summary: Summary = (page?.props?.summary ?? {}) as Summary;
@@ -116,7 +110,6 @@ export default function SecurityIndex() {
         <AuthLayout
             pageTitle="Keamanan Akun"
             pageDescription="Kelola password, autentikasi dua langkah, dan sesi/perangkat yang terhubung."
-            breadcrumbs={BREADCRUMBS}
         >
             <Head title="Keamanan Akun" />
 

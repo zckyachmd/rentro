@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { FilePlus2, RefreshCw } from 'lucide-react';
+import { FilePlus2 } from 'lucide-react';
 import React from 'react';
 
 import {
@@ -160,15 +160,6 @@ export default function PaymentIndex() {
                             <div className="flex items-center gap-2">
                                 <Button
                                     type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={reload}
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" /> Muat
-                                    ulang
-                                </Button>
-                                <Button
-                                    type="button"
                                     size="sm"
                                     onClick={() => setOpen(true)}
                                 >
@@ -216,6 +207,8 @@ export default function PaymentIndex() {
                             onQueryChange={onQueryChange}
                             loading={processing}
                             emptyText="Tidak ada pembayaran."
+                            autoRefreshDefault="1m"
+                            showRefresh={true}
                         />
                     </CardContent>
                 </Card>

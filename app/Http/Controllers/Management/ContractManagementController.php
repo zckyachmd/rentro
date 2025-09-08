@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Management;
 use App\Enum\BillingPeriod;
 use App\Enum\ContractStatus;
 use App\Enum\InvoiceStatus;
+use App\Enum\PaymentStatus;
 use App\Enum\RoleName;
 use App\Enum\RoomStatus;
 use App\Http\Controllers\Controller;
@@ -319,8 +320,15 @@ class ContractManagementController extends Controller
         $hasPaidInvoice = $contract->invoices()
             ->where('status', InvoiceStatus::PAID->value)
             ->exists();
-        if ($hasPaidInvoice) {
-            return back()->with('error', 'Kontrak tidak dapat dibatalkan karena sudah ada invoice yang lunas.');
+
+        $hasCompletedPayment = $contract->invoices()
+            ->whereHas('payments', function ($q) {
+                $q->where('status', PaymentStatus::COMPLETED->value);
+            })
+            ->exists();
+
+        if ($hasPaidInvoice || $hasCompletedPayment) {
+            return back()->with('error', 'Kontrak tidak dapat dibatalkan karena terdapat pembayaran yang sudah selesai atau invoice yang sudah lunas.');
         }
 
         $data   = $request->validated();

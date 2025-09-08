@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { Copy, RefreshCw } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 

@@ -108,15 +108,6 @@ export default function PaymentDetailDialog({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         Detail Pembayaran
-                        {data?.payment?.status ? (
-                            <Badge
-                                variant={variantForPaymentStatus(
-                                    data.payment.status,
-                                )}
-                            >
-                                {data.payment.status}
-                            </Badge>
-                        ) : null}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
                         Ringkasan pembayaran dan keterkaitan invoice.

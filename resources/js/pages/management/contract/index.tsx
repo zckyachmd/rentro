@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Filter, Plus, RefreshCw, Search } from 'lucide-react';
+import { Filter, Plus, Search } from 'lucide-react';
 import React from 'react';
 
 import {
@@ -257,12 +257,8 @@ export default function ContractIndex(props: ContractsPageProps) {
                             <Button type="button" onClick={applyFilters}>
                                 Terapkan
                             </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={resetFilter}
-                            >
-                                <RefreshCw className="mr-2 h-4 w-4" /> Reset
+                            <Button type="button" variant="outline" onClick={resetFilter}>
+                                Reset
                             </Button>
                         </div>
                     </CardContent>
@@ -281,6 +277,8 @@ export default function ContractIndex(props: ContractsPageProps) {
                             loading={processing}
                             emptyText="Tidak ada kontrak."
                             showColumn={false}
+                            autoRefreshDefault='1m'
+                            showRefresh={false}
                         />
                     </CardContent>
                 </Card>

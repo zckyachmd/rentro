@@ -112,7 +112,19 @@ export function ManualPaymentDialog({
     React.useEffect(() => {
         if (!open) return;
         setLookupError(null);
-    }, [open]);
+        setData((prev) => {
+            if (prev.paid_at && prev.paid_at.trim() !== '') return prev;
+            const now = new Date();
+            const pad = (n: number) => String(n).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            const mm = pad(now.getMonth() + 1);
+            const dd = pad(now.getDate());
+            const HH = pad(now.getHours());
+            const II = pad(now.getMinutes());
+            const ts = `${yyyy}-${mm}-${dd} ${HH}:${II}`;
+            return { ...prev, paid_at: ts };
+        });
+    }, [open, setData]);
 
     const canSubmit =
         !!data.invoice_id &&
@@ -292,42 +304,24 @@ export function ManualPaymentDialog({
                             {/* Nominal */}
                             <div className="grid gap-2">
                                 <Label>Nominal</Label>
-                                <Input
-                                    ref={amountRef}
-                                    className="w-full"
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    value={
-                                        Number.isFinite(data.amount_cents)
-                                            ? String(data.amount_cents)
-                                            : '0'
-                                    }
-                                    onChange={(e) => {
-                                        const onlyDigits =
-                                            e.target.value.replace(/\D+/g, '');
-                                        const parsed =
-                                            onlyDigits === ''
-                                                ? 0
-                                                : Number(onlyDigits);
-                                        setData((prev) => ({
-                                            ...prev,
-                                            amount_cents: Number.isFinite(
-                                                parsed,
-                                            )
-                                                ? parsed
-                                                : 0,
-                                        }));
-                                    }}
-                                    onPaste={(e) => {
-                                        const text =
-                                            e.clipboardData.getData('text');
-                                        if (text) {
-                                            e.preventDefault();
-                                            const onlyDigits = text.replace(
-                                                /\D+/g,
-                                                '',
-                                            );
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        ref={amountRef}
+                                        className="w-full"
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        value={
+                                            Number.isFinite(data.amount_cents)
+                                                ? String(data.amount_cents)
+                                                : '0'
+                                        }
+                                        onChange={(e) => {
+                                            const onlyDigits =
+                                                e.target.value.replace(
+                                                    /\D+/g,
+                                                    '',
+                                                );
                                             const parsed =
                                                 onlyDigits === ''
                                                     ? 0
@@ -340,12 +334,62 @@ export function ManualPaymentDialog({
                                                     ? parsed
                                                     : 0,
                                             }));
+                                        }}
+                                        onPaste={(e) => {
+                                            const text =
+                                                e.clipboardData.getData('text');
+                                            if (text) {
+                                                e.preventDefault();
+                                                const onlyDigits = text.replace(
+                                                    /\D+/g,
+                                                    '',
+                                                );
+                                                const parsed =
+                                                    onlyDigits === ''
+                                                        ? 0
+                                                        : Number(onlyDigits);
+                                                setData((prev) => ({
+                                                    ...prev,
+                                                    amount_cents:
+                                                        Number.isFinite(parsed)
+                                                            ? parsed
+                                                            : 0,
+                                                }));
+                                            }
+                                        }}
+                                        placeholder="Contoh: 150000 untuk Rp 150.000"
+                                        required
+                                        aria-required
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        className="shrink-0"
+                                        onClick={() => {
+                                            const outstanding = Number(
+                                                resolvedInvoice?.outstanding ??
+                                                    0,
+                                            );
+                                            if (!Number.isFinite(outstanding))
+                                                return;
+                                            setData((prev) => ({
+                                                ...prev,
+                                                amount_cents: Math.max(
+                                                    0,
+                                                    outstanding,
+                                                ),
+                                            }));
+                                        }}
+                                        disabled={
+                                            !resolvedInvoice ||
+                                            (resolvedInvoice?.outstanding ??
+                                                0) <= 0
                                         }
-                                    }}
-                                    placeholder="Contoh: 150000 untuk Rp 150.000"
-                                    required
-                                    aria-required
-                                />
+                                        title="Isi nominal dengan sisa tagihan (lunas)"
+                                    >
+                                        Lunas
+                                    </Button>
+                                </div>
                                 <div className="flex flex-col gap-1 text-[11px] text-muted-foreground md:flex-row md:items-center md:justify-between">
                                     <div>
                                         Sisa tagihan:{' '}

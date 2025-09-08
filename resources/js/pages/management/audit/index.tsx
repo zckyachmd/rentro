@@ -1,9 +1,6 @@
-import { router, usePage } from '@inertiajs/react';
-import { RefreshCw } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import React from 'react';
 
-import type { Crumb } from '@/components/breadcrumbs';
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -16,13 +13,6 @@ import {
     PaginatorMeta,
     type QueryBag,
 } from '@/components/ui/data-table-server';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
@@ -94,34 +84,9 @@ type PageProps = {
     query?: PageQuery;
 };
 
-const breadcrumbs: Crumb[] = [
-    { label: 'Akses & Peran', href: '#' },
-    { label: 'Audit Log' },
-];
-
 export default function AuditLogIndex() {
     const { props } = usePage<PageProps>();
     const { logs, query } = props;
-
-    const initialAuto = React.useMemo(() => {
-        if (typeof window === 'undefined') return 0;
-        const sp = new URLSearchParams(window.location.search);
-        const v = sp.get('auto');
-        const n = v ? parseInt(v, 10) : 0;
-        return Number.isFinite(n) ? Math.max(0, n) : 0;
-    }, []);
-    const [autoSec, setAutoSec] = React.useState<number>(initialAuto);
-
-    const setUrlAuto = React.useCallback((sec: number) => {
-        if (typeof window === 'undefined') return;
-        const url = new URL(window.location.href);
-        if (sec > 0) {
-            url.searchParams.set('auto', String(sec));
-        } else {
-            url.searchParams.delete('auto');
-        }
-        window.history.replaceState({}, '', url.toString());
-    }, []);
 
     const initial: QueryBag | undefined = query
         ? {
@@ -137,15 +102,6 @@ export default function AuditLogIndex() {
         () => (typeof window !== 'undefined' ? window.location.pathname : '/'),
         [],
     );
-
-    const timerRef = React.useRef<number | null>(null);
-
-    const clearTimer = React.useCallback(() => {
-        if (timerRef.current) {
-            window.clearInterval(timerRef.current);
-            timerRef.current = null;
-        }
-    }, []);
 
     const [processing, setProcessing] = React.useState(false);
 
@@ -194,54 +150,6 @@ export default function AuditLogIndex() {
         [onQueryChange, processing],
     );
 
-    const reload = React.useCallback(() => {
-        if (processing) return;
-        setProcessing(true);
-        router.reload({
-            preserveUrl: true,
-            only: ['logs', 'query'],
-            onFinish: () => setProcessing(false),
-        });
-    }, [processing]);
-
-    const maybeStartTimer = React.useCallback(() => {
-        clearTimer();
-        if (
-            autoSec > 0 &&
-            document.visibilityState === 'visible' &&
-            !processing
-        ) {
-            timerRef.current = window.setInterval(() => {
-                reload();
-            }, autoSec * 1000);
-        }
-    }, [autoSec, clearTimer, reload, processing]);
-
-    React.useEffect(() => {
-        maybeStartTimer();
-        return clearTimer;
-    }, [autoSec, maybeStartTimer, clearTimer]);
-
-    React.useEffect(() => {
-        const onFocus = () => maybeStartTimer();
-        const onBlur = () => clearTimer();
-        const onVisibility = () => {
-            if (document.visibilityState === 'visible') {
-                maybeStartTimer();
-            } else {
-                clearTimer();
-            }
-        };
-        window.addEventListener('focus', onFocus);
-        window.addEventListener('blur', onBlur);
-        document.addEventListener('visibilitychange', onVisibility);
-        return () => {
-            window.removeEventListener('focus', onFocus);
-            window.removeEventListener('blur', onBlur);
-            document.removeEventListener('visibilitychange', onVisibility);
-        };
-    }, [maybeStartTimer, clearTimer]);
-
     const [detail, setDetail] = React.useState<{
         open: boolean;
         item: ActivityItem | null;
@@ -256,7 +164,6 @@ export default function AuditLogIndex() {
         <AuthLayout
             pageTitle="Audit Log"
             pageDescription="Jejak aktivitas sistem: siapa melakukan apa dan kapan."
-            breadcrumbs={breadcrumbs}
         >
             <div className="space-y-3">
                 <Card>
@@ -269,43 +176,7 @@ export default function AuditLogIndex() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center justify-end gap-2">
-                            <Select
-                                value={String(autoSec || 0)}
-                                onValueChange={(v) => {
-                                    const sec = parseInt(v, 10) || 0;
-                                    setAutoSec(sec);
-                                    setUrlAuto(sec);
-                                }}
-                            >
-                                <SelectTrigger className="h-9 w-[160px]">
-                                    <SelectValue placeholder="Auto refresh" />
-                                </SelectTrigger>
-                                <SelectContent align="end">
-                                    <SelectItem value="0">Auto: Off</SelectItem>
-                                    <SelectItem value="30">
-                                        Auto: 30 detik
-                                    </SelectItem>
-                                    <SelectItem value="60">
-                                        Auto: 1 menit
-                                    </SelectItem>
-                                    <SelectItem value="300">
-                                        Auto: 5 menit
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={reload}
-                                className="inline-flex h-9 items-center gap-2"
-                                disabled={processing}
-                                type="button"
-                            >
-                                <RefreshCw className="h-4 w-4" />
-                                Muat ulang
-                            </Button>
-                        </div>
+                        <div className="flex items-center justify-end gap-2" />
                     </CardContent>
                 </Card>
 
@@ -325,6 +196,8 @@ export default function AuditLogIndex() {
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
                             emptyText="Tidak ada log."
+                            autoRefreshDefault="1m"
+                            showRefresh={true}
                         />
                     </CardContent>
                 </Card>

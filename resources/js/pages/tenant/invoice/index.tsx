@@ -1,4 +1,4 @@
-import { RefreshCw, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import React from 'react';
 
 // Types for Midtrans Snap and config
@@ -314,12 +314,8 @@ export default function TenantInvoiceIndex(props: PageProps) {
                             <Button type="button" onClick={applyFilters}>
                                 Terapkan
                             </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={resetFilter}
-                            >
-                                <RefreshCw className="mr-2 h-4 w-4" /> Reset
+                            <Button type="button" variant="outline" onClick={resetFilter}>
+                                Reset
                             </Button>
                         </div>
                     </CardContent>

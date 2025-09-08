@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Filter, Plus, RefreshCw } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import React from 'react';
 
 import {
@@ -452,12 +452,8 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 <Button type="button" onClick={applyFilters}>
                                     Terapkan
                                 </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={resetFilter}
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" /> Reset
+                                <Button type="button" variant="outline" onClick={resetFilter}>
+                                    Reset
                                 </Button>
                             </div>
                         </CardContent>
