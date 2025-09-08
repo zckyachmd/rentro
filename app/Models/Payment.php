@@ -26,21 +26,24 @@ class Payment extends Model
         'method',
         'status',
         'amount_cents',
+        'pre_outstanding_cents',
         'paid_at',
         'reference',
         'provider',
         'va_number',
         'va_expired_at',
         'meta',
+        'note',
     ];
 
     protected $casts = [
-        'amount_cents'  => 'integer',
-        'paid_at'       => 'datetime',
-        'va_expired_at' => 'datetime',
-        'method'        => PaymentMethod::class,
-        'status'        => PaymentStatus::class,
-        'meta'          => 'array',
+        'amount_cents'          => 'integer',
+        'paid_at'               => 'datetime',
+        'pre_outstanding_cents' => 'integer',
+        'va_expired_at'         => 'datetime',
+        'method'                => PaymentMethod::class,
+        'status'                => PaymentStatus::class,
+        'meta'                  => 'array',
     ];
 
     public function invoice(): BelongsTo

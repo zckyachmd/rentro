@@ -13,6 +13,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
+import { variantForInvoiceStatus } from '@/lib/status';
 
 type InvoiceDetailTarget = { id: string; number: string } | null;
 
@@ -48,6 +49,20 @@ type InvoiceDetailData = {
         phone?: string | null;
     } | null;
     room: { id: string; number?: string | null; name?: string | null } | null;
+    payments?: {
+        id: string;
+        method: string;
+        status: string;
+        amount_cents: number;
+        paid_at?: string | null;
+        reference?: string | null;
+        provider?: string | null;
+    }[];
+    payment_summary?: {
+        total_invoice: number;
+        total_paid: number;
+        outstanding: number;
+    };
 };
 
 function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
@@ -102,7 +117,7 @@ export default function InvoiceDetailDialog({
                     <DialogTitle className="flex items-center gap-2">
                         Invoice {target?.number ?? ''}
                         {data?.invoice?.status ? (
-                            <Badge variant="secondary" className="ml-1">
+                            <Badge variant={variantForInvoiceStatus(data.invoice.status)} className="ml-1">
                                 {data.invoice.status}
                             </Badge>
                         ) : null}
@@ -128,7 +143,7 @@ export default function InvoiceDetailDialog({
                             rel="noreferrer"
                         >
                             <Button type="button" variant="secondary">
-                                Cetak PDF
+                                Cetak Invoice
                             </Button>
                         </a>
                     ) : null}

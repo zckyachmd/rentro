@@ -72,6 +72,8 @@ class InvoiceManagementController extends Controller
             /** @var \App\Models\Room|null $room */
             $room = $contract?->room;
 
+            $outstanding = (int) ($inv->outstanding_cents ?? 0);
+
             return [
                 'id'           => (string) $inv->id,
                 'number'       => $inv->number,
@@ -80,6 +82,7 @@ class InvoiceManagementController extends Controller
                 'status'       => $inv->status->value,
                 'tenant'       => $tenant?->name,
                 'room_number'  => $room?->number,
+                'outstanding'  => $outstanding,
             ];
         });
         $page->setCollection($mapped);
@@ -126,7 +129,12 @@ class InvoiceManagementController extends Controller
 
     public function show(Request $request, Invoice $invoice)
     {
-        $invoice->load(['contract:id,user_id,room_id,start_date,end_date', 'contract.tenant:id,name,email,phone', 'contract.room:id,number,name']);
+        $invoice->load([
+            'contract:id,user_id,room_id,start_date,end_date',
+            'contract.tenant:id,name,email,phone',
+            'contract.room:id,number,name',
+            'payments:id,invoice_id,method,status,amount_cents,paid_at,reference,provider',
+        ]);
 
         /** @var Contract|null $c */
         $c = $invoice->contract;
@@ -167,12 +175,80 @@ class InvoiceManagementController extends Controller
             'name'   => $room->name,
         ] : null;
 
-        // Since the standalone detail page is removed, serve JSON for the dialog.
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $paymentsCollection */
+        $paymentsCollection = $invoice->payments;
+        $payments           = $paymentsCollection
+            ->sortBy(function (\App\Models\Payment $p) {
+                return ($p->paid_at?->getTimestamp() ?? 0) ?: ($p->created_at?->getTimestamp() ?? 0);
+            })
+            ->values()
+            ->map(function (\App\Models\Payment $p) {
+                return [
+                    'id'           => (string) $p->id,
+                    'method'       => (string) $p->method->value,
+                    'status'       => (string) $p->status->value,
+                    'amount_cents' => (int) $p->amount_cents,
+                    'paid_at'      => $p->paid_at?->toDateTimeString(),
+                    'reference'    => $p->reference,
+                    'provider'     => $p->provider,
+                ];
+            });
+
+        $totalInvoice = (int) $invoice->amount_cents;
+        $totalPaid    = (int) $invoice->payments()->where('status', PaymentStatus::COMPLETED->value)->sum('amount_cents');
+        $outstanding  = (int) ($invoice->outstanding_cents ?? max(0, $totalInvoice - $totalPaid));
+
         return response()->json([
-            'invoice'  => $dto,
-            'contract' => $contractDTO,
-            'tenant'   => $tenantDTO,
-            'room'     => $roomDTO,
+            'invoice'         => $dto,
+            'contract'        => $contractDTO,
+            'tenant'          => $tenantDTO,
+            'room'            => $roomDTO,
+            'payments'        => $payments,
+            'payment_summary' => [
+                'total_invoice' => $totalInvoice,
+                'total_paid'    => $totalPaid,
+                'outstanding'   => $outstanding,
+            ],
+        ]);
+    }
+
+    public function lookup(Request $request)
+    {
+        $request->validate([
+            'number' => ['required', 'string'],
+        ]);
+
+        $invoice = Invoice::query()
+            ->with(['contract.tenant:id,name'])
+            ->where('number', $request->string('number'))
+            ->first();
+        /** @var \App\Models\Invoice|null $invoice */
+
+        if (!$invoice) {
+            return response()->json(['message' => 'Invoice tidak ditemukan'], 404);
+        }
+
+        $totalInvoice = (int) $invoice->amount_cents;
+        $totalPaid    = (int) $invoice->payments()
+            ->where('status', PaymentStatus::COMPLETED->value)
+            ->sum('amount_cents');
+        $outstanding = (int) ($invoice->outstanding_cents ?? max(0, $totalInvoice - $totalPaid));
+
+        $eligibleStatus = in_array((string) $invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true);
+
+        /** @var \App\Models\Contract|null $lc */
+        $lc = $invoice->contract;
+        /** @var \App\Models\User|null $lt */
+        $lt = $lc?->tenant;
+
+        return response()->json([
+            'id'          => (string) $invoice->id,
+            'number'      => $invoice->number,
+            'amount'      => (int) $invoice->amount_cents,
+            'status'      => (string) $invoice->status->value,
+            'tenant_name' => $lt?->name,
+            'outstanding' => $outstanding,
+            'eligible'    => $eligibleStatus && $outstanding > 0,
         ]);
     }
 
@@ -181,19 +257,16 @@ class InvoiceManagementController extends Controller
         $data     = $request->validated();
         $contract = Contract::findOrFail($data['contract_id']);
 
-        // Business validation: contract must not be Cancelled or Completed
         if (in_array((string) $contract->status->value, [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value], true)) {
             return back()->with('error', 'Kontrak tidak valid untuk generate invoice.');
         }
 
-        // Enforce mode based on billing period: daily/weekly must be full
         $period  = (string) $contract->billing_period->value;
         $mode    = (string) $data['mode'];
         $options = [];
         $range   = $data['range'] ?? null;
         if (is_array($range) && (!empty($range['from']) && !empty($range['to']))) {
             $options = ['range' => ['from' => (string) $range['from'], 'to' => (string) $range['to']]];
-            // mode ignored when range provided
         } elseif (in_array($period, [BillingPeriod::DAILY->value, BillingPeriod::WEEKLY->value], true)) {
             $mode    = 'full';
             $options = ['full' => true];
@@ -202,12 +275,13 @@ class InvoiceManagementController extends Controller
             if ($periodMonth === '') {
                 return back()->with('error', 'Bulan periode wajib dipilih untuk mode Bulanan.');
             }
-            // Ensure selected month within contract duration
+
             try {
                 $monthStart = Carbon::createFromFormat('Y-m', $periodMonth)->startOfMonth();
             } catch (\Throwable $e) {
                 return back()->with('error', 'Format bulan periode tidak valid.');
             }
+
             $contractStart = Carbon::parse($contract->start_date)->startOfDay();
             $contractEnd   = Carbon::parse($contract->end_date)->startOfDay();
             if ($monthStart->greaterThan($contractEnd) || $monthStart->lessThan($contractStart->startOfMonth())) {
@@ -215,7 +289,6 @@ class InvoiceManagementController extends Controller
             }
             $options = ['month' => $periodMonth];
         } else {
-            // Monthly + full
             $options = ['full' => true];
         }
 
@@ -237,7 +310,6 @@ class InvoiceManagementController extends Controller
             ],
         );
 
-        // Redirect back to index; dialog can be opened manually if needed.
         return redirect()->route('management.invoices.index')->with('success', 'Invoice berhasil dibuat.');
     }
 
@@ -298,7 +370,6 @@ class InvoiceManagementController extends Controller
         $data   = $request->validated();
         $reason = (string) ($data['reason'] ?? '');
 
-        // Only allow Pending or Overdue
         if (!in_array((string) $invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true)) {
             return back()->with('error', 'Hanya invoice Pending atau Overdue yang dapat diperpanjang.');
         }

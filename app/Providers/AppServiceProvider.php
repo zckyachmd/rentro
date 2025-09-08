@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\InvoicePaid;
+use App\Events\InvoiceReopened;
+use App\Listeners\UpdateContractStatusOnInvoicePaid;
+use App\Listeners\UpdateContractStatusOnInvoiceReopened;
 use App\Services\Contracts\ContractServiceInterface;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\MenuServiceInterface;
@@ -10,6 +14,7 @@ use App\Services\ContractService;
 use App\Services\InvoiceService;
 use App\Services\MenuService;
 use App\Services\TwoFactorService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,5 +37,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // Domain events registration
+        Event::listen(InvoicePaid::class, UpdateContractStatusOnInvoicePaid::class);
+        Event::listen(InvoiceReopened::class, UpdateContractStatusOnInvoiceReopened::class);
     }
 }

@@ -1,7 +1,15 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Clock3, Eye, FileDown, MoreHorizontal, XCircle } from 'lucide-react';
+import {
+    ClipboardCopy,
+    Clock3,
+    Eye,
+    Printer,
+    MoreHorizontal,
+    Receipt,
+    XCircle,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,12 +23,14 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
+import { variantForInvoiceStatus } from '@/lib/status';
 
 type BaseInvoiceRow = {
     id: string;
     number: string;
     due_date: string;
     amount_cents: number;
+    outstanding?: number;
     status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
     tenant?: string | null;
     room_number?: string | null;
@@ -39,6 +49,7 @@ const COL = {
     due: 'shrink-0 w-[114px] md:w-[140px]',
     status: 'shrink-0 w-[110px] md:w-[130px]',
     amount: 'shrink-0 w-[130px] md:w-[160px] text-right',
+    outstanding: 'shrink-0 w-[130px] md:w-[160px] text-right',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 } as const;
 
@@ -59,9 +70,21 @@ export const createColumns = <T extends BaseInvoiceRow>(
                         className="text-left font-mono text-xs hover:underline"
                         onClick={() => opts?.onShowDetail?.(inv)}
                         aria-label={`Lihat detail ${inv.number}`}
+                        title="Lihat detail"
                     >
                         {inv.number}
                     </button>
+                    <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="js-copy h-7 w-7"
+                        data-clipboard-text={inv.number}
+                        aria-label="Salin nomor invoice"
+                        title="Salin"
+                    >
+                        <ClipboardCopy className="h-4 w-4" />
+                    </Button>
                 </div>
             );
         },
@@ -101,17 +124,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
         className: COL.status,
         cell: ({ row }) => (
             <div className={COL.status}>
-                <Badge
-                    variant={
-                        row.original.status === 'Paid'
-                            ? 'default'
-                            : row.original.status === 'Overdue'
-                              ? 'destructive'
-                              : row.original.status === 'Cancelled'
-                                ? 'outline'
-                                : 'secondary'
-                    }
-                >
+                <Badge variant={variantForInvoiceStatus(row.original.status)}>
                     {row.original.status}
                 </Badge>
             </div>
@@ -125,6 +138,16 @@ export const createColumns = <T extends BaseInvoiceRow>(
         cell: ({ row }) => (
             <div className={COL.amount}>
                 {formatIDR(row.original.amount_cents)}
+            </div>
+        ),
+    }),
+    makeColumn<T>({
+        id: 'outstanding',
+        title: 'Sisa',
+        className: COL.outstanding,
+        cell: ({ row }) => (
+            <div className={COL.outstanding}>
+                {formatIDR(Math.max(0, row.original.outstanding ?? 0))}
             </div>
         ),
     }),
@@ -155,12 +178,20 @@ export const createColumns = <T extends BaseInvoiceRow>(
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                                 <a
+                                    href={`${route('management.payments.index')}?search=${encodeURIComponent(inv.number)}`}
+                                >
+                                    <Receipt className="mr-2 h-4 w-4" /> Lihat
+                                    Pembayaran
+                                </a>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <a
                                     href={`${route('management.invoices.print', inv.id)}?auto=1`}
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    <FileDown className="mr-2 h-4 w-4" /> Cetak
-                                    PDF
+                                    <Printer className="mr-2 h-4 w-4" /> Cetak
+                                    Invoice
                                 </a>
                             </DropdownMenuItem>
                             {(inv.status === 'Pending' ||
@@ -172,16 +203,18 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                     Perpanjang jatuh tempo
                                 </DropdownMenuItem>
                             )}
-                            <DropdownMenuSeparator />
                             {(inv.status === 'Pending' ||
                                 inv.status === 'Overdue') && (
-                                <DropdownMenuItem
-                                    className="text-red-600 focus:text-red-600"
-                                    onClick={() => opts?.onCancel?.(inv)}
-                                >
-                                    <XCircle className="mr-2 h-4 w-4" />{' '}
-                                    Batalkan
-                                </DropdownMenuItem>
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="text-red-600 focus:text-red-600"
+                                        onClick={() => opts?.onCancel?.(inv)}
+                                    >
+                                        <XCircle className="mr-2 h-4 w-4" />{' '}
+                                        Batalkan
+                                    </DropdownMenuItem>
+                                </>
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>

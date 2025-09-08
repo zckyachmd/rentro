@@ -21,6 +21,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
+import { variantForContractStatus } from '@/lib/status';
 
 const CS = {
     PENDING_PAYMENT: 'Pending Payment',
@@ -57,15 +58,6 @@ const COL = {
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 };
 
-const statusColor: Record<
-    string,
-    'default' | 'secondary' | 'destructive' | 'outline'
-> = {
-    Draft: 'outline',
-    Active: 'default',
-    Completed: 'secondary',
-    Cancelled: 'destructive',
-};
 
 export type ColumnFactoryOptions = {
     onCancel?: (c: ContractItem) => void;
@@ -138,7 +130,7 @@ export const createColumns = (
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.status}>
-                <Badge variant={statusColor[row.original.status] ?? 'outline'}>
+                <Badge variant={variantForContractStatus(row.original.status)}>
                     {row.original.status}
                 </Badge>
             </div>

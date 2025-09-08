@@ -1,11 +1,10 @@
-<!doctype html>
-<html lang="id">
+@extends('pdf.layout')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Invoice {{ $invoice['number'] ?? '-' }}</title>
+@section('title', 'Invoice ' . ($invoice['number'] ?? '-'))
+
+@push('pdf-styles')
+<style>
+    @page { margin: 24px 28px; }
     <style>
         @page {
             margin: 24px 28px;
@@ -229,14 +228,19 @@
             font-size: 11px;
         }
     </style>
-    @if(!empty($autoPrint))
-    <script>
-        window.addEventListener('load', function(){
-                try { window.print(); } catch (e) {}
-            });
-    </script>
-    @endif
-    <?php
+@endpush
+
+@push('pdf-scripts')
+@if(!empty($autoPrint))
+<script>
+    window.addEventListener('load', function(){
+            try { window.print(); } catch (e) {}
+        });
+</script>
+@endif
+@endpush
+
+@php
         $fmt = fn($n) => 'Rp ' . number_format((int) $n, 0, ',', '.');
         $appName = config('app.name');
         $appUrl  = rtrim((string) config('app.url'), '/');
@@ -259,10 +263,9 @@
                 return (string) $dateStr;
             }
         };
-    ?>
-</head>
+@endphp
 
-<body>
+@section('content')
     <div class="container">
         <!-- Header: Application info (left) and Invoice meta (right) on the same line -->
         <div class="header header-row">
@@ -387,6 +390,4 @@
 
         <div class="footer">{{ $appName }} — {{ $appUrl }} • Dicetak pada {{ now()->format('Y-m-d H:i') }}</div>
     </div>
-</body>
-
-</html>
+@endsection

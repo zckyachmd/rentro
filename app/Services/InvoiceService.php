@@ -519,15 +519,16 @@ class InvoiceService implements InvoiceServiceInterface
         $amount = Invoice::sumItems($items);
 
         return Invoice::create([
-            'contract_id'  => $contract->id,
-            'number'       => Invoice::makeNumber(),
-            'period_start' => $periodStart->toDateString(),
-            'period_end'   => $periodEnd->toDateString(),
-            'due_date'     => $dueDateTime,
-            'amount_cents' => $amount,
-            'items'        => $items,
-            'status'       => InvoiceStatus::PENDING,
-            'paid_at'      => null,
+            'contract_id'       => $contract->id,
+            'number'            => Invoice::makeNumber(),
+            'period_start'      => $periodStart->toDateString(),
+            'period_end'        => $periodEnd->toDateString(),
+            'due_date'          => $dueDateTime,
+            'amount_cents'      => $amount,
+            'outstanding_cents' => $amount,
+            'items'             => $items,
+            'status'            => InvoiceStatus::PENDING,
+            'paid_at'           => null,
         ]);
     }
 

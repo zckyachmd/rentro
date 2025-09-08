@@ -16,12 +16,14 @@ return new class extends Migration
             $table->string('method', 30)->default(PaymentMethod::CASH->value)->index();
             $table->string('status', 20)->default(PaymentStatus::PENDING->value)->index();
             $table->unsignedBigInteger('amount_cents');
+            $table->unsignedBigInteger('pre_outstanding_cents')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->string('reference', 100)->nullable();
             $table->string('provider', 50)->nullable();
             $table->string('va_number', 50)->nullable();
             $table->timestamp('va_expired_at')->nullable();
             $table->json('meta')->nullable();
+            $table->text('note')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
@@ -35,4 +37,3 @@ return new class extends Migration
         Schema::dropIfExists('payments');
     }
 };
-

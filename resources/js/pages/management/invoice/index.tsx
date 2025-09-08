@@ -48,6 +48,7 @@ type InvoiceRow = {
     number: string;
     due_date: string;
     amount_cents: number;
+    outstanding?: number;
     status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
     tenant?: string | null;
     room_number?: string | null;

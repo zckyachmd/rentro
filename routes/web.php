@@ -187,18 +187,25 @@ Route::middleware('auth')->group(function (): void {
                 ->name('index');
             Route::get('/{invoice}', [InvoiceManagementController::class, 'show'])
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->whereNumber('invoice')
                 ->name('show');
+            Route::get('/lookup', [InvoiceManagementController::class, 'lookup'])
+                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->name('lookup');
             Route::post('/generate', [InvoiceManagementController::class, 'generate'])
                 ->middleware('can:' . PermissionName::INVOICE_CREATE->value)
                 ->name('generate');
             Route::get('/{invoice}/print', [InvoiceManagementController::class, 'print'])
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->whereNumber('invoice')
                 ->name('print');
             Route::post('/{invoice}/extend-due', [InvoiceManagementController::class, 'extendDue'])
                 ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->whereNumber('invoice')
                 ->name('extendDue');
             Route::post('/{invoice}/cancel', [InvoiceManagementController::class, 'cancel'])
                 ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->whereNumber('invoice')
                 ->name('cancel');
         });
 
@@ -207,15 +214,21 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/', [PaymentManagementController::class, 'index'])
                 ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
                 ->name('index');
+            Route::get('/{payment}', [PaymentManagementController::class, 'show'])
+                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
+                ->name('show');
             Route::post('/', [PaymentManagementController::class, 'store'])
                 ->middleware('can:' . PermissionName::PAYMENT_CREATE->value)
                 ->name('store');
-            Route::put('/{payment}', [PaymentManagementController::class, 'update'])
+            Route::get('/{payment}/attachment', [PaymentManagementController::class, 'attachment'])
+                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
+                ->name('attachment');
+            Route::get('/{payment}/print', [PaymentManagementController::class, 'print'])
+                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
+                ->name('print');
+            Route::post('/{payment}/void', [PaymentManagementController::class, 'void'])
                 ->middleware('can:' . PermissionName::PAYMENT_UPDATE->value)
-                ->name('update');
-            Route::delete('/{payment}', [PaymentManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::PAYMENT_DELETE->value)
-                ->name('destroy');
+                ->name('void');
         });
 
         // Rooms

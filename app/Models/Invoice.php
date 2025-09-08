@@ -29,19 +29,21 @@ class Invoice extends Model
         'period_end',
         'due_date',
         'amount_cents',
+        'outstanding_cents',
         'items',
         'status',
         'paid_at',
     ];
 
     protected $casts = [
-        'period_start' => 'date',
-        'period_end'   => 'date',
-        'due_date'     => 'date',
-        'paid_at'      => 'datetime',
-        'amount_cents' => 'integer',
-        'items'        => 'array',
-        'status'       => InvoiceStatus::class,
+        'period_start'      => 'date',
+        'period_end'        => 'date',
+        'due_date'          => 'date',
+        'paid_at'           => 'datetime',
+        'amount_cents'      => 'integer',
+        'outstanding_cents' => 'integer',
+        'items'             => 'array',
+        'status'            => InvoiceStatus::class,
     ];
 
     public function contract(): BelongsTo
