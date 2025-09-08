@@ -23,7 +23,9 @@ use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
+use App\Http\Controllers\Webhook\MidtransWebhookController;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -118,9 +120,15 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/{invoice}/print', [TenantInvoiceController::class, 'print'])
                 ->whereNumber('invoice')
                 ->name('print');
-            Route::post('/{invoice}/pay/midtrans', [TenantMidtransController::class, 'pay'])
+            Route::get('/{invoice}/pay/status', [TenantMidtransController::class, 'status'])
                 ->whereNumber('invoice')
-                ->name('pay.midtrans');
+                ->name('pay.status');
+            Route::post('/{invoice}/pay/midtrans/va', [TenantMidtransController::class, 'payVa'])
+                ->whereNumber('invoice')
+                ->name('pay.midtrans.va');
+            Route::post('/{invoice}/pay/midtrans/qris', [TenantMidtransController::class, 'payQris'])
+                ->whereNumber('invoice')
+                ->name('pay.midtrans.qris');
         });
     });
 
@@ -384,7 +392,20 @@ Route::middleware('auth')->group(function (): void {
     });
 });
 
-require __DIR__ . '/auth.php';
+// Midtrans redirect endpoints
+Route::prefix('payments/midtrans')->name('payments.midtrans.')->group(function (): void {
+    Route::get('/finish', [PaymentRedirectController::class, 'finish'])->name('finish');
+    Route::get('/unfinish', [PaymentRedirectController::class, 'unfinish'])->name('unfinish');
+    Route::get('/error', [PaymentRedirectController::class, 'error'])->name('error');
+});
 
-// Midtrans redirect endpoint (public)
-Route::get('/payments/midtrans/finish', [PaymentRedirectController::class, 'finish'])->name('payments.midtrans.finish');
+// Midtrans webhooks
+Route::prefix('webhooks/midtrans')
+    ->name('webhooks.midtrans.')
+    ->withoutMiddleware([VerifyCsrfToken::class])
+    ->group(function (): void {
+        Route::post('/', [MidtransWebhookController::class, 'handle'])->name('index');
+        Route::post('/recurring', [MidtransWebhookController::class, 'handleRecurring'])->name('recurring');
+    });
+
+require __DIR__ . '/auth.php';

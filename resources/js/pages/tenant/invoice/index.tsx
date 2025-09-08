@@ -1,20 +1,6 @@
 import { Search } from 'lucide-react';
 import React from 'react';
 
-// Types for Midtrans Snap and config
-type SnapCallbacks = {
-    onSuccess: () => void;
-    onPending: () => void;
-    onError: () => void;
-    onClose: () => void;
-};
-
-type Snap = {
-    pay: (token: string, callbacks: SnapCallbacks) => void;
-};
-
-type MidtransConfig = { client_key: string; is_production: boolean };
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -36,6 +22,7 @@ import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns, type TenantInvoiceItem } from './columns';
 import TenantInvoiceDetailDialog from './detail-dialog';
+import TenantInvoicePayDialog from './pay-dialog';
 
 type InvoicesPaginator = { data: TenantInvoiceItem[] } & PaginatorMeta;
 
@@ -43,7 +30,6 @@ type PageProps = {
     invoices?: InvoicesPaginator;
     query?: QueryBag & { status?: string | null; q?: string | null };
     options?: { statuses?: string[] };
-    midtrans?: MidtransConfig;
 };
 
 type QueryInit = Partial<{
@@ -74,7 +60,7 @@ type ServerQuery = {
 };
 
 export default function TenantInvoiceIndex(props: PageProps) {
-    const { invoices: paginator, query = {}, options = {}, midtrans } = props;
+    const { invoices: paginator, query = {}, options = {} } = props;
     const rows: TenantInvoiceItem[] = React.useMemo(
         () => paginator?.data ?? [],
         [paginator?.data],
@@ -154,90 +140,17 @@ export default function TenantInvoiceIndex(props: PageProps) {
         safeOnQueryChange({ page: 1, status: null, q: null } as SafePayload);
     }, [safeOnQueryChange]);
 
-    const ensureSnap = React.useCallback(
-        async (clientKey: string, prod: boolean) => {
-            const snapExisting = (window as Window & { snap?: Snap }).snap;
-            if (snapExisting && typeof snapExisting.pay === 'function') return;
-            const host = prod
-                ? 'https://app.midtrans.com'
-                : 'https://app.sandbox.midtrans.com';
-            await new Promise<void>((resolve, reject) => {
-                const s = document.createElement('script');
-                s.src = host + '/snap/snap.js';
-                s.async = true;
-                s.setAttribute('data-client-key', clientKey);
-                s.onload = () => resolve();
-                s.onerror = () => reject(new Error('Failed to load Snap.js'));
-                document.head.appendChild(s);
-            });
-        },
-        [],
-    );
-
-    const payWithSnap = React.useCallback(
-        async (invoiceId: string) => {
-            const mid = midtrans;
-            if (!mid?.client_key) {
-                alert('Konfigurasi pembayaran belum siap.');
-                return;
-            }
-            try {
-                setProcessing(true);
-                await ensureSnap(mid.client_key, Boolean(mid.is_production));
-                const url = route('tenant.invoices.pay.midtrans', {
-                    invoice: invoiceId,
-                });
-                const token =
-                    (
-                        document.head.querySelector(
-                            'meta[name="csrf-token"]',
-                        ) as HTMLMetaElement
-                    )?.content || '';
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token,
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({}),
-                });
-                if (!res.ok) throw new Error(await res.text());
-                const json = await res.json();
-                const snap = (window as Window & { snap?: Snap }).snap;
-                if (snap && typeof snap.pay === 'function' && json.token) {
-                    snap.pay(json.token, {
-                        onSuccess: () => window.location.reload(),
-                        onPending: () => window.location.reload(),
-                        onError: () => window.location.reload(),
-                        onClose: () => {},
-                    });
-                } else if (json.redirect_url) {
-                    window.location.href = json.redirect_url;
-                } else {
-                    alert(
-                        'Transaksi dibuat, tetapi token Snap tidak tersedia.',
-                    );
-                }
-            } catch (e) {
-                console.error(e);
-                alert('Gagal memulai pembayaran.');
-            } finally {
-                setProcessing(false);
-            }
-        },
-        [ensureSnap, midtrans],
-    );
+    // Pay dialog approach; keep here for future when needed
 
     const [detail, setDetail] = React.useState<null | {
         id: string;
         number: string;
     }>(null);
+    const [pay, setPay] = React.useState<null | { id: string; number: string }>(null);
     const columns = React.useMemo(
         () =>
             createColumns({
-                onPay: (row) => payWithSnap(row.id),
+                onPay: (row) => setPay({ id: row.id, number: row.number }),
                 onView: (row) => setDetail({ id: row.id, number: row.number }),
                 onPrint: (row) =>
                     window.open(
@@ -245,7 +158,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
                         '_blank',
                     ),
             }),
-        [payWithSnap],
+        [],
     );
 
     return (
@@ -348,6 +261,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
                     target={detail}
                     onClose={() => setDetail(null)}
                 />
+                <TenantInvoicePayDialog target={pay} onClose={() => setPay(null)} />
             </div>
         </AuthLayout>
     );

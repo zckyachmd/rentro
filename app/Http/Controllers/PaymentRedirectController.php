@@ -26,4 +26,14 @@ class PaymentRedirectController extends Controller
     {
         return $this->renderResult($request, 'finish');
     }
+
+    public function unfinish(Request $request)
+    {
+        return $this->renderResult($request, 'unfinish');
+    }
+
+    public function error(Request $request)
+    {
+        return $this->renderResult($request, 'error');
+    }
 }

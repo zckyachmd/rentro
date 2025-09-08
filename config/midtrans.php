@@ -13,4 +13,7 @@ return [
         'connect' => (int) env('MIDTRANS_CONNECT_TIMEOUT', 10),
         'total'   => (int) env('MIDTRANS_TOTAL_TIMEOUT', 30),
     ],
+
+    // Optional: Set default expiry for VA/QRIS (in minutes). 0 to disable.
+    'expiry_minutes' => (int) env('MIDTRANS_EXPIRY_MINUTES', 0),
 ];
