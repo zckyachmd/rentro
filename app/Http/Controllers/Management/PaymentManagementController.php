@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Services\PaymentService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -89,7 +90,7 @@ class PaymentManagementController extends Controller
                 'method' => $request->query('method'),
             ],
             'options' => [
-                'methods'  => PaymentMethod::options(true), // exclude VA for manual creation
+                'methods'  => PaymentMethod::options(true),
                 'statuses' => array_map(fn ($c) => $c->value, PaymentStatus::cases()),
             ],
             'query' => [
@@ -109,7 +110,6 @@ class PaymentManagementController extends Controller
         $data    = $request->validated();
         $invoice = Invoice::findOrFail($data['invoice_id']);
 
-        // Server-side guard: prevent overpayment and ensure there is outstanding
         $totalPaid = (int) $invoice->payments()
             ->where('status', PaymentStatus::COMPLETED->value)
             ->sum('amount_cents');
@@ -147,12 +147,11 @@ class PaymentManagementController extends Controller
         return back()->with('success', 'Pembayaran berhasil dicatat.');
     }
 
-    public function void(Request $request, Payment $payment)
+    public function void(\Illuminate\Http\Request $request, Payment $payment)
     {
         $request->validate([
-            'reason' => ['nullable', 'string', 'max:200'],
+            'reason' => ['nullable', new \App\Rules\Reason(0, 200)],
         ]);
-
         if ($payment->status === PaymentStatus::CANCELLED) {
             return back()->with('info', 'Pembayaran sudah dibatalkan sebelumnya.');
         }
@@ -171,8 +170,6 @@ class PaymentManagementController extends Controller
 
         return back()->with('success', 'Pembayaran dibatalkan (void) dan sisa tagihan dipulihkan.');
     }
-
-    // Penghapusan pembayaran dinonaktifkan; gunakan void()
 
     public function show(Request $request, Payment $payment)
     {
@@ -195,38 +192,38 @@ class PaymentManagementController extends Controller
 
             return response()->json([
                 'payment' => [
-                'id'                     => (string) $payment->id,
-                'method'                 => (string) $payment->method->value,
-                'status'                 => (string) $payment->status->value,
-                'amount_cents'           => (int) $payment->amount_cents,
-                'paid_at'                => $payment->paid_at?->toDateTimeString(),
-                'reference'              => $payment->reference,
-                'provider'               => $payment->provider,
-                'note'                   => $payment->note,
-                'recorded_by'            => (string) ($payment->meta['recorded_by'] ?? ''),
-                'attachment'             => (string) ($payment->meta['evidence_path'] ?? ''),
-                'attachment_name'        => (string) (($payment->meta['evidence_path'] ?? '') ? basename((string) $payment->meta['evidence_path']) : ''),
-                'attachment_uploaded_at' => (string) ($payment->meta['evidence_uploaded_at'] ?? ''),
-                'pre_outstanding_cents'  => (int) ($payment->pre_outstanding_cents ?? 0),
+                    'id'                     => (string) $payment->id,
+                    'method'                 => (string) $payment->method->value,
+                    'status'                 => (string) $payment->status->value,
+                    'amount_cents'           => (int) $payment->amount_cents,
+                    'paid_at'                => $payment->paid_at?->toDateTimeString(),
+                    'reference'              => $payment->reference,
+                    'provider'               => $payment->provider,
+                    'note'                   => $payment->note,
+                    'recorded_by'            => (string) ($payment->meta['recorded_by'] ?? ''),
+                    'attachment'             => (string) ($payment->meta['evidence_path'] ?? ''),
+                    'attachment_name'        => (string) (($payment->meta['evidence_path'] ?? '') ? basename((string) $payment->meta['evidence_path']) : ''),
+                    'attachment_uploaded_at' => (string) ($payment->meta['evidence_uploaded_at'] ?? ''),
+                    'pre_outstanding_cents'  => (int) ($payment->pre_outstanding_cents ?? 0),
                 ],
                 'invoice' => $inv ? [
-                'id'           => (string) $inv->getAttribute('id'),
-                'number'       => (string) $inv->getAttribute('number'),
-                'amount_cents' => (int) $inv->getAttribute('amount_cents'),
-                'due_date'     => $inv->due_date ? $inv->due_date->toDateString() : null,
-                'status'       => (string) $inv->status->value,
-                'paid_at'      => $inv->paid_at?->toDateTimeString(),
+                    'id'           => (string) $inv->getAttribute('id'),
+                    'number'       => (string) $inv->getAttribute('number'),
+                    'amount_cents' => (int) $inv->getAttribute('amount_cents'),
+                    'due_date'     => $inv->due_date ? $inv->due_date->toDateString() : null,
+                    'status'       => (string) $inv->status->value,
+                    'paid_at'      => $inv->paid_at?->toDateTimeString(),
                 ] : null,
                 'tenant' => $tenant ? [
-                'id'    => (string) $tenant->getAttribute('id'),
-                'name'  => (string) $tenant->getAttribute('name'),
-                'email' => (string) $tenant->getAttribute('email'),
-                'phone' => (string) $tenant->getAttribute('phone'),
+                    'id'    => (string) $tenant->getAttribute('id'),
+                    'name'  => (string) $tenant->getAttribute('name'),
+                    'email' => (string) $tenant->getAttribute('email'),
+                    'phone' => (string) $tenant->getAttribute('phone'),
                 ] : null,
                 'room' => $room ? [
-                'id'     => (string) $room->getAttribute('id'),
-                'number' => (string) $room->getAttribute('number'),
-                'name'   => (string) $room->getAttribute('name'),
+                    'id'     => (string) $room->getAttribute('id'),
+                    'number' => (string) $room->getAttribute('number'),
+                    'name'   => (string) $room->getAttribute('name'),
                 ] : null,
             ]);
         }
@@ -260,19 +257,15 @@ class PaymentManagementController extends Controller
 
         $items        = $invoice ? (array) ($invoice->items ?? []) : [];
         $totalInvoice = $invoice ? (int) $invoice->amount_cents : 0;
-        $totalPaidAll = $invoice ? (int) $invoice->payments()->where('status', PaymentStatus::COMPLETED->value)->sum('amount_cents') : 0;
         $currentPaid  = (int) $payment->amount_cents;
 
-        // Compute snapshot values for this payment
         if ($invoice) {
             $preOutstanding = $payment->pre_outstanding_cents;
             if ($preOutstanding === null) {
-                // Fallback for legacy rows: compute paid before this payment, based on paid_at when possible
                 $query = $invoice->payments()->where('status', PaymentStatus::COMPLETED->value);
                 if ($payment->paid_at) {
                     $query->where('paid_at', '<', $payment->paid_at);
                 } else {
-                    // fallback by id ordering if paid_at null
                     $query->where('id', '<', $payment->id);
                 }
                 $paidBefore     = (int) $query->sum('amount_cents');
@@ -283,7 +276,7 @@ class PaymentManagementController extends Controller
             $preOutstanding  = 0;
             $postOutstanding = 0;
         }
-        // Prefer meta recorded info (name only). Fallback to activity log.
+
         $recordedName = $payment->meta['recorded_by'] ?? null;
         if (!$recordedName) {
             try {
@@ -330,10 +323,10 @@ class PaymentManagementController extends Controller
             'recorded_by' => $recordedBy,
         ])->render();
 
-        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+        if (class_exists(Pdf::class)) {
             try {
                 /** @var \Barryvdh\DomPDF\PDF $pdf */
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+                $pdf = Pdf::loadHTML($html);
                 // Set custom receipt paper size (80mm width x ~500mm height)
                 $w = 80 * 72.0 / 25.4; // mm to pt
                 $h = 500 * 72.0 / 25.4; // generous height to keep one page
@@ -359,7 +352,6 @@ class PaymentManagementController extends Controller
         try {
             return response()->file($absolute);
         } catch (\Throwable $e) {
-            // Fallback to download response
             $content = Storage::get($path);
             $mime    = Storage::mimeType($path) ?: 'application/octet-stream';
 

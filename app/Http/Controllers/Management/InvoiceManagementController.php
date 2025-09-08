@@ -7,7 +7,7 @@ use App\Enum\ContractStatus;
 use App\Enum\InvoiceStatus;
 use App\Enum\PaymentStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Management\Invoice\CancelInvoiceRequest;
+use App\Http\Requests\Common\ReasonRequest;
 use App\Http\Requests\Management\Invoice\ExtendDueRequest;
 use App\Http\Requests\Management\Invoice\GenerateInvoiceRequest;
 use App\Models\AppSetting;
@@ -417,7 +417,7 @@ class InvoiceManagementController extends Controller
         return back()->with('success', 'Masa tenggat invoice berhasil diperpanjang.');
     }
 
-    public function cancel(CancelInvoiceRequest $request, Invoice $invoice)
+    public function cancel(ReasonRequest $request, Invoice $invoice)
     {
         $prev = (string) $invoice->status->value;
 

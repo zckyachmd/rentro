@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Management\User;
 
 use App\Enum\RoleName;
+use App\Rules\Reason;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ForceLogoutRequest extends FormRequest
@@ -40,7 +41,7 @@ class ForceLogoutRequest extends FormRequest
     {
         return [
             'scope'  => ['required', 'in:all,all_except_current'],
-            'reason' => ['nullable', 'string', 'max:500'],
+            'reason' => ['nullable', new Reason(0)],
         ];
     }
 

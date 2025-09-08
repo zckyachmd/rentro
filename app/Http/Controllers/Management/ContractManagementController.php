@@ -8,6 +8,7 @@ use App\Enum\InvoiceStatus;
 use App\Enum\RoleName;
 use App\Enum\RoomStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Common\ReasonRequest;
 use App\Http\Requests\Management\Contract\SetAutoRenewRequest;
 use App\Http\Requests\Management\Contract\StoreContractRequest;
 use App\Models\AppSetting;
@@ -309,7 +310,7 @@ class ContractManagementController extends Controller
         ]);
     }
 
-    public function cancel(Request $request, Contract $contract)
+    public function cancel(ReasonRequest $request, Contract $contract)
     {
         if (!in_array($contract->status, [ContractStatus::PENDING_PAYMENT, ContractStatus::BOOKED], true)) {
             return back()->with('error', 'Kontrak tidak dapat dibatalkan. Hanya kontrak Pending Payment atau Booked yang dapat dibatalkan.');
@@ -322,6 +323,9 @@ class ContractManagementController extends Controller
             return back()->with('error', 'Kontrak tidak dapat dibatalkan karena sudah ada invoice yang lunas.');
         }
 
+        $data   = $request->validated();
+        $reason = (string) ($data['reason'] ?? '');
+
         $this->contracts->cancel($contract);
         $contract->refresh();
 
@@ -330,6 +334,9 @@ class ContractManagementController extends Controller
                 event: 'contract_cancelled',
                 causer: $request->user(),
                 subject: $contract,
+                properties: [
+                    'reason' => $reason,
+                ],
             );
 
             return back()->with('success', 'Kontrak dibatalkan.');

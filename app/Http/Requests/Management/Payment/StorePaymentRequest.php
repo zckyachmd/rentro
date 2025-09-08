@@ -8,17 +8,14 @@ class StorePaymentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null;
     }
 
     public function rules(): array
     {
         return [
-            'invoice_id' => ['required', 'integer', 'exists:invoices,id'],
-            // Admin manual: Cash or Transfer
-            'method' => ['required', 'in:Cash,Transfer'],
-            // Let backend decide final status (manual => Completed)
-            'status'        => ['sometimes', 'in:Pending,Completed,Failed,Cancelled'],
+            'invoice_id'    => ['required', 'integer', 'exists:invoices,id'],
+            'method'        => ['required', 'in:Cash,Transfer'],
             'amount_cents'  => ['required', 'integer', 'min:1'],
             'paid_at'       => ['nullable', 'date'],
             'provider'      => ['nullable', 'string', 'max:50'],

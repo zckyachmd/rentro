@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/data-table-server';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -156,6 +157,7 @@ export default function ContractIndex(props: ContractsPageProps) {
 
     type Target = ContractItem | null;
     const [cancelTarget, setCancelTarget] = React.useState<Target>(null);
+    const [cancelReason, setCancelReason] = React.useState<string>('');
     const [toggleTarget, setToggleTarget] = React.useState<Target>(null);
 
     const tableColumns = React.useMemo(
@@ -287,7 +289,12 @@ export default function ContractIndex(props: ContractsPageProps) {
             {/* Cancel Contract Dialog */}
             <AlertDialog
                 open={!!cancelTarget}
-                onOpenChange={(v) => !v && setCancelTarget(null)}
+                onOpenChange={(v) => {
+                    if (!v) {
+                        setCancelTarget(null);
+                        setCancelReason('');
+                    }
+                }}
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -297,9 +304,26 @@ export default function ContractIndex(props: ContractsPageProps) {
                             akan menjadi Cancelled dan auto‑renew dimatikan.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="space-y-2 py-2">
+                        <Label>Alasan pembatalan</Label>
+                        <Textarea
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                            placeholder="Contoh: pembatalan oleh tenant, salah input, dll."
+                            required
+                            rows={3}
+                            autoFocus
+                            maxLength={200}
+                        />
+                        <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+                            <span>Wajib diisi. Jelaskan secara singkat.</span>
+                            <span>{cancelReason.length}/200</span>
+                        </div>
+                    </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
+                            disabled={!cancelReason.trim()}
                             onClick={() => {
                                 const c = cancelTarget;
                                 if (!c) return;
@@ -307,10 +331,13 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     route('management.contracts.cancel', {
                                         contract: c.id,
                                     }),
-                                    {},
+                                    { reason: cancelReason },
                                     {
                                         preserveScroll: true,
-                                        onFinish: () => setCancelTarget(null),
+                                        onFinish: () => {
+                                            setCancelTarget(null);
+                                            setCancelReason('');
+                                        },
                                     },
                                 );
                             }}
