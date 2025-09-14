@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Search } from 'lucide-react';
+import { AlertTriangle, Search } from 'lucide-react';
 import React from 'react';
 
 import {
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     DataTableServer,
     type PaginatorMeta,
@@ -39,7 +40,10 @@ type ContractsPaginator = { data: TenantContractItem[] } & PaginatorMeta;
 interface ContractsPageProps {
     contracts?: ContractsPaginator;
     query?: QueryBag & { status?: string | null; q?: string | null };
-    options?: { statuses?: { value: string; label: string }[] };
+    options?: {
+        statuses?: { value: string; label: string }[];
+        forfeit_days?: number;
+    };
 }
 
 type QueryInit = Partial<{
@@ -76,6 +80,10 @@ export default function TenantContractIndex(props: ContractsPageProps) {
     const statuses = React.useMemo(
         () => options.statuses ?? [],
         [options.statuses],
+    );
+    const forfeitDays = React.useMemo(
+        () => Number(options.forfeit_days ?? 7),
+        [options.forfeit_days],
     );
 
     const [status, setStatus] = React.useState<string>(
@@ -153,6 +161,25 @@ export default function TenantContractIndex(props: ContractsPageProps) {
 
     const [stopTarget, setStopTarget] =
         React.useState<TenantContractItem | null>(null);
+    const [ack, setAck] = React.useState(false);
+
+    const daysUntil = (end?: string | null): number | null => {
+        if (!end) return null;
+        const endDate = new Date(end);
+        const today = new Date();
+        const d0 = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate(),
+        );
+        const d1 = new Date(
+            endDate.getFullYear(),
+            endDate.getMonth(),
+            endDate.getDate(),
+        );
+        const diffMs = d1.getTime() - d0.getTime();
+        return Math.max(0, Math.ceil(diffMs / 86_400_000));
+    };
 
     return (
         <AuthLayout
@@ -258,22 +285,130 @@ export default function TenantContractIndex(props: ContractsPageProps) {
 
                 <AlertDialog
                     open={!!stopTarget}
-                    onOpenChange={(v) => !v && setStopTarget(null)}
+                    onOpenChange={(v) => {
+                        if (!v) {
+                            setStopTarget(null);
+                            setAck(false);
+                        }
+                    }}
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>
-                                Hentikan Perpanjangan Otomatis
+                                Nonaktifkan Perpanjangan Otomatis
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                                Konfirmasi untuk menonaktifkan perpanjangan
-                                otomatis kontrak ini. Anda dapat mengaktifkannya
-                                kembali melalui admin.
+                                Apakah Anda yakin ingin menonaktifkan
+                                perpanjangan otomatis kontrak ini? Jika
+                                dinonaktifkan, kontrak tidak akan diperpanjang
+                                secara otomatis setelah berakhir. Untuk
+                                mengaktifkan kembali perpanjangan otomatis,
+                                silakan hubungi admin.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
+
+                        {/* Ringkasan singkat */}
+                        <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                <div className="min-w-0">
+                                    <div className="text-xs text-muted-foreground">
+                                        Tanggal berakhir
+                                    </div>
+                                    <div className="font-medium">
+                                        {stopTarget?.end_date
+                                            ? new Date(
+                                                  stopTarget.end_date,
+                                              ).toLocaleDateString()
+                                            : '-'}
+                                    </div>
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="text-xs text-muted-foreground">
+                                        Sisa hari
+                                    </div>
+                                    <div className="font-mono tabular-nums">
+                                        {(() => {
+                                            const n = daysUntil(
+                                                stopTarget?.end_date,
+                                            );
+                                            return n == null ? '-' : n;
+                                        })()}
+                                    </div>
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="text-xs text-muted-foreground">
+                                        Batas penalti deposit
+                                    </div>
+                                    <div className="font-mono tabular-nums">
+                                        {forfeitDays} hari
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Peringatan / konsekuensi */}
+                        <div className="space-y-3 py-2 text-sm">
+                            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">
+                                <div className="flex items-center gap-2 font-medium">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <span>Hal yang perlu diperhatikan:</span>
+                                </div>
+                                <ul className="mt-2 list-disc space-y-1.5 pl-5">
+                                    <li>
+                                        Tidak ada jaminan perpanjangan jika
+                                        kamar sudah dibooking penyewa lain.
+                                    </li>
+                                    {(() => {
+                                        const d = daysUntil(
+                                            stopTarget?.end_date,
+                                        );
+                                        if (d != null && d < forfeitDays) {
+                                            return (
+                                                <li>
+                                                    Karena kurang dari{' '}
+                                                    {forfeitDays} hari sebelum
+                                                    tanggal berakhir,{' '}
+                                                    <span className="font-semibold">
+                                                        deposit Anda akan hangus
+                                                    </span>{' '}
+                                                    sesuai kebijakan.
+                                                </li>
+                                            );
+                                        }
+                                        return (
+                                            <li>
+                                                Jika penghentian dilakukan
+                                                kurang dari {forfeitDays} hari
+                                                sebelum tanggal berakhir,{' '}
+                                                <span className="font-semibold">
+                                                    deposit akan hangus
+                                                </span>{' '}
+                                                sesuai kebijakan.
+                                            </li>
+                                        );
+                                    })()}
+                                </ul>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                                <Checkbox
+                                    id="ack-stop-auto-renew"
+                                    checked={ack}
+                                    onCheckedChange={(v) => setAck(Boolean(v))}
+                                />
+                                <Label
+                                    htmlFor="ack-stop-auto-renew"
+                                    className="cursor-pointer leading-snug"
+                                >
+                                    Saya telah membaca dan memahami informasi di
+                                    atas.
+                                </Label>
+                            </div>
+                        </div>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Batal</AlertDialogCancel>
                             <AlertDialogAction
+                                disabled={!ack}
                                 onClick={() => {
                                     const c = stopTarget;
                                     if (!c) return;
@@ -283,18 +418,19 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                             'tenant.contracts.stopAutoRenew',
                                             { contract: c.id },
                                         ),
-                                        {},
+                                        { confirm: true },
                                         {
                                             preserveScroll: true,
                                             onFinish: () => {
                                                 setProcessing(false);
                                                 setStopTarget(null);
+                                                setAck(false);
                                             },
                                         },
                                     );
                                 }}
                             >
-                                Hentikan
+                                Nonaktifkan
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

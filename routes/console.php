@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Schedule;
 
+Schedule::command('payments:midtrans-sync')
+    ->name('payments.midtrans-sync')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->runInBackground();
+
 Schedule::command('contracts:mark-overdue')
     ->name('contracts.mark-overdue')
     ->everyFiveMinutes()
@@ -14,8 +20,8 @@ Schedule::command('contracts:cancel-overdue')
     ->withoutOverlapping()
     ->runInBackground();
 
-Schedule::command('payments:midtrans-sync')
-    ->name('payments.midtrans-sync')
+Schedule::command('contracts:activate-due')
+    ->name('contracts.activate-due')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->runInBackground();

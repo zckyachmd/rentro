@@ -10,12 +10,40 @@ use App\Events\InvoiceReopened;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\Contracts\InvoiceServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
+    private function generatePaymentReference(Invoice $invoice): string
+    {
+        $base = (string) ($invoice->number ?? '');
+        if ($base === '') {
+            $base = 'INV-' . now()->format('Ymd') . '-0000';
+        }
+        $prefix = $base . '-P';
+
+        $maxSeq = (int) (\App\Models\Payment::query()
+            ->where('invoice_id', $invoice->id)
+            ->where('reference', 'like', $prefix . '%')
+            ->selectRaw('MAX(CAST(SUBSTRING(reference, -3) AS UNSIGNED)) as max_seq')
+            ->value('max_seq') ?? 0);
+
+        $seq = max(1, $maxSeq + 1);
+        do {
+            $candidate = sprintf('%s%03d', $prefix, $seq);
+            $seq++;
+        } while (\App\Models\Payment::query()->where('reference', $candidate)->exists());
+
+        return $candidate;
+    }
+
+    public function __construct(private readonly InvoiceServiceInterface $invoices)
+    {
+    }
+
     /**
      * Create a payment for the given invoice and recalculate invoice status/outstanding.
      * Handles evidence upload and safe updates in a transaction.
@@ -37,11 +65,8 @@ class PaymentService
 
             $meta = (array) ($data['meta'] ?? []);
 
-            // Compute current outstanding just before creating this payment
-            $totalPaid = (int) $invoice->payments()
-                ->where('status', PaymentStatus::COMPLETED->value)
-                ->sum('amount_cents');
-            $preOutstanding = max(0, (int) $invoice->amount_cents - $totalPaid);
+            $totals         = $this->invoices->totals($invoice);
+            $preOutstanding = (int) $totals['outstanding'];
 
             if ($user) {
                 $meta['recorded_by'] = $meta['recorded_by'] ?? $user->name;
@@ -67,6 +92,10 @@ class PaymentService
                 'meta'                  => $meta ?: null,
                 'note'                  => $data['note'] ?? null,
             ]);
+
+            if (empty($payment->reference)) {
+                $payment->update(['reference' => $this->generatePaymentReference($invoice)]);
+            }
 
             if ($attachment) {
                 $path    = $attachment->store("payments/{$payment->id}");
@@ -124,11 +153,8 @@ class PaymentService
         $invoice->refresh();
         $prevStatus = (string) $invoice->status->value;
 
-        $totalPaid = (int) $invoice->payments()
-            ->where('status', PaymentStatus::COMPLETED->value)
-            ->sum('amount_cents');
-
-        $remaining = max(0, (int) $invoice->amount_cents - $totalPaid);
+        $totals    = $this->invoices->totals($invoice);
+        $remaining = (int) $totals['outstanding'];
 
         if ($remaining <= 0) {
             $latestPaidAt = $invoice->payments()

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\Payment\StorePaymentRequest;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\PaymentService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
@@ -21,7 +22,7 @@ class PaymentManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private readonly PaymentService $payments)
+    public function __construct(private readonly PaymentService $payments, private readonly InvoiceServiceInterface $invoices)
     {
     }
 
@@ -110,10 +111,8 @@ class PaymentManagementController extends Controller
         $data    = $request->validated();
         $invoice = Invoice::findOrFail($data['invoice_id']);
 
-        $totalPaid = (int) $invoice->payments()
-            ->where('status', PaymentStatus::COMPLETED->value)
-            ->sum('amount_cents');
-        $outstanding = max(0, (int) $invoice->amount_cents - $totalPaid);
+        $totals      = $this->invoices->totals($invoice);
+        $outstanding = (int) $totals['outstanding'];
 
         if ($outstanding <= 0) {
             return back()->with('error', 'Invoice sudah lunas.');

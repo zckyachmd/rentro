@@ -199,9 +199,10 @@ class InvoiceManagementController extends Controller
                 ];
             });
 
-        $totalInvoice = (int) $invoice->amount_cents;
-        $totalPaid    = (int) $invoice->payments()->where('status', PaymentStatus::COMPLETED->value)->sum('amount_cents');
-        $outstanding  = (int) ($invoice->outstanding_cents ?? max(0, $totalInvoice - $totalPaid));
+        $totals       = $this->invoices->totals($invoice);
+        $totalInvoice = (int) $totals['total_invoice'];
+        $totalPaid    = (int) $totals['total_paid'];
+        $outstanding  = (int) ($invoice->outstanding_cents ?? $totals['outstanding']);
 
         return response()->json([
             'invoice'         => $dto,
@@ -233,11 +234,8 @@ class InvoiceManagementController extends Controller
             return response()->json(['message' => 'Invoice tidak ditemukan'], 404);
         }
 
-        $totalInvoice = (int) $invoice->amount_cents;
-        $totalPaid    = (int) $invoice->payments()
-            ->where('status', PaymentStatus::COMPLETED->value)
-            ->sum('amount_cents');
-        $outstanding = (int) ($invoice->outstanding_cents ?? max(0, $totalInvoice - $totalPaid));
+        $totals      = $this->invoices->totals($invoice);
+        $outstanding = (int) ($invoice->outstanding_cents ?? $totals['outstanding']);
 
         $eligibleStatus = in_array((string) $invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true);
 

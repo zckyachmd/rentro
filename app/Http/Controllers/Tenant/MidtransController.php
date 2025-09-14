@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ class MidtransController extends Controller
     public function __construct(
         private readonly MidtransGatewayInterface $midtrans,
         private readonly PaymentService $payments,
+        private readonly InvoiceServiceInterface $invoices,
     ) {
     }
 
@@ -51,10 +53,8 @@ class MidtransController extends Controller
             return response()->json(['message' => 'Invoice tidak dapat dibayar pada status ini.'], 422);
         }
 
-        $totalPaid = (int) $invoice->payments()
-            ->where('status', PaymentStatus::COMPLETED->value)
-            ->sum('amount_cents');
-        $outstanding = max(0, (int) $invoice->amount_cents - $totalPaid);
+        $totals      = $this->invoices->totals($invoice);
+        $outstanding = (int) $totals['outstanding'];
         if ($outstanding <= 0) {
             return response()->json(['message' => 'Invoice sudah lunas.'], 422);
         }

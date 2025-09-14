@@ -17,6 +17,27 @@ use Illuminate\Support\Facades\Log;
 class InvoiceService implements InvoiceServiceInterface
 {
     /**
+     * Hitung ringkasan pembayaran untuk sebuah invoice.
+     * Mengembalikan total tagihan, total dibayar (Completed), dan outstanding.
+     *
+     * @return array{total_invoice:int,total_paid:int,outstanding:int}
+     */
+    public function totals(Invoice $invoice): array
+    {
+        $totalInvoice = (int) $invoice->amount_cents;
+        $totalPaid    = (int) $invoice->payments()
+            ->where('status', PaymentStatus::COMPLETED->value)
+            ->sum('amount_cents');
+        $outstanding = max(0, $totalInvoice - $totalPaid);
+
+        return [
+            'total_invoice' => $totalInvoice,
+            'total_paid'    => $totalPaid,
+            'outstanding'   => $outstanding,
+        ];
+    }
+
+    /**
      * Ambil konfigurasi billing sekali (prorata, releaseDom, dueHours).
      * @return array{prorata:bool,releaseDom:int,dueHours:int}
      */
@@ -520,7 +541,7 @@ class InvoiceService implements InvoiceServiceInterface
 
         return Invoice::create([
             'contract_id'       => $contract->id,
-            'number'            => Invoice::makeNumber(),
+            'number'            => Invoice::makeNumberFor($amount, Carbon::now()),
             'period_start'      => $periodStart->toDateString(),
             'period_end'        => $periodEnd->toDateString(),
             'due_date'          => $dueDateTime,

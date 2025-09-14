@@ -119,12 +119,28 @@ class Invoice extends Model
     }
 
     /**
-     * Generate unique invoice number (INV-YYYYMM-XXXXXX).
+     * Generate invoice number with format: INV-YYYYMMDD-SEQ
+     * - YYYYMMDD: release date (today by default)
+     * - SEQ: running sequence for that day, zero-padded 4 digits (0001)
+     * Ensures uniqueness by checking existing numbers with the same prefix.
+     *
+     * Note: Signature keeps $amountCents for backward compatibility; it is ignored.
      */
-    public static function makeNumber(): string
+    public static function makeNumberFor(int $amountCents, ?Carbon $date = null): string
     {
+        $d       = ($date ?? now())->copy();
+        $dateStr = $d->format('Ymd');
+        $prefix  = 'INV-' . $dateStr . '-';
+
+        $maxSeq = (int) (static::query()
+            ->selectRaw('MAX(CAST(SUBSTRING(number, -4) AS UNSIGNED)) as max_seq')
+            ->value('max_seq') ?? 0);
+
+        $seq = max(1, $maxSeq + 1);
+
         do {
-            $candidate = 'INV-' . now()->format('Ym') . '-' . strtoupper(str()->random(6));
+            $candidate = sprintf('%s%04d', $prefix, $seq);
+            $seq++;
         } while (static::where('number', $candidate)->exists());
 
         return $candidate;

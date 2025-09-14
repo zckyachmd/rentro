@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Services\Contracts\InvoiceServiceInterface;
 use App\Traits\DataTable;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -12,6 +13,10 @@ use Inertia\Inertia;
 class InvoiceController extends Controller
 {
     use DataTable;
+
+    public function __construct(private InvoiceServiceInterface $invoices)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -27,6 +32,12 @@ class InvoiceController extends Controller
             'searchable'   => [
                 'number',
                 ['relation' => 'contract.room', 'column' => 'number'],
+                function ($q, string $term) {
+                    // Support deep link: q=contract:123456
+                    if (preg_match('/^contract:(\d+)$/i', trim($term), $m)) {
+                        $q->orWhere('contract_id', (int) $m[1]);
+                    }
+                },
             ],
             'sortable' => [
                 'due_date'          => 'due_date',
@@ -86,7 +97,6 @@ class InvoiceController extends Controller
 
     public function show(Request $request, Invoice $invoice)
     {
-        // Ensure ownership
         $invoice->load(['contract:id,user_id,room_id,start_date,end_date', 'contract.room:id,number,name']);
         $contract = $invoice->contract;
         if (!($contract instanceof \App\Models\Contract) || (string) $contract->user_id !== (string) $request->user()->id) {
@@ -115,10 +125,9 @@ class InvoiceController extends Controller
                 ];
             });
 
-            $totalPaid = (int) $invoice->payments()
-                ->where('status', \App\Enum\PaymentStatus::COMPLETED->value)
-                ->sum('amount_cents');
-            $outstanding = max(0, (int) $invoice->amount_cents - $totalPaid);
+            $totals      = $this->invoices->totals($invoice);
+            $totalPaid   = (int) $totals['total_paid'];
+            $outstanding = (int) $totals['outstanding'];
 
             return response()->json([
                 'invoice' => [
@@ -163,7 +172,6 @@ class InvoiceController extends Controller
 
     public function print(Request $request, Invoice $invoice)
     {
-        // Ensure ownership
         $invoice->load(['contract:id,user_id,room_id', 'contract.room:id,number,name']);
         $contract = $invoice->contract;
         if (!($contract instanceof \App\Models\Contract) || (string) $contract->user_id !== (string) $request->user()->id) {

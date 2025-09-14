@@ -1,7 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Eye, MoreHorizontal } from 'lucide-react';
+import { Eye, MoreHorizontal, ReceiptText, RefreshCcw } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -175,6 +175,7 @@ export const createColumns = (
         className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const r = row.original as TenantContractItem;
+            const isActive = String(r.status || '').toLowerCase() === 'active';
             return (
                 <div className={COL.actions + ' flex items-center justify-end'}>
                     <DropdownMenu>
@@ -201,10 +202,21 @@ export const createColumns = (
                                 <Eye className="mr-2 h-4 w-4" /> Lihat detail
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                disabled={!r.auto_renew}
+                                onClick={() => {
+                                    const url = route('tenant.invoices.index');
+                                    const qs = `?q=${encodeURIComponent(`contract:${r.id}`)}`;
+                                    window.location.href = url + qs;
+                                }}
+                            >
+                                <ReceiptText className="mr-2 h-4 w-4" /> Lihat
+                                invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                disabled={!r.auto_renew || !isActive}
                                 onClick={() => opts?.onStopAutoRenew?.(r)}
                             >
-                                Hentikan perpanjangan otomatis
+                                <RefreshCcw className="mr-2 h-4 w-4" /> Hentikan
+                                perpanjangan otomatis
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

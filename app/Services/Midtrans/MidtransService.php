@@ -64,8 +64,7 @@ class MidtransService implements MidtransGatewayInterface
         }
 
         $invoice->loadMissing(['contract.room:id,number']);
-        $roomNo      = (string) optional(optional($invoice->contract)->room)->number;
-        $orderId     = $this->buildOrderId($payment, $roomNo);
+        $orderId     = (string) ($payment->reference ?: $invoice->number ?: ('PAY-' . now()->format('Ymd') . '-XXXX'));
         $gross       = (int) number_format($amountCents, 0, '.', '');
         $itemDetails = $this->buildItemDetails($invoice, $gross);
 
@@ -205,18 +204,6 @@ class MidtransService implements MidtransGatewayInterface
             ]);
             throw $e;
         }
-    }
-
-    /** Build deterministic order id with optional room hint. */
-    private function buildOrderId(Payment $payment, ?string $roomNo): string
-    {
-        $orderId = 'PAY-' . $payment->id;
-        if ($roomNo !== null && $roomNo !== '') {
-            $sanitized = preg_replace('/[^A-Za-z0-9]/', '', $roomNo) ?: $roomNo;
-            $orderId .= '-RM' . $sanitized;
-        }
-
-        return $orderId;
     }
 
     /**

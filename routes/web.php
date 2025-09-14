@@ -24,17 +24,11 @@ use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
-use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('welcome', [
-    'canLogin'       => Route::has('login'),
-    'canRegister'    => Route::has('register'),
-    'laravelVersion' => Application::VERSION,
-    'phpVersion'     => PHP_VERSION,
-]));
+Route::get('/', fn () => redirect()->route('dashboard'));
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', fn () => Inertia::render('dashboard'))

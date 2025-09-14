@@ -201,7 +201,8 @@ export const createColumns = (
         cell: ({ row }) => {
             const s = row.original.status;
             const canCancel = CANCELABLE.includes(s);
-            const canToggleRenew = RENEW_ALLOWED.includes(s);
+            const canStartRenew = RENEW_ALLOWED.includes(s);
+            const canStopRenew = s === CS.ACTIVE;
 
             return (
                 <div className={COL.actions + ' flex items-center justify-end'}>
@@ -243,30 +244,26 @@ export const createColumns = (
                                 invoice
                             </DropdownMenuItem>
 
-                            {canToggleRenew &&
-                                (row.original.auto_renew ? (
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            opts?.onStopAutoRenew?.(
-                                                row.original,
-                                            )
-                                        }
-                                    >
-                                        <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                        Hentikan perpanjangan otomatis
-                                    </DropdownMenuItem>
-                                ) : (
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            opts?.onStartAutoRenew?.(
-                                                row.original,
-                                            )
-                                        }
-                                    >
-                                        <RefreshCw className="mr-2 h-4 w-4" />{' '}
-                                        Nyalakan perpanjangan otomatis
-                                    </DropdownMenuItem>
-                                ))}
+                            {row.original.auto_renew && canStopRenew && (
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        opts?.onStopAutoRenew?.(row.original)
+                                    }
+                                >
+                                    <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                    Hentikan perpanjangan otomatis
+                                </DropdownMenuItem>
+                            )}
+                            {!row.original.auto_renew && canStartRenew && (
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        opts?.onStartAutoRenew?.(row.original)
+                                    }
+                                >
+                                    <RefreshCw className="mr-2 h-4 w-4" />{' '}
+                                    Nyalakan perpanjangan otomatis
+                                </DropdownMenuItem>
+                            )}
 
                             {canCancel && (
                                 <>

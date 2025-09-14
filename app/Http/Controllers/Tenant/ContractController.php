@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Enum\ContractStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tenant\Contract\StopAutoRenewRequest;
+use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Traits\DataTable;
 use Illuminate\Http\Request;
@@ -59,6 +61,8 @@ class ContractController extends Controller
         $page->setCollection($mapped);
         $payload = $this->tablePaginate($page);
 
+        $forfeitDays = AppSetting::config('contract.stop_auto_renew_forfeit_days', 7);
+
         return Inertia::render('tenant/contract/index', [
             'contracts' => $payload,
             'query'     => [
@@ -70,7 +74,8 @@ class ContractController extends Controller
                 'status'   => $request->query('status'),
             ],
             'options' => [
-                'statuses' => ContractStatus::options(),
+                'statuses'     => ContractStatus::options(),
+                'forfeit_days' => (int) $forfeitDays,
             ],
         ]);
     }
@@ -160,17 +165,28 @@ class ContractController extends Controller
     /**
      * Tenant stops auto-renew for their own contract (set auto_renew=false).
      */
-    public function stopAutoRenew(Request $request, Contract $contract)
+    public function stopAutoRenew(StopAutoRenewRequest $request, Contract $contract)
     {
-        if ((string) $contract->user_id !== (string) $request->user()->id) {
-            abort(404);
-        }
-
         if (!$contract->auto_renew) {
             return back()->with('info', 'Perpanjangan otomatis sudah nonaktif.');
         }
 
+        if ($contract->status !== ContractStatus::ACTIVE) {
+            return back()->with('error', 'Hanya kontrak berstatus Active yang dapat menghentikan perpanjangan otomatis.');
+        }
+
+        $request->validated();
+
+        $forfeitDays = (int) (AppSetting::config('contract.stop_auto_renew_forfeit_days', 7) ?? 7);
+        $today       = now()->startOfDay();
+        $endDate     = $contract->end_date?->copy()->startOfDay();
+        $daysLeft    = $endDate ? max(0, $today->diffInDays($endDate, false)) : null;
+
         $contract->forceFill(['auto_renew' => false, 'renewal_cancelled_at' => now()])->save();
+
+        if ($daysLeft !== null && $daysLeft < $forfeitDays) {
+            return back()->with('warning', "Perpanjangan otomatis dihentikan. Sesuai kebijakan, deposit akan hangus karena kurang dari {$forfeitDays} hari dari tanggal berakhir.");
+        }
 
         return back()->with('success', 'Perpanjangan otomatis telah dihentikan.');
     }

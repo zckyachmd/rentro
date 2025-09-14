@@ -159,6 +159,7 @@ export default function ContractIndex(props: ContractsPageProps) {
     const [cancelTarget, setCancelTarget] = React.useState<Target>(null);
     const [cancelReason, setCancelReason] = React.useState<string>('');
     const [toggleTarget, setToggleTarget] = React.useState<Target>(null);
+    const [toggleReason, setToggleReason] = React.useState<string>('');
 
     const tableColumns = React.useMemo(
         () =>
@@ -353,7 +354,12 @@ export default function ContractIndex(props: ContractsPageProps) {
             {/* Toggle Auto‑renew Dialog */}
             <AlertDialog
                 open={!!toggleTarget}
-                onOpenChange={(v) => !v && setToggleTarget(null)}
+                onOpenChange={(v) => {
+                    if (!v) {
+                        setToggleTarget(null);
+                        setToggleReason('');
+                    }
+                }}
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -368,9 +374,31 @@ export default function ContractIndex(props: ContractsPageProps) {
                                 : 'Kontrak akan diperpanjang otomatis di akhir periode.'}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    {toggleTarget?.auto_renew && (
+                        <div className="space-y-2 py-2">
+                            <Label>Alasan penghentian</Label>
+                            <Textarea
+                                value={toggleReason}
+                                onChange={(e) =>
+                                    setToggleReason(e.target.value)
+                                }
+                                placeholder="Contoh: permintaan tenant, penyesuaian kontrak, dll."
+                                required
+                                rows={3}
+                                maxLength={200}
+                            />
+                            <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+                                <span>{toggleReason.length}/200</span>
+                            </div>
+                        </div>
+                    )}
                     <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
+                            disabled={
+                                Boolean(toggleTarget?.auto_renew) &&
+                                !toggleReason.trim()
+                            }
                             onClick={() => {
                                 const c = toggleTarget;
                                 if (!c) return;
@@ -379,10 +407,18 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     route('management.contracts.setAutoRenew', {
                                         contract: c.id,
                                     }),
-                                    { auto_renew: next },
+                                    next
+                                        ? { auto_renew: next }
+                                        : {
+                                              auto_renew: next,
+                                              reason: toggleReason,
+                                          },
                                     {
                                         preserveScroll: true,
-                                        onFinish: () => setToggleTarget(null),
+                                        onFinish: () => {
+                                            setToggleTarget(null);
+                                            setToggleReason('');
+                                        },
                                     },
                                 );
                             }}

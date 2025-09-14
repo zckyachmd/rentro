@@ -358,12 +358,19 @@ class ContractManagementController extends Controller
         $data    = $request->validated();
         $enabled = (bool) $data['auto_renew'];
 
+        if (!$enabled && $contract->status !== ContractStatus::ACTIVE) {
+            return back()->with('error', 'Hanya kontrak berstatus Active yang dapat menghentikan perpanjangan otomatis.');
+        }
+
         $this->contracts->setAutoRenew($contract, $enabled);
 
         $this->logEvent(
             event: $enabled ? 'contract_auto_renew_started' : 'contract_auto_renew_stopped',
             causer: $request->user(),
             subject: $contract,
+            properties: [
+                'reason' => $enabled ? null : (string) ($data['reason'] ?? ''),
+            ],
         );
 
         return back()->with('success', $enabled ? 'Auto‑renew dinyalakan.' : 'Auto‑renew dihentikan.');
