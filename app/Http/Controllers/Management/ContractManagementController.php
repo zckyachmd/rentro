@@ -140,7 +140,11 @@ class ContractManagementController extends Controller
             ->orderBy('name')
             ->get();
 
-        $rooms = Room::query()
+        $leadDays  = (int) AppSetting::config('contract.prebook_lead_days', 7);
+        $threshold = now()->copy()->addDays(max(1, $leadDays))->startOfDay()->toDateString();
+
+        // Rooms that are fully vacant
+        $vacantRooms = Room::query()
             ->select('id', 'number', 'name', 'price_cents', 'billing_period', 'room_type_id', 'building_id', 'floor_id', 'status')
             ->where('status', RoomStatus::VACANT->value)
             ->with([
@@ -149,7 +153,40 @@ class ContractManagementController extends Controller
                 'floor:id,level,building_id',
             ])
             ->orderBy('number')
-            ->get()
+            ->get();
+
+        // Rooms with an ACTIVE contract ending within lead days and auto_renew already off — allow pre-booking
+        $prebookRooms = Room::query()
+            ->select('id', 'number', 'name', 'price_cents', 'billing_period', 'room_type_id', 'building_id', 'floor_id', 'status')
+            ->whereHas('contracts', function ($q) use ($today, $threshold) {
+                $q->where('status', ContractStatus::ACTIVE->value)
+                    ->whereNotNull('end_date')
+                    ->whereBetween('end_date', [$today, $threshold])
+                    ->where(function ($w) {
+                        $w->where('auto_renew', false)
+                            ->orWhereNotNull('renewal_cancelled_at');
+                    });
+            })
+            // Do not include rooms that already have a future holder (booked/paid/active in future)
+            ->whereDoesntHave('contracts', function ($q) use ($today) {
+                $q->whereIn('status', [
+                    ContractStatus::PENDING_PAYMENT->value,
+                    ContractStatus::BOOKED->value,
+                    ContractStatus::PAID->value,
+                    ContractStatus::ACTIVE->value,
+                ])->whereDate('start_date', '>', $today);
+            })
+            ->with([
+                'type:id,deposit_cents,price_cents',
+                'building:id,name,code',
+                'floor:id,level,building_id',
+            ])
+            ->orderBy('number')
+            ->get();
+
+        $rooms = $vacantRooms->concat($prebookRooms)
+            ->unique('id')
+            ->values()
             ->map(function (Room $r) {
                 return [
                     'id'               => (string) $r->id,
@@ -197,7 +234,13 @@ class ContractManagementController extends Controller
     public function store(StoreContractRequest $request)
     {
         $data = $request->validated();
-        $this->contracts->create($data);
+        try {
+            $this->contracts->create($data);
+        } catch (\RuntimeException $e) {
+            return back()
+                ->withErrors(['room_id' => $e->getMessage()])
+                ->withInput();
+        }
 
         $this->logEvent(
             event: 'contract_created',

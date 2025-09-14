@@ -56,6 +56,71 @@ class ContractService implements ContractServiceInterface
                     $end     = $start->copy()->addDays($days)->toDateString();
                 }
 
+                // Guard: prevent overlaps and enforce pre-booking rules
+                $leadDays    = (int) AppSetting::config('contract.prebook_lead_days', 7);
+                $today       = now()->startOfDay();
+                $computedEnd = Carbon::parse($end)->startOfDay();
+
+                // 1) No overlapping with any holding contract on the same room
+                $hasOverlap = Contract::query()
+                    ->where('room_id', $room->id)
+                    ->whereIn('status', [
+                        ContractStatus::PENDING_PAYMENT->value,
+                        ContractStatus::BOOKED->value,
+                        ContractStatus::PAID->value,
+                        ContractStatus::ACTIVE->value,
+                    ])
+                    ->where(function ($q) use ($start, $computedEnd) {
+                        $q->whereDate('start_date', '<=', $computedEnd->toDateString())
+                          ->whereDate('end_date', '>=', $start->toDateString());
+                    })
+                    ->exists();
+                if ($hasOverlap) {
+                    throw new \RuntimeException('Jadwal kamar bentrok dengan kontrak lain.');
+                }
+
+                // 2) If room is currently occupied, only allow pre-book within lead days and start AFTER current end_date
+                //    Also ensure no future holder already exists.
+                $activeNow = Contract::query()
+                    ->where('room_id', $room->id)
+                    ->where('status', ContractStatus::ACTIVE->value)
+                    ->orderByDesc('end_date')
+                    ->first();
+                if ($activeNow) {
+                    $activeEnd = $activeNow->end_date ? $activeNow->end_date->copy()->startOfDay() : null;
+                    $renewOff  = !$activeNow->auto_renew || !empty($activeNow->renewal_cancelled_at);
+
+                    if (!$activeEnd) {
+                        throw new \RuntimeException('Tidak dapat memesan: kontrak aktif tidak memiliki tanggal berakhir.');
+                    }
+
+                    // Start must be strictly after current end
+                    if (!$start->greaterThan($activeEnd)) {
+                        throw new \RuntimeException('Tanggal mulai harus setelah tanggal berakhir kontrak saat ini.');
+                    }
+
+                    // Must be within lead days window and auto_renew disabled
+                    $withinWindow = $activeEnd->lessThanOrEqualTo($today->copy()->addDays(max(1, $leadDays)));
+                    if (!$renewOff || !$withinWindow) {
+                        throw new \RuntimeException('Kamar belum dapat dipesan saat ini. Hanya dapat dipesan 7 hari sebelum kontrak berakhir jika auto‑renew nonaktif.');
+                    }
+
+                    // Ensure no other future holder already exists
+                    $hasFutureHolder = Contract::query()
+                        ->where('room_id', $room->id)
+                        ->whereIn('status', [
+                            ContractStatus::PENDING_PAYMENT->value,
+                            ContractStatus::BOOKED->value,
+                            ContractStatus::PAID->value,
+                            ContractStatus::ACTIVE->value,
+                        ])
+                        ->whereDate('start_date', '>', $today->toDateString())
+                        ->exists();
+                    if ($hasFutureHolder) {
+                        throw new \RuntimeException('Kamar sudah memiliki pemesanan berikutnya.');
+                    }
+                }
+
                 // Decide billing day (ignore payload; compute)
                 if ($period === BillingPeriod::MONTHLY->value) {
                     // If prorata is enabled, align to global release day to keep cycles consistent.
