@@ -17,6 +17,25 @@ use Illuminate\Support\Facades\Log;
 class InvoiceService implements InvoiceServiceInterface
 {
     /**
+     * Ambil konfigurasi billing sekali (prorata, releaseDom, dueHours, dueDom).
+     * @return array{prorata:bool,releaseDom:int,dueHours:int,dueDom:int}
+     */
+    protected function billingConfig(): array
+    {
+        $prorata    = (bool) AppSetting::config('billing.prorata', false);
+        $releaseDom = (int) AppSetting::config('billing.release_day_of_month', 1);
+        $dueHours   = (int) AppSetting::config('contract.invoice_due_hours', 48);
+        $dueDom     = (int) AppSetting::config('billing.due_day_of_month', 7);
+
+        return [
+            'prorata'    => $prorata,
+            'releaseDom' => $releaseDom,
+            'dueHours'   => $dueHours,
+            'dueDom'     => $dueDom,
+        ];
+    }
+
+    /**
      * Hitung ringkasan pembayaran untuk sebuah invoice.
      * Mengembalikan total tagihan, total dibayar (Completed), dan outstanding.
      *
@@ -38,23 +57,6 @@ class InvoiceService implements InvoiceServiceInterface
     }
 
     /**
-     * Ambil konfigurasi billing sekali (prorata, releaseDom, dueHours).
-     * @return array{prorata:bool,releaseDom:int,dueHours:int}
-     */
-    protected function billingConfig(): array
-    {
-        $prorata    = (bool) AppSetting::config('billing.prorata', false);
-        $releaseDom = (int) AppSetting::config('billing.release_day_of_month', 1);
-        $dueHours   = (int) AppSetting::config('contract.invoice_due_hours', 48);
-
-        return [
-            'prorata'    => $prorata,
-            'releaseDom' => $releaseDom,
-            'dueHours'   => $dueHours,
-        ];
-    }
-
-    /**
      * General-purpose generation wrapper to allow reuse from different contexts.
      * Supported options:
      * - ['month' => 'YYYY-MM'] to generate a single monthly invoice for that month.
@@ -71,8 +73,10 @@ class InvoiceService implements InvoiceServiceInterface
         $prorata        = $cfg['prorata'];
         $releaseDom     = $cfg['releaseDom'];
         $dueHours       = $cfg['dueHours'];
+        $dueDom         = $cfg['dueDom'];
         $now            = Carbon::now();
-        $dueAt          = $now->copy()->addHours(max(1, $dueHours));
+        $dueNonMon      = $now->copy()->addHours(max(1, (int) $dueHours))->toDateString();
+        $dueMonthly     = Invoice::nextDueDayFrom($now, max(1, (int) $dueDom));
         $activeStatuses = [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value, InvoiceStatus::PAID->value];
 
         /** @var Invoice|null $latest */
@@ -96,18 +100,23 @@ class InvoiceService implements InvoiceServiceInterface
                 if ($this->hasActiveOverlap($contract, $start, $periodEnd, $activeStatuses)) {
                     throw new \InvalidArgumentException('Sudah ada invoice aktif untuk periode awal kontrak.');
                 }
+                // Due date: jika butuh prorata, gunakan releaseDom agar anchor penagihan mengikuti release day; selain itu pakai dueDom
+                $needsProrata = (bool) ($prorata && $start->day !== $releaseDom);
+                $dueDateStr   = $needsProrata
+                    ? Invoice::nextDueDayFrom($now, max(1, (int) $releaseDom))
+                    : $dueMonthly;
                 $items = $this->makeItems(
                     $period,
                     'per_month',
                     (int) $contract->rent_cents,
                     1,
-                    (bool) ($prorata && $start->day !== $releaseDom),
+                    $needsProrata,
                     $start,
                     (int) $contract->deposit_cents,
                     $releaseDom,
                 );
 
-                return $this->createInvoiceRecord($contract, $start, $periodEnd, $dueAt->toDateTimeString(), $items);
+                return $this->createInvoiceRecord($contract, $start, $periodEnd, $dueDateStr, $items);
             }
 
             // Daily/Weekly → full remaining coverage including deposit on first invoice
@@ -119,7 +128,7 @@ class InvoiceService implements InvoiceServiceInterface
             }
             $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $daysOrWeeks, false, $start, (int) $contract->deposit_cents, $releaseDom);
 
-            return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueAt->toDateTimeString(), $items);
+            return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueNonMon, $items);
         }
 
         // monthly single-period when month is provided
@@ -176,7 +185,7 @@ class InvoiceService implements InvoiceServiceInterface
             }
             $items = $this->makeItems($period, 'per_month', (int) $contract->rent_cents, 1, false, $start, 0, $releaseDom);
 
-            return $this->createInvoiceRecord($contract, $start, $periodEnd, $dueAt->toDateTimeString(), $items);
+            return $this->createInvoiceRecord($contract, $start, $periodEnd, $dueMonthly, $items);
         }
 
         // arbitrary range when provided
@@ -226,14 +235,14 @@ class InvoiceService implements InvoiceServiceInterface
                 }
                 $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $months, false, $from, 0, $releaseDom);
 
-                return $this->createInvoiceRecord($contract, $from, $to, $dueAt->toDateTimeString(), $items);
+                return $this->createInvoiceRecord($contract, $from, $to, $dueMonthly, $items);
             }
 
             if ($period === BillingPeriod::DAILY->value) {
                 $days  = max(1, (int) $from->diffInDays($to->copy()->addDay()));
                 $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $days, false, $from, 0, $releaseDom);
 
-                return $this->createInvoiceRecord($contract, $from, $to, $dueAt->toDateTimeString(), $items);
+                return $this->createInvoiceRecord($contract, $from, $to, $dueNonMon, $items);
             }
 
             // weekly
@@ -241,7 +250,7 @@ class InvoiceService implements InvoiceServiceInterface
             $weeks = max(1, (int) ceil($days / 7));
             $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $weeks, false, $from, 0, $releaseDom);
 
-            return $this->createInvoiceRecord($contract, $from, $to, $dueAt->toDateTimeString(), $items);
+            return $this->createInvoiceRecord($contract, $from, $to, $dueNonMon, $items);
         }
 
         // full coverage for monthly/daily/weekly
@@ -267,7 +276,7 @@ class InvoiceService implements InvoiceServiceInterface
                 }
                 $items = $this->makeItems($period, 'per_month', (int) $contract->rent_cents, 1, false, $monthStart, 0, $releaseDom);
 
-                return $this->createInvoiceRecord($contract, $monthStart, $periodEnd, $dueAt->toDateTimeString(), $items);
+                return $this->createInvoiceRecord($contract, $monthStart, $periodEnd, $dueMonthly, $items);
             }
             throw new \InvalidArgumentException('Kontrak sudah selesai atau tidak valid untuk generate invoice.');
         }
@@ -289,7 +298,7 @@ class InvoiceService implements InvoiceServiceInterface
             }
             $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $months, false, $anchor, 0, $releaseDom);
 
-            return $this->createInvoiceRecord($contract, $anchor, $periodEnd, $dueAt->toDateTimeString(), $items);
+            return $this->createInvoiceRecord($contract, $anchor, $periodEnd, $dueMonthly, $items);
         }
 
         // Daily / Weekly → full remaining duration
@@ -301,7 +310,7 @@ class InvoiceService implements InvoiceServiceInterface
         }
         $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $daysOrWeeks, false, $start, 0, $releaseDom);
 
-        return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueAt->toDateTimeString(), $items);
+        return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueNonMon, $items);
     }
 
     /**

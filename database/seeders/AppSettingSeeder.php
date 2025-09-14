@@ -31,6 +31,7 @@ class AppSettingSeeder extends Seeder
             ['billing.release_day_of_month',    1,          'int'],   // anchor day for monthly cycle start
             ['billing.due_day_of_month',        7,          'int'],   // default due day
             ['billing.deposit_upfront',         true,       'bool'],
+            ['billing.deposit_renewal_rollover', true,      'bool'],
 
             // Scheduler / automation
             ['contract.auto_renew_lead_days',   7,          'int'],

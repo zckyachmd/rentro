@@ -2,6 +2,18 @@
 
 use Illuminate\Support\Facades\Schedule;
 
+Schedule::command('invoices:generate-monthly')
+    ->name('invoices.generate-monthly')
+    ->dailyAt('00:30')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+Schedule::command('payments:midtrans-sync')
+    ->name('payments.midtrans-sync')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->runInBackground();
+
 Schedule::command('contracts:mark-overdue')
     ->name('contracts.mark-overdue')
     ->everyFiveMinutes()
@@ -20,15 +32,9 @@ Schedule::command('contracts:activate-due')
     ->withoutOverlapping()
     ->runInBackground();
 
-Schedule::command('invoices:generate-monthly')
-    ->name('invoices.generate-monthly')
-    ->dailyAt('00:30')
-    ->withoutOverlapping()
-    ->runInBackground();
-
-Schedule::command('payments:midtrans-sync')
-    ->name('payments.midtrans-sync')
-    ->everyFiveMinutes()
+Schedule::command('contracts:auto-renew-due')
+    ->name('contracts.auto-renew-due')
+    ->dailyAt('00:40')
     ->withoutOverlapping()
     ->runInBackground();
 

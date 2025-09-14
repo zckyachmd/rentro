@@ -57,12 +57,17 @@ class ContractService implements ContractServiceInterface
                 }
 
                 // Decide billing day (ignore payload; compute)
-                $billingDay = $start->day;
-
-                // Align billing day for prorata monthly contracts to global release day
-                if ($period === BillingPeriod::MONTHLY->value && $prorata && $start->day !== 1 && ($duration ?? 1) >= 2) {
-                    $releaseDom = AppSetting::config('billing.release_day_of_month', 1);
-                    $billingDay = max(1, min(31, $releaseDom));
+                if ($period === BillingPeriod::MONTHLY->value) {
+                    // If prorata is enabled, align to global release day to keep cycles consistent.
+                    // Otherwise, keep billing day as start date's day (no prorata path).
+                    if ($prorata) {
+                        $releaseDom = AppSetting::config('billing.release_day_of_month', 1);
+                        $billingDay = max(1, min(31, (int) $releaseDom));
+                    } else {
+                        $billingDay = (int) $start->day;
+                    }
+                } else {
+                    $billingDay = (int) $start->day;
                 }
 
                 $autoRenew = array_key_exists('auto_renew', $data)
