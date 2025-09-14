@@ -31,3 +31,9 @@ Schedule::command('payments:midtrans-sync')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('contracts:complete-ended')
+    ->name('contracts.complete-ended')
+    ->dailyAt('01:00')
+    ->withoutOverlapping()
+    ->runInBackground();

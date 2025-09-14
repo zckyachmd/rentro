@@ -226,4 +226,34 @@ class ContractService implements ContractServiceInterface
             throw $e;
         }
     }
+
+    public function complete(Contract $contract): void
+    {
+        try {
+            DB::transaction(function () use ($contract): void {
+                $contract->forceFill([
+                    'status'     => ContractStatus::COMPLETED,
+                    'auto_renew' => false,
+                ])->save();
+
+                /** @var Room|null $room */
+                $room = $contract->room()
+                    ->withCount(['holdingContracts as other_holders_count' => function ($q) use ($contract) {
+                        $q->where('id', '!=', $contract->id);
+                    }])
+                    ->first();
+
+                if ($room && (int) ($room->getAttribute('other_holders_count') ?? 0) === 0) {
+                    $room->update(['status' => RoomStatus::VACANT->value]);
+                }
+            });
+        } catch (\Throwable $e) {
+            Log::error('ContractService::complete failed', [
+                'error'       => $e->getMessage(),
+                'trace'       => $e->getTraceAsString(),
+                'contract_id' => $contract->id,
+            ]);
+            throw $e;
+        }
+    }
 }

@@ -44,4 +44,9 @@ interface ContractServiceInterface
      * Should mirror the logic used during create(), including deposit and prorata behavior.
      */
     public function generateInitialInvoice(Contract $contract): void;
+
+    /**
+     * Mark contract as COMPLETED when eligibility is met (end_date passed, no unpaid invoices, non-renewing).
+     */
+    public function complete(Contract $contract): void;
 }
