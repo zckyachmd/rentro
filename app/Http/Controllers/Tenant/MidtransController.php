@@ -12,8 +12,8 @@ use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Contracts\InvoiceServiceInterface;
+use App\Services\Contracts\PaymentServiceInterface;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
-use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,7 +21,7 @@ class MidtransController extends Controller
 {
     public function __construct(
         private readonly MidtransGatewayInterface $midtrans,
-        private readonly PaymentService $payments,
+        private readonly PaymentServiceInterface $payments,
         private readonly InvoiceServiceInterface $invoices,
     ) {
     }

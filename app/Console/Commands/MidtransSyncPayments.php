@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Enum\PaymentStatus;
 use App\Models\Payment;
+use App\Services\Contracts\PaymentServiceInterface;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
-use App\Services\PaymentService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +16,7 @@ class MidtransSyncPayments extends Command
 
     public function __construct(
         private readonly MidtransGatewayInterface $midtrans,
-        private readonly PaymentService $payments,
+        private readonly PaymentServiceInterface $payments,
     ) {
         parent::__construct();
     }

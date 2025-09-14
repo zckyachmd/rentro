@@ -132,11 +132,17 @@ class Invoice extends Model
         $dateStr = $d->format('Ymd');
         $prefix  = 'INV-' . $dateStr . '-';
 
-        $maxSeq = (int) (static::query()
-            ->selectRaw('MAX(CAST(SUBSTRING(number, -4) AS UNSIGNED)) as max_seq')
-            ->value('max_seq') ?? 0);
+        $latestNumber = static::query()
+            ->where('number', 'like', $prefix . '%')
+            ->orderByDesc('number')
+            ->value('number');
 
-        $seq = max(1, $maxSeq + 1);
+        $lastSeq = 0;
+        if (is_string($latestNumber) && preg_match('/(\d{4})$/', $latestNumber, $m)) {
+            $lastSeq = (int) $m[1];
+        }
+
+        $seq = max(1, $lastSeq + 1);
 
         do {
             $candidate = sprintf('%s%04d', $prefix, $seq);

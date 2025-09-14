@@ -11,12 +11,17 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\Contracts\InvoiceServiceInterface;
+use App\Services\Contracts\PaymentServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
-class PaymentService
+class PaymentService implements PaymentServiceInterface
 {
+    public function __construct(private readonly InvoiceServiceInterface $invoices)
+    {
+    }
+
     private function generatePaymentReference(Invoice $invoice): string
     {
         $base = (string) ($invoice->number ?? '');
@@ -25,23 +30,24 @@ class PaymentService
         }
         $prefix = $base . '-P';
 
-        $maxSeq = (int) (\App\Models\Payment::query()
+        $latestRef = Payment::query()
             ->where('invoice_id', $invoice->id)
             ->where('reference', 'like', $prefix . '%')
-            ->selectRaw('MAX(CAST(SUBSTRING(reference, -3) AS UNSIGNED)) as max_seq')
-            ->value('max_seq') ?? 0);
+            ->orderByDesc('reference')
+            ->value('reference');
 
-        $seq = max(1, $maxSeq + 1);
+        $lastSeq = 0;
+        if (is_string($latestRef) && preg_match('/(\d{3})$/', $latestRef, $m)) {
+            $lastSeq = (int) $m[1];
+        }
+
+        $seq = max(1, $lastSeq + 1);
         do {
             $candidate = sprintf('%s%03d', $prefix, $seq);
             $seq++;
-        } while (\App\Models\Payment::query()->where('reference', $candidate)->exists());
+        } while (Payment::query()->where('reference', $candidate)->exists());
 
         return $candidate;
-    }
-
-    public function __construct(private readonly InvoiceServiceInterface $invoices)
-    {
     }
 
     /**

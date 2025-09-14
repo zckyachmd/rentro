@@ -14,6 +14,7 @@ class AppSettingSeeder extends Seeder
         $settings = [
             // Contract basics
             ['contract.grace_days',             7,          'int'],
+            ['contract.stop_auto_renew_forfeit_days', 7,    'int'],
             ['contract.auto_renew_default',     false,      'bool'],
             ['contract.invoice_due_hours',      48,         'int'],
             ['contract.single_room_per_tenant', true,       'bool'],

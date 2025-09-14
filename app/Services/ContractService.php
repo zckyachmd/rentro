@@ -83,22 +83,8 @@ class ContractService implements ContractServiceInterface
                     'notes'          => $data['notes'] ?? null,
                 ]);
 
-                // Generate initial invoice using the new general API for predictability.
-                // Strategy:
-                // - First invoice includes deposit and (when applicable) prorata based on app settings.
-                // - For Monthly contracts: first invoice covers prorata (jika perlu) + 1 bulan penuh.
-                // - For Daily/Weekly: first invoice menagih sisa durasi awal kontrak.
-                // - InvoiceService::generate() will guard overlaps.
-                try {
-                    $this->invoices->generate($contract, ['first' => true]);
-                } catch (\Throwable $e) {
-                    // Log and rethrow to surface error to controller layer
-                    Log::error('Initial invoice generation failed', [
-                        'contract_id' => $contract->id,
-                        'error'       => $e->getMessage(),
-                    ]);
-                    throw $e;
-                }
+                // Generate initial invoice via shared helper
+                $this->generateInitialInvoice($contract);
 
                 // Initial creation sets status to PENDING_PAYMENT → room becomes RESERVED
                 $newRoomStatus = RoomStatus::RESERVED->value;
@@ -148,8 +134,6 @@ class ContractService implements ContractServiceInterface
             throw $e;
         }
     }
-
-    // extendDue moved to InvoiceService
 
     public function cancel(Contract $contract): void
     {
@@ -219,6 +203,25 @@ class ContractService implements ContractServiceInterface
                 'trace'       => $e->getTraceAsString(),
                 'contract_id' => $contract->id,
                 'enabled'     => $enabled,
+            ]);
+            throw $e;
+        }
+    }
+
+    public function generateInitialInvoice(Contract $contract): void
+    {
+        try {
+            // If any invoice exists already, do nothing
+            $hasAny = $contract->invoices()->exists();
+            if ($hasAny) {
+                return;
+            }
+
+            $this->invoices->generate($contract, ['first' => true]);
+        } catch (\Throwable $e) {
+            Log::error('ContractService::generateInitialInvoice failed', [
+                'contract_id' => $contract->id,
+                'error'       => $e->getMessage(),
             ]);
             throw $e;
         }

@@ -3,7 +3,6 @@
 namespace App\Services\Contracts;
 
 use App\Models\Contract;
-use App\Models\Invoice;
 
 interface ContractServiceInterface
 {
@@ -39,4 +38,10 @@ interface ContractServiceInterface
      * Set auto-renew state on a contract.
      */
     public function setAutoRenew(Contract $contract, bool $enabled): void;
+
+    /**
+     * Generate the initial invoice for an existing contract if not present yet.
+     * Should mirror the logic used during create(), including deposit and prorata behavior.
+     */
+    public function generateInitialInvoice(Contract $contract): void;
 }

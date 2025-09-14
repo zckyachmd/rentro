@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Services\Contracts\PaymentServiceInterface;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
-use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +13,7 @@ class MidtransWebhookController extends Controller
 {
     public function __construct(
         private readonly MidtransGatewayInterface $midtrans,
-        private readonly PaymentService $payments,
+        private readonly PaymentServiceInterface $payments,
     ) {
     }
 
