@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import React from 'react';
 
@@ -146,7 +147,9 @@ export default function TenantInvoiceIndex(props: PageProps) {
         id: string;
         number: string;
     }>(null);
-    const [pay, setPay] = React.useState<null | { id: string; number: string }>(null);
+    const [pay, setPay] = React.useState<null | { id: string; number: string }>(
+        null,
+    );
     const columns = React.useMemo(
         () =>
             createColumns({
@@ -160,6 +163,20 @@ export default function TenantInvoiceIndex(props: PageProps) {
             }),
         [],
     );
+
+    // Listen to refresh event from pay-dialog and reload invoices data only
+    React.useEffect(() => {
+        const handler = () => {
+            try {
+                router.reload({ only: ['invoices'] });
+            } catch (e) {
+                void e;
+            }
+        };
+        window.addEventListener('tenant:invoices:refresh', handler);
+        return () =>
+            window.removeEventListener('tenant:invoices:refresh', handler);
+    }, []);
 
     return (
         <AuthLayout
@@ -245,6 +262,8 @@ export default function TenantInvoiceIndex(props: PageProps) {
                             columns={columns}
                             rows={rows}
                             paginator={paginator ?? null}
+                            autoRefreshDefault="15s"
+                            showRefresh={false}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
@@ -261,7 +280,10 @@ export default function TenantInvoiceIndex(props: PageProps) {
                     target={detail}
                     onClose={() => setDetail(null)}
                 />
-                <TenantInvoicePayDialog target={pay} onClose={() => setPay(null)} />
+                <TenantInvoicePayDialog
+                    target={pay}
+                    onClose={() => setPay(null)}
+                />
             </div>
         </AuthLayout>
     );

@@ -11,7 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Services\Gateway\Contracts\MidtransGatewayInterface;
+use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,63 +34,7 @@ class MidtransController extends Controller
         }
     }
 
-    private function computeOutstanding(Invoice $invoice): int
-    {
-        $totalPaid = (int) $invoice->payments()
-            ->where('status', PaymentStatus::COMPLETED->value)
-            ->sum('amount_cents');
-
-        return max(0, (int) $invoice->amount_cents - $totalPaid);
-    }
-
-    private function voidPreviousPendings(Invoice $invoice, string $reason, $actor): void
-    {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $pendings */
-        $pendings = $invoice->payments()
-            ->where('provider', 'Midtrans')
-            ->where('status', PaymentStatus::PENDING->value)
-            ->get();
-        foreach ($pendings as $pp) {
-            /* @var Payment $pp */
-            $this->payments->voidPayment($pp, $reason, $actor);
-        }
-    }
-
-    private function mapPendingPayment(?Payment $pendingPayment): ?array
-    {
-        if (!$pendingPayment) {
-            return null;
-        }
-        $mid   = (array) ($pendingPayment->meta['midtrans'] ?? []);
-        $notif = (array) ($mid['last_notification'] ?? []);
-        $instr = (array) ($mid['instructions'] ?? []);
-
-        $bank      = null;
-        $va        = null;
-        $vaNumbers = $notif['va_numbers'] ?? [];
-        if (is_array($vaNumbers) && !empty($vaNumbers)) {
-            $first = $vaNumbers[0] ?? [];
-            if (is_array($first)) {
-                $bank = $first['bank'] ?? null;
-                $va   = $first['va_number'] ?? null;
-            }
-        } elseif (!empty($notif['permata_va_number'])) {
-            $bank = 'permata';
-            $va   = $notif['permata_va_number'];
-        }
-
-        return [
-            'payment_type' => (string) ($instr['payment_type'] ?? ($notif['payment_type'] ?? '')),
-            'bank'         => $bank,
-            'va_number'    => $va ?: (string) ($pendingPayment->va_number ?? ''),
-            'expiry_time'  => (string) ($notif['expiry_time'] ?? ($pendingPayment->va_expired_at ? $pendingPayment->va_expired_at->toDateTimeString() : '')),
-            'pdf_url'      => (string) ($instr['pdf_url'] ?? ($notif['pdf_url'] ?? '')),
-            'payment_code' => (string) ($instr['payment_code'] ?? ($notif['payment_code'] ?? '')),
-            'store'        => (string) ($instr['store'] ?? ($notif['store'] ?? '')),
-            'qr_string'    => (string) ($instr['qr_string'] ?? ($notif['qr_string'] ?? '')),
-            'actions'      => $instr['actions'] ?? ($notif['actions'] ?? []),
-        ];
-    }
+    // computeOutstanding removed; inline in payVa for simplicity
 
     public function payVa(Request $request, Invoice $invoice): JsonResponse
     {
@@ -107,14 +51,32 @@ class MidtransController extends Controller
             return response()->json(['message' => 'Invoice tidak dapat dibayar pada status ini.'], 422);
         }
 
-        $outstanding = $this->computeOutstanding($invoice);
+        $totalPaid = (int) $invoice->payments()
+            ->where('status', PaymentStatus::COMPLETED->value)
+            ->sum('amount_cents');
+        $outstanding = max(0, (int) $invoice->amount_cents - $totalPaid);
         if ($outstanding <= 0) {
             return response()->json(['message' => 'Invoice sudah lunas.'], 422);
         }
 
         $amount = $outstanding;
 
-        $this->voidPreviousPendings($invoice, 'Switch to VA ' . strtoupper($bank), $user);
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $toExpire */
+        $toExpire = $invoice->payments()
+            ->where('provider', 'Midtrans')
+            ->where('status', PaymentStatus::PENDING->value)
+            ->get(['id', 'reference', 'meta']);
+        foreach ($toExpire as $pp) {
+            /** @var Payment $pp */
+            $md      = (array) (($pp->meta['midtrans'] ?? []));
+            $orderId = (string) ($pp->reference ?: ($md['order_id'] ?? ''));
+            if ($orderId !== '') {
+                $this->midtrans->expireTransaction($orderId);
+            }
+        }
+
+        // Always void locally regardless of expire outcome
+        $this->payments->voidPendingPaymentsForInvoice($invoice, 'Midtrans', 'Switch to VA ' . strtoupper($bank), $user);
 
         $payment = $this->payments->createPayment($invoice, [
             'method'       => PaymentMethod::VIRTUAL_ACCOUNT->value,
@@ -172,73 +134,6 @@ class MidtransController extends Controller
         ]);
     }
 
-    public function payQris(Request $request, Invoice $invoice): JsonResponse
-    {
-        $user = $request->user();
-
-        $this->assertOwnership($invoice, $request);
-
-        if (!in_array($invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true)) {
-            return response()->json(['message' => 'Invoice tidak dapat dibayar pada status ini.'], 422);
-        }
-
-        $outstanding = $this->computeOutstanding($invoice);
-        if ($outstanding <= 0) {
-            return response()->json(['message' => 'Invoice sudah lunas.'], 422);
-        }
-
-        $amount = $outstanding;
-
-        $this->voidPreviousPendings($invoice, 'Switch to QRIS', $user);
-
-        $payment = $this->payments->createPayment($invoice, [
-            'method'       => PaymentMethod::VIRTUAL_ACCOUNT->value,
-            'status'       => PaymentStatus::PENDING->value,
-            'amount_cents' => $amount,
-            'meta'         => [
-                'gateway'      => 'midtrans',
-                'channel'      => 'core_api',
-                'payment_type' => 'qris',
-            ],
-            'note' => 'Pembayaran QRIS via Midtrans Core API',
-        ], $user);
-
-        $cust = [
-            'name'  => (string) $user->name,
-            'email' => (string) $user->email,
-            'phone' => (string) $user->phone,
-        ];
-        $res = $this->midtrans->createQris($invoice, $payment, $amount, $cust);
-
-        $md = [
-            'order_id'     => $res['order_id'],
-            'instructions' => array_filter([
-                'payment_type' => $res['payment_type'] ?? 'qris',
-                'qr_string'    => $res['qr_string'] ?? null,
-                'actions'      => $res['actions'] ?? null,
-                'expiry_time'  => $res['expiry_time'] ?? null,
-            ]),
-            'last_charge' => $res['additional']['raw'] ?? null,
-        ];
-        $meta = array_merge($payment->meta ?? [], [
-            'midtrans' => $md,
-        ]);
-
-        $payment->update([
-            'reference' => $res['order_id'],
-            'provider'  => 'Midtrans',
-            'meta'      => $meta,
-        ]);
-
-        return response()->json([
-            'payment_id'  => (string) $payment->id,
-            'order_id'    => $res['order_id'],
-            'qr_string'   => $res['qr_string'] ?? null,
-            'actions'     => $res['actions'] ?? null,
-            'expiry_time' => $res['expiry_time'] ?? null,
-        ]);
-    }
-
     public function status(Request $request, Invoice $invoice): JsonResponse
     {
         $this->assertOwnership($invoice, $request);
@@ -250,8 +145,31 @@ class MidtransController extends Controller
             ->latest('id')
             ->first(['id', 'meta', 'provider', 'status', 'va_number', 'va_expired_at']);
 
-        $pending = $this->mapPendingPayment($pendingPayment);
+        $pending = $this->midtrans->extractPendingInfoFromPayment($pendingPayment);
 
         return response()->json(['pending' => $pending]);
+    }
+
+    public function cancelPending(Request $request, Invoice $invoice): JsonResponse
+    {
+        $this->assertOwnership($invoice, $request);
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $toExpire */
+        $toExpire = $invoice->payments()
+            ->where('provider', 'Midtrans')
+            ->where('status', PaymentStatus::PENDING->value)
+            ->get(['id', 'reference', 'meta']);
+        foreach ($toExpire as $pp) {
+            /** @var Payment $pp */
+            $md      = (array) (($pp->meta['midtrans'] ?? []));
+            $orderId = (string) ($pp->reference ?: ($md['order_id'] ?? ''));
+            if ($orderId !== '') {
+                $this->midtrans->expireTransaction($orderId);
+            }
+        }
+
+        $count = $this->payments->voidPendingPaymentsForInvoice($invoice, 'Midtrans', 'User switched bank from pay-dialog', $request->user());
+
+        return response()->json(['message' => 'VA sebelumnya dibatalkan.', 'voided_count' => $count]);
     }
 }

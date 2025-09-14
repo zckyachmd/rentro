@@ -163,4 +163,41 @@ class PaymentService
             }
         }
     }
+
+    /**
+     * Void all pending payments for an invoice, optionally filtered by provider,
+     * in a single transaction and recalculate the invoice once.
+     * Returns number of payments voided.
+     */
+    public function voidPendingPaymentsForInvoice(Invoice $invoice, ?string $provider = null, ?string $reason = null, ?User $user = null): int
+    {
+        return DB::transaction(function () use ($invoice, $provider, $reason, $user): int {
+            $query = $invoice->payments()
+                ->where('status', PaymentStatus::PENDING->value);
+            if (!empty($provider)) {
+                $query->where('provider', $provider);
+            }
+
+            $payments = $query->lockForUpdate()->get();
+            if ($payments->isEmpty()) {
+                return 0;
+            }
+
+            foreach ($payments as $payment) {
+                $meta                = (array) ($payment->meta ?? []);
+                $meta['voided_at']   = now()->toDateTimeString();
+                $meta['void_reason'] = (string) ($reason ?? '');
+                $meta['voided_by']   = $user?->name;
+
+                $payment->update([
+                    'status' => PaymentStatus::CANCELLED->value,
+                    'meta'   => $meta,
+                ]);
+            }
+
+            $this->recalculateInvoice($invoice);
+
+            return $payments->count();
+        });
+    }
 }

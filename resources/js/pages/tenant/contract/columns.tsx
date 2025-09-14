@@ -33,6 +33,7 @@ const COL = {
     end: 'shrink-0 w-[120px]',
     rent: 'shrink-0 w-[140px] text-right',
     status: 'shrink-0 w-[120px]',
+    daysLeft: 'shrink-0 w-[120px] text-right',
     renew: 'shrink-0 w-[120px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 };
@@ -110,6 +111,53 @@ export const createColumns = (
                 </Badge>
             </div>
         ),
+    }),
+    makeColumn<TenantContractItem>({
+        id: 'days_left',
+        title: 'Sisa Hari',
+        className: COL.daysLeft,
+        cell: ({ row }) => {
+            const s = String(row.original.status || '');
+            const end = row.original.end_date
+                ? new Date(row.original.end_date)
+                : null;
+            if (s.toLowerCase() !== 'active' || !end)
+                return <div className={COL.daysLeft}>-</div>;
+            const today = new Date();
+            const d0 = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                today.getDate(),
+            );
+            const d1 = new Date(
+                end.getFullYear(),
+                end.getMonth(),
+                end.getDate(),
+            );
+            const diffMs = d1.getTime() - d0.getTime();
+            const days = Math.max(0, Math.ceil(diffMs / 86_400_000));
+            if (days <= 0) {
+                return (
+                    <div className={COL.daysLeft}>
+                        <Badge variant="destructive">Habis</Badge>
+                    </div>
+                );
+            }
+            if (days <= 7) {
+                return (
+                    <div className={COL.daysLeft}>
+                        <Badge className="border-amber-200 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                            {`${days} hari`}
+                        </Badge>
+                    </div>
+                );
+            }
+            return (
+                <div className={COL.daysLeft}>
+                    <Badge variant="secondary">{`${days} hari`}</Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<TenantContractItem>({
         id: 'renew',

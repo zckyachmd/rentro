@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use App\Services\Gateway\Contracts\MidtransGatewayInterface;
+use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -62,33 +62,19 @@ class MidtransWebhookController extends Controller
             $updates['paid_at'] = $mapped['paid_at'];
         }
 
-        // Capture VA details if provided
-        $vaNumbers = $payload['va_numbers'] ?? $payload['va_number'] ?? [];
-        if (is_array($vaNumbers) && !empty($vaNumbers)) {
-            $first = $vaNumbers[0] ?? [];
-            if (is_array($first)) {
-                $updates['va_number'] = (string) ($first['va_number'] ?? '');
-            }
-        } elseif (is_string($vaNumbers) && $vaNumbers !== '') {
-            $updates['va_number'] = $vaNumbers;
+        // Capture VA details (va_number, expiry_time)
+        $va = $this->midtrans->extractVaFieldsFromPayload($payload);
+        if (!empty($va['va_number'])) {
+            $updates['va_number'] = $va['va_number'];
         }
-
-        if (!empty($payload['expiry_time'])) {
-            $updates['va_expired_at'] = $payload['expiry_time'];
+        if (!empty($va['expiry_time'])) {
+            $updates['va_expired_at'] = $va['expiry_time'];
         }
 
         // Merge meta for audit
         $md = (array) (($payment->meta['midtrans'] ?? []));
         // Extract instruction fields for better UX on frontend
-        $instructions = [
-            'payment_type' => $payload['payment_type'] ?? null,
-            'pdf_url'      => $payload['pdf_url'] ?? null,
-            'payment_code' => $payload['payment_code'] ?? null,
-            'store'        => $payload['store'] ?? null,
-            'qr_string'    => $payload['qr_string'] ?? null,
-            'actions'      => $payload['actions'] ?? null,
-        ];
-        $md['instructions']      = array_filter($instructions, fn ($v) => $v !== null);
+        $md['instructions']      = $this->midtrans->extractInstructionMetaFromPayload($payload);
         $md['last_notification'] = $payload;
 
         $meta = array_merge($payment->meta ?? [], [

@@ -94,11 +94,14 @@ export const createColumns = (
         title: 'Sisa',
         className: COL.outstanding,
         sortable: true,
-        cell: ({ getValue }) => (
-            <div className={COL.outstanding}>
-                {formatIDR(Number(getValue() || 0))}
-            </div>
-        ),
+        cell: ({ getValue }) => {
+            const v = Number(getValue() || 0);
+            return (
+                <div className={COL.outstanding}>
+                    {v <= 0 ? 'Lunas' : formatIDR(v)}
+                </div>
+            );
+        },
     }),
     makeColumn<TenantInvoiceItem>({
         id: 'status',

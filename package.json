@@ -15,8 +15,7 @@
         "@headlessui/react": "^2.0.0",
         "@inertiajs/react": "^2.0.0",
         "@tailwindcss/forms": "^0.5.10",
-        "@types/clipboard": "^2.0.10",
-        "@types/node": "^24.3.1",
+        "@types/node": "^24.3.3",
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.10",
         "@vitejs/plugin-react": "^4.2.0",
@@ -36,12 +35,12 @@
         "react-dom": "^18.2.0",
         "tailwindcss": "^3.4.17",
         "typescript": "^5.0.2",
-        "typescript-eslint": "^8.42.0"
+        "typescript-eslint": "^8.43.0"
     },
     "dependencies": {
-        "@headlessui/react": "^2.2.7",
+        "@headlessui/react": "^2.2.8",
         "@hookform/resolvers": "^5.2.1",
-        "@inertiajs/react": "^2.1.5",
+        "@inertiajs/react": "^2.1.6",
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-alert-dialog": "^1.1.15",
         "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -66,7 +65,7 @@
         "@radix-ui/react-tooltip": "^1.2.8",
         "@tailwindcss/vite": "^4.1.13",
         "@tanstack/react-table": "^8.21.3",
-        "@types/react": "^19.1.12",
+        "@types/react": "^19.1.13",
         "@types/react-dom": "^19.1.9",
         "@vitejs/plugin-react": "^4.7.0",
         "class-variance-authority": "^0.7.1",
@@ -87,8 +86,8 @@
         "tailwind-merge": "^3.3.1",
         "tailwindcss-animate": "^1.0.7",
         "typescript": "^5.9.2",
-        "vite": "^7.1.4",
-        "zod": "^4.1.5"
+        "vite": "^7.1.5",
+        "zod": "^4.1.8"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",

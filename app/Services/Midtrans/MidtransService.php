@@ -2,21 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Gateway;
+namespace App\Services\Midtrans;
 
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Services\Gateway\Contracts\MidtransGatewayInterface;
+use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\CoreApi;
+use Midtrans\Transaction;
 
 /**
  * MidtransService.
  *
  * - Initializes SDK config (server key, environment, HTTP options)
- * - Issues Core API charges for Bank Transfer VA and QRIS
+ * - Issues Core API charges for Bank Transfer VA
  * - Verifies webhook signatures and maps Midtrans status to internal status
  *
  * Hardening:
@@ -47,7 +48,7 @@ class MidtransService implements MidtransGatewayInterface
         ];
     }
 
-    // Snap flow removed in favor of Core API (VA & QRIS)
+    // Snap flow removed in favor of Core API (VA only)
 
     /**
      * Create a Core API Bank Transfer VA charge (bca|bni|bri|permata|cimb).
@@ -122,64 +123,6 @@ class MidtransService implements MidtransGatewayInterface
         ];
     }
 
-    /**
-     * Create a Core API QRIS charge.
-     */
-    public function createQris(Invoice $invoice, Payment $payment, int $amountCents, array $customer = []): array
-    {
-        $this->boot();
-        $this->ensureConfigured();
-        if ($amountCents <= 0) {
-            throw new \InvalidArgumentException('Invalid amount.');
-        }
-        $invoice->loadMissing(['contract.room:id,number']);
-        $roomNo      = (string) optional(optional($invoice->contract)->room)->number;
-        $orderId     = $this->buildOrderId($payment, $roomNo);
-        $gross       = (int) number_format($amountCents, 0, '.', '');
-        $itemDetails = $this->buildItemDetails($invoice, $gross);
-
-        $params = [
-            'payment_type'        => 'qris',
-            'transaction_details' => [
-                'order_id'     => $orderId,
-                'gross_amount' => (int) $gross,
-            ],
-            'item_details'     => $itemDetails,
-            'customer_details' => [
-                'first_name' => (string) Arr::get($customer, 'name', ''),
-                'email'      => (string) Arr::get($customer, 'email', ''),
-                'phone'      => (string) Arr::get($customer, 'phone', ''),
-            ],
-        ];
-
-        // Optional custom expiry (minutes)
-        $expiry = (int) (config('midtrans.expiry_minutes') ?? 0);
-        if ($expiry > 0) {
-            $params['custom_expiry'] = [
-                'expiry_duration' => $expiry,
-                'unit'            => 'minute',
-            ];
-        }
-
-        $respArr = $this->chargeWithRetry($params, $orderId, 'qris');
-
-        $qrString = isset($respArr['qr_string']) ? (string) $respArr['qr_string'] : null;
-        $actions  = isset($respArr['actions']) && is_array($respArr['actions']) ? $respArr['actions'] : null;
-        $expiry   = isset($respArr['expiry_time']) ? (string) $respArr['expiry_time'] : null;
-
-        return [
-            'order_id'     => (string) $orderId,
-            'payment_type' => 'qris',
-            'qr_string'    => $qrString,
-            'actions'      => $actions,
-            'expiry_time'  => $expiry,
-            'additional'   => [
-                'params' => $params,
-                'raw'    => $respArr,
-            ],
-        ];
-    }
-
     /** Normalize SDK responses into arrays (handles stdClass). */
     private function arrify(mixed $resp): array
     {
@@ -229,7 +172,7 @@ class MidtransService implements MidtransGatewayInterface
      * Perform Core API charge with a single retry on order_id conflict.
      * @param array $params
      * @param string $orderId
-     * @param string $kind 'bank_transfer'|'qris'
+     * @param string $kind 'bank_transfer'
      * @return array
      */
     private function chargeWithRetry(array $params, string $orderId, string $kind): array
@@ -372,5 +315,129 @@ class MidtransService implements MidtransGatewayInterface
         }
 
         return ['status' => $status, 'paid_at' => $paidAt];
+    }
+
+    /** Fetch transaction status from Midtrans by order_id. */
+    public function fetchTransactionStatus(string $orderId): array
+    {
+        $this->boot();
+        $this->ensureConfigured();
+        $resp = Transaction::status($orderId);
+
+        return $this->arrify($resp);
+    }
+
+    /**
+     * Extract lightweight "pending info" for frontend from a Payment's Midtrans meta.
+     * Returns null when payment is null.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function extractPendingInfoFromPayment(?Payment $pendingPayment): ?array
+    {
+        if (!$pendingPayment) {
+            return null;
+        }
+
+        $mid   = (array) ($pendingPayment->meta['midtrans'] ?? []);
+        $notif = (array) ($mid['last_notification'] ?? []);
+        $instr = (array) ($mid['instructions'] ?? []);
+
+        $bank      = null;
+        $va        = null;
+        $vaNumbers = $notif['va_numbers'] ?? [];
+        if (is_array($vaNumbers) && !empty($vaNumbers)) {
+            $first = $vaNumbers[0] ?? [];
+            if (is_array($first)) {
+                $bank = $first['bank'] ?? null;
+                $va   = $first['va_number'] ?? null;
+            }
+        } elseif (!empty($notif['permata_va_number'])) {
+            $bank = 'permata';
+            $va   = $notif['permata_va_number'];
+        }
+
+        if ($bank === null && !empty($instr['bank'])) {
+            $bank = (string) $instr['bank'];
+        }
+
+        return [
+            'payment_type' => (string) ($instr['payment_type'] ?? ($notif['payment_type'] ?? '')),
+            'bank'         => $bank,
+            'va_number'    => $va ?: (string) ($pendingPayment->va_number ?? ''),
+            'expiry_time'  => (string) ($notif['expiry_time'] ?? ($pendingPayment->va_expired_at ? $pendingPayment->va_expired_at->toDateTimeString() : '')),
+            'pdf_url'      => (string) ($instr['pdf_url'] ?? ($notif['pdf_url'] ?? '')),
+            'payment_code' => (string) ($instr['payment_code'] ?? ($notif['payment_code'] ?? '')),
+            'store'        => (string) ($instr['store'] ?? ($notif['store'] ?? '')),
+            'qr_string'    => (string) ($instr['qr_string'] ?? ($notif['qr_string'] ?? '')),
+            'actions'      => $instr['actions'] ?? ($notif['actions'] ?? []),
+        ];
+    }
+
+    /** @inheritDoc */
+    public function extractVaFieldsFromPayload(array $payload): array
+    {
+        $vaNumber = null;
+        $expiry   = null;
+
+        $vaNumbers = $payload['va_numbers'] ?? $payload['va_number'] ?? [];
+        if (is_array($vaNumbers) && !empty($vaNumbers)) {
+            $first = $vaNumbers[0] ?? [];
+            if (is_array($first)) {
+                $vaNumber = (string) ($first['va_number'] ?? '');
+            }
+        } elseif (is_string($vaNumbers) && $vaNumbers !== '') {
+            $vaNumber = (string) $vaNumbers;
+        } elseif (!empty($payload['permata_va_number'])) {
+            $vaNumber = (string) $payload['permata_va_number'];
+        }
+
+        if (!empty($payload['expiry_time'])) {
+            $expiry = (string) $payload['expiry_time'];
+        }
+
+        return [
+            'va_number'   => $vaNumber ?: null,
+            'expiry_time' => $expiry,
+        ];
+    }
+
+    /** @inheritDoc */
+    public function extractInstructionMetaFromPayload(array $payload): array
+    {
+        $instructions = [
+            'payment_type' => $payload['payment_type'] ?? null,
+            'pdf_url'      => $payload['pdf_url'] ?? null,
+            'payment_code' => $payload['payment_code'] ?? null,
+            'store'        => $payload['store'] ?? null,
+            'qr_string'    => $payload['qr_string'] ?? null,
+            'actions'      => $payload['actions'] ?? null,
+        ];
+
+        return array_filter($instructions, fn ($v) => $v !== null);
+    }
+
+    /** @inheritDoc */
+    public function expireTransaction(string $orderId): bool
+    {
+        try {
+            if (trim($orderId) === '') {
+                return false;
+            }
+            $this->boot();
+            $this->ensureConfigured();
+            // Midtrans will throw on failure
+            $resp = Transaction::expire($orderId);
+            $this->arrify($resp); // normalize, ignore content
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::warning('Midtrans expire failed', [
+                'order_id' => $orderId,
+                'error'    => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 }

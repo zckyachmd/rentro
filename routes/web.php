@@ -123,12 +123,13 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/{invoice}/pay/status', [TenantMidtransController::class, 'status'])
                 ->whereNumber('invoice')
                 ->name('pay.status');
+            Route::post('/{invoice}/pay/cancel', [TenantMidtransController::class, 'cancelPending'])
+                ->whereNumber('invoice')
+                ->name('pay.cancel');
             Route::post('/{invoice}/pay/midtrans/va', [TenantMidtransController::class, 'payVa'])
                 ->whereNumber('invoice')
+                ->middleware('throttle:6,1')
                 ->name('pay.midtrans.va');
-            Route::post('/{invoice}/pay/midtrans/qris', [TenantMidtransController::class, 'payQris'])
-                ->whereNumber('invoice')
-                ->name('pay.midtrans.qris');
         });
     });
 

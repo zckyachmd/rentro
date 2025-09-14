@@ -65,7 +65,9 @@ export function DataTableToolbar<TData>({
   autoRefreshValue,
   onAutoRefreshChange,
 }: Props<TData>) {
-  const column = table.getColumn(filterKey) as Column<TData, unknown> | undefined
+  const column = (table.getAllLeafColumns() as Column<TData, unknown>[]).find(
+    (c) => String(c.id) === String(filterKey)
+  ) as Column<TData, unknown> | undefined
   const visibility = table.getState?.().columnVisibility as Record<string, boolean> | undefined
   const allLeaf = table.getAllLeafColumns() as Column<TData, unknown>[]
 

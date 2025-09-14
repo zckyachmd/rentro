@@ -245,7 +245,6 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             })}
                             rows={contracts}
                             paginator={paginator ?? null}
-                            searchKey="room"
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}

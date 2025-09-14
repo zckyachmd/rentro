@@ -145,11 +145,14 @@ export const createColumns = <T extends BaseInvoiceRow>(
         id: 'outstanding',
         title: 'Sisa',
         className: COL.outstanding,
-        cell: ({ row }) => (
-            <div className={COL.outstanding}>
-                {formatIDR(Math.max(0, row.original.outstanding ?? 0))}
-            </div>
-        ),
+        cell: ({ row }) => {
+            const v = Math.max(0, row.original.outstanding ?? 0);
+            return (
+                <div className={COL.outstanding}>
+                    {v <= 0 ? 'Lunas' : formatIDR(v)}
+                </div>
+            );
+        },
     }),
     makeColumn<T>({
         id: 'actions',
