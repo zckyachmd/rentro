@@ -25,6 +25,9 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index(['contract_id', 'due_date']);
+            $table->index(['contract_id', 'status']);
+            $table->index(['contract_id', 'period_start', 'period_end']);
+            $table->index(['due_date', 'status']);
         });
     }
 

@@ -25,13 +25,14 @@ class UpdateContractStatusOnInvoiceReopened
             return;
         }
 
-        $due          = $invoice->due_date instanceof Carbon ? $invoice->due_date->copy()->startOfDay() : Carbon::parse((string) $invoice->due_date);
-        $today        = Carbon::now()->startOfDay();
-        $targetStatus = $due->lessThan($today) ? ContractStatus::OVERDUE : ContractStatus::PENDING_PAYMENT;
+        $due   = $invoice->due_date instanceof Carbon ? $invoice->due_date->copy()->startOfDay() : Carbon::parse((string) $invoice->due_date);
+        $today = Carbon::now()->startOfDay();
 
         /** @phpstan-assert Contract $contract */
         $prev = (string) $contract->status->value;
-        if (!in_array($prev, [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value], true)) {
+        // Do not change ACTIVE/COMPLETED/CANCELLED contracts when an invoice reopens mid-term
+        if (!in_array($prev, [ContractStatus::ACTIVE->value, ContractStatus::COMPLETED->value, ContractStatus::CANCELLED->value], true)) {
+            $targetStatus = $due->lessThan($today) ? ContractStatus::OVERDUE : ContractStatus::PENDING_PAYMENT;
             $contract->forceFill(['status' => $targetStatus])->save();
 
             $this->logEvent(

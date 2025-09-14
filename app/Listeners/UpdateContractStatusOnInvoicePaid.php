@@ -29,16 +29,16 @@ class UpdateContractStatusOnInvoicePaid
         $current = (string) $contract->status->value;
         if (
             in_array($current, [
-            ContractStatus::PENDING_PAYMENT->value,
-            ContractStatus::BOOKED->value,
-            ContractStatus::OVERDUE->value,
+                ContractStatus::PENDING_PAYMENT->value,
+                ContractStatus::BOOKED->value,
+                ContractStatus::OVERDUE->value,
             ], true)
         ) {
             $today     = now()->startOfDay();
             $startDate = $contract->start_date->copy()->startOfDay();
             $next      = $startDate && $startDate->lessThanOrEqualTo($today)
                 ? ContractStatus::ACTIVE
-                : ContractStatus::PAID;
+                : ContractStatus::BOOKED;
 
             $contract->forceFill(['status' => $next])->save();
 
@@ -47,6 +47,15 @@ class UpdateContractStatusOnInvoicePaid
                 $room = $contract->room;
                 if ($room && $room->status->value !== \App\Enum\RoomStatus::OCCUPIED->value) {
                     $room->update(['status' => \App\Enum\RoomStatus::OCCUPIED->value]);
+                }
+            } elseif ($next === ContractStatus::BOOKED) {
+                /** @var \App\Models\Room|null $room */
+                $room = $contract->room;
+                if ($room && $room->status->value !== \App\Enum\RoomStatus::RESERVED->value) {
+                    // Pre-activation paid contract holds the room as Reserved
+                    if ($room->status->value !== \App\Enum\RoomStatus::OCCUPIED->value) {
+                        $room->update(['status' => \App\Enum\RoomStatus::RESERVED->value]);
+                    }
                 }
             }
 

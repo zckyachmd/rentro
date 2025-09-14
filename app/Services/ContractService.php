@@ -29,8 +29,9 @@ class ContractService implements ContractServiceInterface
     {
         try {
             return DB::transaction(function () use ($data) {
+                // Lock the room row to prevent concurrent booking on the same room
                 /** @var Room $room */
-                $room = Room::findOrFail($data['room_id']);
+                $room = Room::query()->whereKey($data['room_id'])->lockForUpdate()->firstOrFail();
                 /** @var User $tenant */
                 $tenant = User::findOrFail($data['user_id']);
 
@@ -67,7 +68,6 @@ class ContractService implements ContractServiceInterface
                     ->whereIn('status', [
                         ContractStatus::PENDING_PAYMENT->value,
                         ContractStatus::BOOKED->value,
-                        ContractStatus::PAID->value,
                         ContractStatus::ACTIVE->value,
                     ])
                     ->where(function ($q) use ($start, $computedEnd) {
@@ -111,7 +111,6 @@ class ContractService implements ContractServiceInterface
                         ->whereIn('status', [
                             ContractStatus::PENDING_PAYMENT->value,
                             ContractStatus::BOOKED->value,
-                            ContractStatus::PAID->value,
                             ContractStatus::ACTIVE->value,
                         ])
                         ->whereDate('start_date', '>', $today->toDateString())
@@ -156,11 +155,10 @@ class ContractService implements ContractServiceInterface
                 // Generate initial invoice via shared helper
                 $this->generateInitialInvoice($contract);
 
-                // Initial creation sets status to PENDING_PAYMENT → room becomes RESERVED
-                $newRoomStatus = RoomStatus::RESERVED->value;
-
-                if ($newRoomStatus !== $room->status) {
-                    $room->update(['status' => $newRoomStatus]);
+                // Initial creation sets status to PENDING_PAYMENT.
+                // Set room to RESERVED only if it's not currently OCCUPIED (avoid downgrading an occupied room)
+                if ($room->status->value !== RoomStatus::OCCUPIED->value && $room->status->value !== RoomStatus::RESERVED->value) {
+                    $room->update(['status' => RoomStatus::RESERVED->value]);
                 }
 
                 return $contract;
@@ -238,14 +236,9 @@ class ContractService implements ContractServiceInterface
                 ])->save();
 
                 /** @var Room|null $room */
-                $room = $contract->room()
-                    ->withCount(['holdingContracts as other_holders_count' => function ($q) use ($contract) {
-                        $q->where('id', '!=', $contract->id);
-                    }])
-                    ->first();
-
-                if ($room && (int) ($room->getAttribute('other_holders_count') ?? 0) === 0) {
-                    $room->update(['status' => RoomStatus::VACANT->value]);
+                $room = $contract->room()->first();
+                if ($room) {
+                    $this->recomputeRoomStatus($room);
                 }
             });
         } catch (\Throwable $e) {
@@ -307,14 +300,9 @@ class ContractService implements ContractServiceInterface
                 ])->save();
 
                 /** @var Room|null $room */
-                $room = $contract->room()
-                    ->withCount(['holdingContracts as other_holders_count' => function ($q) use ($contract) {
-                        $q->where('id', '!=', $contract->id);
-                    }])
-                    ->first();
-
-                if ($room && (int) ($room->getAttribute('other_holders_count') ?? 0) === 0) {
-                    $room->update(['status' => RoomStatus::VACANT->value]);
+                $room = $contract->room()->first();
+                if ($room) {
+                    $this->recomputeRoomStatus($room);
                 }
             });
         } catch (\Throwable $e) {
@@ -324,6 +312,39 @@ class ContractService implements ContractServiceInterface
                 'contract_id' => $contract->id,
             ]);
             throw $e;
+        }
+    }
+
+    /**
+     * Recompute and update the room status based on current contracts.
+     * Priority: Active => OCCUPIED; else if Pending/Booked/Paid exists => RESERVED; else VACANT.
+     */
+    private function recomputeRoomStatus(Room $room): void
+    {
+        $hasActive = Contract::query()
+            ->where('room_id', $room->id)
+            ->where('status', ContractStatus::ACTIVE->value)
+            ->exists();
+
+        if ($hasActive) {
+            if ($room->status->value !== RoomStatus::OCCUPIED->value) {
+                $room->update(['status' => RoomStatus::OCCUPIED->value]);
+            }
+
+            return;
+        }
+
+        $hasHolder = Contract::query()
+            ->where('room_id', $room->id)
+            ->whereIn('status', [
+                ContractStatus::PENDING_PAYMENT->value,
+                ContractStatus::BOOKED->value,
+            ])
+            ->exists();
+
+        $target = $hasHolder ? RoomStatus::RESERVED->value : RoomStatus::VACANT->value;
+        if ($room->status->value !== $target) {
+            $room->update(['status' => $target]);
         }
     }
 }

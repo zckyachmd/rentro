@@ -32,6 +32,7 @@ return new class extends Migration
 
             $table->index(['user_id', 'room_id']);
             $table->index(['start_date', 'end_date']);
+            $table->index(['room_id', 'status', 'start_date', 'end_date']);
         });
     }
 

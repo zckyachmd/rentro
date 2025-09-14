@@ -27,7 +27,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            $table->unique(['reference']);
             $table->index(['invoice_id', 'status']);
+            $table->index(['provider', 'status']);
             $table->index(['va_number']);
         });
     }

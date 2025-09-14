@@ -28,14 +28,14 @@ class ContractsActivateDue extends Command
 
         Contract::query()
             ->select('id')
-            ->where('status', ContractStatus::PAID->value)
+            ->where('status', ContractStatus::BOOKED->value)
             ->whereDate('start_date', '<=', $today)
             ->orderBy('id')
             ->chunkById($chunkSize, function ($rows) use (&$count, $today, $dryRun): void {
                 $this->processChunk($rows, $count, $today, $dryRun);
             });
 
-        $this->info(($dryRun ? '[dry-run] ' : '') . "Activated {$count} contract(s) due to start.");
+        $this->info(($dryRun ? '[dry-run] ' : '') . "Activated {$count} contract(s) due to start (from Booked).");
 
         return self::SUCCESS;
     }

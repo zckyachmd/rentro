@@ -38,7 +38,6 @@ type ManualPaymentFormData = {
     method: string;
     paid_at: string;
     note: string;
-    reference: string;
     provider: string;
     attachment: File | null;
 };
@@ -58,7 +57,6 @@ export function ManualPaymentDialog({
         method: methods?.[0]?.value ?? 'Cash',
         paid_at: '',
         note: '',
-        reference: '',
         provider: 'Kasir',
         attachment: null,
     });
@@ -149,7 +147,6 @@ export function ManualPaymentDialog({
                         method: p.method,
                         paid_at: '',
                         note: '',
-                        reference: '',
                         provider: p.method === 'Cash' ? 'Kasir' : p.provider,
                         attachment: null,
                     }));

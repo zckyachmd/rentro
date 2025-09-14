@@ -592,17 +592,29 @@ class InvoiceService implements InvoiceServiceInterface
                         $invoice->status = InvoiceStatus::PENDING;
                     }
 
-                    // Also update related contract and room back to pending/reserved
+                    // For pre-activation contracts only, restore to Pending Payment and set room to RESERVED.
+                    // Do NOT downgrade Active/Completed/Cancelled contracts or Occupied rooms mid-term.
                     /** @var \App\Models\Contract|null $contract */
                     $contract = $invoice->contract;
                     if ($contract instanceof \App\Models\Contract) {
-                        $contract->status = \App\Enum\ContractStatus::PENDING_PAYMENT;
-                        $contract->save();
+                        $cStatus         = (string) $contract->status->value;
+                        $nonDowngradable = [
+                            \App\Enum\ContractStatus::ACTIVE->value,
+                            \App\Enum\ContractStatus::COMPLETED->value,
+                            \App\Enum\ContractStatus::CANCELLED->value,
+                        ];
+                        if (!in_array($cStatus, $nonDowngradable, true)) {
+                            $contract->status = \App\Enum\ContractStatus::PENDING_PAYMENT;
+                            $contract->save();
 
-                        /** @var \App\Models\Room|null $room */
-                        $room = $contract->room;
-                        if ($room) {
-                            $room->update(['status' => \App\Enum\RoomStatus::RESERVED->value]);
+                            /** @var \App\Models\Room|null $room */
+                            $room = $contract->room;
+                            if ($room) {
+                                $rStatus = (string) $room->status->value;
+                                if ($rStatus !== \App\Enum\RoomStatus::OCCUPIED->value && $rStatus !== \App\Enum\RoomStatus::RESERVED->value) {
+                                    $room->update(['status' => \App\Enum\RoomStatus::RESERVED->value]);
+                                }
+                            }
                         }
                     }
                 }

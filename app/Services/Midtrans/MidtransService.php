@@ -181,8 +181,17 @@ class MidtransService implements MidtransGatewayInterface
 
             return $this->arrify($resp);
         } catch (\Throwable $e) {
-            $msg        = (string) $e->getMessage();
-            $isConflict = stripos($msg, 'order_id') !== false && stripos($msg, 'used') !== false;
+            $msg = (string) $e->getMessage();
+            // Consider various conflict indicators from Midtrans errors
+            $isConflict = (
+                stripos($msg, 'order_id') !== false && stripos($msg, 'used') !== false
+            ) || (
+                stripos($msg, 'status code: 406') !== false
+            ) || (
+                stripos($msg, 'status_code') !== false && stripos($msg, '406') !== false
+            ) || (
+                stripos($msg, 'conflict') !== false
+            );
             if ($isConflict) {
                 $newId                                     = $orderId . '-R' . substr(bin2hex(random_bytes(3)), 0, 6);
                 $params['transaction_details']['order_id'] = $newId;

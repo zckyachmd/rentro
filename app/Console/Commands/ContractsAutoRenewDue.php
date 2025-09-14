@@ -35,7 +35,7 @@ class ContractsAutoRenewDue extends Command
         Contract::query()
             ->select(['id'])
             ->where('auto_renew', true)
-            ->whereIn('status', [ContractStatus::ACTIVE->value, ContractStatus::PAID->value])
+            ->where('status', ContractStatus::ACTIVE->value)
             ->whereDate('end_date', '<=', $today->copy()->addDays($effectiveLead)->toDateString())
             ->orderBy('id')
             ->chunkById($chunk, function ($rows) use (&$countCreated, &$countSkipped, $contracts, $today, $dryRun, $rollover): void {
@@ -59,7 +59,6 @@ class ContractsAutoRenewDue extends Command
                         ->whereIn('status', [
                             ContractStatus::PENDING_PAYMENT->value,
                             ContractStatus::BOOKED->value,
-                            ContractStatus::PAID->value,
                             ContractStatus::ACTIVE->value,
                         ])
                         ->whereDate('start_date', '>=', $start)

@@ -24,30 +24,40 @@ class PaymentService implements PaymentServiceInterface
 
     private function generatePaymentReference(Invoice $invoice): string
     {
-        $base = (string) ($invoice->number ?? '');
-        if ($base === '') {
-            $base = 'INV-' . now()->format('Ymd') . '-0000';
-        }
-        $prefix = $base . '-P';
-
-        $latestRef = Payment::query()
-            ->where('invoice_id', $invoice->id)
-            ->where('reference', 'like', $prefix . '%')
-            ->orderByDesc('reference')
-            ->value('reference');
-
-        $lastSeq = 0;
-        if (is_string($latestRef) && preg_match('/(\d{3})$/', $latestRef, $m)) {
-            $lastSeq = (int) $m[1];
+        // Format baru berbasis nomor invoice:
+        //  - Ambil nomor invoice (contoh: INV-YYYYMMDD-XXXX)
+        //  - Ganti prefix INV- menjadi PAY-
+        //  - Tambahkan suffix acak 4 karakter alfanumerik: PAY-YYYYMMDD-XXXX-AB12
+        $invNo = (string) ($invoice->number ?? '');
+        if ($invNo !== '' && str_starts_with($invNo, 'INV-')) {
+            $base = 'PAY-' . substr($invNo, 4);
+        } elseif ($invNo !== '' && preg_match('/(\d{8}-\d{4})/', $invNo, $m)) {
+            $base = 'PAY-' . $m[1];
+        } else {
+            // Fallback jika format invoice tidak standar
+            $base = 'PAY-' . now()->format('Ymd') . '-' . sprintf('%04d', random_int(0, 9999));
         }
 
-        $seq = max(1, $lastSeq + 1);
-        do {
-            $candidate = sprintf('%s%03d', $prefix, $seq);
-            $seq++;
-        } while (Payment::query()->where('reference', $candidate)->exists());
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $alphaLen = strlen($alphabet);
 
-        return $candidate;
+        // Coba beberapa kali untuk memastikan unik
+        for ($i = 0; $i < 20; $i++) {
+            $suffix = '';
+            for ($j = 0; $j < 4; $j++) {
+                $suffix .= $alphabet[random_int(0, $alphaLen - 1)];
+            }
+            $ref = $base . '-' . $suffix;
+            if (!Payment::query()->where('reference', $ref)->exists()) {
+                return $ref;
+            }
+        }
+
+        // Fallback terakhir dengan timestamp detik + 2 digit acak
+        $suffix = substr(strtoupper(bin2hex(random_bytes(2))), 0, 4);
+        $ref    = $base . '-' . $suffix;
+
+        return $ref;
     }
 
     /**
@@ -91,7 +101,7 @@ class PaymentService implements PaymentServiceInterface
                 'amount_cents'          => (int) $data['amount_cents'],
                 'pre_outstanding_cents' => $preOutstanding,
                 'paid_at'               => $data['paid_at'] ?? ($status === PaymentStatus::COMPLETED->value ? now() : null),
-                'reference'             => $data['reference'] ?? null,
+                'reference'             => null,
                 'provider'              => $provider,
                 'va_number'             => $data['va_number'] ?? null,
                 'va_expired_at'         => $data['va_expired_at'] ?? null,
@@ -100,7 +110,17 @@ class PaymentService implements PaymentServiceInterface
             ]);
 
             if (empty($payment->reference)) {
-                $payment->update(['reference' => $this->generatePaymentReference($invoice)]);
+                // Set PAY-YYYYMMDD-<4digit>, retry jika bentrok unique
+                for ($i = 0; $i < 5; $i++) {
+                    $candidate = $this->generatePaymentReference($invoice);
+                    try {
+                        $payment->update(['reference' => $candidate]);
+                        break;
+                    } catch (\Throwable $e) {
+                        // kemungkinan bentrok unik; coba lagi
+                        continue;
+                    }
+                }
             }
 
             if ($attachment) {

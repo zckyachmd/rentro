@@ -172,7 +172,6 @@ class ContractManagementController extends Controller
                 $q->whereIn('status', [
                     ContractStatus::PENDING_PAYMENT->value,
                     ContractStatus::BOOKED->value,
-                    ContractStatus::PAID->value,
                     ContractStatus::ACTIVE->value,
                 ])->whereDate('start_date', '>', $today);
             })
