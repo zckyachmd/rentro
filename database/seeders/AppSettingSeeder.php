@@ -32,9 +32,12 @@ class AppSettingSeeder extends Seeder
             ['billing.due_day_of_month',        7,          'int'],   // default due day
             ['billing.deposit_upfront',         true,       'bool'],
             ['billing.deposit_renewal_rollover', true,      'bool'],
+            ['billing.use_latest_room_price',   true,       'bool'],
 
             // Scheduler / automation
             ['contract.auto_renew_lead_days',   7,          'int'],
+            // Optional: allow pre-booking N days before end if auto_renew is off
+            ['contract.prebook_lead_days',      7,          'int'],
 
             // Queue preferences for jobs
             ['queue.mark_overdue.queue',               'default', 'string'],

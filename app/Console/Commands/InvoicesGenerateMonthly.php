@@ -63,6 +63,7 @@ class InvoicesGenerateMonthly extends Command
                 /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Contract> $contracts */
                 $contracts = Contract::query()
                     ->whereIn('id', $ids)
+                    ->with(['room:id,price_cents'])
                     ->withCount('invoices')
                     ->get();
 

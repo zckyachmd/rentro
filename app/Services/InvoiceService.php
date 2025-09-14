@@ -79,6 +79,13 @@ class InvoiceService implements InvoiceServiceInterface
         $dueMonthly     = Invoice::nextDueDayFrom($now, max(1, (int) $dueDom));
         $activeStatuses = [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value, InvoiceStatus::PAID->value];
 
+        // Monthly rent source: latest room price (toggleable) or contract rent
+        $useLatestRoomPrice = (bool) AppSetting::config('billing.use_latest_room_price', true);
+        $roomPriceCents     = (int) ($contract->room->price_cents ?? 0);
+        $rentCentsMonthly   = $useLatestRoomPrice
+            ? ($roomPriceCents > 0 ? $roomPriceCents : (int) $contract->rent_cents)
+            : (int) $contract->rent_cents;
+
         /** @var Invoice|null $latest */
         $latest = $contract->invoices()
             ->where('status', '!=', InvoiceStatus::CANCELLED)
@@ -171,24 +178,22 @@ class InvoiceService implements InvoiceServiceInterface
                 $endOfThis = $cursor->copy()->addMonthNoOverflow()->subDay();
                 if ($endOfThis->lessThanOrEqualTo($autoEnd)) {
                     $months++;
-                    $cursor = $endOfThis->copy()->addDay(); // awal bulan berikutnya
+                    $cursor = $endOfThis->copy()->addDay();
                 } else {
                     break;
                 }
             }
-            // Cegah duplikasi untuk bulan ini (blokir semua non-cancelled: Pending/Overdue/Paid)
             $rangeFrom    = $start->copy();
             $rangeTo      = $periodEnd->copy();
             $nonCancelled = [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value, InvoiceStatus::PAID->value];
             if ($this->hasActiveOverlap($contract, $rangeFrom, $rangeTo, $nonCancelled)) {
                 throw new \InvalidArgumentException('Sudah ada invoice aktif untuk bulan yang sama.');
             }
-            $items = $this->makeItems($period, 'per_month', (int) $contract->rent_cents, 1, false, $start, 0, $releaseDom);
+            $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $start, 0, $releaseDom);
 
             return $this->createInvoiceRecord($contract, $start, $periodEnd, $dueMonthly, $items);
         }
 
-        // arbitrary range when provided
         if (!empty($options['range']) && is_array($options['range'])) {
             $fromRaw = $options['range']['from'] ?? null;
             $toRaw   = $options['range']['to'] ?? null;
@@ -233,7 +238,8 @@ class InvoiceService implements InvoiceServiceInterface
                 if (!$aligned || $months <= 0) {
                     throw new \InvalidArgumentException('Rentang bulan harus berupa kelipatan bulan penuh.');
                 }
-                $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $months, false, $from, 0, $releaseDom);
+                // Always use latest room price for monthly scheduler
+                $items = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $from, 0, $releaseDom);
 
                 return $this->createInvoiceRecord($contract, $from, $to, $dueMonthly, $items);
             }
@@ -274,7 +280,8 @@ class InvoiceService implements InvoiceServiceInterface
                 if ($this->hasActiveOverlap($contract, $monthStart, $periodEnd, $nonCancelled)) {
                     throw new \InvalidArgumentException('Sudah ada invoice aktif untuk bulan terakhir.');
                 }
-                $items = $this->makeItems($period, 'per_month', (int) $contract->rent_cents, 1, false, $monthStart, 0, $releaseDom);
+                // Use latest room price for monthly regeneration as well
+                $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $monthStart, 0, $releaseDom);
 
                 return $this->createInvoiceRecord($contract, $monthStart, $periodEnd, $dueMonthly, $items);
             }
@@ -296,7 +303,8 @@ class InvoiceService implements InvoiceServiceInterface
             if ($this->hasActiveOverlap($contract, $anchor, $periodEnd, $paidOnly)) {
                 throw new \InvalidArgumentException('Periode yang diminta sudah dibayar lunas.');
             }
-            $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $months, false, $anchor, 0, $releaseDom);
+            // Always use latest room price for monthly scheduler
+            $items = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $anchor, 0, $releaseDom);
 
             return $this->createInvoiceRecord($contract, $anchor, $periodEnd, $dueMonthly, $items);
         }
