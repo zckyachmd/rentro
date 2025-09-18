@@ -3,21 +3,11 @@ import { FilePlus2 } from 'lucide-react';
 import React from 'react';
 
 import AttachmentPreviewDialog from '@/components/attachment-preview';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { QueryBag } from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import { Label } from '@/components/ui/label';
+/* dialog moved into dedicated component */
 import {
     Select,
     SelectContent,
@@ -25,8 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useLengthRule } from '@/hooks/use-length-rule';
+import VoidPaymentDialog from '@/pages/management/payment/dialogs/void';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatIDR } from '@/lib/format';
@@ -72,12 +61,6 @@ export default function PaymentIndex() {
         target: PaymentRow | null;
         reason: string;
     }>({ target: null, reason: '' });
-    const voidRule = useLengthRule(voiding.reason, {
-        min: 1,
-        max: 200,
-        required: true,
-        trim: true,
-    });
 
     const initialInvoiceNumber = React.useMemo(() => {
         const s = (props.query?.search || '').trim();
@@ -228,84 +211,28 @@ export default function PaymentIndex() {
                 details={preview?.details || []}
             />
 
-            {/* Void Payment Dialog */}
-            <AlertDialog
-                open={!!voiding.target}
+            <VoidPaymentDialog
+                target={voiding.target}
                 onOpenChange={(v) => {
                     if (!v) setVoiding({ target: null, reason: '' });
                 }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Batalkan Pembayaran</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {voiding.target ? (
-                                <>
-                                    Anda akan membatalkan pembayaran untuk
-                                    invoice{' '}
-                                    <span className="font-mono font-semibold">
-                                        {voiding.target.invoice ?? '-'}
-                                    </span>
-                                    . Nominal{' '}
-                                    {currency(voiding.target.amount_cents)}.
-                                </>
-                            ) : null}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="space-y-2 py-2">
-                        <Label>Alasan pembatalan</Label>
-                        <Textarea
-                            value={voiding.reason}
-                            onChange={(e) =>
-                                setVoiding((s) => ({
-                                    ...s,
-                                    reason: e.target.value,
-                                }))
-                            }
-                            placeholder="Contoh: salah input, transfer dibatalkan, dsb."
-                            rows={3}
-                            required
-                            maxLength={200}
-                            autoFocus
-                        />
-                        <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
-                            <span>{voidRule.length}/200</span>
-                        </div>
-                    </div>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel
-                            onClick={() =>
-                                setVoiding({ target: null, reason: '' })
-                            }
-                        >
-                            Batal
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            disabled={!voidRule.valid || processing}
-                            onClick={() => {
-                                const p = voiding.target;
-                                if (!p) return;
-                                setProcessing(true);
-                                router.post(
-                                    route('management.payments.void', p.id),
-                                    { reason: voiding.reason },
-                                    {
-                                        onFinish: () => {
-                                            setProcessing(false);
-                                            setVoiding({
-                                                target: null,
-                                                reason: '',
-                                            });
-                                        },
-                                    },
-                                );
-                            }}
-                        >
-                            Batalkan Sekarang
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                processing={processing}
+                onConfirm={(reason) => {
+                    const p = voiding.target;
+                    if (!p) return;
+                    setProcessing(true);
+                    router.post(
+                        route('management.payments.void', p.id),
+                        { reason },
+                        {
+                            onFinish: () => {
+                                setProcessing(false);
+                                setVoiding({ target: null, reason: '' });
+                            },
+                        },
+                    );
+                }}
+            />
         </AuthLayout>
     );
 }

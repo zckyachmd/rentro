@@ -3,16 +3,7 @@ import { Filter, Plus, Search } from 'lucide-react';
 import React from 'react';
 
 import { Can } from '@/components/acl';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+/* inline AlertDialogs moved to dedicated components */
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -29,8 +20,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useLengthRule } from '@/hooks/use-length-rule';
+import CancelContractDialog from '@/pages/management/contract/dialogs/cancel-contract';
+import ToggleAutoRenewDialog from '@/pages/management/contract/dialogs/toggle-autorenew';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { createColumns } from '@/pages/management/contract/columns';
@@ -159,22 +150,7 @@ export default function ContractIndex(props: ContractsPageProps) {
 
     type Target = ContractItem | null;
     const [cancelTarget, setCancelTarget] = React.useState<Target>(null);
-    const [cancelReason, setCancelReason] = React.useState<string>('');
-    const cancelRule = useLengthRule(cancelReason, {
-        min: 1,
-        max: 200,
-        required: true,
-        trim: true,
-    });
     const [toggleTarget, setToggleTarget] = React.useState<Target>(null);
-    const [toggleReason, setToggleReason] = React.useState<string>('');
-    const toggleRequired = Boolean(toggleTarget?.auto_renew);
-    const toggleRule = useLengthRule(toggleReason, {
-        min: 1,
-        max: 200,
-        required: toggleRequired,
-        trim: true,
-    });
     const [checkinTarget, setCheckinTarget] = React.useState<Target>(null);
     const [checkoutTarget, setCheckoutTarget] = React.useState<Target>(null);
 
@@ -322,66 +298,24 @@ export default function ContractIndex(props: ContractsPageProps) {
             </div>
 
             {/* Cancel Contract Dialog */}
-            <AlertDialog
-                open={!!cancelTarget}
-                onOpenChange={(v) => {
-                    if (!v) {
-                        setCancelTarget(null);
-                        setCancelReason('');
-                    }
+            <CancelContractDialog
+                target={cancelTarget}
+                onOpenChange={(o) => {
+                    if (!o) setCancelTarget(null);
                 }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Batalkan Kontrak</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Konfirmasi untuk membatalkan kontrak ini. Status
-                            akan menjadi Cancelled dan auto‑renew dimatikan.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="space-y-2 py-2">
-                        <Label>Alasan pembatalan</Label>
-                        <Textarea
-                            value={cancelReason}
-                            onChange={(e) => setCancelReason(e.target.value)}
-                            placeholder="Contoh: pembatalan oleh tenant, salah input, dll."
-                            required
-                            rows={3}
-                            autoFocus
-                            maxLength={200}
-                        />
-                        <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                            <span>Wajib diisi. Jelaskan secara singkat.</span>
-                            <span>{cancelRule.length}/200</span>
-                        </div>
-                    </div>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction
-                            disabled={!cancelRule.valid}
-                            onClick={() => {
-                                const c = cancelTarget;
-                                if (!c) return;
-                                router.post(
-                                    route('management.contracts.cancel', {
-                                        contract: c.id,
-                                    }),
-                                    { reason: cancelReason },
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () => {
-                                            setCancelTarget(null);
-                                            setCancelReason('');
-                                        },
-                                    },
-                                );
-                            }}
-                        >
-                            Ya, Batalkan
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                onConfirm={(reason) => {
+                    const c = cancelTarget;
+                    if (!c) return;
+                    router.post(
+                        route('management.contracts.cancel', { contract: c.id }),
+                        { reason },
+                        {
+                            preserveScroll: true,
+                            onFinish: () => setCancelTarget(null),
+                        },
+                    );
+                }}
+            />
 
             <Can any={['handover.create']}>
                 <HandoverCreate
@@ -413,79 +347,29 @@ export default function ContractIndex(props: ContractsPageProps) {
                 />
             </Can>
             {/* Toggle Auto‑renew Dialog */}
-            <AlertDialog
-                open={!!toggleTarget}
-                onOpenChange={(v) => {
-                    if (!v) {
-                        setToggleTarget(null);
-                        setToggleReason('');
-                    }
+            <ToggleAutoRenewDialog
+                target={toggleTarget}
+                onOpenChange={(o) => {
+                    if (!o) setToggleTarget(null);
                 }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {toggleTarget?.auto_renew
-                                ? 'Hentikan Auto‑renew'
-                                : 'Nyalakan Auto‑renew'}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {toggleTarget?.auto_renew
-                                ? 'Kontrak tidak akan diperpanjang otomatis di akhir periode.'
-                                : 'Kontrak akan diperpanjang otomatis di akhir periode.'}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    {toggleTarget?.auto_renew && (
-                        <div className="space-y-2 py-2">
-                            <Label>Alasan penghentian</Label>
-                            <Textarea
-                                value={toggleReason}
-                                onChange={(e) =>
-                                    setToggleReason(e.target.value)
-                                }
-                                placeholder="Contoh: permintaan tenant, penyesuaian kontrak, dll."
-                                required
-                                rows={3}
-                                maxLength={200}
-                            />
-                            <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                                <span>{toggleRule.length}/200</span>
-                            </div>
-                        </div>
-                    )}
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction
-                            disabled={toggleRequired && !toggleRule.valid}
-                            onClick={() => {
-                                const c = toggleTarget;
-                                if (!c) return;
-                                const next = !c.auto_renew;
-                                router.post(
-                                    route('management.contracts.setAutoRenew', {
-                                        contract: c.id,
-                                    }),
-                                    next
-                                        ? { auto_renew: next }
-                                        : {
-                                              auto_renew: next,
-                                              reason: toggleReason,
-                                          },
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () => {
-                                            setToggleTarget(null);
-                                            setToggleReason('');
-                                        },
-                                    },
-                                );
-                            }}
-                        >
-                            Konfirmasi
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                onConfirm={(reason) => {
+                    const c = toggleTarget;
+                    if (!c) return;
+                    const next = !c.auto_renew;
+                    router.post(
+                        route('management.contracts.setAutoRenew', {
+                            contract: c.id,
+                        }),
+                        next
+                            ? { auto_renew: next }
+                            : { auto_renew: next, reason },
+                        {
+                            preserveScroll: true,
+                            onFinish: () => setToggleTarget(null),
+                        },
+                    );
+                }}
+            />
         </AuthLayout>
     );
 }
