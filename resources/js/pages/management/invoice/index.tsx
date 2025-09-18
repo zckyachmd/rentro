@@ -13,10 +13,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import CancelInvoiceDialog from '@/pages/management/invoice/dialogs/cancel';
-import ExtendDueDialog from '@/pages/management/invoice/dialogs/extend-due';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import CancelInvoiceDialog from '@/pages/management/invoice/dialogs/cancel';
+import ExtendDueDialog from '@/pages/management/invoice/dialogs/extend-due';
 import type {
     ManagementCancelState as CancelState,
     ManagementExtendState as ExtendState,
@@ -225,7 +225,8 @@ export default function InvoiceIndex() {
                 open={!!extend.target}
                 initialDueDate={defaultTomorrow}
                 onOpenChange={(v) => {
-                    if (!v) setExtend({ target: null, dueDate: '', reason: '' });
+                    if (!v)
+                        setExtend({ target: null, dueDate: '', reason: '' });
                 }}
                 processing={processing}
                 onConfirm={(dueDate, reason) => {
@@ -239,7 +240,11 @@ export default function InvoiceIndex() {
                             preserveScroll: true,
                             onFinish: () => {
                                 setProcessing(false);
-                                setExtend({ target: null, dueDate: '', reason: '' });
+                                setExtend({
+                                    target: null,
+                                    dueDate: '',
+                                    reason: '',
+                                });
                             },
                         },
                     );

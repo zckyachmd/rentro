@@ -20,13 +20,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import CancelContractDialog from '@/pages/management/contract/dialogs/cancel-contract';
-import ToggleAutoRenewDialog from '@/pages/management/contract/dialogs/toggle-autorenew';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { createColumns } from '@/pages/management/contract/columns';
+import CancelContractDialog from '@/pages/management/contract/dialogs/cancel-contract';
 import ContractsGuideDialog from '@/pages/management/contract/dialogs/contracts-guide';
 import HandoverCreate from '@/pages/management/contract/dialogs/handover-create';
+import ToggleAutoRenewDialog from '@/pages/management/contract/dialogs/toggle-autorenew';
 import type {
     ContractItem,
     ContractsPageProps,
@@ -307,7 +307,9 @@ export default function ContractIndex(props: ContractsPageProps) {
                     const c = cancelTarget;
                     if (!c) return;
                     router.post(
-                        route('management.contracts.cancel', { contract: c.id }),
+                        route('management.contracts.cancel', {
+                            contract: c.id,
+                        }),
                         { reason },
                         {
                             preserveScroll: true,

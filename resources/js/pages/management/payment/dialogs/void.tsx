@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { formatIDR } from '@/lib/format';
 import { useLengthRule } from '@/hooks/use-length-rule';
+import { formatIDR } from '@/lib/format';
 import type { PaymentRow } from '@/types/management';
 
 export default function VoidPaymentDialog({
@@ -67,9 +67,7 @@ export default function VoidPaymentDialog({
                     </div>
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogCancel
-                        onClick={() => onOpenChange(false)}
-                    >
+                    <AlertDialogCancel onClick={() => onOpenChange(false)}>
                         Batal
                     </AlertDialogCancel>
                     <AlertDialogAction
@@ -83,4 +81,3 @@ export default function VoidPaymentDialog({
         </AlertDialog>
     );
 }
-

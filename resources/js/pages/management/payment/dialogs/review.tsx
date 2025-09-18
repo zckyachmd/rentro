@@ -14,8 +14,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { useLengthRule } from '@/hooks/use-length-rule';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
+import { useLengthRule } from '@/hooks/use-length-rule';
 import { formatIDR } from '@/lib/format';
 import type {
     ManagementPaymentShowDTO as PaymentShow,
@@ -128,7 +128,15 @@ export default function PaymentReviewDialog({
             body: fd,
         });
         if (res.ok) window.location.reload();
-    }, [target, ack, note, paidAt, decision, noteRule.length, noteRule.meetsMin]);
+    }, [
+        target,
+        ack,
+        note,
+        paidAt,
+        decision,
+        noteRule.length,
+        noteRule.meetsMin,
+    ]);
 
     const p = data?.payment;
     const inv = data?.invoice;

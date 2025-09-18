@@ -1,5 +1,6 @@
 'use client';
 
+import { Link, router } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     Eye,
@@ -53,12 +54,12 @@ export const createColumns = (
             return (
                 <div className="w-[180px] shrink-0 font-mono">
                     {row.original.number ? (
-                        <a
+                        <Link
                             href={href}
                             className="underline underline-offset-2 hover:opacity-80"
                         >
                             {no}
-                        </a>
+                        </Link>
                     ) : (
                         no
                     )}
@@ -198,10 +199,11 @@ export const createColumns = (
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() =>
-                                    (window.location.href = route(
-                                        'tenant.contracts.show',
-                                        { contract: r.id },
-                                    ))
+                                    router.visit(
+                                        route('tenant.contracts.show', {
+                                            contract: r.id,
+                                        }),
+                                    )
                                 }
                             >
                                 <Eye className="mr-2 h-4 w-4" /> Lihat detail
@@ -210,7 +212,7 @@ export const createColumns = (
                                 onClick={() => {
                                     const url = route('tenant.invoices.index');
                                     const qs = `?q=${encodeURIComponent(`contract:${r.id}`)}`;
-                                    window.location.href = url + qs;
+                                    router.visit(url + qs);
                                 }}
                             >
                                 <ReceiptText className="mr-2 h-4 w-4" /> Lihat

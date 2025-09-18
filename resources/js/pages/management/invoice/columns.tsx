@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     ClipboardCopy,
@@ -164,12 +165,12 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                 <Eye className="mr-2 h-4 w-4" /> Lihat Detail
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <a
+                                <Link
                                     href={`${route('management.payments.index')}?search=${encodeURIComponent(inv.number)}`}
                                 >
                                     <Receipt className="mr-2 h-4 w-4" /> Lihat
                                     Pembayaran
-                                </a>
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                                 <a

@@ -41,7 +41,9 @@ export default function ToggleAutoRenewDialog({
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>
-                        {turningOff ? 'Hentikan Auto‑renew' : 'Nyalakan Auto‑renew'}
+                        {turningOff
+                            ? 'Hentikan Auto‑renew'
+                            : 'Nyalakan Auto‑renew'}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                         {turningOff
@@ -78,4 +80,3 @@ export default function ToggleAutoRenewDialog({
         </AlertDialog>
     );
 }
-

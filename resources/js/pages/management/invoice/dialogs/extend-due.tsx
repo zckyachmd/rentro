@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { DatePickerInput } from '@/components/date-picker';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -9,14 +10,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useLengthRule } from '@/hooks/use-length-rule';
 import type { InvoiceRow } from '@/types/management';
 
 export default function ExtendDueDialog({
-    target,
     open,
     initialDueDate,
     onOpenChange,
@@ -80,7 +79,12 @@ export default function ExtendDueDialog({
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={processing}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={processing}
+                    >
                         Batal
                     </Button>
                     <Button
@@ -95,4 +99,3 @@ export default function ExtendDueDialog({
         </Dialog>
     );
 }
-

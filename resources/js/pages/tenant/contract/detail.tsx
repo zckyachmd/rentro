@@ -613,7 +613,11 @@ export default function TenantContractDetail(props: PageProps) {
                         </Button>
                         <Button
                             type="button"
-                            disabled={dispute.saving || !dispute.id || !disputeRule.valid}
+                            disabled={
+                                dispute.saving ||
+                                !dispute.id ||
+                                !disputeRule.valid
+                            }
                             onClick={async () => {
                                 if (!dispute.id) return;
                                 setDispute((p) => ({ ...p, saving: true }));
