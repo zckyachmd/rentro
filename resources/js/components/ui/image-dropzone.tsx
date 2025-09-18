@@ -200,10 +200,10 @@ export function ImageDropzone({
                           <img
                             src={previews[i]}
                             alt={f.name}
-                            className="h-32 w-full rounded-md object-cover"
+                            className="aspect-square w-full rounded-md object-cover"
                           />
                         ) : (
-                          <div className="h-32 w-full rounded-md bg-muted" />
+                          <div className="aspect-square w-full rounded-md bg-muted" />
                         )}
                       </div>
 

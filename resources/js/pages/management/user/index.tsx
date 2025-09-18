@@ -27,11 +27,11 @@ import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
-import CreateUserDialog from './create-user';
-import ForceLogoutDialog from './force-logout';
-import ResetPasswordDialog from './reset-password';
-import { Role, RoleDialog } from './role';
-import { TwoFADialog } from './two-factor';
+import CreateUserDialog from './dialogs/create-user';
+import ForceLogoutDialog from './dialogs/force-logout';
+import ResetPasswordDialog from './dialogs/reset-password';
+import { Role, RoleDialog } from './dialogs/role';
+import { TwoFADialog } from './dialogs/two-factor';
 
 export type UserItem = {
     id: number;

@@ -16,9 +16,8 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
-import { subjectLabel } from './columns';
-
-import { ActivityItem } from '.';
+import { ActivityItem } from '..';
+import { subjectLabel } from '../columns';
 
 const isEmptyish = (v: unknown): boolean => {
     if (v === null || v === undefined) return true;

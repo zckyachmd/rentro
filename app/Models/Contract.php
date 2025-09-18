@@ -25,6 +25,7 @@ class Contract extends Model
     protected $keyType   = 'int';
 
     protected $fillable = [
+        'number',
         'user_id',
         'room_id',
         'start_date',

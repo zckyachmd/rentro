@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Enum\BillingPeriod;
+use App\Enum\ContractStatus;
 use App\Enum\InvoiceStatus;
 use App\Enum\PaymentStatus;
+use App\Enum\ProrataCharging;
+use App\Enum\RoomStatus;
 use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\Invoice;
@@ -151,7 +154,7 @@ class InvoiceService implements InvoiceServiceInterface
             if ($start->lessThan($contractStart->copy()->startOfMonth()) || $start->greaterThan($contractEnd)) {
                 throw new \InvalidArgumentException('Bulan berada di luar masa kontrak.');
             }
-            // Enforce sequential monthly generation: the next valid month must be contiguous
+
             $expectedStart = $latest
                 ? Carbon::parse($latest->period_end)->addDay()->startOfMonth()
                 : $contractStart->copy()->startOfMonth();
@@ -159,17 +162,17 @@ class InvoiceService implements InvoiceServiceInterface
                 $hint = $expectedStart->locale(app()->getLocale() ?: 'id')->translatedFormat('F Y');
                 throw new \InvalidArgumentException('Tagihan bulanan harus berurutan. Bulan berikutnya yang valid adalah ' . $hint . '.');
             }
+
             $periodEnd = $start->copy()->addMonthNoOverflow()->subDay();
             if ($periodEnd->greaterThan($contractEnd)) {
                 $periodEnd = $contractEnd->copy();
             }
+
             $expectedFullEnd = $start->copy()->addMonthNoOverflow()->subDay();
             if ($periodEnd->lessThan($expectedFullEnd)) {
-                // Bulan terakhir terpotong oleh akhir kontrak → tetap izinkan, clamp ke contractEnd
                 $periodEnd = $contractEnd->copy();
             }
-            // Sisa masa kontrak kurang dari 1 bulan → otomatis switch ke mode LUNAS
-            // (Replace months counting logic to avoid mutating the cursor incorrectly and ensure exactly-1-bulan case is counted)
+
             $baseMonthStart = $start->copy();
             $autoEnd        = $contractEnd->copy();
             $months         = 0;
@@ -217,7 +220,6 @@ class InvoiceService implements InvoiceServiceInterface
             }
 
             if ($period === BillingPeriod::MONTHLY->value) {
-                // Enforce full-month alignment for monthly custom range
                 $months  = 0;
                 $cursor  = $from->copy();
                 $aligned = true;
@@ -238,7 +240,7 @@ class InvoiceService implements InvoiceServiceInterface
                 if (!$aligned || $months <= 0) {
                     throw new \InvalidArgumentException('Rentang bulan harus berupa kelipatan bulan penuh.');
                 }
-                // Always use latest room price for monthly scheduler
+
                 $items = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $from, 0, $releaseDom);
 
                 return $this->createInvoiceRecord($contract, $from, $to, $dueMonthly, $items);
@@ -267,7 +269,7 @@ class InvoiceService implements InvoiceServiceInterface
             if ($period === BillingPeriod::MONTHLY->value) {
                 $monthStart = $contractEnd->copy()->startOfMonth();
                 $periodEnd  = $contractEnd->copy();
-                // Enforce sequential order for last-month regeneration
+
                 $expectedStart = $latest
                     ? Carbon::parse($latest->period_end)->addDay()->startOfMonth()
                     : $contractStart->copy()->startOfMonth();
@@ -275,12 +277,12 @@ class InvoiceService implements InvoiceServiceInterface
                     $hint = $expectedStart->locale(app()->getLocale() ?: 'id')->translatedFormat('F Y');
                     throw new \InvalidArgumentException('Tagihan bulanan harus berurutan. Bulan berikutnya yang valid adalah ' . $hint . '.');
                 }
-                // Blokir semua invoice non-cancelled pada bulan terakhir agar tidak duplikat
+
                 $nonCancelled = [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value, InvoiceStatus::PAID->value];
                 if ($this->hasActiveOverlap($contract, $monthStart, $periodEnd, $nonCancelled)) {
                     throw new \InvalidArgumentException('Sudah ada invoice aktif untuk bulan terakhir.');
                 }
-                // Use latest room price for monthly regeneration as well
+
                 $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $monthStart, 0, $releaseDom);
 
                 return $this->createInvoiceRecord($contract, $monthStart, $periodEnd, $dueMonthly, $items);
@@ -298,18 +300,15 @@ class InvoiceService implements InvoiceServiceInterface
             }
             $months    = max(1, (int) $months);
             $periodEnd = $contractEnd->copy();
-            // Use paid only for overlap check
-            $paidOnly = [InvoiceStatus::PAID->value];
+            $paidOnly  = [InvoiceStatus::PAID->value];
             if ($this->hasActiveOverlap($contract, $anchor, $periodEnd, $paidOnly)) {
                 throw new \InvalidArgumentException('Periode yang diminta sudah dibayar lunas.');
             }
-            // Always use latest room price for monthly scheduler
             $items = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $anchor, 0, $releaseDom);
 
             return $this->createInvoiceRecord($contract, $anchor, $periodEnd, $dueMonthly, $items);
         }
 
-        // Daily / Weekly → full remaining duration
         $daysOrWeeks = $period === BillingPeriod::DAILY->value
             ? max(1, (int) $start->diffInDays($contractEnd->copy()->addDay()))
             : max(1, (int) ceil($start->diffInDays($contractEnd->copy()->addDay()) / 7));
@@ -329,9 +328,8 @@ class InvoiceService implements InvoiceServiceInterface
         $dom       = max(1, min(31, $releaseDom));
         $candidate = $start->copy()->day(min($dom, $start->daysInMonth));
         if ($candidate->isSameDay($start)) {
-            return $candidate; // already on release day
+            return $candidate;
         }
-        // always go to next month occurrence when not on release day
         $next = $start->copy()->addMonthNoOverflow()->day(1);
 
         return $next->copy()->day(min($dom, $next->daysInMonth));
@@ -345,7 +343,7 @@ class InvoiceService implements InvoiceServiceInterface
      */
     protected function computeProrataDetail(int $monthlyRentCents, Carbon $start, int $releaseDom): array
     {
-        $target = $this->nextReleaseDate($start, $releaseDom); // exclusive end (release day itself)
+        $target = $this->nextReleaseDate($start, $releaseDom);
         if ($target->lessThanOrEqualTo($start)) {
             return [
                 'amount'  => 0,
@@ -366,16 +364,15 @@ class InvoiceService implements InvoiceServiceInterface
             }
             $daysInMonth = $cursor->daysInMonth;
             $perDay      = (int) round($monthlyRentCents / max(1, $daysInMonth));
-            $days        = $cursor->diffInDays($endOfSegment->copy()->addDay()); // inclusive of cursor day
+            $days        = $cursor->diffInDays($endOfSegment->copy()->addDay());
             $amount += $perDay * max(0, $days);
             $totalDays += max(0, $days);
             $cursor = $endOfSegment->copy()->addDay();
         }
 
-        $amount = max(0, (int) $amount);
-        // Prefer direct day difference to avoid any off-by-one from the loop
+        $amount    = max(0, (int) $amount);
         $totalDays = max(0, (int) $start->diffInDays($target));
-        $perDay    = $totalDays > 0 ? (int) round($amount / $totalDays) : 0; // averaged to fit subtotal
+        $perDay    = $totalDays > 0 ? (int) round($amount / $totalDays) : 0;
 
         return [
             'amount'  => $amount,
@@ -404,11 +401,15 @@ class InvoiceService implements InvoiceServiceInterface
         $items        = [];
         $needsProrata = $prorata && $start->day !== $releaseDom;
 
-        // Prorata charging strategy from app settings
-        $chargeMode = strtolower((string) AppSetting::config('billing.prorata_charging', 'full')); // full|free|threshold
-        if (!in_array($chargeMode, ['full', 'free', 'threshold'], true)) {
-            $chargeMode = 'full';
+        $chargeMode = strtolower((string) AppSetting::config('billing.prorata_charging', ProrataCharging::FULL->value));
+        if (!in_array($chargeMode, ProrataCharging::values(), true)) {
+            $chargeMode = ProrataCharging::FULL->value;
         }
+        $chargeEnum = match ($chargeMode) {
+            ProrataCharging::FREE->value      => ProrataCharging::FREE,
+            ProrataCharging::THRESHOLD->value => ProrataCharging::THRESHOLD,
+            default                           => ProrataCharging::FULL,
+        };
         $freeThresholdDays = (int) AppSetting::config('billing.prorata_free_threshold_days', 7);
 
         if ($period === BillingPeriod::MONTHLY->value) {
@@ -421,9 +422,9 @@ class InvoiceService implements InvoiceServiceInterface
                     $billableDays = $totalDays;
                     $lineAmt      = $perDay * $billableDays;
 
-                    if ($chargeMode === 'free') {
+                    if ($chargeEnum === ProrataCharging::FREE) {
                         $lineAmt = 0;
-                    } elseif ($chargeMode === 'threshold') {
+                    } elseif ($chargeEnum === ProrataCharging::THRESHOLD) {
                         if ($totalDays <= $freeThresholdDays) {
                             $billableDays = 0;
                             $lineAmt      = 0;
@@ -436,7 +437,7 @@ class InvoiceService implements InvoiceServiceInterface
                     if ($totalDays > 0) {
                         $items[] = Invoice::makeItem('PRORATA', 'Prorata Sewa', $lineAmt, [
                             'days'             => $totalDays,      // total prorata span
-                            'free_days'        => $chargeMode === 'threshold' ? $freeThresholdDays : 0,
+                            'free_days'        => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
                             'qty'              => $billableDays,   // billable days
                             'unit_price_cents' => $billableDays > 0 ? $perDay : 0,
                             'unit'             => 'hari',
@@ -445,7 +446,7 @@ class InvoiceService implements InvoiceServiceInterface
                         ]);
                     }
                 }
-                // Buat item per bulan agar lebih jelas bulan apa saja yang ditagih
+
                 $baseMonthStart = $needsProrata
                     ? $this->nextReleaseDate($start, $releaseDom)
                     : $start->copy();
@@ -467,7 +468,7 @@ class InvoiceService implements InvoiceServiceInterface
                         ],
                     );
                 }
-            } else { // per_month (first invoice only)
+            } else {
                 if ($needsProrata) {
                     $pr           = $this->computeProrataDetail($rent, $start, $releaseDom);
                     $totalDays    = (int) ($pr['days'] ?? 0);
@@ -475,9 +476,9 @@ class InvoiceService implements InvoiceServiceInterface
                     $billableDays = $totalDays;
                     $lineAmt      = $perDay * $billableDays;
 
-                    if ($chargeMode === 'free') {
+                    if ($chargeEnum === ProrataCharging::FREE) {
                         $lineAmt = 0;
-                    } elseif ($chargeMode === 'threshold') {
+                    } elseif ($chargeEnum === ProrataCharging::THRESHOLD) {
                         if ($totalDays <= $freeThresholdDays) {
                             $billableDays = 0;
                             $lineAmt      = 0;
@@ -490,7 +491,7 @@ class InvoiceService implements InvoiceServiceInterface
                     if ($totalDays > 0) {
                         $items[] = Invoice::makeItem('PRORATA', 'Prorata Sewa', $lineAmt, [
                             'days'             => $totalDays,
-                            'free_days'        => $chargeMode === 'threshold' ? $freeThresholdDays : 0,
+                            'free_days'        => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
                             'qty'              => $billableDays,
                             'unit_price_cents' => $billableDays > 0 ? $perDay : 0,
                             'unit'             => 'hari',
@@ -499,7 +500,7 @@ class InvoiceService implements InvoiceServiceInterface
                         ]);
                     }
                 }
-                // Tentukan bulan sewa yang dibebankan pada invoice pertama
+
                 $monthStart = $needsProrata
                     ? $this->nextReleaseDate($start, $releaseDom)
                     : $start->copy();
@@ -518,7 +519,6 @@ class InvoiceService implements InvoiceServiceInterface
                 );
             }
         } else {
-            // Weekly / Daily (always pay-in-full)
             $unitLabel = $period === BillingPeriod::DAILY->value ? 'hari' : 'minggu';
             $items[]   = Invoice::makeItem(
                 'RENT',
@@ -599,20 +599,20 @@ class InvoiceService implements InvoiceServiceInterface
                     if ($contract instanceof \App\Models\Contract) {
                         $cStatus         = (string) $contract->status->value;
                         $nonDowngradable = [
-                            \App\Enum\ContractStatus::ACTIVE->value,
-                            \App\Enum\ContractStatus::COMPLETED->value,
-                            \App\Enum\ContractStatus::CANCELLED->value,
+                            ContractStatus::ACTIVE->value,
+                            ContractStatus::COMPLETED->value,
+                            ContractStatus::CANCELLED->value,
                         ];
                         if (!in_array($cStatus, $nonDowngradable, true)) {
-                            $contract->status = \App\Enum\ContractStatus::PENDING_PAYMENT;
+                            $contract->status = ContractStatus::PENDING_PAYMENT;
                             $contract->save();
 
                             /** @var \App\Models\Room|null $room */
                             $room = $contract->room;
                             if ($room) {
                                 $rStatus = (string) $room->status->value;
-                                if ($rStatus !== \App\Enum\RoomStatus::OCCUPIED->value && $rStatus !== \App\Enum\RoomStatus::RESERVED->value) {
-                                    $room->update(['status' => \App\Enum\RoomStatus::RESERVED->value]);
+                                if ($rStatus !== RoomStatus::OCCUPIED->value && $rStatus !== RoomStatus::RESERVED->value) {
+                                    $room->update(['status' => RoomStatus::RESERVED->value]);
                                 }
                             }
                         }

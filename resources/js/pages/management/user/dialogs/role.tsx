@@ -5,7 +5,6 @@ import { Loader2, Search, ShieldCheck } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { UserItem } from '.';
+import { UserItem } from '..';
 
 export type Role = { id: number; name: string };
 
@@ -46,9 +45,7 @@ export function RoleDialog({
     const [saving, setSaving] = React.useState(false);
 
     React.useEffect(() => {
-        if (open) {
-            setSelected(new Set((user.roles ?? []).map((r) => r.id)));
-        }
+        if (open) setSelected(new Set((user.roles ?? []).map((r) => r.id)));
     }, [open, user.id, user.roles]);
 
     const filtered = React.useMemo(() => {
@@ -60,27 +57,22 @@ export function RoleDialog({
     const toggle = React.useCallback((id: number, checked: boolean) => {
         setSelected((prev) => {
             const next = new Set(prev);
-            if (checked) {
-                next.add(id);
-            } else {
-                next.delete(id);
-            }
+            if (checked) next.add(id);
+            else next.delete(id);
             return next;
         });
     }, []);
 
     const handleToggleAll = React.useCallback(() => {
-        setSelected((prev) => {
-            if (prev.size === roles.length) {
-                return new Set();
-            }
-            return new Set(roles.map((r) => r.id));
-        });
+        setSelected((prev) =>
+            prev.size === roles.length
+                ? new Set()
+                : new Set(roles.map((r) => r.id)),
+        );
     }, [roles]);
 
     const handleSubmit = React.useCallback(() => {
         const roleIds = Array.from(selected);
-
         setSaving(true);
         router.post(
             route('management.users.roles.update', user.id),
@@ -116,29 +108,10 @@ export function RoleDialog({
                         <ShieldCheck className="h-5 w-5" /> Kelola Peran
                     </DialogTitle>
                     <DialogDescription>
-                        Pilih atau ubah peran yang dimiliki pengguna ini. Peran
-                        akan menentukan hak akses dan menu yang dapat digunakan.
+                        Pilih atau ubah peran yang dimiliki pengguna ini.
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* User heading */}
-                <div className="mb-3 flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
-                        {user.avatar ? (
-                            <AvatarImage src={user.avatar} alt={user.name} />
-                        ) : (
-                            <AvatarFallback>{user.initials}</AvatarFallback>
-                        )}
-                    </Avatar>
-                    <div className="min-w-0">
-                        <div className="truncate font-medium">{user.name}</div>
-                        <div className="truncate text-xs text-muted-foreground">
-                            {user.email}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Controls */}
                 <div className="mb-2 flex items-center gap-2">
                     <div className="relative flex-1">
                         <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
@@ -161,7 +134,6 @@ export function RoleDialog({
                     </Button>
                 </div>
 
-                {/* Roles list */}
                 <ScrollArea className="max-h-72 rounded-md border">
                     <div className="divide-y">
                         {filtered.length === 0 ? (
@@ -179,21 +151,19 @@ export function RoleDialog({
                                         <Checkbox
                                             checked={checked}
                                             onCheckedChange={(v) =>
-                                                toggle(role.id, !!v)
+                                                toggle(role.id, Boolean(v))
                                             }
-                                            aria-label={`Pilih ${role.name}`}
                                         />
-                                        <span className="text-sm">
-                                            {role.name}
-                                        </span>
-                                        {checked && (
-                                            <Badge
-                                                className="ml-auto"
-                                                variant="secondary"
-                                            >
-                                                Dipilih
-                                            </Badge>
-                                        )}
+                                        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                                            <div className="truncate">
+                                                {role.name}
+                                            </div>
+                                            {checked ? (
+                                                <Badge variant="outline">
+                                                    Dipilih
+                                                </Badge>
+                                            ) : null}
+                                        </div>
                                     </label>
                                 );
                             })
@@ -201,34 +171,37 @@ export function RoleDialog({
                     </div>
                 </ScrollArea>
 
-                <DialogFooter className="mt-4 flex items-center justify-between gap-2">
-                    <div className="text-sm text-muted-foreground">
-                        Dipilih:{' '}
-                        <span className="font-medium">{countSelected}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                            disabled={saving}
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={saving}
-                        >
-                            {saving ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
-                                    Menyimpan…
-                                </>
-                            ) : (
-                                'Simpan'
-                            )}
-                        </Button>
+                <DialogFooter>
+                    <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                            Terpilih:{' '}
+                            <span className="font-medium text-foreground">
+                                {countSelected}
+                            </span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => onOpenChange(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleSubmit}
+                                disabled={saving}
+                            >
+                                {saving ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
+                                        Simpan…
+                                    </>
+                                ) : (
+                                    'Simpan'
+                                )}
+                            </Button>
+                        </div>
                     </div>
                 </DialogFooter>
             </DialogContent>

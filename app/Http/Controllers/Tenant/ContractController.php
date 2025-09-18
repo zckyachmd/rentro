@@ -20,11 +20,12 @@ class ContractController extends Controller
         $query = Contract::query()
             ->where('user_id', $request->user()->id)
             ->with(['room:id,number'])
-            ->select(['id', 'user_id', 'room_id', 'start_date', 'end_date', 'rent_cents', 'status', 'auto_renew']);
+            ->select(['id', 'number', 'user_id', 'room_id', 'start_date', 'end_date', 'rent_cents', 'status', 'auto_renew']);
 
         $options = [
             'search_param' => 'q',
             'searchable'   => [
+                'number',
                 ['relation' => 'room', 'column' => 'number'],
             ],
             'sortable' => [
@@ -50,6 +51,7 @@ class ContractController extends Controller
 
             return [
                 'id'         => (string) $c->id,
+                'number'     => (string) ($c->number ?? ''),
                 'room'       => $room ? ['id' => (string) $room->id, 'number' => (string) $room->number] : null,
                 'start_date' => $c->start_date ? $c->start_date->toDateString() : null,
                 'end_date'   => $c->end_date ? $c->end_date->toDateString() : null,
@@ -116,11 +118,13 @@ class ContractController extends Controller
             });
 
         /** @var \App\Models\Room|null $r */
+        /** @var \App\Models\Room|null $r */
         $r = $contract->room;
 
         return Inertia::render('tenant/contract/detail', [
             'contract' => [
                 'id'         => (string) $contract->id,
+                'number'     => (string) ($contract->number ?? ''),
                 'updated_at' => $contract->updated_at?->toDateTimeString(),
                 'room'       => $r ? [
                     'id'             => (string) $r->id,
@@ -160,6 +164,72 @@ class ContractController extends Controller
                 'total'        => $invPage->total(),
             ],
         ]);
+    }
+
+    public function print(Request $request, Contract $contract)
+    {
+        if ((string) $contract->user_id !== (string) $request->user()->id) {
+            abort(404);
+        }
+
+        $contract->load([
+            'room:id,number,name,building_id,floor_id,room_type_id,price_cents,billing_period',
+            'room.building:id,name,code',
+            'room.floor:id,level',
+            'room.type:id,name,price_cents',
+        ]);
+
+        /** @var \App\Models\Room|null $r */
+        $r = $contract->room;
+        /** @var \App\Models\Building|null $building */
+        $building = $r?->building;
+        /** @var \App\Models\Floor|null $floor */
+        $floor = $r?->floor;
+        /** @var \App\Models\RoomType|null $type */
+        $type = $r?->type;
+
+        $dto = [
+            'number'         => (string) ($contract->number ?? ''),
+            'status'         => (string) $contract->status->value,
+            'start_date'     => $contract->start_date->toDateString(),
+            'end_date'       => $contract->end_date?->toDateString(),
+            'billing_period' => (string) $contract->billing_period->value,
+            'billing_day'    => $contract->billing_day,
+            'rent_cents'     => (int) $contract->rent_cents,
+            'deposit_cents'  => (int) $contract->deposit_cents,
+            'notes'          => (string) ($contract->notes ?? ''),
+            'tenant'         => [
+                'name'  => $request->user()->name,
+                'email' => $request->user()->email,
+                'phone' => $request->user()->phone,
+            ],
+            'room' => $r ? [
+                'number'   => $r->number,
+                'name'     => $r->name,
+                'building' => $building?->name,
+                'floor'    => $floor?->level,
+                'type'     => $type?->name,
+            ] : null,
+        ];
+
+        $html = view('pdf.contract', [
+            'contract'  => $dto,
+            'autoPrint' => false,
+        ])->render();
+
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            try {
+                /** @var \Barryvdh\DomPDF\PDF $pdf */
+                $pdf   = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+                $fname = ($contract->number ?: (string) $contract->id) . '.pdf';
+
+                return $pdf->stream('Contract-' . $fname);
+            } catch (\Throwable $e) {
+                // fallback to HTML
+            }
+        }
+
+        return response($html);
     }
 
     /**

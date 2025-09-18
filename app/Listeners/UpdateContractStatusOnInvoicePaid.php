@@ -5,7 +5,9 @@ namespace App\Listeners;
 use App\Enum\ContractStatus;
 use App\Enum\InvoiceStatus;
 use App\Enum\PaymentStatus;
+use App\Enum\RoomStatus;
 use App\Events\InvoicePaid;
+use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Traits\LogActivity;
@@ -34,27 +36,29 @@ class UpdateContractStatusOnInvoicePaid
                 ContractStatus::OVERDUE->value,
             ], true)
         ) {
-            $today     = now()->startOfDay();
-            $startDate = $contract->start_date->copy()->startOfDay();
-            $next      = $startDate && $startDate->lessThanOrEqualTo($today)
-                ? ContractStatus::ACTIVE
-                : ContractStatus::BOOKED;
+            $today          = now()->startOfDay();
+            $startDate      = $contract->start_date->copy()->startOfDay();
+            $requireCheckin = (bool) AppSetting::config('handover.require_checkin_for_activate', true);
+            $next           = ContractStatus::BOOKED;
+            if (!$requireCheckin && $startDate && $startDate->lessThanOrEqualTo($today)) {
+                $next = ContractStatus::ACTIVE;
+            }
 
             $contract->forceFill(['status' => $next])->save();
 
             if ($next === ContractStatus::ACTIVE) {
                 /** @var \App\Models\Room|null $room */
                 $room = $contract->room;
-                if ($room && $room->status->value !== \App\Enum\RoomStatus::OCCUPIED->value) {
-                    $room->update(['status' => \App\Enum\RoomStatus::OCCUPIED->value]);
+                if ($room && $room->status->value !== RoomStatus::OCCUPIED->value) {
+                    $room->update(['status' => RoomStatus::OCCUPIED->value]);
                 }
             } elseif ($next === ContractStatus::BOOKED) {
                 /** @var \App\Models\Room|null $room */
                 $room = $contract->room;
-                if ($room && $room->status->value !== \App\Enum\RoomStatus::RESERVED->value) {
+                if ($room && $room->status->value !== RoomStatus::RESERVED->value) {
                     // Pre-activation paid contract holds the room as Reserved
-                    if ($room->status->value !== \App\Enum\RoomStatus::OCCUPIED->value) {
-                        $room->update(['status' => \App\Enum\RoomStatus::RESERVED->value]);
+                    if ($room->status->value !== RoomStatus::OCCUPIED->value) {
+                        $room->update(['status' => RoomStatus::RESERVED->value]);
                     }
                 }
             }

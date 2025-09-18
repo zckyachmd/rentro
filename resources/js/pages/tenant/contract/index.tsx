@@ -213,8 +213,8 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder="Cari kamar…"
-                                        aria-label="Cari kamar"
+                                        placeholder="Cari nomor kontrak/kamar…"
+                                        aria-label="Cari nomor kontrak atau kamar"
                                     />
                                 </div>
                             </div>

@@ -38,7 +38,7 @@ import {
     type RoomItem,
     type RoomType,
 } from '@/pages/management/room/columns';
-import RoomDetailDialog from '@/pages/management/room/detail';
+import RoomDetailDialog from '@/pages/management/room/dialogs/detail';
 
 type RoomsPaginator = { data: RoomItem[] } & PaginatorMeta;
 

@@ -1,7 +1,13 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Eye, MoreHorizontal, ReceiptText, RefreshCcw } from 'lucide-react';
+import {
+    Eye,
+    MoreHorizontal,
+    Printer,
+    ReceiptText,
+    RefreshCcw,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +25,7 @@ import { variantForContractStatus } from '@/lib/status';
 
 export interface TenantContractItem {
     id: string;
+    number?: string | null;
     room?: { id: string; number: string } | null;
     start_date?: string | null;
     end_date?: string | null;
@@ -46,28 +53,37 @@ export const createColumns = (
     opts?: ColumnFactoryOptions,
 ): ColumnDef<TenantContractItem>[] => [
     makeColumn<TenantContractItem>({
-        id: 'room',
-        title: 'Kamar',
-        className: COL.room,
+        id: 'number',
+        title: 'Nomor',
+        className: 'shrink-0 w-[180px] font-mono',
         cell: ({ row }) => {
             const href = route('tenant.contracts.show', {
                 contract: row.original.id,
             });
+            const no = row.original.number || '-';
             return (
-                <div className={COL.room}>
-                    {row.original.room?.number ? (
+                <div className="w-[180px] shrink-0 font-mono">
+                    {row.original.number ? (
                         <a
                             href={href}
                             className="underline underline-offset-2 hover:opacity-80"
                         >
-                            {row.original.room.number}
+                            {no}
                         </a>
                     ) : (
-                        '-'
+                        no
                     )}
                 </div>
             );
         },
+    }),
+    makeColumn<TenantContractItem>({
+        id: 'room',
+        title: 'Kamar',
+        className: COL.room,
+        cell: ({ row }) => (
+            <div className={COL.room}>{row.original.room?.number ?? '-'}</div>
+        ),
     }),
     makeColumn<TenantContractItem>({
         id: 'start_date',
@@ -210,6 +226,19 @@ export const createColumns = (
                             >
                                 <ReceiptText className="mr-2 h-4 w-4" /> Lihat
                                 invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    window.open(
+                                        route('tenant.contracts.print', {
+                                            contract: r.id,
+                                        }),
+                                        '_blank',
+                                    )
+                                }
+                            >
+                                <Printer className="mr-2 h-4 w-4" /> Cetak
+                                kontrak
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 disabled={!r.auto_renew || !isActive}

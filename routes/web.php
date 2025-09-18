@@ -7,6 +7,7 @@ use App\Http\Controllers\Management\AuditLogController;
 use App\Http\Controllers\Management\BuildingManagementController;
 use App\Http\Controllers\Management\ContractManagementController;
 use App\Http\Controllers\Management\FloorManagementController;
+use App\Http\Controllers\Management\HandoverManagementController;
 use App\Http\Controllers\Management\InvoiceManagementController;
 use App\Http\Controllers\Management\PaymentManagementController;
 use App\Http\Controllers\Management\RoleManagementController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
+use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;
 use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
@@ -101,9 +103,23 @@ Route::middleware('auth')->group(function (): void {
         Route::prefix('contracts')->name('contracts.')->group(function (): void {
             Route::get('/', [TenantContractController::class, 'index'])->name('index');
             Route::get('/{contract}', [TenantContractController::class, 'show'])->name('show');
+            Route::get('/{contract}/print', [TenantContractController::class, 'print'])->name('print');
             Route::post('/{contract}/stop-auto-renew', [TenantContractController::class, 'stopAutoRenew'])
                 ->name('stopAutoRenew');
+            Route::get('/{contract}/handovers', [TenantHandoverController::class, 'index'])
+                ->name('handovers.index');
         });
+
+        // Tenant Handover Attachments (private)
+        Route::get('/handovers/{handover}/attachments/{path}', [TenantHandoverController::class, 'attachmentGeneral'])
+            ->where('path', '.*')
+            ->name('handovers.attachment.general');
+
+        // Tenant handover acknowledge/dispute
+        Route::post('/handovers/{handover}/ack', [TenantHandoverController::class, 'acknowledge'])
+            ->name('handovers.ack');
+        Route::post('/handovers/{handover}/dispute', [TenantHandoverController::class, 'dispute'])
+            ->name('handovers.dispute');
 
         // Invoices
         Route::prefix('invoices')->name('invoices.')->group(function (): void {
@@ -200,13 +216,33 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/{contract}', [ContractManagementController::class, 'show'])
                 ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
                 ->name('show');
+            Route::get('/{contract}/print', [ContractManagementController::class, 'print'])
+                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
+                ->name('print');
             Route::post('/{contract}/cancel', [ContractManagementController::class, 'cancel'])
                 ->middleware('can:' . PermissionName::CONTRACT_CANCEL->value)
                 ->name('cancel');
             Route::post('/{contract}/set-auto-renew', [ContractManagementController::class, 'setAutoRenew'])
                 ->middleware('can:' . PermissionName::CONTRACT_RENEW->value)
                 ->name('setAutoRenew');
+
+            // Handover (Check-in/Check-out) management
+            Route::get('/{contract}/handovers', [HandoverManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
+                ->name('handovers.index');
+            Route::post('/{contract}/checkin', [HandoverManagementController::class, 'checkin'])
+                ->middleware('can:' . PermissionName::HANDOVER_CREATE->value)
+                ->name('handovers.checkin');
+            Route::post('/{contract}/checkout', [HandoverManagementController::class, 'checkout'])
+                ->middleware('can:' . PermissionName::HANDOVER_CREATE->value)
+                ->name('handovers.checkout');
         });
+
+        // Handovers
+        Route::get('/handovers/{handover}/attachments/{path}', [HandoverManagementController::class, 'attachmentGeneral'])
+            ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
+            ->where('path', '.*')
+            ->name('handovers.attachment.general');
 
         // Invoices
         Route::prefix('invoices')->name('invoices.')->group(function (): void {

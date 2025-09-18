@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { FilePlus2 } from 'lucide-react';
 import React from 'react';
 
+import AttachmentPreviewDialog from '@/components/attachment-preview';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -12,7 +13,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import AttachmentPreviewDialog from '@/components/ui/attachment-preview-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {
@@ -34,8 +34,8 @@ import AuthLayout from '@/layouts/auth-layout';
 import { formatIDR } from '@/lib/format';
 
 import { createColumns } from './columns';
-import PaymentDetailDialog from './detail-dialog';
-import ManualPaymentDialog from './manual';
+import PaymentDetailDialog from './dialogs/detail';
+import ManualPaymentDialog from './dialogs/manual';
 
 export type PaymentRow = {
     id: string;

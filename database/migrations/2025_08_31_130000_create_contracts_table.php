@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table): void {
             $table->unsignedBigInteger('id')->primary();
+            $table->string('number', 64)->unique();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // tenant
             $table->foreignId('room_id')->constrained()->cascadeOnDelete();
             $table->date('start_date');

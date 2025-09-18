@@ -3,13 +3,17 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     Eye,
+    LogIn,
+    LogOut,
     MoreHorizontal,
+    Printer,
     ReceiptText,
     RefreshCcw,
     RefreshCw,
     Trash2,
 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -39,6 +43,7 @@ const RENEW_ALLOWED: ReadonlyArray<string> = [CS.BOOKED, CS.PAID, CS.ACTIVE];
 
 export interface ContractItem {
     id: string;
+    number?: string | null;
     tenant?: { id: number; name: string; email: string } | null;
     room?: { id: string; number: string } | null;
     start_date?: string | null;
@@ -46,6 +51,10 @@ export interface ContractItem {
     rent_cents: number;
     status: string;
     auto_renew: boolean;
+    has_checkin?: boolean;
+    has_checkout?: boolean;
+    latest_checkin_status?: string | null;
+    latest_checkout_status?: string | null;
 }
 
 const COL = {
@@ -64,11 +73,41 @@ export type ColumnFactoryOptions = {
     onCancel?: (c: ContractItem) => void;
     onStopAutoRenew?: (c: ContractItem) => void;
     onStartAutoRenew?: (c: ContractItem) => void;
+    onCheckin?: (c: ContractItem) => void;
+    onCheckout?: (c: ContractItem) => void;
 };
 
 export const createColumns = (
-    opts?: ColumnFactoryOptions,
+    opts?: ColumnFactoryOptions & {
+        requireCheckinForActivate?: boolean;
+    },
 ): ColumnDef<ContractItem>[] => [
+    makeColumn<ContractItem>({
+        id: 'number',
+        title: 'Nomor',
+        className: 'shrink-0 w-[200px] font-mono',
+        cell: ({ row }) => {
+            const no = row.original.number || '';
+            const href = route('management.contracts.show', {
+                contract: row.original.id,
+            });
+            return (
+                <div className="w-[200px] shrink-0 font-mono">
+                    {no ? (
+                        <a
+                            href={href}
+                            className="underline underline-offset-2 hover:opacity-80"
+                            title={`Lihat kontrak ${no}`}
+                        >
+                            {no}
+                        </a>
+                    ) : (
+                        '-'
+                    )}
+                </div>
+            );
+        },
+    }),
     makeColumn<ContractItem>({
         id: 'tenant',
         title: 'Penyewa',
@@ -203,6 +242,26 @@ export const createColumns = (
             const canCancel = CANCELABLE.includes(s);
             const canStartRenew = RENEW_ALLOWED.includes(s);
             const canStopRenew = s === CS.ACTIVE;
+            const lastCheckinStatus = row.original.latest_checkin_status;
+            const requireCheckin = Boolean(opts?.requireCheckinForActivate);
+            const hasPendingCheckin =
+                (lastCheckinStatus ?? '').toLowerCase() === 'pending';
+            const canCheckin =
+                !hasPendingCheckin &&
+                !row.original.has_checkin &&
+                (s === CS.BOOKED || (!requireCheckin && s === CS.ACTIVE));
+
+            const lastCheckin = String(lastCheckinStatus || '').toLowerCase();
+            const lastCheckout = String(
+                row.original.latest_checkout_status || '',
+            ).toLowerCase();
+            const hasConfirmedCheckin = Boolean(row.original.has_checkin);
+            const canCheckout =
+                (s === CS.ACTIVE ||
+                    (s === CS.COMPLETED && lastCheckout === 'disputed')) &&
+                (hasConfirmedCheckin || lastCheckin === 'confirmed') &&
+                lastCheckout !== 'pending' &&
+                lastCheckout !== 'confirmed';
 
             return (
                 <div className={COL.actions + ' flex items-center justify-end'}>
@@ -230,6 +289,19 @@ export const createColumns = (
                             >
                                 <Eye className="mr-2 h-4 w-4" /> Lihat detail
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    window.open(
+                                        route('management.contracts.print', {
+                                            contract: row.original.id,
+                                        }),
+                                        '_blank',
+                                    )
+                                }
+                            >
+                                <Printer className="mr-2 h-4 w-4" /> Cetak
+                                kontrak
+                            </DropdownMenuItem>
 
                             <DropdownMenuItem
                                 onClick={() => {
@@ -243,6 +315,31 @@ export const createColumns = (
                                 <ReceiptText className="mr-2 h-4 w-4" /> Lihat
                                 invoice
                             </DropdownMenuItem>
+
+                            {canCheckin && (
+                                <Can any={['handover.create']}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onCheckin?.(row.original)
+                                        }
+                                    >
+                                        <LogIn className="mr-2 h-4 w-4" />{' '}
+                                        Check‑in
+                                    </DropdownMenuItem>
+                                </Can>
+                            )}
+                            {canCheckout && (
+                                <Can any={['handover.create']}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onCheckout?.(row.original)
+                                        }
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />{' '}
+                                        Check‑out
+                                    </DropdownMenuItem>
+                                </Can>
+                            )}
 
                             {row.original.auto_renew && canStopRenew && (
                                 <DropdownMenuItem

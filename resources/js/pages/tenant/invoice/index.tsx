@@ -22,8 +22,8 @@ import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns, type TenantInvoiceItem } from './columns';
-import TenantInvoiceDetailDialog from './detail-dialog';
-import TenantInvoicePayDialog from './pay-dialog';
+import TenantInvoiceDetailDialog from './dialogs/detail';
+import TenantInvoicePayDialog from './dialogs/pay';
 
 type InvoicesPaginator = { data: TenantInvoiceItem[] } & PaginatorMeta;
 

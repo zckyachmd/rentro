@@ -29,8 +29,8 @@ import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
-import PermissionsDialog, { Permission } from './permissions';
-import RoleUpsertDialog from './roles';
+import PermissionsDialog, { Permission } from './dialogs/permissions';
+import RoleUpsertDialog from './dialogs/roles';
 
 export type RoleItem = {
     id: number;

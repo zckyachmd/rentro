@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { Filter, Plus, Search } from 'lucide-react';
 import React from 'react';
 
+import { Can } from '@/components/acl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -36,13 +37,23 @@ import {
     createColumns,
     type ContractItem,
 } from '@/pages/management/contract/columns';
+import ContractsGuideDialog from '@/pages/management/contract/dialogs/contracts-guide';
+import HandoverCreate from '@/pages/management/contract/dialogs/handover-create';
 
 type ContractsPaginator = { data: ContractItem[] } & PaginatorMeta;
+
+interface HandoverOptions {
+    min_photos_checkin: number;
+    min_photos_checkout: number;
+    require_tenant_ack_for_complete?: boolean;
+    require_checkin_for_activate?: boolean;
+}
 
 interface ContractsPageProps {
     contracts?: ContractsPaginator;
     query?: QueryBag & { status?: string | null; q?: string | null };
     options?: { statuses?: { value: string; label: string }[] };
+    handover?: HandoverOptions;
 }
 
 type QueryInit = Partial<{
@@ -72,11 +83,37 @@ type ServerQuery = {
 };
 
 export default function ContractIndex(props: ContractsPageProps) {
-    const { contracts: paginator, query = {}, options = {} } = props;
+    const {
+        contracts: paginator,
+        query = {},
+        options = {},
+        handover: handoverOptions,
+    } = props;
     const contracts: ContractItem[] = (paginator?.data ?? []) as ContractItem[];
     const statuses = React.useMemo(
         () => options.statuses ?? [],
         [options.statuses],
+    );
+
+    const handoverSettings = React.useMemo(
+        () => ({
+            min_photos_checkin: Math.max(
+                0,
+                handoverOptions?.min_photos_checkin ?? 0,
+            ),
+            min_photos_checkout: Math.max(
+                0,
+                handoverOptions?.min_photos_checkout ?? 0,
+            ),
+            require_checkin_for_activate: Boolean(
+                handoverOptions?.require_checkin_for_activate ?? false,
+            ),
+        }),
+        [
+            handoverOptions?.min_photos_checkin,
+            handoverOptions?.min_photos_checkout,
+            handoverOptions?.require_checkin_for_activate,
+        ],
     );
 
     const [status, setStatus] = React.useState<string>(
@@ -104,6 +141,7 @@ export default function ContractIndex(props: ContractsPageProps) {
     );
 
     const [processing, setProcessing] = React.useState(false);
+    const [openGuide, setOpenGuide] = React.useState(false);
 
     const { q, onQueryChange, handleSortChange } = useServerTable({
         paginator,
@@ -160,6 +198,8 @@ export default function ContractIndex(props: ContractsPageProps) {
     const [cancelReason, setCancelReason] = React.useState<string>('');
     const [toggleTarget, setToggleTarget] = React.useState<Target>(null);
     const [toggleReason, setToggleReason] = React.useState<string>('');
+    const [checkinTarget, setCheckinTarget] = React.useState<Target>(null);
+    const [checkoutTarget, setCheckoutTarget] = React.useState<Target>(null);
 
     const tableColumns = React.useMemo(
         () =>
@@ -167,12 +207,23 @@ export default function ContractIndex(props: ContractsPageProps) {
                 onCancel: (c) => setCancelTarget(c),
                 onStopAutoRenew: (c) => setToggleTarget(c),
                 onStartAutoRenew: (c) => setToggleTarget(c),
+                onCheckin: (c) => setCheckinTarget(c),
+                onCheckout: (c) => setCheckoutTarget(c),
+                requireCheckinForActivate:
+                    handoverSettings.require_checkin_for_activate,
             }),
-        [],
+        [handoverSettings.require_checkin_for_activate],
     );
 
     const headerActions = (
         <div className="flex items-center gap-2">
+            <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpenGuide(true)}
+            >
+                Panduan Aksi
+            </Button>
             <Button
                 type="button"
                 onClick={() =>
@@ -192,6 +243,10 @@ export default function ContractIndex(props: ContractsPageProps) {
             actions={headerActions}
         >
             <div className="space-y-6">
+                <ContractsGuideDialog
+                    open={openGuide}
+                    onOpenChange={setOpenGuide}
+                />
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
@@ -217,8 +272,8 @@ export default function ContractIndex(props: ContractsPageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder="Cari penyewa/kamar…"
-                                        aria-label="Cari penyewa atau kamar"
+                                        placeholder="Cari nomor kontrak/penyewa/kamar…"
+                                        aria-label="Cari nomor kontrak, penyewa, atau kamar"
                                     />
                                 </div>
                             </div>
@@ -351,6 +406,35 @@ export default function ContractIndex(props: ContractsPageProps) {
                 </AlertDialogContent>
             </AlertDialog>
 
+            <Can any={['handover.create']}>
+                <HandoverCreate
+                    open={!!checkinTarget}
+                    onOpenChange={(o) => {
+                        if (!o) setCheckinTarget(null);
+                    }}
+                    contractId={checkinTarget?.id ?? null}
+                    mode="checkin"
+                    minPhotosCheckin={handoverSettings.min_photos_checkin}
+                    minPhotosCheckout={handoverSettings.min_photos_checkout}
+                    onSaved={() => {
+                        // Refresh contracts table only
+                        router.reload({ only: ['contracts'] });
+                    }}
+                />
+                <HandoverCreate
+                    open={!!checkoutTarget}
+                    onOpenChange={(o) => {
+                        if (!o) setCheckoutTarget(null);
+                    }}
+                    contractId={checkoutTarget?.id ?? null}
+                    mode="checkout"
+                    minPhotosCheckin={handoverSettings.min_photos_checkin}
+                    minPhotosCheckout={handoverSettings.min_photos_checkout}
+                    onSaved={() => {
+                        router.reload({ only: ['contracts'] });
+                    }}
+                />
+            </Can>
             {/* Toggle Auto‑renew Dialog */}
             <AlertDialog
                 open={!!toggleTarget}
@@ -431,3 +515,6 @@ export default function ContractIndex(props: ContractsPageProps) {
         </AuthLayout>
     );
 }
+
+// Panduan dialog
+// ContractsGuideDialog moved to dialogs/contracts-guide.tsx

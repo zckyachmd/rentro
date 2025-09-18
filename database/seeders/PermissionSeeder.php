@@ -75,6 +75,12 @@ class PermissionSeeder extends Seeder
                 PermissionName::PAYMENT_CREATE,
                 PermissionName::PAYMENT_UPDATE,
                 PermissionName::PAYMENT_DELETE,
+                // Handover
+                PermissionName::HANDOVER_VIEW,
+                PermissionName::HANDOVER_CREATE,
+                PermissionName::HANDOVER_UPDATE,
+                PermissionName::HANDOVER_DELETE,
+                // Audit Log
                 PermissionName::AUDIT_LOG_VIEW,
             ],
             RoleName::MANAGER->value => [
@@ -119,6 +125,10 @@ class PermissionSeeder extends Seeder
                 PermissionName::PAYMENT_VIEW,
                 PermissionName::PAYMENT_CREATE,
                 PermissionName::PAYMENT_UPDATE,
+                // Handover
+                PermissionName::HANDOVER_VIEW,
+                PermissionName::HANDOVER_CREATE,
+                PermissionName::HANDOVER_UPDATE,
             ],
             RoleName::TENANT->value => [],
         ];

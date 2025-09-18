@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enum\ContractStatus;
 use App\Enum\RoomStatus;
+use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Traits\LogActivity;
 use Illuminate\Console\Command;
@@ -21,6 +22,13 @@ class ContractsActivateDue extends Command
 
     public function handle(): int
     {
+        $requireCheckin = (bool) AppSetting::config('handover.require_checkin_for_activate', true);
+        if ($requireCheckin) {
+            $this->info('[skipped] Activation requires check-in; scheduler disabled.');
+
+            return self::SUCCESS;
+        }
+
         $chunkSize = (int) $this->option('chunk');
         $today     = Carbon::now()->startOfDay()->toDateString();
         $count     = 0;

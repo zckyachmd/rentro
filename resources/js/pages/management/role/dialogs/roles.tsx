@@ -22,7 +22,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-import { RoleItem } from '.';
+import { RoleItem } from '..';
 
 export type RoleUpsertDialogProps = {
     open: boolean;
@@ -54,25 +54,21 @@ export default function RoleUpsertDialog({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [role?.id, guards.join(':')]);
 
-    const close = React.useCallback(() => {
-        onOpenChange?.(false);
-    }, [onOpenChange]);
-
+    const close = React.useCallback(
+        () => onOpenChange?.(false),
+        [onOpenChange],
+    );
     const canSubmit = form.name.trim().length > 0 && !saving;
 
     type UpsertPayload = { name: string; guard_name: string; _method?: 'PUT' };
-
     const submit = React.useCallback(() => {
         if (!canSubmit) return;
-
         const url = isEdit
             ? route('management.roles.update', role!.id)
             : route('management.roles.store');
-
         const payload: UpsertPayload = isEdit
             ? { ...form, _method: 'PUT' as const }
             : { ...form };
-
         router.post(url, payload, {
             preserveScroll: true,
             preserveState: true,
@@ -121,15 +117,15 @@ export default function RoleUpsertDialog({
                         </p>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="role-guard">Guard</Label>
+                        <Label>Guard</Label>
                         <Select
                             value={form.guard_name}
                             onValueChange={(v) =>
                                 setForm((s) => ({ ...s, guard_name: v }))
                             }
                         >
-                            <SelectTrigger id="role-guard" className="w-full">
-                                <SelectValue placeholder="Pilih guard" />
+                            <SelectTrigger>
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 {guards.map((g) => (
@@ -139,23 +135,18 @@ export default function RoleUpsertDialog({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground">
-                            Biasanya gunakan <code>web</code> untuk panel admin,{' '}
-                            <code>api</code> untuk token/API.
-                        </p>
                     </div>
                 </div>
-
-                <DialogFooter className="gap-2">
-                    <Button variant="ghost" onClick={close} disabled={saving}>
+                <DialogFooter>
+                    <Button type="button" variant="outline" onClick={close}>
                         Batal
                     </Button>
-                    <Button onClick={submit} disabled={!canSubmit}>
-                        {saving
-                            ? 'Menyimpan…'
-                            : isEdit
-                              ? 'Simpan Perubahan'
-                              : 'Buat Role'}
+                    <Button
+                        type="button"
+                        disabled={!canSubmit}
+                        onClick={submit}
+                    >
+                        Simpan
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -29,7 +29,6 @@ class ContractService implements ContractServiceInterface
     {
         try {
             return DB::transaction(function () use ($data) {
-                // Lock the room row to prevent concurrent booking on the same room
                 /** @var Room $room */
                 $room = Room::query()->whereKey($data['room_id'])->lockForUpdate()->firstOrFail();
                 /** @var User $tenant */
@@ -138,7 +137,11 @@ class ContractService implements ContractServiceInterface
                     ? (bool) $data['auto_renew']
                     : $autoRenewDefault;
 
+                $seq            = self::nextGlobalContractSequence();
+                $contractNumber = sprintf('%04d', $seq);
+
                 $contract = Contract::create([
+                    'number'         => $contractNumber,
                     'user_id'        => $tenant->id,
                     'room_id'        => $room->id,
                     'start_date'     => $start->toDateString(),
@@ -171,6 +174,37 @@ class ContractService implements ContractServiceInterface
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Atomically increment and return the next global contract sequence number.
+     */
+    protected static function nextGlobalContractSequence(): int
+    {
+        return DB::transaction(function () {
+            /** @var \App\Models\AppSetting|null $row */
+            $row = \App\Models\AppSetting::query()
+                ->where('key', 'contract.global_sequence')
+                ->lockForUpdate()
+                ->first();
+
+            if (!$row) {
+                $row = new \App\Models\AppSetting([
+                    'key'   => 'contract.global_sequence',
+                    'type'  => 'int',
+                    'value' => 0,
+                ]);
+                $row->save();
+            }
+
+            $current = (int) ($row->getAttribute('value') ?? 0);
+            $next    = $current + 1;
+            $row->setAttribute('value', $next);
+            $row->type = 'int';
+            $row->save();
+
+            return $next;
+        });
     }
 
     public function markOverdue(Contract $contract): void

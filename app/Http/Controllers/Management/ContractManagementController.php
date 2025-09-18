@@ -15,10 +15,12 @@ use App\Http\Requests\Management\Contract\StoreContractRequest;
 use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\Room;
+use App\Models\RoomHandover;
 use App\Models\User;
 use App\Services\Contracts\ContractServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -39,6 +41,7 @@ class ContractManagementController extends Controller
         $options = [
             'select' => [
                 'id',
+                'number',
                 'user_id',
                 'room_id',
                 'start_date',
@@ -70,7 +73,8 @@ class ContractManagementController extends Controller
                     }
                     $like = $this->tableLikeOperator();
                     $q->where(function ($qq) use ($term, $like) {
-                        $qq->orWhere('notes', $like, "%{$term}%")
+                        $qq->orWhere('number', $like, "%{$term}%")
+                            ->orWhere('notes', $like, "%{$term}%")
                             ->orWhereHas('tenant', function ($t) use ($term, $like) {
                                 $t->where('name', $like, "%{$term}%")
                                     ->orWhere('email', $like, "%{$term}%");
@@ -87,34 +91,95 @@ class ContractManagementController extends Controller
         /** @var \Illuminate\Pagination\LengthAwarePaginator<Contract> $page */
         $page = $this->applyTable($query, $request, $options);
 
-        $collection = $page->getCollection();
-        $mapped     = $collection->map(function (Contract $c): array {
+        $collection  = $page->getCollection();
+        $contractIds = $collection->pluck('id')->all();
+
+        $confirmedCheckinIds = RoomHandover::query()
+            ->select('contract_id')
+            ->whereIn('contract_id', $contractIds)
+            ->where('type', 'checkin')
+            ->where('status', 'Confirmed')
+            ->pluck('contract_id')
+            ->unique()
+            ->flip();
+
+        $confirmedCheckoutIds = RoomHandover::query()
+            ->select('contract_id')
+            ->whereIn('contract_id', $contractIds)
+            ->where('type', 'checkout')
+            ->where('status', 'Confirmed')
+            ->pluck('contract_id')
+            ->unique()
+            ->flip();
+
+        $latestCheckinByContract = RoomHandover::query()
+            ->whereIn('contract_id', $contractIds)
+            ->where('type', 'checkin')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get(['contract_id', 'status'])
+            ->unique('contract_id')
+            ->keyBy('contract_id');
+
+        $latestCheckoutByContract = RoomHandover::query()
+            ->whereIn('contract_id', $contractIds)
+            ->where('type', 'checkout')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get(['contract_id', 'status'])
+            ->unique('contract_id')
+            ->keyBy('contract_id');
+
+        $mapped = $collection->map(function (Contract $c) use (
+            $confirmedCheckinIds,
+            $confirmedCheckoutIds,
+            $latestCheckinByContract,
+            $latestCheckoutByContract
+        ): array {
             /** @var \App\Models\User|null $tenant */
             $tenant = $c->tenant;
             /** @var \App\Models\Room|null $room */
             $room = $c->room;
 
+            $hasConfirmedCheckin  = $confirmedCheckinIds->has($c->id);
+            $hasConfirmedCheckout = $confirmedCheckoutIds->has($c->id);
+            $latestCheckinStatus  = optional($latestCheckinByContract->get($c->id))->status;
+            $latestCheckoutStatus = optional($latestCheckoutByContract->get($c->id))->status;
+
             return [
-                'id'         => (string) $c->id,
-                'tenant'     => $tenant ? ['id' => $tenant->id, 'name' => $tenant->name, 'email' => $tenant->email] : null,
-                'room'       => $room ? ['id' => (string) $room->id, 'number' => $room->number] : null,
-                'start_date' => $c->start_date->format('Y-m-d'),
-                'end_date'   => $c->end_date?->format('Y-m-d'),
-                'rent_cents' => (int) $c->rent_cents,
-                'status'     => $c->status->value,
-                'auto_renew' => (bool) $c->auto_renew,
+                'id'                     => (string) $c->id,
+                'number'                 => (string) ($c->number ?? ''),
+                'tenant'                 => $tenant ? ['id' => $tenant->id, 'name' => $tenant->name, 'email' => $tenant->email] : null,
+                'room'                   => $room ? ['id' => (string) $room->id, 'number' => $room->number] : null,
+                'start_date'             => $c->start_date->format('Y-m-d'),
+                'end_date'               => $c->end_date?->format('Y-m-d'),
+                'rent_cents'             => (int) $c->rent_cents,
+                'status'                 => $c->status->value,
+                'auto_renew'             => (bool) $c->auto_renew,
+                'has_checkin'            => (bool) $hasConfirmedCheckin,
+                'has_checkout'           => (bool) $hasConfirmedCheckout,
+                'latest_checkin_status'  => $latestCheckinStatus,
+                'latest_checkout_status' => $latestCheckoutStatus,
             ];
         });
         $page->setCollection($mapped);
 
         $contractsPayload = $this->tablePaginate($page);
 
+        $handoverSettings = [
+            'min_photos_checkin'              => (int) AppSetting::config('handover.min_photos_checkin', 0),
+            'min_photos_checkout'             => (int) AppSetting::config('handover.min_photos_checkout', 0),
+            'require_tenant_ack_for_complete' => (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false),
+            'require_checkin_for_activate'    => (bool) AppSetting::config('handover.require_checkin_for_activate', true),
+        ];
+
         return Inertia::render('management/contract/index', [
             'contracts' => $contractsPayload,
             'options'   => [
                 'statuses' => ContractStatus::options(),
             ],
-            'query' => [
+            'handover' => $handoverSettings,
+            'query'    => [
                 'page'    => $contractsPayload['current_page'],
                 'perPage' => $contractsPayload['per_page'],
                 'sort'    => $request->query('sort'),
@@ -143,7 +208,6 @@ class ContractManagementController extends Controller
         $leadDays  = (int) AppSetting::config('contract.prebook_lead_days', 7);
         $threshold = now()->copy()->addDays(max(1, $leadDays))->startOfDay()->toDateString();
 
-        // Rooms that are fully vacant
         $vacantRooms = Room::query()
             ->select('id', 'number', 'name', 'price_cents', 'billing_period', 'room_type_id', 'building_id', 'floor_id', 'status')
             ->where('status', RoomStatus::VACANT->value)
@@ -155,7 +219,6 @@ class ContractManagementController extends Controller
             ->orderBy('number')
             ->get();
 
-        // Rooms with an ACTIVE contract ending within lead days and auto_renew already off — allow pre-booking
         $prebookRooms = Room::query()
             ->select('id', 'number', 'name', 'price_cents', 'billing_period', 'room_type_id', 'building_id', 'floor_id', 'status')
             ->whereHas('contracts', function ($q) use ($today, $threshold) {
@@ -167,7 +230,6 @@ class ContractManagementController extends Controller
                             ->orWhereNotNull('renewal_cancelled_at');
                     });
             })
-            // Do not include rooms that already have a future holder (booked/paid/active in future)
             ->whereDoesntHave('contracts', function ($q) use ($today) {
                 $q->whereIn('status', [
                     ContractStatus::PENDING_PAYMENT->value,
@@ -273,6 +335,7 @@ class ContractManagementController extends Controller
 
         $contractDTO = [
             'id'                   => (string) $contract->id,
+            'number'               => (string) ($contract->number ?? ''),
             'start_date'           => $contract->start_date->toDateString(),
             'end_date'             => $contract->end_date?->toDateString(),
             'rent_cents'           => (int) $contract->rent_cents,
@@ -416,5 +479,64 @@ class ContractManagementController extends Controller
         );
 
         return back()->with('success', $enabled ? 'Auto‑renew dinyalakan.' : 'Auto‑renew dihentikan.');
+    }
+
+    public function print(Contract $contract)
+    {
+        $contract->load([
+            'tenant:id,name,email,phone',
+            'room:id,number,name,billing_period,price_cents,building_id,floor_id,room_type_id',
+            'room.building:id,name,code',
+            'room.floor:id,level',
+            'room.type:id,name,price_cents',
+        ]);
+
+        /** @var \App\Models\User|null $tenant */
+        $tenant = $contract->tenant;
+        /** @var \App\Models\Room|null $room */
+        $room = $contract->room;
+
+        $dto = [
+            'number'         => (string) ($contract->number ?? ''),
+            'status'         => (string) $contract->status->value,
+            'start_date'     => $contract->start_date->toDateString(),
+            'end_date'       => $contract->end_date?->toDateString(),
+            'billing_period' => (string) $contract->billing_period->value,
+            'billing_day'    => $contract->billing_day,
+            'rent_cents'     => (int) $contract->rent_cents,
+            'deposit_cents'  => (int) $contract->deposit_cents,
+            'notes'          => (string) ($contract->notes ?? ''),
+            'tenant'         => $tenant ? [
+                'name'  => $tenant->name,
+                'email' => $tenant->email,
+                'phone' => $tenant->phone,
+            ] : null,
+            'room' => $room ? [
+                'number'   => $room->number,
+                'name'     => $room->name,
+                'building' => $room->building?->name,
+                'floor'    => $room->floor?->level,
+                'type'     => $room->type?->name,
+            ] : null,
+        ];
+
+        $html = view('pdf.contract', [
+            'contract'  => $dto,
+            'autoPrint' => false,
+        ])->render();
+
+        if (class_exists(Pdf::class)) {
+            try {
+                /** @var \Barryvdh\DomPDF\PDF $pdf */
+                $pdf   = Pdf::loadHTML($html);
+                $fname = ($contract->number ?: (string) $contract->id) . '.pdf';
+
+                return $pdf->stream('Contract-' . $fname);
+            } catch (\Throwable $e) {
+                // fallback to HTML
+            }
+        }
+
+        return response($html);
     }
 }

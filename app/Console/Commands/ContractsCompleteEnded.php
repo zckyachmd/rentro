@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Enum\ContractStatus;
+use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Services\Contracts\ContractServiceInterface;
 use App\Traits\LogActivity;
@@ -21,6 +22,14 @@ class ContractsCompleteEnded extends Command
 
     public function handle(ContractServiceInterface $contracts): int
     {
+        $requireCheckout  = (bool) AppSetting::config('handover.require_checkout_for_complete', true);
+        $requireTenantAck = (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false);
+        if ($requireCheckout || $requireTenantAck) {
+            $this->info('[skipped] Completion menunggu proses checkout/konfirmasi tenant; scheduler dinonaktifkan.');
+
+            return self::SUCCESS;
+        }
+
         $chunk   = (int) $this->option('chunk');
         $dryRun  = (bool) $this->option('dry-run');
         $today   = Carbon::now()->startOfDay()->toDateString();

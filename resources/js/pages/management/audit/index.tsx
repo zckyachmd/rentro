@@ -17,7 +17,7 @@ import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
-import DetailDialog from './detail';
+import DetailDialog from './dialogs/detail';
 
 function useDebounced<P extends unknown[]>(
     fn: (...args: P) => void,

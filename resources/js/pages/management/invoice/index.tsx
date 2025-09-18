@@ -41,8 +41,8 @@ import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 
 import { createColumns } from './columns';
-import InvoiceDetailDialog from './detail-dialog';
-import GenerateInvoiceDialog from './generate-dialog';
+import InvoiceDetailDialog from './dialogs/detail';
+import GenerateInvoiceDialog from './dialogs/generate';
 type InvoiceRow = {
     id: string;
     number: string;
