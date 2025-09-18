@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
 use App\Models\Invoice;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Traits\DataTable;
@@ -33,7 +34,6 @@ class InvoiceController extends Controller
                 'number',
                 ['relation' => 'contract.room', 'column' => 'number'],
                 function ($q, string $term) {
-                    // Support deep link: q=contract:123456
                     if (preg_match('/^contract:(\d+)$/i', trim($term), $m)) {
                         $q->orWhere('contract_id', (int) $m[1]);
                     }
@@ -73,6 +73,10 @@ class InvoiceController extends Controller
         $page->setCollection($mapped);
         $payload = $this->tablePaginate($page);
 
+        $manualBanks = AppSetting::config('payments.manual_bank_accounts', []);
+
+        $vaBanks = (array) config('midtrans.va_banks', []);
+
         return Inertia::render('tenant/invoice/index', [
             'invoices' => $payload,
             'query'    => [
@@ -89,6 +93,10 @@ class InvoiceController extends Controller
             'midtrans' => [
                 'client_key'    => (string) config('midtrans.client_key'),
                 'is_production' => (bool) config('midtrans.is_production', false),
+                'banks'         => array_values(array_map('strval', $vaBanks)),
+            ],
+            'payments' => [
+                'manual_banks' => is_array($manualBanks) ? array_values($manualBanks) : [],
             ],
         ]);
     }
@@ -105,11 +113,13 @@ class InvoiceController extends Controller
             $tenant = $request->user();
             $room   = $contract->room;
 
+            /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $paymentCollection */
             $paymentCollection = $invoice->payments()
                 ->orderByDesc('paid_at')
                 ->get(['id', 'method', 'status', 'amount_cents', 'paid_at', 'reference', 'provider']);
 
-            $payments = $paymentCollection->map(function (\App\Models\Payment $p): array {
+            $payments = $paymentCollection->map(function ($p): array {
+                /* @var \App\Models\Payment $p */
                 return [
                     'id'           => (string) $p->id,
                     'method'       => (string) $p->method->value,

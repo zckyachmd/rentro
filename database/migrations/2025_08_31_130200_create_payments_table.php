@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('va_number', 50)->nullable();
             $table->timestamp('va_expired_at')->nullable();
             $table->json('meta')->nullable();
+            $table->json('attachments')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
             $table->softDeletes();

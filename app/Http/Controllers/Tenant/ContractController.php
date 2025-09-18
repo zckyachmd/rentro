@@ -100,6 +100,7 @@ class ContractController extends Controller
             ->orderByDesc('due_date')
             ->paginate(20)
             ->through(function (\Illuminate\Database\Eloquent\Model $m): array {
+                /** @var \App\Models\Invoice $inv */
                 $inv = $m;
 
                 return [

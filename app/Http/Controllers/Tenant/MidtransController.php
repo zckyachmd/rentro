@@ -16,6 +16,7 @@ use App\Services\Contracts\PaymentServiceInterface;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class MidtransController extends Controller
 {
@@ -43,7 +44,11 @@ class MidtransController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'bank' => 'required|string|in:bca,bni,bri,permata,cimb',
+            'bank' => [
+                'required',
+                'string',
+                Rule::in(array_map('strval', (array) config('midtrans.va_banks', ['bca', 'bni', 'bri', 'permata', 'cimb']))),
+            ],
         ]);
         $bank = (string) $validated['bank'];
 
@@ -125,6 +130,9 @@ class MidtransController extends Controller
         }
         $payment->update($update);
 
+        // Flash success for frontend flash-toaster (will show on next Inertia reload)
+        session()->flash('success', 'VA berhasil dibuat.');
+
         return response()->json([
             'payment_id'  => (string) $payment->id,
             'order_id'    => $res['order_id'],
@@ -137,6 +145,26 @@ class MidtransController extends Controller
     public function status(Request $request, Invoice $invoice): JsonResponse
     {
         $this->assertOwnership($invoice, $request);
+
+        /** @var Payment|null $pendingManual */
+        $pendingManual = $invoice->payments()
+            ->where('provider', 'Manual')
+            ->where('status', PaymentStatus::REVIEW->value)
+            ->latest('id')
+            ->first(['id', 'meta', 'provider', 'status']);
+
+        if ($pendingManual) {
+            $m       = (array) ($pendingManual->meta ?? []);
+            $manual  = (array) ($m['manual'] ?? []);
+            $pending = [
+                'payment_type' => 'manual',
+                'bank'         => $manual['bank'] ?? ($m['bank'] ?? null),
+                'va_number'    => null,
+                'expiry_time'  => null,
+            ];
+
+            return response()->json(['pending' => $pending]);
+        }
 
         /** @var Payment|null $pendingPayment */
         $pendingPayment = $invoice->payments()

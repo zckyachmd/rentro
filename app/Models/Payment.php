@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enum\PaymentMethod;
 use App\Enum\PaymentStatus;
+use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasSnowflakeId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,7 @@ class Payment extends Model
     use HasFactory;
     use HasAudit;
     use HasSnowflakeId;
+    use HasAttachments;
 
     public $incrementing = false;
     protected $keyType   = 'int';
@@ -35,6 +37,7 @@ class Payment extends Model
         'va_expired_at',
         'meta',
         'note',
+        'attachments',
     ];
 
     protected $casts = [
@@ -45,6 +48,7 @@ class Payment extends Model
         'method'                => PaymentMethod::class,
         'status'                => PaymentStatus::class,
         'meta'                  => 'array',
+        'attachments'           => 'array',
     ];
 
     public function invoice(): BelongsTo

@@ -13,6 +13,7 @@ use App\Services\Contracts\PaymentServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -212,6 +213,10 @@ class PaymentManagementController extends Controller
             $tenant   = $contract?->tenant;
             $room     = $contract?->room;
 
+            // Prefer trait-based attachments
+            $attachments     = $payment->getAttachments('private');
+            $firstAttachment = !empty($attachments) ? (string) $attachments[0] : '';
+
             return response()->json([
                 'payment' => [
                     'id'                     => (string) $payment->id,
@@ -223,9 +228,10 @@ class PaymentManagementController extends Controller
                     'provider'               => $payment->provider,
                     'note'                   => $payment->note,
                     'recorded_by'            => (string) ($payment->meta['recorded_by'] ?? ''),
-                    'attachment'             => (string) ($payment->meta['evidence_path'] ?? ''),
-                    'attachment_name'        => (string) (($payment->meta['evidence_path'] ?? '') ? basename((string) $payment->meta['evidence_path']) : ''),
-                    'attachment_uploaded_at' => (string) ($payment->meta['evidence_uploaded_at'] ?? ''),
+                    'attachment'             => $firstAttachment,
+                    'attachment_name'        => $firstAttachment ? basename($firstAttachment) : '',
+                    'attachment_uploaded_at' => null,
+                    'attachments'            => $attachments,
                     'pre_outstanding_cents'  => (int) ($payment->pre_outstanding_cents ?? 0),
                 ],
                 'invoice' => $inv ? [
@@ -257,6 +263,10 @@ class PaymentManagementController extends Controller
     {
         $payment->load(['invoice:id,number,contract_id,amount_cents', 'invoice.contract:id,user_id,room_id,start_date,end_date', 'invoice.contract.tenant:id,name,email,phone', 'invoice.contract.room:id,number,name']);
 
+        // Resolve first attachment via trait (if any)
+        $list            = $payment->getAttachments('private');
+        $firstAttachment = !empty($list) ? (string) $list[0] : '';
+
         $dto = [
             'id'           => (string) $payment->id,
             'method'       => (string) $payment->method->value,
@@ -265,7 +275,7 @@ class PaymentManagementController extends Controller
             'paid_at'      => $payment->paid_at?->toDateTimeString(),
             'reference'    => $payment->reference,
             'note'         => $payment->note,
-            'attachment'   => (string) ($payment->meta['evidence_path'] ?? ''),
+            'attachment'   => $firstAttachment,
         ];
 
         $invoice  = $payment->invoice;
@@ -361,22 +371,99 @@ class PaymentManagementController extends Controller
 
     public function attachment(Payment $payment)
     {
-        $path = (string) ($payment->meta['evidence_path'] ?? '');
-        if (!$path || !Storage::exists($path)) {
+        // Resolve from trait first
+        $bucket = 'private';
+        $paths  = $payment->getAttachments($bucket);
+        $path   = !empty($paths) ? (string) $paths[0] : (string) ($payment->meta['evidence_path'] ?? '');
+        if (!$path) {
+            abort(404);
+        }
+        $resolved = $payment->resolveAttachmentPath($path, $bucket);
+        $disk     = $payment->attachmentDiskName($bucket);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $storage */
+        $storage = Storage::disk($disk);
+        if (!$storage->exists($resolved)) {
             abort(404);
         }
 
-        $absolute = Storage::path($path);
+        $absolute = $storage->path($resolved);
         try {
             return response()->file($absolute);
         } catch (\Throwable $e) {
-            $content = Storage::get($path);
-            $mime    = Storage::mimeType($path) ?: 'application/octet-stream';
+            $content = $storage->get($resolved);
+            $mime    = $storage->mimeType($resolved) ?: 'application/octet-stream';
 
             return response($content, 200, [
                 'Content-Type'        => $mime,
                 'Content-Disposition' => 'inline',
             ]);
         }
+    }
+
+    public function ack(Request $request, Payment $payment)
+    {
+        $request->validate([
+            'ack'     => ['nullable', 'accepted'],
+            'reason'  => ['required_without:ack', 'string', 'max:200'],
+            'note'    => ['nullable', 'string'],
+            'paid_at' => ['nullable', 'date'],
+        ]);
+
+        if (
+            !in_array($payment->status->value, [PaymentStatus::REVIEW->value, PaymentStatus::PENDING->value], true)
+            || (string) $payment->method->value !== PaymentMethod::TRANSFER->value
+        ) {
+            return back()->with('error', 'Hanya pembayaran transfer yang berstatus Review/Pending yang dapat diproses.');
+        }
+        // No admin attachments during review per latest requirements
+
+        $meta = (array) ($payment->meta ?? []);
+        if ($request->boolean('ack')) {
+            // Confirm
+            $meta['review'] = array_merge((array) ($meta['review'] ?? []), [
+                'confirmed_at' => now()->toDateTimeString(),
+                'confirmed_by' => $request->user()?->name,
+            ]);
+            if ($request->filled('note')) {
+                $payment->note = (string) $request->string('note');
+            }
+            $payment->status = PaymentStatus::COMPLETED;
+            $paidAtStr       = (string) $request->input('paid_at', '');
+            $paidAt          = null;
+            if ($paidAtStr !== '') {
+                try {
+                    $paidAt = Carbon::parse($paidAtStr);
+                } catch (\Throwable) {
+                    $paidAt = null;
+                }
+            }
+            $payment->paid_at = $paidAt ?: ($payment->paid_at ?: now());
+            $payment->meta    = $meta;
+            $payment->save();
+
+            $inv = $payment->relationLoaded('invoice') ? $payment->invoice : $payment->invoice()->first();
+            if ($inv instanceof \App\Models\Invoice) {
+                $this->payments->recalculateInvoice($inv);
+            }
+
+            return back()->with('success', 'Pembayaran dikonfirmasi dan ditandai sebagai Lunas.');
+        }
+
+        // Reject path requires reason
+        $reason = (string) $request->string('reason');
+        if ($reason === '') {
+            return back()->with('error', 'Alasan wajib diisi untuk menolak pembayaran.');
+        }
+        $meta['review'] = array_merge((array) ($meta['review'] ?? []), [
+            'rejected_at' => now()->toDateTimeString(),
+            'rejected_by' => $request->user()?->name,
+            'reason'      => $reason,
+        ]);
+        $payment->update([
+            'status' => PaymentStatus::FAILED->value,
+            'meta'   => $meta,
+        ]);
+
+        return back()->with('success', 'Pembayaran ditolak.');
     }
 }

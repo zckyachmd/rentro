@@ -116,12 +116,13 @@ export function ManualPaymentDialog({
             resolvedInvoice ? Math.max(0, resolvedInvoice.outstanding ?? 0) : 0,
         [resolvedInvoice],
     );
-    const remainingAfterPay = React.useMemo(() => {
-        const outstanding = Number(resolvedInvoice?.outstanding ?? 0);
-        const pay =
-            typeof data.amount_cents === 'number' ? data.amount_cents : 0;
-        return Math.max(0, outstanding - pay);
-    }, [resolvedInvoice, data.amount_cents]);
+    // Remaining after pay (not currently displayed)
+    // const remainingAfterPay = React.useMemo(() => {
+    //     const outstanding = Number(resolvedInvoice?.outstanding ?? 0);
+    //     const pay =
+    //         typeof data.amount_cents === 'number' ? data.amount_cents : 0;
+    //     return Math.max(0, outstanding - pay);
+    // }, [resolvedInvoice, data.amount_cents]);
 
     const canSubmit =
         !processing &&
@@ -264,7 +265,7 @@ export function ManualPaymentDialog({
             forceFormData: true,
             onSuccess: () => close(),
         });
-    }, [canSubmit, post, close]);
+    }, [canSubmit, post, close, transform, isTransfer]);
 
     const hasErrors = Boolean(
         errors.invoice_id ||

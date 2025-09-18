@@ -25,6 +25,7 @@ use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;
 use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
+use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
@@ -140,6 +141,10 @@ Route::middleware('auth')->group(function (): void {
                 ->whereNumber('invoice')
                 ->middleware('throttle:6,1')
                 ->name('pay.midtrans.va');
+            Route::post('/{invoice}/pay/manual', [TenantPaymentController::class, 'payManual'])
+                ->whereNumber('invoice')
+                ->middleware('throttle:6,1')
+                ->name('pay.manual');
         });
     });
 
@@ -293,6 +298,9 @@ Route::middleware('auth')->group(function (): void {
             Route::post('/{payment}/void', [PaymentManagementController::class, 'void'])
                 ->middleware('can:' . PermissionName::PAYMENT_UPDATE->value)
                 ->name('void');
+            Route::post('/{payment}/ack', [PaymentManagementController::class, 'ack'])
+                ->middleware('can:' . PermissionName::PAYMENT_UPDATE->value)
+                ->name('ack');
         });
 
         // Rooms
@@ -423,11 +431,19 @@ Route::middleware('auth')->group(function (): void {
     });
 });
 
-// Midtrans redirect endpoints
-Route::prefix('payments/midtrans')->name('payments.midtrans.')->group(function (): void {
-    Route::get('/finish', [PaymentRedirectController::class, 'finish'])->name('finish');
-    Route::get('/unfinish', [PaymentRedirectController::class, 'unfinish'])->name('unfinish');
-    Route::get('/error', [PaymentRedirectController::class, 'error'])->name('error');
+// Payment redirect endpoints (generic + provider-specific)
+Route::prefix('payments')->name('payments.')->group(function (): void {
+    // Generic redirect routes
+    Route::prefix('redirect')->name('redirect.')->group(function (): void {
+        // /payments/redirect/{status}
+        Route::get('/{status}', [PaymentRedirectController::class, 'status'])
+            ->where('status', 'finish|unfinish|error')
+            ->name('status');
+        // /payments/redirect/{provider}/{status}
+        Route::get('/{provider}/{status}', [PaymentRedirectController::class, 'providerStatus'])
+            ->where('status', 'finish|unfinish|error')
+            ->name('provider.status');
+    });
 });
 
 // Midtrans webhooks

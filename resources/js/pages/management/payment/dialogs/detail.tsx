@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Button } from '@/components/ui/button';
 import AttachmentPreviewDialog from '@/components/attachment-preview';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -11,7 +11,6 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
 
 type Target = { id: string } | null;
@@ -109,12 +108,19 @@ export default function PaymentDetailDialog({
                     {loading || !data ? (
                         <div className="h-48 animate-pulse rounded-md border"></div>
                     ) : (
-                        <PaymentDetailBody data={data} previewOpen={previewOpen} setPreviewOpen={setPreviewOpen} />
+                        <PaymentDetailBody
+                            data={data}
+                            previewOpen={previewOpen}
+                            setPreviewOpen={setPreviewOpen}
+                        />
                     )}
                 </div>
                 <DialogFooter>
                     {data?.payment?.attachment ? (
-                        <Button type="button" onClick={() => setPreviewOpen(true)}>
+                        <Button
+                            type="button"
+                            onClick={() => setPreviewOpen(true)}
+                        >
                             Lihat Lampiran
                         </Button>
                     ) : null}
@@ -127,7 +133,15 @@ export default function PaymentDetailDialog({
     );
 }
 
-function PaymentDetailBody({ data, previewOpen, setPreviewOpen }: { data: PaymentDetailData; previewOpen: boolean; setPreviewOpen: (v: boolean) => void }) {
+function PaymentDetailBody({
+    data,
+    previewOpen,
+    setPreviewOpen,
+}: {
+    data: PaymentDetailData;
+    previewOpen: boolean;
+    setPreviewOpen: (v: boolean) => void;
+}) {
     const p = data.payment;
     const inv = data.invoice;
     const tenant = data.tenant;
@@ -173,7 +187,8 @@ function PaymentDetailBody({ data, previewOpen, setPreviewOpen }: { data: Paymen
                             <div>
                                 {room ? (
                                     <span>
-                                        {room.number || '-'} {room.name ? `— ${room.name}` : ''}
+                                        {room.number || '-'}{' '}
+                                        {room.name ? `— ${room.name}` : ''}
                                     </span>
                                 ) : (
                                     '-'
@@ -193,6 +208,7 @@ function PaymentDetailBody({ data, previewOpen, setPreviewOpen }: { data: Paymen
                     )}
                 </div>
             </div>
+            {/* Review moved to a dedicated dialog */}
             <AttachmentPreviewDialog
                 url={attachmentUrl}
                 open={previewOpen}
@@ -200,10 +216,12 @@ function PaymentDetailBody({ data, previewOpen, setPreviewOpen }: { data: Paymen
                 title="Lampiran Pembayaran"
                 description="Pratinjau bukti pembayaran."
                 details={[
-                    { label: 'Nominal Pembayaran', value: formatIDR(p.amount_cents) },
-                    { label: 'Nama Pemilik Invoice', value: tenant?.name || '-' },
+                    {
+                        label: 'Nominal Pembayaran',
+                        value: formatIDR(p.amount_cents),
+                    },
+                    { label: 'Nama Penyewa', value: tenant?.name || '-' },
                     { label: 'Nomor Invoice', value: inv?.number || '-' },
-                    { label: 'Diunggah', value: p.attachment_uploaded_at || '-' },
                 ]}
             />
         </div>

@@ -46,6 +46,25 @@ class AppSettingSeeder extends Seeder
             ['key' => 'handover.min_photos_checkout', 'value' => 0, 'type' => 'int', 'description' => 'Minimal jumlah foto untuk checkout'],
             ['key' => 'handover.require_tenant_ack_for_activate', 'value' => false, 'type' => 'bool', 'description' => 'Wajib konfirmasi tenant untuk aktivasi kontrak'],
             ['key' => 'handover.require_tenant_ack_for_complete', 'value' => false, 'type' => 'bool', 'description' => 'Wajib konfirmasi tenant untuk penyelesaian kontrak'],
+
+            // Payments
+            [
+                'key' => 'payments.manual_bank_accounts',
+                'value' => [
+                    [
+                        'bank'    => 'BCA',
+                        'holder'  => 'PT Rentro Sejahtera',
+                        'account' => '8888888888',
+                    ],
+                    [
+                        'bank'    => 'BRI',
+                        'holder'  => 'PT Rentro Sejahtera',
+                        'account' => '123456789012345',
+                    ],
+                ],
+                'type' => 'array',
+                'description' => 'Daftar rekening tujuan untuk transfer manual (bank, nama pemegang, nomor rekening).',
+            ],
         ];
 
         foreach ($settings as $row) {

@@ -111,11 +111,13 @@ export function useCountdown(expiry?: string | null) {
         const tick = () => {
             const diff = Math.max(0, target - Date.now());
             if (diff <= 0) return setRemaining('00:00:00');
-            const h = Math.floor(diff / 3_600_000);
+            const d = Math.floor(diff / 86_400_000);
+            const h = Math.floor((diff % 86_400_000) / 3_600_000);
             const m = Math.floor((diff % 3_600_000) / 60_000);
             const s = Math.floor((diff % 60_000) / 1000);
             const pad = (n: number) => String(n).padStart(2, '0');
-            setRemaining(`${pad(h)}:${pad(m)}:${pad(s)}`);
+            const dh = d > 0 ? `${d}d ` : '';
+            setRemaining(`${dh}${pad(h)}:${pad(m)}:${pad(s)}`);
         };
         tick();
         const t = setInterval(tick, 1000);

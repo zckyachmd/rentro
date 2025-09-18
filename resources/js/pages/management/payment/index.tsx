@@ -36,6 +36,7 @@ import { formatIDR } from '@/lib/format';
 import { createColumns } from './columns';
 import PaymentDetailDialog from './dialogs/detail';
 import ManualPaymentDialog from './dialogs/manual';
+import PaymentReviewDialog from './dialogs/review';
 
 export type PaymentRow = {
     id: string;
@@ -93,6 +94,7 @@ export default function PaymentIndex() {
         description?: string;
         details?: { label: string; value: string }[];
     }>(null);
+    const [review, setReview] = React.useState<null | { id: string }>(null);
     const [voiding, setVoiding] = React.useState<{
         target: PaymentRow | null;
         reason: string;
@@ -193,10 +195,9 @@ export default function PaymentIndex() {
                                     if (row.status === 'Cancelled') return;
                                     setVoiding({ target: row, reason: '' });
                                 },
-                                onShowDetail: (row) => {
-                                    if (row.status !== 'Completed') return;
-                                    setDetail({ id: row.id });
-                                },
+                                onShowDetail: (row) =>
+                                    setDetail({ id: row.id }),
+                                onReview: (row) => setReview({ id: row.id }),
                                 currency,
                             })}
                             rows={rows}
@@ -231,6 +232,10 @@ export default function PaymentIndex() {
             <PaymentDetailDialog
                 target={detail}
                 onClose={() => setDetail(null)}
+            />
+            <PaymentReviewDialog
+                target={review}
+                onClose={() => setReview(null)}
             />
 
             <AttachmentPreviewDialog

@@ -51,10 +51,18 @@ export const createColumns = (
         accessorKey: 'number',
         title: 'No. Invoice',
         className: COL.number,
-        cell: ({ getValue }) => (
-            <div className={COL.number + ' font-mono'}>
+        cell: ({ row, getValue }) => (
+            <button
+                type="button"
+                onClick={() => opts?.onView?.(row.original)}
+                className={
+                    COL.number +
+                    ' text-left font-mono text-primary hover:underline'
+                }
+                title="Lihat rincian invoice"
+            >
                 {String(getValue() ?? '')}
-            </div>
+            </button>
         ),
     }),
     makeColumn<TenantInvoiceItem>({

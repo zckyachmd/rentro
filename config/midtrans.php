@@ -16,4 +16,11 @@ return [
 
     // Optional: Set default expiry for VA/QRIS (in minutes). 0 to disable.
     'expiry_minutes' => (int) env('MIDTRANS_EXPIRY_MINUTES', 0),
+
+    // Expose available VA banks to client (lowercase codes)
+    // Defaults to common banks; override via env MIDTRANS_VA_BANKS="bca,bni,bri,permata,cimb"
+    'va_banks' => array_values(array_filter(array_map(
+        fn ($b) => strtolower(trim($b)),
+        explode(',', (string) env('MIDTRANS_VA_BANKS', 'bca,bni,bri,permata,cimb')),
+    ))),
 ];

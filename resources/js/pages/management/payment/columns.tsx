@@ -1,7 +1,13 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Eye, MoreHorizontal, Printer, XCircle } from 'lucide-react';
+import {
+    CheckCircle2,
+    Eye,
+    MoreHorizontal,
+    Printer,
+    XCircle,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +38,7 @@ export const createColumns = (opts?: {
     onPrint?: (row: PaymentRow) => void;
     onVoid?: (row: PaymentRow) => void;
     onShowDetail?: (row: PaymentRow) => void;
+    onReview?: (row: PaymentRow) => void;
     currency?: (amount: number) => string;
 }): ColumnDef<PaymentRow>[] => [
     makeColumn<PaymentRow>({
@@ -133,16 +140,32 @@ export const createColumns = (opts?: {
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                            {p.status === 'Completed' ? (
+                            {p.method === 'Transfer' &&
+                            (p.status === 'Review' ||
+                                p.status === 'Pending') ? (
                                 <>
                                     <DropdownMenuItem
-                                        onClick={() => opts?.onShowDetail?.(p)}
+                                        onClick={() =>
+                                            opts?.onReview
+                                                ? opts.onReview(p)
+                                                : opts?.onShowDetail?.(p)
+                                        }
                                     >
-                                        <Eye className="mr-2 h-4 w-4" /> Lihat
-                                        Detail
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
+                                        Review
                                     </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                </>
+                            ) : null}
+                            <DropdownMenuItem
+                                onClick={() => opts?.onShowDetail?.(p)}
+                            >
+                                <Eye className="mr-2 h-4 w-4" /> Lihat Detail
+                            </DropdownMenuItem>
+                            {p.status === 'Completed' ? (
+                                <>
                                     <DropdownMenuItem
                                         onClick={() => opts?.onPrint?.(p)}
                                     >
@@ -158,11 +181,7 @@ export const createColumns = (opts?: {
                                         Batalkan
                                     </DropdownMenuItem>
                                 </>
-                            ) : (
-                                <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                    Tidak ada aksi
-                                </div>
-                            )}
+                            ) : null}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

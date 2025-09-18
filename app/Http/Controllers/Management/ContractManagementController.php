@@ -21,7 +21,6 @@ use App\Services\Contracts\ContractServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -383,7 +382,8 @@ class ContractManagementController extends Controller
             ->orderByDesc('created_at')
             ->paginate(10);
 
-        $invoices = $invoices->through(function (Model $m, int $index): array {
+        $invoices = $invoices->through(function (\Illuminate\Database\Eloquent\Model $m): array {
+            /** @var \App\Models\Invoice $i */
             $i = $m;
 
             return [

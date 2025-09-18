@@ -202,6 +202,7 @@ class RoomManagementController extends Controller
                 $start    = (int) ($room->photos()->max('ordering') ?? -1);
                 $hasCover = $room->photos()->where('is_cover', true)->exists();
                 foreach ($paths as $i => $p) {
+                    /** @var \App\Models\RoomPhoto $photo */
                     $photo = $room->photos()->create([
                         'path'     => $p,
                         'ordering' => $start + $i + 1,
@@ -386,6 +387,7 @@ class RoomManagementController extends Controller
                 $start    = (int) ($room->photos()->max('ordering') ?? -1);
                 $hasCover = $room->photos()->where('is_cover', true)->exists();
                 foreach ($paths as $i => $p) {
+                    /** @var \App\Models\RoomPhoto $photo */
                     $photo = $room->photos()->create([
                         'path'     => $p,
                         'ordering' => $start + $i + 1,

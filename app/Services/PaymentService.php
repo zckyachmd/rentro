@@ -68,13 +68,17 @@ class PaymentService implements PaymentServiceInterface
      */
     public function createPayment(Invoice $invoice, array $data, ?User $user = null, ?UploadedFile $attachment = null): Payment
     {
-        return DB::transaction(function () use ($invoice, $data, $user, $attachment): Payment {
-            $method = (string) $data['method'];
-            $status = in_array($method, [PaymentMethod::CASH->value, PaymentMethod::TRANSFER->value], true)
-                ? PaymentStatus::COMPLETED->value
-                : ($data['status'] ?? PaymentStatus::PENDING->value);
-
+        return DB::transaction(function () use ($invoice, $data, $user): Payment {
+            $method   = (string) $data['method'];
             $provider = $data['provider'] ?? null;
+
+            if ($method === PaymentMethod::TRANSFER->value && (string) $provider === 'Manual') {
+                $status = PaymentStatus::REVIEW->value;
+            } elseif (in_array($method, [PaymentMethod::CASH->value, PaymentMethod::TRANSFER->value], true)) {
+                $status = PaymentStatus::COMPLETED->value;
+            } else {
+                $status = $data['status'] ?? PaymentStatus::PENDING->value;
+            }
             if ($method === PaymentMethod::CASH->value && empty($provider)) {
                 $provider = 'Kasir';
             }
@@ -94,13 +98,16 @@ class PaymentService implements PaymentServiceInterface
                 }
             }
 
+            // Determine paid_at policy: set now only for Completed
+            $shouldSetPaidNow = ($status === PaymentStatus::COMPLETED->value);
+
             $payment = Payment::create([
                 'invoice_id'            => $invoice->id,
                 'method'                => $method,
                 'status'                => $status,
                 'amount_cents'          => (int) $data['amount_cents'],
                 'pre_outstanding_cents' => $preOutstanding,
-                'paid_at'               => $data['paid_at'] ?? ($status === PaymentStatus::COMPLETED->value ? now() : null),
+                'paid_at'               => $data['paid_at'] ?? ($shouldSetPaidNow ? now() : null),
                 'reference'             => null,
                 'provider'              => $provider,
                 'va_number'             => $data['va_number'] ?? null,
@@ -123,14 +130,7 @@ class PaymentService implements PaymentServiceInterface
                 }
             }
 
-            if ($attachment) {
-                $path    = $attachment->store("payments/{$payment->id}");
-                $metaNow = array_merge($payment->meta ?? [], [
-                    'evidence_path'        => $path,
-                    'evidence_uploaded_at' => now()->toDateTimeString(),
-                ]);
-                $payment->update(['meta' => $metaNow]);
-            }
+            // Attachment handling removed per latest requirements.
 
             $this->recalculateInvoice($invoice);
 
@@ -225,7 +225,7 @@ class PaymentService implements PaymentServiceInterface
     {
         return DB::transaction(function () use ($invoice, $provider, $reason, $user): int {
             $query = $invoice->payments()
-                ->where('status', PaymentStatus::PENDING->value);
+                ->whereIn('status', [PaymentStatus::PENDING->value, PaymentStatus::REVIEW->value]);
             if (!empty($provider)) {
                 $query->where('provider', $provider);
             }

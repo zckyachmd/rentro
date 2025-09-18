@@ -25,6 +25,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
 
+import TenantInvoicePayDialog from './pay';
+
 type InvoiceDetailTarget = { id: string; number: string } | null;
 type InvoiceItem = {
     code: string;
@@ -118,32 +120,59 @@ export default function TenantInvoiceDetailDialog({
 }) {
     const open = !!target;
     const { loading, data } = useInvoiceDetailLoader(target);
+    const [openPay, setOpenPay] = React.useState(false);
 
     return (
-        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="sm:max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        Invoice {target?.number ?? ''}
-                    </DialogTitle>
-                    <DialogDescription className="text-xs">
-                        Ringkasan tagihan & item.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                    {loading || !data ? (
-                        <div className="h-48 animate-pulse rounded-md border"></div>
-                    ) : (
-                        <InvoiceDetailBody data={data} />
-                    )}
-                </div>
-                <DialogFooter>
-                    <Button type="button" variant="outline" onClick={onClose}>
-                        Tutup
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <>
+            <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+                <DialogContent className="sm:max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            Invoice {target?.number ?? ''}
+                        </DialogTitle>
+                        <DialogDescription className="text-xs">
+                            Ringkasan tagihan & item.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        {loading || !data ? (
+                            <div className="h-48 animate-pulse rounded-md border"></div>
+                        ) : (
+                            <InvoiceDetailBody data={data} />
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onClose}
+                        >
+                            Tutup
+                        </Button>
+                        {data &&
+                        (data.payment_summary?.outstanding ?? 0) > 0 ? (
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    setOpenPay(true);
+                                    onClose();
+                                }}
+                            >
+                                Bayar
+                            </Button>
+                        ) : null}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <TenantInvoicePayDialog
+                target={
+                    openPay && data
+                        ? { id: data.invoice.id, number: data.invoice.number }
+                        : null
+                }
+                onClose={() => setOpenPay(false)}
+            />
+        </>
     );
 }
 

@@ -7,33 +7,41 @@ use Inertia\Inertia;
 
 class PaymentRedirectController extends Controller
 {
-    private function renderResult(Request $request, string $variant)
+    /**
+     * Render a generic payment redirect result page.
+     * Variant: finish|unfinish|error. Provider is optional (e.g., midtrans, xendit).
+     */
+    private function renderResult(Request $request, string $variant, ?string $provider = null)
     {
+        $allowed = ['finish', 'unfinish', 'error'];
+        if (!in_array($variant, $allowed, true)) {
+            $variant = 'error';
+        }
+
+        $returnTo = (string) $request->query('return_to', route('tenant.invoices.index'));
+
         $payload = [
-            'variant'            => $variant, // finish|unfinish|error
+            'variant'            => $variant,
+            'provider'           => $provider,
             'order_id'           => (string) $request->query('order_id', ''),
             'status_code'        => (string) $request->query('status_code', ''),
             'transaction_status' => (string) $request->query('transaction_status', ''),
             'fraud_status'       => (string) $request->query('fraud_status', ''),
             'gross_amount'       => (string) $request->query('gross_amount', ''),
-            'return_to'          => route('tenant.invoices.index'),
+            'return_to'          => $returnTo,
         ];
 
-        return Inertia::render('payment/midtrans/result', $payload);
+        return Inertia::render('payment/result', $payload);
     }
 
-    public function finish(Request $request)
+    // Generic endpoints for any provider
+    public function status(Request $request, string $status)
     {
-        return $this->renderResult($request, 'finish');
+        return $this->renderResult($request, $status, null);
     }
 
-    public function unfinish(Request $request)
+    public function providerStatus(Request $request, string $provider, string $status)
     {
-        return $this->renderResult($request, 'unfinish');
-    }
-
-    public function error(Request $request)
-    {
-        return $this->renderResult($request, 'error');
+        return $this->renderResult($request, $status, $provider);
     }
 }

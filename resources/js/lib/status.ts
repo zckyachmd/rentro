@@ -17,6 +17,8 @@ export function variantForInvoiceStatus(status: string): BadgeVariant {
 
 export function variantForPaymentStatus(status: string): BadgeVariant {
     switch (status) {
+        case 'Review':
+            return 'secondary';
         case 'Completed':
             return 'default';
         case 'Pending':
