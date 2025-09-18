@@ -12,6 +12,7 @@ use App\Models\Contract;
 use App\Models\Invoice;
 use App\Traits\LogActivity;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class UpdateContractStatusOnInvoicePaid
 {
@@ -20,74 +21,103 @@ class UpdateContractStatusOnInvoicePaid
     public function handle(InvoicePaid $event): void
     {
         /** @var Invoice $invoice */
-        $invoice  = $event->invoice->fresh(['contract']);
-        $contract = $invoice->contract;
-        /** @var Contract|null $contract */
-        if (!$contract) {
+        $invoice = $event->invoice;
+        if (!$invoice) {
             return;
         }
-        /** @phpstan-assert Contract $contract */
 
-        $current = (string) $contract->status->value;
-        if (
-            in_array($current, [
-                ContractStatus::PENDING_PAYMENT->value,
-                ContractStatus::BOOKED->value,
-                ContractStatus::OVERDUE->value,
-            ], true)
-        ) {
+        // Run only when invoice is Paid (handle both enum or string)
+        $invoiceStatus = $invoice->status instanceof \BackedEnum
+            ? $invoice->status->value
+            : (string) $invoice->getAttribute('status');
+        if (!in_array($invoiceStatus, [InvoiceStatus::PAID->value, 'Paid', 'PAID'], true)) {
+            return;
+        }
+
+        /** @var int|string|null $contractId */
+        $contractId = $invoice->getAttribute('contract_id');
+        if (!$contractId) {
+            return;
+        }
+
+        // Read contract raw (bypass Eloquent casting to avoid enum exceptions)
+        $raw = DB::table('contracts')->where('id', $contractId)
+            ->first(['id', 'status', 'start_date', 'end_date', 'room_id', 'paid_in_full_at']);
+        if (!$raw) {
+            return;
+        }
+
+        $current               = (string) ($raw->status ?? '');
+        $eligibleForTransition = in_array($current, [
+            ContractStatus::PENDING_PAYMENT->value,
+            ContractStatus::BOOKED->value,
+            ContractStatus::OVERDUE->value,
+            'Pending', // legacy value that may exist in older data
+        ], true);
+
+        if ($eligibleForTransition) {
             $today          = now()->startOfDay();
-            $startDate      = $contract->start_date->copy()->startOfDay();
+            $startDate      = $raw->start_date ? Carbon::parse((string) $raw->start_date)->startOfDay() : null;
             $requireCheckin = (bool) AppSetting::config('handover.require_checkin_for_activate', true);
-            $next           = ContractStatus::BOOKED;
+
+            $next = ContractStatus::BOOKED->value;
             if (!$requireCheckin && $startDate && $startDate->lessThanOrEqualTo($today)) {
-                $next = ContractStatus::ACTIVE;
+                $next = ContractStatus::ACTIVE->value;
             }
 
-            $contract->forceFill(['status' => $next])->save();
+            // Update contract status without hydrating the model (avoid enum cast issues)
+            DB::table('contracts')->where('id', $contractId)->update(['status' => $next]);
 
-            if ($next === ContractStatus::ACTIVE) {
-                /** @var \App\Models\Room|null $room */
-                $room = $contract->room;
-                if ($room && $room->status->value !== RoomStatus::OCCUPIED->value) {
-                    $room->update(['status' => RoomStatus::OCCUPIED->value]);
-                }
-            } elseif ($next === ContractStatus::BOOKED) {
-                /** @var \App\Models\Room|null $room */
-                $room = $contract->room;
-                if ($room && $room->status->value !== RoomStatus::RESERVED->value) {
-                    // Pre-activation paid contract holds the room as Reserved
-                    if ($room->status->value !== RoomStatus::OCCUPIED->value) {
-                        $room->update(['status' => RoomStatus::RESERVED->value]);
+            // Update room status accordingly (raw to avoid casts); keep existing occupancy if already occupied
+            if (!empty($raw->room_id)) {
+                $roomStatus = (string) DB::table('rooms')->where('id', $raw->room_id)->value('status');
+                if ($next === ContractStatus::ACTIVE->value) {
+                    if ($roomStatus !== RoomStatus::OCCUPIED->value) {
+                        DB::table('rooms')->where('id', $raw->room_id)->update(['status' => RoomStatus::OCCUPIED->value]);
+                    }
+                } elseif ($next === ContractStatus::BOOKED->value) {
+                    if ($roomStatus !== RoomStatus::OCCUPIED->value && $roomStatus !== RoomStatus::RESERVED->value) {
+                        DB::table('rooms')->where('id', $raw->room_id)->update(['status' => RoomStatus::RESERVED->value]);
                     }
                 }
             }
 
-            $this->logEvent(
-                event: 'contract_status_changed',
-                subject: $contract,
-                properties: [
-                    'contract_id' => (string) $contract->getAttribute('id'),
-                    'invoice_id'  => (string) $invoice->getAttribute('id'),
-                    'from'        => $current,
-                    'to'          => $next->value,
-                    'cause'       => 'invoice_paid',
-                ],
-                logName: 'billing',
-            );
+            // Try to log after status normalized (hydrate safely now)
+            try {
+                $contractModel = Contract::query()->find($contractId);
+                if ($contractModel) {
+                    $this->logEvent(
+                        event: 'contract_status_changed',
+                        subject: $contractModel,
+                        properties: [
+                            'contract_id' => (string) $contractId,
+                            'invoice_id'  => (string) $invoice->getAttribute('id'),
+                            'from'        => $current,
+                            'to'          => $next,
+                            'cause'       => 'invoice_paid',
+                        ],
+                        logName: 'billing',
+                    );
+                }
+            } catch (\Throwable $e) {
+                // swallow logging errors
+            }
         }
 
-        $hasUnpaid = $contract->invoices()
+        // Determine if contract is fully paid (no open invoices)
+        $hasUnpaid = DB::table('invoices')
+            ->where('contract_id', $contractId)
             ->whereNot('status', InvoiceStatus::CANCELLED->value)
             ->whereNot('status', InvoiceStatus::PAID->value)
             ->exists();
 
         if (!$hasUnpaid) {
-            $maxPeriodEnd = $contract->invoices()
+            $maxPeriodEnd = DB::table('invoices')
+                ->where('contract_id', $contractId)
                 ->whereNot('status', InvoiceStatus::CANCELLED->value)
                 ->max('period_end');
 
-            $contractEnd = $contract->end_date ? $contract->end_date->copy()->startOfDay() : null;
+            $contractEnd = $raw->end_date ? Carbon::parse((string) $raw->end_date)->startOfDay() : null;
             $coverageOk  = $contractEnd === null;
             if ($contractEnd && $maxPeriodEnd) {
                 try {
@@ -98,14 +128,16 @@ class UpdateContractStatusOnInvoicePaid
                 }
             }
 
-            if ($coverageOk && empty($contract->paid_in_full_at)) {
-                $latestPaidAt = $contract->payments()
-                    ->where('status', PaymentStatus::COMPLETED->value)
-                    ->max('paid_at');
+            if ($coverageOk && empty($raw->paid_in_full_at)) {
+                $latestPaidAt = DB::table('payments')
+                    ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+                    ->where('invoices.contract_id', $contractId)
+                    ->where('payments.status', PaymentStatus::COMPLETED->value)
+                    ->max('payments.paid_at');
 
-                $contract->forceFill([
+                DB::table('contracts')->where('id', $contractId)->update([
                     'paid_in_full_at' => $latestPaidAt ?: now(),
-                ])->save();
+                ]);
             }
         }
     }

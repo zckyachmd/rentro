@@ -63,12 +63,9 @@ class PaymentManagementController extends Controller
         $page = $this->applyTable($query, $request, $options);
 
         $mapped = $page->getCollection()->map(function (Payment $p) {
-            /** @var \App\Models\Invoice|null $invoice */
-            $invoice = $p->invoice;
-            /** @var \App\Models\Contract|null $contract */
+            $invoice  = $p->invoice;
             $contract = $invoice?->contract;
-            /** @var \App\Models\User|null $tenant */
-            $tenant = $contract?->tenant;
+            $tenant   = $contract?->tenant;
 
             return [
                 'id'           => (string) $p->id,
@@ -84,6 +81,35 @@ class PaymentManagementController extends Controller
         $page->setCollection($mapped);
         $payload = $this->tablePaginate($page);
 
+        $invoiceCandidates = \App\Models\Invoice::query()
+            ->with(['contract:id,user_id,room_id', 'contract.tenant:id,name', 'contract.room:id,number'])
+            ->whereIn('status', [\App\Enum\InvoiceStatus::PENDING->value, \App\Enum\InvoiceStatus::OVERDUE->value])
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get()
+            ->map(function (\App\Models\Invoice $inv) {
+                $contract = $inv->contract;
+                $tenant   = $contract?->tenant;
+                $room     = $contract?->room;
+
+                try {
+                    $totals      = $this->invoices->totals($inv);
+                    $outstanding = (int) ($inv->outstanding_cents ?? $totals['outstanding'] ?? 0);
+                } catch (\Throwable $e) {
+                    $outstanding = (int) ($inv->outstanding_cents ?? 0);
+                }
+
+                return [
+                    'id'           => (string) $inv->id,
+                    'number'       => (string) $inv->number,
+                    'tenant'       => $tenant?->name,
+                    'room_number'  => $room?->number,
+                    'status'       => (string) $inv->status->value,
+                    'amount_cents' => (int) $inv->amount_cents,
+                    'outstanding'  => max(0, (int) $outstanding),
+                ];
+            });
+
         return Inertia::render('management/payment/index', [
             'payments' => $payload,
             'filters'  => [
@@ -94,7 +120,8 @@ class PaymentManagementController extends Controller
                 'methods'  => PaymentMethod::options(true),
                 'statuses' => array_map(fn ($c) => $c->value, PaymentStatus::cases()),
             ],
-            'query' => [
+            'invoiceCandidates' => $invoiceCandidates,
+            'query'             => [
                 'page'    => $payload['current_page'],
                 'perPage' => $payload['per_page'],
                 'sort'    => $request->query('sort'),
@@ -180,14 +207,10 @@ class PaymentManagementController extends Controller
         ]);
 
         if ($request->wantsJson()) {
-            $inv = $payment->invoice;
-            /** @var \App\Models\Invoice|null $inv */
+            $inv      = $payment->invoice;
             $contract = $inv?->contract;
-            /** @var \App\Models\Contract|null $contract */
-            $tenant = $contract?->tenant;
-            /** @var \App\Models\User|null $tenant */
-            $room = $contract?->room;
-            /* @var \App\Models\Room|null $room */
+            $tenant   = $contract?->tenant;
+            $room     = $contract?->room;
 
             return response()->json([
                 'payment' => [
@@ -245,14 +268,10 @@ class PaymentManagementController extends Controller
             'attachment'   => (string) ($payment->meta['evidence_path'] ?? ''),
         ];
 
-        /** @var \App\Models\Invoice|null $invoice */
-        $invoice = $payment->invoice;
-        /** @var \App\Models\Contract|null $contract */
+        $invoice  = $payment->invoice;
         $contract = $invoice?->contract;
-        /** @var \App\Models\User|null $tenant */
-        $tenant = $contract?->tenant;
-        /** @var \App\Models\Room|null $room */
-        $room = $contract?->room;
+        $tenant   = $contract?->tenant;
+        $room     = $contract?->room;
 
         $items        = $invoice ? (array) ($invoice->items ?? []) : [];
         $totalInvoice = $invoice ? (int) $invoice->amount_cents : 0;

@@ -6,6 +6,9 @@ use App\Models\Concerns\HasAudit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read User|null $user
+ */
 class Session extends Model
 {
     use HasAudit;

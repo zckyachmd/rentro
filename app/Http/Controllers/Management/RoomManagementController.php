@@ -71,12 +71,9 @@ class RoomManagementController extends Controller
         /** @var \Illuminate\Support\Collection<int, Room> $collection */
         $collection = $page->getCollection();
         $mapped     = $collection->map(function (Room $r): array {
-            /** @var Building|null $building */
             $building = $r->relationLoaded('building') ? $r->building : null;
-            /** @var Floor|null $floor */
-            $floor = $r->relationLoaded('floor') ? $r->floor : null;
-            /** @var RoomType|null $type */
-            $type = $r->relationLoaded('type') ? $r->type : null;
+            $floor    = $r->relationLoaded('floor') ? $r->floor : null;
+            $type     = $r->relationLoaded('type') ? $r->type : null;
 
             $effectivePriceCents = $r->price_cents ?? ($type ? $type->price_cents : null);
 
@@ -205,7 +202,6 @@ class RoomManagementController extends Controller
                 $start    = (int) ($room->photos()->max('ordering') ?? -1);
                 $hasCover = $room->photos()->where('is_cover', true)->exists();
                 foreach ($paths as $i => $p) {
-                    /** @var \App\Models\RoomPhoto $photo */
                     $photo = $room->photos()->create([
                         'path'     => $p,
                         'ordering' => $start + $i + 1,
@@ -322,7 +318,6 @@ class RoomManagementController extends Controller
             'notes'          => $room->notes,
             'photos'         => $room->relationLoaded('photos')
                 ? (function () use ($room, $disk) {
-                    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\RoomPhoto> $photos */
                     $photos = $room->photos;
 
                     return $photos->map(function (\App\Models\RoomPhoto $p) use ($disk) {
@@ -391,7 +386,6 @@ class RoomManagementController extends Controller
                 $start    = (int) ($room->photos()->max('ordering') ?? -1);
                 $hasCover = $room->photos()->where('is_cover', true)->exists();
                 foreach ($paths as $i => $p) {
-                    /** @var \App\Models\RoomPhoto $photo */
                     $photo = $room->photos()->create([
                         'path'     => $p,
                         'ordering' => $start + $i + 1,

@@ -23,7 +23,7 @@ class StorePaymentRequest extends FormRequest
             'va_expired_at' => ['nullable', 'date'],
             'meta'          => ['nullable', 'array'],
             'note'          => ['nullable', 'string'],
-            'attachment'    => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'],
+            'attachment'    => ['required_if:method,Transfer', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'],
         ];
     }
 }

@@ -37,6 +37,7 @@ type InvoiceDetailData = {
     };
     contract: {
         id: string;
+        number?: string | null;
         start_date?: string | null;
         end_date?: string | null;
     } | null;
@@ -137,6 +138,7 @@ export default function InvoiceDetailDialog({
 
 function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
     const inv = data.invoice;
+    const c = data.contract;
     const summary = data.payment_summary;
     return (
         <div className="space-y-3 text-sm">
@@ -148,6 +150,8 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
                         <Label>Nomor</Label>
                         <div className="font-mono">{inv.number}</div>
+                        <Label>No. Kontrak</Label>
+                        <div className="font-mono">{c?.number || '-'}</div>
                         <Label>Periode</Label>
                         <div>
                             {(formatDate(inv.period_start) ?? '-') +
@@ -158,12 +162,13 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
                         <div>{formatDate(inv.due_date)}</div>
                         <Label>Status</Label>
                         <div>{inv.status}</div>
+                        {typeof inv.release_day === 'number' && (
+                            <>
+                                <Label>Rilis Tagihan</Label>
+                                <div>{`Setiap tanggal ${inv.release_day}`}</div>
+                            </>
+                        )}
                     </div>
-                    {typeof inv.release_day === 'number' ? (
-                        <div className="mt-2 text-xs text-muted-foreground">
-                            Dirilis setiap tanggal {inv.release_day}
-                        </div>
-                    ) : null}
                 </div>
                 <div className="rounded-lg border p-3">
                     <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">

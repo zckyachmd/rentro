@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property-read Contract|null $contract
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
+ */
 class Invoice extends Model
 {
     use HasFactory;

@@ -14,6 +14,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property-read User|null $tenant
+ * @property-read Room|null $room
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
+ */
 class Contract extends Model
 {
     use HasFactory;

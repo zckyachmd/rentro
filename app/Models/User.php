@@ -18,6 +18,14 @@ use Illuminate\Support\Str;
 
 /**
  * @property array<int, string>|null $two_factor_recovery_codes
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Session> $sessions
+ * @property-read Session|null $latestSession
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, UserAddress> $addresses
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, EmergencyContact> $emergencyContacts
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Contract> $contracts
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices
+ * @property-read UserDocument|null $document
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
  */
 class User extends Authenticatable implements MustVerifyEmail
 {

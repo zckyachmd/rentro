@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read RoomType|null $type
  * @property-read \Illuminate\Database\Eloquent\Collection<int, RoomPhoto> $photos
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Amenity> $amenities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Contract> $contracts
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Contract> $holdingContracts
  * @property RoomStatus $status
  */
 class Room extends Model

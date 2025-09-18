@@ -6,6 +6,9 @@ use App\Models\Concerns\HasSnowflakeId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property-read Room|null $room
+ */
 class RoomPhoto extends Model
 {
     use HasFactory;

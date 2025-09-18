@@ -55,6 +55,15 @@ type PageProps = {
         statuses: string[];
     };
     query?: QueryBag & { status?: string | null };
+    invoiceCandidates?: Array<{
+        id: string;
+        number: string;
+        tenant?: string | null;
+        room_number?: string | null;
+        status: string;
+        amount_cents: number;
+        outstanding: number;
+    }>;
 };
 
 const currency = (amount: number): string => formatIDR(amount);
@@ -108,6 +117,11 @@ export default function PaymentIndex() {
     });
     const statusValue: string =
         (q as QueryBag & { status?: string | null }).status ?? 'all';
+
+    const invoiceCandidates = React.useMemo(
+        () => props.invoiceCandidates ?? [],
+        [props.invoiceCandidates],
+    );
 
     return (
         <AuthLayout
@@ -211,12 +225,12 @@ export default function PaymentIndex() {
                 onOpenChange={setOpen}
                 methods={methods}
                 initialInvoiceNumber={initialInvoiceNumber}
+                invoiceCandidates={invoiceCandidates}
             />
 
             <PaymentDetailDialog
                 target={detail}
                 onClose={() => setDetail(null)}
-                onRequestPreview={(req) => setPreview(req)}
             />
 
             <AttachmentPreviewDialog

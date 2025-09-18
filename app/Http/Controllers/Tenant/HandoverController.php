@@ -58,7 +58,6 @@ class HandoverController extends Controller
 
     public function acknowledge(Request $request, RoomHandover $handover)
     {
-        /** @var \App\Models\Contract|null $c */
         $c = $handover->contract;
         abort_unless((string) ($c?->user_id) === (string) $request->user()->id, 404);
 
@@ -94,13 +93,11 @@ class HandoverController extends Controller
             ->log('Tenant mengonfirmasi handover');
 
         try {
-            /** @var \App\Models\Contract|null $contract */
             $contract = $handover->contract;
             if ($contract && $handover->type === 'checkin') {
                 $requireTenantAck = (bool) (AppSetting::config('handover.require_checkin_for_activate', AppSetting::config('handover.require_tenant_ack_for_activate', false)) ?? false);
                 if ($requireTenantAck && $contract->status->value !== ContractStatus::ACTIVE->value) {
                     $contract->forceFill(['status' => ContractStatus::ACTIVE])->save();
-                    /** @var \App\Models\Room|null $room */
                     $room = $contract->room;
                     if ($room && $room->status->value !== RoomStatus::OCCUPIED->value) {
                         $room->update(['status' => RoomStatus::OCCUPIED->value]);
@@ -115,7 +112,6 @@ class HandoverController extends Controller
             if ($handover->type === 'checkout') {
                 $requireTenantAckForComplete = (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false);
                 if ($requireTenantAckForComplete) {
-                    /** @var Contract|null $contract */
                     $contract = $handover->contract;
                     if ($contract && $contract->status->value !== ContractStatus::COMPLETED->value) {
                         $this->contractService->complete($contract);
@@ -131,7 +127,6 @@ class HandoverController extends Controller
 
     public function dispute(Request $request, RoomHandover $handover)
     {
-        /** @var \App\Models\Contract|null $c */
         $c = $handover->contract;
         abort_unless((string) ($c?->user_id) === (string) $request->user()->id, 404);
 
@@ -166,11 +161,9 @@ class HandoverController extends Controller
             if ($handover->type === 'checkout') {
                 $requireCheckoutComplete     = (bool) AppSetting::config('handover.require_checkout_for_complete', true);
                 $requireTenantAckForComplete = (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false);
-                /** @var \App\Models\Contract|null $contract */
-                $contract = $handover->contract;
+                $contract                    = $handover->contract;
                 if ($requireCheckoutComplete && !$requireTenantAckForComplete && $contract && $contract->status->value === ContractStatus::COMPLETED->value) {
                     $contract->forceFill(['status' => ContractStatus::ACTIVE])->save();
-                    /** @var \App\Models\Room|null $room */
                     $room = $contract->room;
                     if ($room && $room->status->value !== RoomStatus::OCCUPIED->value) {
                         $room->update(['status' => RoomStatus::OCCUPIED->value]);
@@ -196,7 +189,6 @@ class HandoverController extends Controller
 
     public function attachmentGeneral(Request $request, RoomHandover $handover, string $path)
     {
-        /** @var \App\Models\Contract|null $c2 */
         $c2 = $handover->contract;
         abort_unless((string) ($c2?->user_id) === (string) $request->user()->id, 404);
 

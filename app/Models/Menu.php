@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property-read MenuGroup|null $group
+ * @property-read Menu|null $parent
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Menu> $children
+ */
 class Menu extends Model
 {
     protected $fillable = [

@@ -136,10 +136,8 @@ class ContractManagementController extends Controller
             $latestCheckinByContract,
             $latestCheckoutByContract
         ): array {
-            /** @var \App\Models\User|null $tenant */
             $tenant = $c->tenant;
-            /** @var \App\Models\Room|null $room */
-            $room = $c->room;
+            $room   = $c->room;
 
             $hasConfirmedCheckin  = $confirmedCheckinIds->has($c->id);
             $hasConfirmedCheckout = $confirmedCheckoutIds->has($c->id);
@@ -328,10 +326,8 @@ class ContractManagementController extends Controller
             'room.floor:id,level,building_id',
         ]);
 
-        /** @var \App\Models\User|null $tenant */
         $tenant = $contract->tenant;
-        /** @var \App\Models\Room|null $room */
-        $room = $contract->room;
+        $room   = $contract->room;
 
         $contractDTO = [
             'id'                   => (string) $contract->id,
@@ -388,7 +384,6 @@ class ContractManagementController extends Controller
             ->paginate(10);
 
         $invoices = $invoices->through(function (Model $m, int $index): array {
-            /** @var \App\Models\Invoice $i */
             $i = $m;
 
             return [
@@ -491,10 +486,8 @@ class ContractManagementController extends Controller
             'room.type:id,name,price_cents',
         ]);
 
-        /** @var \App\Models\User|null $tenant */
         $tenant = $contract->tenant;
-        /** @var \App\Models\Room|null $room */
-        $room = $contract->room;
+        $room   = $contract->room;
 
         $dto = [
             'number'         => (string) ($contract->number ?? ''),

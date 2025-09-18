@@ -63,7 +63,6 @@ class UserManagementController extends Controller
 
         $mapped = $collection->map(function (User $u): array {
             $last = null;
-            /** @var \App\Models\Session|null $sess */
             $sess = $u->latestSession;
             if ($sess?->last_activity) {
                 $ts   = (int) $sess->last_activity;
@@ -126,7 +125,6 @@ class UserManagementController extends Controller
 
         $attrs['force_password_change'] = (bool) ($validated['force_password_change'] ?? true);
 
-        /** @var \App\Models\User $user */
         $user = User::create($attrs);
 
         // Assign roles

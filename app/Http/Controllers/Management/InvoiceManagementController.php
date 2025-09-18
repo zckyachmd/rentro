@@ -70,12 +70,9 @@ class InvoiceManagementController extends Controller
         $page = $this->applyTable($query, $request, $options);
 
         $mapped = $page->getCollection()->map(function (Invoice $inv) {
-            /** @var \App\Models\Contract|null $contract */
             $contract = $inv->contract;
-            /** @var \App\Models\User|null $tenant */
-            $tenant = $contract?->tenant;
-            /** @var \App\Models\Room|null $room */
-            $room = $contract?->room;
+            $tenant   = $contract?->tenant;
+            $room     = $contract?->room;
 
             $outstanding = (int) ($inv->outstanding_cents ?? 0);
 
@@ -141,12 +138,9 @@ class InvoiceManagementController extends Controller
             'payments:id,invoice_id,method,status,amount_cents,paid_at,reference,provider',
         ]);
 
-        /** @var Contract|null $c */
-        $c = $invoice->contract;
-        /** @var \App\Models\User|null $tenant */
+        $c      = $invoice->contract;
         $tenant = $c?->tenant;
-        /** @var \App\Models\Room|null $room */
-        $room = $c?->room;
+        $room   = $c?->room;
 
         $dto = [
             'id'           => (string) $invoice->id,
@@ -165,6 +159,7 @@ class InvoiceManagementController extends Controller
 
         $contractDTO = $c ? [
             'id'         => (string) $c->id,
+            'number'     => (string) ($c->number ?? ''),
             'start_date' => $c->start_date->toDateString(),
             'end_date'   => $c->end_date->toDateString(),
         ] : null;
@@ -180,7 +175,6 @@ class InvoiceManagementController extends Controller
             'name'   => $room->name,
         ] : null;
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $paymentsCollection */
         $paymentsCollection = $invoice->payments;
         $payments           = $paymentsCollection
             ->sortBy(function (\App\Models\Payment $p) {
@@ -228,7 +222,6 @@ class InvoiceManagementController extends Controller
             ->with(['contract.tenant:id,name'])
             ->where('number', $request->string('number'))
             ->first();
-        /** @var \App\Models\Invoice|null $invoice */
 
         if (!$invoice) {
             return response()->json(['message' => 'Invoice tidak ditemukan'], 404);
@@ -239,9 +232,7 @@ class InvoiceManagementController extends Controller
 
         $eligibleStatus = in_array((string) $invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true);
 
-        /** @var \App\Models\Contract|null $lc */
         $lc = $invoice->contract;
-        /** @var \App\Models\User|null $lt */
         $lt = $lc?->tenant;
 
         return response()->json([
@@ -318,15 +309,11 @@ class InvoiceManagementController extends Controller
 
     public function print(Request $request, Invoice $invoice)
     {
-        $auto = (bool) $request->boolean('auto');
-        $inv  = $invoice->fresh(['contract.tenant', 'contract.room']);
-        /** @var \App\Models\Invoice $inv */
-        $c = $inv->contract;
-        /** @var \App\Models\Contract|null $c */
+        $auto   = (bool) $request->boolean('auto');
+        $inv    = $invoice->fresh(['contract.tenant', 'contract.room']);
+        $c      = $inv->contract;
         $tenant = $c?->tenant;
-        /** @var \App\Models\User|null $tenant */
-        $room = $c?->room;
-        /** @var \App\Models\Room|null $room */
+        $room   = $c?->room;
 
         $dto = [
             'number'       => $inv->number,
@@ -402,7 +389,6 @@ class InvoiceManagementController extends Controller
 
         $invoice->refresh();
 
-        /** @var \App\Models\Contract|null $contract */
         $contract = $invoice->contract;
         $this->logEvent(
             event: 'invoice_due_extended',

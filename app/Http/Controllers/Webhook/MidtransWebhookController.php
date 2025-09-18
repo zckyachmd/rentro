@@ -45,7 +45,6 @@ class MidtransWebhookController extends Controller
             return response()->json(['message' => 'Invalid signature'], 403);
         }
 
-        /** @var Payment|null $payment */
         $payment = Payment::query()->where('reference', $orderId)->first();
         if (!$payment) {
             Log::warning('Midtrans: payment not found by order_id', ['order_id' => $orderId]);
@@ -84,7 +83,6 @@ class MidtransWebhookController extends Controller
         $payment->update(array_merge($updates, ['meta' => $meta]));
 
         // Recalculate invoice on terminal states and pending as well (keeps outstanding in sync)
-        /** @var \App\Models\Invoice|null $invOwn */
         $invOwn = $payment->invoice;
         if ($invOwn) {
             $this->payments->recalculateInvoice($invOwn);

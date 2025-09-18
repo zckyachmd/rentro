@@ -57,10 +57,8 @@ class InvoiceController extends Controller
         $page = $this->applyTable($query, $request, $options);
 
         $mapped = $page->getCollection()->map(function (Invoice $inv): array {
-            /** @var \App\Models\Contract|null $contract */
             $contract = $inv->contract;
-            /** @var \App\Models\Room|null $room */
-            $room = $contract?->room;
+            $room     = $contract?->room;
 
             return [
                 'id'                => (string) $inv->id,
@@ -105,10 +103,8 @@ class InvoiceController extends Controller
 
         if ($request->wantsJson()) {
             $tenant = $request->user();
-            /** @var \App\Models\Room|null $room */
-            $room = $contract->room;
+            $room   = $contract->room;
 
-            /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $paymentCollection */
             $paymentCollection = $invoice->payments()
                 ->orderByDesc('paid_at')
                 ->get(['id', 'method', 'status', 'amount_cents', 'paid_at', 'reference', 'provider']);
@@ -178,7 +174,6 @@ class InvoiceController extends Controller
             abort(404);
         }
 
-        /** @var \App\Models\Contract $c */
         $c      = $contract;
         $tenant = $request->user();
         $room   = $c->room;

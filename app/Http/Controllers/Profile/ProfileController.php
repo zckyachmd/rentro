@@ -85,7 +85,7 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user()->load(['addresses' => fn ($q) => $q->orderBy('id')]);
-        /** @var \App\Models\UserAddress|null $address */
+
         $address = $user->addresses->first();
 
         return Inertia::render('profile/edit', [

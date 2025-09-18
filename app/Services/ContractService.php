@@ -138,7 +138,10 @@ class ContractService implements ContractServiceInterface
                     : $autoRenewDefault;
 
                 $seq            = self::nextGlobalContractSequence();
-                $contractNumber = sprintf('%04d', $seq);
+                $datePart       = $start->format('Ymd');
+                $seqPart        = sprintf('%04d', $seq);
+                $roomPart       = (string) $room->number;
+                $contractNumber = $datePart . '-' . $seqPart . '-' . $roomPart;
 
                 $contract = Contract::create([
                     'number'         => $contractNumber,

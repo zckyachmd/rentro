@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Floor> $floors
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Room> $rooms
+ */
 class Building extends Model
 {
     use HasFactory;

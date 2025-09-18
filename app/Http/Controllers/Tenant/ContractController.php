@@ -46,7 +46,6 @@ class ContractController extends Controller
         $page = $this->applyTable($query, $request, $options);
 
         $mapped = $page->getCollection()->map(function (Contract $c): array {
-            /** @var \App\Models\Room|null $room */
             $room = $c->room;
 
             return [
@@ -101,7 +100,6 @@ class ContractController extends Controller
             ->orderByDesc('due_date')
             ->paginate(20)
             ->through(function (\Illuminate\Database\Eloquent\Model $m): array {
-                /** @var \App\Models\Invoice $inv */
                 $inv = $m;
 
                 return [
@@ -117,8 +115,6 @@ class ContractController extends Controller
                 ];
             });
 
-        /** @var \App\Models\Room|null $r */
-        /** @var \App\Models\Room|null $r */
         $r = $contract->room;
 
         return Inertia::render('tenant/contract/detail', [
@@ -179,14 +175,10 @@ class ContractController extends Controller
             'room.type:id,name,price_cents',
         ]);
 
-        /** @var \App\Models\Room|null $r */
-        $r = $contract->room;
-        /** @var \App\Models\Building|null $building */
+        $r        = $contract->room;
         $building = $r?->building;
-        /** @var \App\Models\Floor|null $floor */
-        $floor = $r?->floor;
-        /** @var \App\Models\RoomType|null $type */
-        $type = $r?->type;
+        $floor    = $r?->floor;
+        $type     = $r?->type;
 
         $dto = [
             'number'         => (string) ($contract->number ?? ''),
