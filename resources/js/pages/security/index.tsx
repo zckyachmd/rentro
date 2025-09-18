@@ -23,33 +23,12 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AuthLayout from '@/layouts/auth-layout';
+import type { PageProps, SessionItem, Summary, TabKey } from '@/types/security';
+import { TAB_KEYS } from '@/types/security';
 
 import TwoFactorTab from './2fa';
 import PasswordTab from './password';
 import { SessionsTab } from './sessions';
-
-type SessionItem = {
-    id: string;
-    agent?: string;
-    ip_address?: string;
-    last_active?: string;
-    current?: boolean;
-};
-
-type Summary = {
-    email_verified?: boolean;
-    two_factor_enabled?: boolean;
-    last_password_changed_at?: string | null;
-};
-
-type PageProps = {
-    status?: string | null;
-    summary?: Summary;
-    sessions?: SessionItem[];
-};
-
-const TAB_KEYS = ['password', '2fa', 'sessions'] as const;
-type TabKey = (typeof TAB_KEYS)[number];
 
 function getTabFromUrl(): TabKey {
     const params = new URLSearchParams(window.location.search);

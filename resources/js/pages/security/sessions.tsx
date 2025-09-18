@@ -14,19 +14,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-
-type SessionItem = {
-    id: string;
-    agent?: string;
-    agent_label?: string;
-    ip_address?: string;
-    last_active?: string;
-    current?: boolean;
-};
-
-type SessionsTabProps = {
-    sessions: SessionItem[];
-};
+import type { SessionItem, SessionsTabProps } from '@/types/security';
 
 export function SessionsTab({ sessions }: SessionsTabProps) {
     const destroyForm = useForm({});

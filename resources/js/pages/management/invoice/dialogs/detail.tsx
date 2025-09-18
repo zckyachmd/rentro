@@ -12,61 +12,16 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
+import type {
+    ManagementInvoiceDetailDTO as InvoiceDetailDTO,
+    ManagementInvoiceDetailTarget as InvoiceDetailTarget,
+} from '@/types/management';
 
-type InvoiceDetailTarget = { id: string; number: string } | null;
-
-type InvoiceItem = {
-    code: string;
-    label: string;
-    amount_cents: number;
-    meta?: Record<string, string | number | boolean | null | undefined>;
-};
-
-type InvoiceDetailData = {
-    invoice: {
-        id: string;
-        number: string;
-        status: string;
-        due_date?: string | null;
-        period_start?: string | null;
-        period_end?: string | null;
-        amount_cents: number;
-        items: InvoiceItem[];
-        paid_at?: string | null;
-        release_day?: number;
-    };
-    contract: {
-        id: string;
-        number?: string | null;
-        start_date?: string | null;
-        end_date?: string | null;
-    } | null;
-    tenant: {
-        id: string;
-        name: string;
-        email?: string | null;
-        phone?: string | null;
-    } | null;
-    room: { id: string; number?: string | null; name?: string | null } | null;
-    payments?: {
-        id: string;
-        method: string;
-        status: string;
-        amount_cents: number;
-        paid_at?: string | null;
-        reference?: string | null;
-        provider?: string | null;
-    }[];
-    payment_summary?: {
-        total_invoice: number;
-        total_paid: number;
-        outstanding: number;
-    };
-};
+// types moved to pages/types/management/invoice
 
 function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
     const [loading, setLoading] = React.useState(false);
-    const [data, setData] = React.useState<null | InvoiceDetailData>(null);
+    const [data, setData] = React.useState<null | InvoiceDetailDTO>(null);
 
     React.useEffect(() => {
         const controller = new AbortController();
@@ -83,7 +38,7 @@ function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
                     },
                 );
                 if (!res.ok) throw new Error('Gagal memuat detail invoice');
-                const json = (await res.json()) as InvoiceDetailData;
+                const json = (await res.json()) as InvoiceDetailDTO;
                 setData(json);
             } catch {
                 // ignore
@@ -136,7 +91,7 @@ export default function InvoiceDetailDialog({
     );
 }
 
-function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
+function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
     const inv = data.invoice;
     const c = data.contract;
     const summary = data.payment_summary;

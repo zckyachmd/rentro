@@ -16,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     DataTableServer,
-    type PaginatorMeta,
     type QueryBag,
 } from '@/components/ui/data-table-server';
 import { Input } from '@/components/ui/input';
@@ -31,43 +30,17 @@ import {
 } from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
-import {
-    createColumns,
-    type Building,
-    type Floor,
-    type RoomItem,
-    type RoomType,
-} from '@/pages/management/room/columns';
+import { createColumns } from '@/pages/management/room/columns';
 import RoomDetailDialog from '@/pages/management/room/dialogs/detail';
+import type {
+    RoomFilters as Filters,
+    RoomQueryInit as QueryInit,
+    RoomItem,
+    RoomsPageProps,
+    RoomSafePayload as SafePayload,
+} from '@/types/management';
 
-type RoomsPaginator = { data: RoomItem[] } & PaginatorMeta;
-
-interface RoomsPageProps {
-    rooms?: RoomsPaginator;
-    query?: {
-        q?: string;
-        building_id?: string | number | null;
-        floor_id?: string | number | null;
-        type_id?: string | number | null;
-        status?: string | null;
-        gender_policy?: string | null;
-    };
-    options?: {
-        buildings?: Building[];
-        floors?: Floor[];
-        types?: RoomType[];
-        statuses?: { value: string; label: string }[];
-    };
-}
-
-type Filters = {
-    building_id: string;
-    floor_id: string;
-    type_id: string;
-    status: string;
-    gender_policy: string;
-    q: string;
-};
+// types moved to pages/types
 
 export default function RoomIndex(props: RoomsPageProps) {
     const { rooms: paginator, query = {}, options: opt = {} } = props;
@@ -108,20 +81,7 @@ export default function RoomIndex(props: RoomsPageProps) {
         [floors, filters.building_id],
     );
 
-    type QueryInit = Partial<{
-        search: string;
-        page: number;
-        per_page: number;
-        perPage: number;
-        sort: string | null;
-        dir: 'asc' | 'desc' | null;
-        q: string;
-        building_id: string | number | null;
-        floor_id: string | number | null;
-        type_id: string | number | null;
-        status: string | null;
-        gender_policy: string | null;
-    }>;
+    // QueryInit moved to pages/types
 
     const qinit = (query as QueryInit) || {};
     const initial: QueryBag | undefined = Object.keys(qinit).length
@@ -161,20 +121,7 @@ export default function RoomIndex(props: RoomsPageProps) {
         onFinish: () => setProcessing(false),
     });
 
-    type SafePayload = Partial<
-        Omit<QueryBag, 'search' | 'sort' | 'dir'> & {
-            search?: string | null;
-            sort?: string | null;
-            dir?: 'asc' | 'desc' | null;
-            page?: number;
-            building_id?: string | number | null;
-            floor_id?: string | number | null;
-            type_id?: string | number | null;
-            status?: string | null;
-            gender_policy?: string | null;
-            q?: string | null;
-        }
-    >;
+    // SafePayload moved to pages/types
 
     const safeOnQueryChange = React.useCallback(
         (payload: SafePayload) => {

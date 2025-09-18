@@ -20,34 +20,17 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-
-type ContractOption = {
-    id: string;
-    name: string;
-    period?: 'Monthly' | 'Weekly' | 'Daily' | string;
-    start_date?: string | null;
-    end_date?: string | null;
-};
-
-type Props = {
-    open: boolean;
-    onOpenChange: (v: boolean) => void;
-    contracts: ContractOption[];
-};
+import type {
+    GenerateInvoiceFormState as FormState,
+    GenerateInvoiceDialogProps as Props,
+} from '@/types/management';
 
 export default function GenerateInvoiceDialog({
     open,
     onOpenChange,
     contracts,
 }: Props) {
-    type FormState = {
-        contractId: string | null;
-        mode: 'per_month' | 'full';
-        periodMonth: string;
-        reason: string;
-        rangeFrom: string;
-        rangeTo: string;
-    };
+    // FormState moved to pages/types
 
     const [form, setForm] = React.useState<FormState>({
         contractId: null,
@@ -113,9 +96,9 @@ export default function GenerateInvoiceDialog({
                         <Label>Kontrak</Label>
                         <SearchSelect
                             options={contractOptions}
-                            value={form.contractId}
-                            onValueChange={(v) =>
-                                setForm((s) => ({ ...s, contractId: v }))
+                            value={form.contractId ?? undefined}
+                            onChange={(value) =>
+                                setForm((s) => ({ ...s, contractId: value }))
                             }
                             placeholder="Cari kontrak…"
                         />

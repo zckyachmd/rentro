@@ -23,19 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-import type { RoleItem } from '..';
-
-export type Permission = { id: number; name: string; guard_name: string };
-
-export type PermissionsDialogProps = {
-    open: boolean;
-    role: RoleItem | null;
-    permissions: Permission[];
-    onOpenChange?: (open: boolean) => void;
-    onSuccess?: () => void;
-    preselected?: number[];
-};
+import type { Permission, PermissionsDialogProps } from '@/types/management';
 
 export default function PermissionsDialog({
     open,

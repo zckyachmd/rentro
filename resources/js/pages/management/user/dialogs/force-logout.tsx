@@ -18,14 +18,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-
-import { UserItem } from '..';
-
-type ForceLogoutDialogProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    user: UserItem;
-};
+import type { ForceLogoutDialogProps } from '@/types/management';
 
 export default function ForceLogoutDialog({
     open,

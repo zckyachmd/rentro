@@ -33,38 +33,15 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-
-export type ContactDTO = {
-    id: number;
-    name: string;
-    relationship?: string | null;
-    phone: string;
-    email?: string | null;
-    address_line?: string | null;
-    is_primary: boolean;
-};
-
-type Props = {
-    contacts: ContactDTO[];
-};
-
-type ContactFormState = null | {
-    mode: 'create' | 'edit';
-    editingId: number | null;
-    values: {
-        name: string;
-        phone: string;
-        relationship: string;
-        email: string;
-        address_line: string;
-    };
-    showErrors: boolean;
-    processing: boolean;
-};
+import type {
+    ContactDTO,
+    ContactFormState,
+    ContactProps,
+} from '@/types/profile';
 
 const MAX_CONTACTS = 3;
 
-export default function ContactSection({ contacts }: Props) {
+export default function ContactSection({ contacts }: ContactProps) {
     const { errors, options } = usePage<{
         errors?: Record<string, string>;
         options: { emergencyRelationshipLabel: string[] };

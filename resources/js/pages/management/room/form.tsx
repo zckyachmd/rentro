@@ -27,19 +27,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { readXsrfCookie } from '@/hooks/use-confirm-password';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
 import { formatIDR } from '@/lib/format';
-
-type Option = { id: number | string; name: string };
-type RoomTypeOption = Option & {
-    price_cents?: number | null;
-    deposit_cents?: number | null;
-    size_m2?: number | null;
-};
-type FloorOption = { id: number; level: number | string; building_id: number };
-type StatusOption = { value: string; label: string };
-type AmenityOption = { id: number; name: string; icon?: string };
-type GenderPolicyOption = { value: string; label: string };
-
-type PeriodOption = { value: string; label: string };
+import type {
+    AmenityOption,
+    FloorOption,
+    GenderPolicyOption,
+    PeriodOption,
+    RoomForm,
+    RoomPhotoView,
+    RoomTypeOption,
+    RoomUpsertOptions,
+    StringKeys,
+} from '@/types/management';
 
 const DEFAULT_GENDER_POLICIES: Readonly<GenderPolicyOption[]> = Object.freeze([
     { value: 'any', label: 'Bebas' },
@@ -53,63 +51,9 @@ const DEFAULT_BILLING_PERIODS: Readonly<PeriodOption[]> = Object.freeze([
     { value: 'daily', label: 'Harian' },
 ]);
 
-export type RoomPhotoView = {
-    id: string;
-    url: string;
-    is_cover?: boolean;
-    ordering?: number;
-};
+// FormData moved to pages/types
 
-export type RoomUpsertOptions = {
-    buildings?: Option[];
-    floors?: FloorOption[];
-    types?: RoomTypeOption[];
-    statuses?: StatusOption[];
-    amenities?: AmenityOption[];
-    gender_policies?: GenderPolicyOption[];
-    billing_periods?: PeriodOption[];
-};
-
-export type RoomUpsertData = {
-    id?: string;
-    building_id?: string | number | null;
-    floor_id?: string | number | null;
-    room_type_id?: string | number | null;
-    number?: string;
-    name?: string | null;
-    status?: string;
-    max_occupancy?: number | string;
-    price_rupiah?: number | string | null;
-    deposit_rupiah?: number | string | null;
-    size_m2?: number | string | null;
-    notes?: string | null;
-    photos?: RoomPhotoView[];
-    amenities?: number[];
-    gender_policy?: string | null;
-    billing_period?: string | null;
-};
-
-type FormData = {
-    building_id: string;
-    floor_id: string;
-    room_type_id: string;
-    number: string;
-    name: string;
-    status: string;
-    max_occupancy: string;
-    price_rupiah: string;
-    deposit_rupiah: string;
-    size_m2: string;
-    notes: string;
-    photos: File[];
-    amenities: string[];
-    gender_policy: string;
-    billing_period: string;
-};
-
-type StringKeys<T> = {
-    [K in keyof T]-?: T[K] extends string ? K : never;
-}[keyof T];
+// StringKeys moved to pages/types
 
 const getXsrfToken = () => {
     const cookieVal =
@@ -128,7 +72,7 @@ export default function RoomUpsertForm({
 }: {
     mode: 'create' | 'edit';
     options?: RoomUpsertOptions;
-    room?: RoomUpsertData;
+    room?: import('@/types/management').RoomUpsert;
 }) {
     // =========================
     // 1) Sumber data opsi (tanpa useMemo — ringan & jelas)
@@ -194,7 +138,7 @@ export default function RoomUpsertForm({
         reset,
         clearErrors,
         isDirty,
-    } = useForm<FormData>({
+    } = useForm<RoomForm>({
         building_id: defaultBuildingId,
         floor_id: defaultFloorId,
         room_type_id: defaultTypeId,
@@ -309,7 +253,7 @@ export default function RoomUpsertForm({
     // Callbacks util
     // =========================
     const onChange =
-        <K extends StringKeys<FormData>>(field: K) =>
+        <K extends StringKeys<RoomForm>>(field: K) =>
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
             setData((prev) => ({ ...prev, [field]: e.target.value }));
 

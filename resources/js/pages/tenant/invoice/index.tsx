@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     DataTableServer,
-    type PaginatorMeta,
     type QueryBag,
 } from '@/components/ui/data-table-server';
 import { Input } from '@/components/ui/input';
@@ -20,45 +19,21 @@ import {
 } from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import type {
+    TenantInvoiceIndexPageProps as PageProps,
+    TenantInvoiceQueryInit as QueryInit,
+    TenantInvoiceSafePayload as SafePayload,
+    TenantInvoiceServerQuery as ServerQuery,
+    TenantInvoiceItem,
+} from '@/types/tenant';
 
-import { createColumns, type TenantInvoiceItem } from './columns';
+import { createColumns } from './columns';
 import TenantInvoiceDetailDialog from './dialogs/detail';
 import TenantInvoicePayDialog from './dialogs/pay';
 
-type InvoicesPaginator = { data: TenantInvoiceItem[] } & PaginatorMeta;
+// InvoicesPaginator, PageProps moved to pages/types
 
-type PageProps = {
-    invoices?: InvoicesPaginator;
-    query?: QueryBag & { status?: string | null; q?: string | null };
-    options?: { statuses?: string[] };
-};
-
-type QueryInit = Partial<{
-    page: number;
-    per_page: number;
-    sort: string | null;
-    dir: 'asc' | 'desc' | null;
-    status: string | null;
-    q: string | null;
-}>;
-
-type SafePayload = Partial<{
-    page: number;
-    per_page: number;
-    sort: string | null;
-    dir: 'asc' | 'desc' | null;
-    status: string | null;
-    q: string | null;
-}>;
-
-type ServerQuery = {
-    [key: string]: unknown;
-    page?: number;
-    per_page?: number;
-    search?: string | undefined;
-    sort?: string | null;
-    dir?: 'asc' | 'desc' | null;
-};
+// QueryInit, SafePayload, ServerQuery moved to pages/types
 
 export default function TenantInvoiceIndex(props: PageProps) {
     const { invoices: paginator, query = {}, options = {} } = props;

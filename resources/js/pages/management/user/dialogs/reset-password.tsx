@@ -16,20 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
-
-import { UserItem } from '..';
-
-type ResetDialogProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    user: UserItem;
-};
-
-type ResetState = {
-    generatedUrl: string;
-    copied: boolean;
-    loading: 'send' | 'generate' | null;
-};
+import type { ResetDialogProps, ResetState } from '@/types/management';
 
 export function ResetPasswordDialog({
     open,

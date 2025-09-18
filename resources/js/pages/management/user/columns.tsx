@@ -22,8 +22,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-import { UserItem } from '.';
+import type {
+    UserColumnOptions as ColumnFactoryOptions,
+    UserItem,
+} from '@/types/management';
 
 const COL = {
     name: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
@@ -34,15 +36,7 @@ const COL = {
     actions: 'shrink-0 w-10 md:w-[48px]',
 } as const;
 
-export type ManageRolesHandler = (user: UserItem) => void;
-export type ResetPasswordHandler = (user: UserItem) => void;
-
-export type ColumnFactoryOptions = {
-    onManageRoles?: ManageRolesHandler;
-    onResetPassword?: ResetPasswordHandler;
-    onTwoFARecovery?: (user: UserItem) => void;
-    onRevokeSession?: (user: UserItem) => void;
-};
+// types moved to pages/types
 
 export const createColumns = (
     opts?: ColumnFactoryOptions,

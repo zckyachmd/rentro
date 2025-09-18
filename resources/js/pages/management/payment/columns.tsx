@@ -21,8 +21,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { variantForPaymentStatus } from '@/lib/status';
-
-import type { PaymentRow } from '.';
+import type { PaymentRow } from '@/types/management';
 
 const COL = {
     date: 'shrink-0 w-[124px] md:w-[160px]',

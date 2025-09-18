@@ -11,10 +11,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import type {
-    PaginatorMeta,
-    QueryBag,
-} from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import {
     Select,
@@ -25,42 +21,22 @@ import {
 } from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import type {
+    UserDialogKind as DialogKind,
+    UserDialogState as DialogState,
+    UserIndexPageProps as PageProps,
+    Role,
+    UserItem,
+} from '@/types/management';
 
 import { createColumns } from './columns';
 import CreateUserDialog from './dialogs/create-user';
 import ForceLogoutDialog from './dialogs/force-logout';
 import ResetPasswordDialog from './dialogs/reset-password';
-import { Role, RoleDialog } from './dialogs/role';
+import { RoleDialog } from './dialogs/role';
 import { TwoFADialog } from './dialogs/two-factor';
 
-export type UserItem = {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string | null;
-    phone?: string | null;
-    roles: Role[];
-    two_factor_enabled: boolean;
-    last_active_at?: string | null;
-    initials?: string | null;
-};
-
-type UsersPaginator = { data: UserItem[] } & PaginatorMeta;
-
-type PageProps = {
-    users?: UsersPaginator;
-    roles?: Role[];
-    query?: { roleId: number | null } & QueryBag;
-};
-
-type DialogKind = 'create' | 'role' | 'reset' | 'twofa' | 'revoke';
-
-type DialogState = {
-    kind: DialogKind | null;
-    open: boolean;
-    saving: boolean;
-    user: UserItem | (UserItem & { two_factor_enabled?: boolean }) | null;
-};
+// types moved to pages/types
 
 const computeInitials = (name?: string | null) =>
     (name?.slice(0, 1) ?? '?').toUpperCase();

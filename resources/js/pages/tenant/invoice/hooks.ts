@@ -1,40 +1,11 @@
 import React from 'react';
 import { toast } from 'sonner';
 
-export type InvoiceItemMeta = {
-    qty?: number;
-    unit_price_cents?: number;
-};
-
-export type InvoiceData = {
-    invoice: {
-        id: string;
-        number: string;
-        status: string;
-        due_date?: string | null;
-        amount_cents: number;
-        items: Array<{
-            label: string;
-            amount_cents: number;
-            meta?: InvoiceItemMeta;
-        }>;
-    };
-    payment_summary?: { outstanding: number };
-};
-
-export type PendingInfo = Partial<{
-    payment_type: string;
-    bank: string | null;
-    va_number: string | null;
-    expiry_time: string | null;
-    pdf_url: string | null;
-    payment_code: string | null;
-    store: string | null;
-}>;
+import type { TenantInvoiceDTO, PendingInfo } from '@/types/tenant';
 
 export function useInvoiceLoader(target: { id: string } | null) {
     const [loading, setLoading] = React.useState(false);
-    const [data, setData] = React.useState<InvoiceData | null>(null);
+    const [data, setData] = React.useState<TenantInvoiceDTO | null>(null);
     React.useEffect(() => {
         const controller = new AbortController();
         async function load() {
@@ -51,7 +22,8 @@ export function useInvoiceLoader(target: { id: string } | null) {
                 );
                 if (!res.ok) throw new Error('Gagal memuat invoice');
                 const json = await res.json();
-                if (!controller.signal.aborted) setData(json as InvoiceData);
+                if (!controller.signal.aborted)
+                    setData(json as TenantInvoiceDTO);
             } catch (e) {
                 void e; // no-op
             } finally {

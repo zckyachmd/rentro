@@ -22,35 +22,10 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatIDR } from '@/lib/format';
-
-export type MethodOption = { value: string; label: string };
-
-export type ManualPaymentDialogProps = {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    methods: MethodOption[];
-    initialInvoiceNumber?: string | null;
-    invoiceCandidates?: Array<{
-        id: string;
-        number: string;
-        tenant?: string | null;
-        room_number?: string | null;
-        status: string;
-        amount_cents: number;
-        outstanding: number;
-    }>;
-};
-
-type ManualPaymentFormData = {
-    invoice_number: string;
-    invoice_id: string;
-    amount_cents: number | '';
-    method: string;
-    paid_at: string;
-    note: string;
-    provider: string;
-    attachment: File | null;
-};
+import type {
+    ManualPaymentDialogProps,
+    ManualPaymentForm,
+} from '@/types/management';
 
 const currency = (amount: number): string => formatIDR(amount);
 
@@ -62,7 +37,7 @@ export function ManualPaymentDialog({
     invoiceCandidates = [],
 }: ManualPaymentDialogProps) {
     const { data, setData, post, processing, transform, errors } =
-        useForm<ManualPaymentFormData>({
+        useForm<ManualPaymentForm>({
             invoice_number: initialInvoiceNumber ?? '',
             invoice_id: '',
             amount_cents: '',

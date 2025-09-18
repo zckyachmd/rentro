@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import type { AuditDetailDialogProps as Props } from '@/types/management';
 
-import { ActivityItem } from '..';
 import { subjectLabel } from '../columns';
 
 const isEmptyish = (v: unknown): boolean => {
@@ -61,11 +61,7 @@ function PrettyJson({ value }: { value: unknown }) {
     }
 }
 
-type Props = {
-    open: boolean;
-    item: ActivityItem | null;
-    onOpenChange: (open: boolean) => void;
-};
+// Props type moved to pages/types
 
 export default function DetailDialog({ open, item, onOpenChange }: Props) {
     const createdAt = React.useMemo(() => {

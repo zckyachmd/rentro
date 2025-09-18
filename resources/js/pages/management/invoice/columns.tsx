@@ -24,23 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
 import { variantForInvoiceStatus } from '@/lib/status';
-
-type BaseInvoiceRow = {
-    id: string;
-    number: string;
-    due_date: string;
-    amount_cents: number;
-    outstanding?: number;
-    status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
-    tenant?: string | null;
-    room_number?: string | null;
-};
-
-type CreateColumnsOpts<T extends BaseInvoiceRow> = {
-    onCancel?: (inv: T) => void;
-    onShowDetail?: (inv: T) => void;
-    onExtendDue?: (inv: T) => void;
-};
+import type { BaseInvoiceRow, CreateColumnsOpts } from '@/types/management';
 
 const COL = {
     number: 'shrink-0 w-[220px] md:w-[260px] lg:w-[280px]',

@@ -15,10 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type {
-    PaginatorMeta,
-    QueryBag,
-} from '@/components/ui/data-table-server';
+import type { QueryBag } from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import {
     Dialog,
@@ -39,35 +36,16 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import type {
+    ManagementCancelState as CancelState,
+    ManagementExtendState as ExtendState,
+    InvoiceRow,
+    ManagementInvoicePageProps as PageProps,
+} from '@/types/management';
 
 import { createColumns } from './columns';
 import InvoiceDetailDialog from './dialogs/detail';
 import GenerateInvoiceDialog from './dialogs/generate';
-type InvoiceRow = {
-    id: string;
-    number: string;
-    due_date: string;
-    amount_cents: number;
-    outstanding?: number;
-    status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
-    tenant?: string | null;
-    room_number?: string | null;
-};
-
-type ContractOption = {
-    id: string;
-    name: string;
-    period?: 'Monthly' | 'Weekly' | 'Daily' | string;
-    start_date?: string | null;
-    end_date?: string | null;
-};
-
-type PageProps = {
-    invoices?: { data: InvoiceRow[] } & PaginatorMeta;
-    options?: { statuses: string[]; contracts: ContractOption[] };
-    filters?: { status?: string | null };
-    query?: QueryBag & { status?: string | null };
-};
 
 export default function InvoiceIndex() {
     const { props } = usePage<PageProps>();
@@ -103,12 +81,7 @@ export default function InvoiceIndex() {
     const statusValue: string =
         (q as QueryBag & { status?: string | null }).status ?? 'all';
 
-    type CancelState = { target: InvoiceRow | null; reason: string };
-    type ExtendState = {
-        target: InvoiceRow | null;
-        dueDate: string;
-        reason: string;
-    };
+    // CancelState, ExtendState moved to types
 
     const [cancel, setCancel] = React.useState<CancelState>({
         target: null,

@@ -14,33 +14,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-export interface Building {
-    id: number;
-    name: string;
-}
-export interface Floor {
-    id: number;
-    level: number;
-    building_id: number;
-}
-export interface RoomType {
-    id: string;
-    name: string;
-}
-
-export interface RoomItem {
-    id: string;
-    number: string;
-    name?: string | null;
-    status: 'vacant' | 'reserved' | 'occupied' | 'maintenance' | 'inactive';
-    max_occupancy: number;
-    price_rupiah?: string;
-    building?: Building | null;
-    floor?: Floor | null;
-    type?: RoomType | null;
-    amenities_count?: number;
-}
+import type {
+    RoomColumnOptions as ColumnFactoryOptions,
+    RoomItem,
+} from '@/types/management';
 
 const COL = {
     number: 'shrink-0 w-[110px]',
@@ -63,12 +40,6 @@ const statusColor: Record<
     occupied: 'default',
     maintenance: 'destructive',
     inactive: 'outline',
-};
-
-export type ColumnFactoryOptions = {
-    onDetail?: (room: RoomItem) => void;
-    onEdit?: (room: RoomItem) => void;
-    onDelete?: (room: RoomItem) => void;
 };
 
 export const createColumns = (

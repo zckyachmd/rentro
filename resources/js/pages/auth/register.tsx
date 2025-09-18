@@ -7,14 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import GuestLayout from '@/layouts/guest-layout';
-
-type RegisterForm = {
-    name: string;
-    username: string;
-    email: string;
-    password: string;
-    password_confirmation: string;
-};
+import type { RegisterForm } from '@/types/auth';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset, clearErrors } =

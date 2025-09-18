@@ -20,22 +20,7 @@ import {
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { formatDate } from '@/lib/format';
-
-export type TenantHandover = {
-    id: string;
-    type: string;
-    status: string;
-    recorded_at?: string | null;
-    notes?: string | null;
-    acknowledged: boolean;
-    acknowledged_at?: string | null;
-    acknowledge_note?: string | null;
-    disputed: boolean;
-    disputed_at?: string | null;
-    dispute_note?: string | null;
-    attachments: string[];
-    meta?: { can_respond?: boolean };
-};
+import type { TenantHandover } from '@/types/tenant';
 
 export default function TenantHandoverDetailDialog({
     open,

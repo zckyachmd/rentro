@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { Copy } from 'lucide-react';
+import { Copy, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -17,14 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-
-type Summary = {
-    email_verified?: boolean;
-    two_factor_enabled?: boolean;
-    last_password_changed_at?: string | null;
-};
-
-type TwoFactorTabProps = { summary: Summary };
+import type { RecoveryResponse, TwoFactorTabProps } from '@/types/security';
 
 export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
     const forms = {
@@ -84,7 +77,6 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
         });
     };
 
-    type RecoveryResponse = { codes: string[] };
     const fetchRecovery = async () => {
         try {
             const res = await fetch(route('security.2fa.recovery.index'));

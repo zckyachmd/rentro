@@ -15,10 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type {
-    PaginatorMeta,
-    QueryBag,
-} from '@/components/ui/data-table-server';
+import type { QueryBag } from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { Label } from '@/components/ui/label';
 import {
@@ -32,40 +29,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatIDR } from '@/lib/format';
+import type {
+    PaymentIndexPageProps as PageProps,
+    PaymentRow,
+} from '@/types/management';
 
 import { createColumns } from './columns';
 import PaymentDetailDialog from './dialogs/detail';
 import ManualPaymentDialog from './dialogs/manual';
 import PaymentReviewDialog from './dialogs/review';
-
-export type PaymentRow = {
-    id: string;
-    method: string;
-    status: string;
-    amount_cents: number;
-    paid_at?: string | null;
-    invoice?: string | null;
-    tenant?: string | null;
-};
-
-type PageProps = {
-    payments?: { data: PaymentRow[] } & PaginatorMeta;
-    filters?: { status?: string | null };
-    options?: {
-        methods: { value: string; label: string }[];
-        statuses: string[];
-    };
-    query?: QueryBag & { status?: string | null };
-    invoiceCandidates?: Array<{
-        id: string;
-        number: string;
-        tenant?: string | null;
-        room_number?: string | null;
-        status: string;
-        amount_cents: number;
-        outstanding: number;
-    }>;
-};
 
 const currency = (amount: number): string => formatIDR(amount);
 

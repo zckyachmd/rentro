@@ -22,17 +22,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
-
-export interface TenantContractItem {
-    id: string;
-    number?: string | null;
-    room?: { id: string; number: string } | null;
-    start_date?: string | null;
-    end_date?: string | null;
-    rent_cents: number;
-    status: string;
-    auto_renew: boolean;
-}
+import type {
+    TenantContractColumnOptions as ColumnFactoryOptions,
+    TenantContractItem,
+} from '@/types/tenant';
 
 const COL = {
     room: 'shrink-0 w-[110px]',
@@ -43,10 +36,6 @@ const COL = {
     daysLeft: 'shrink-0 w-[120px] text-right',
     renew: 'shrink-0 w-[120px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
-};
-
-export type ColumnFactoryOptions = {
-    onStopAutoRenew?: (row: TenantContractItem) => void;
 };
 
 export const createColumns = (

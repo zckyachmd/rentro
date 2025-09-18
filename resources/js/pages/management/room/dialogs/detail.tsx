@@ -22,31 +22,7 @@ import {
 import { ImageSpotlight, SpotlightItem } from '@/components/ui/image-spotlight';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { RoomItem } from '@/pages/management/room/columns';
-
-type RoomDetail = {
-    id: string;
-    number: string;
-    name?: string | null;
-    status: string;
-    max_occupancy: number;
-    price_rupiah?: string | null;
-    deposit_rupiah?: string | null;
-    area_sqm?: number | null;
-    gender_policy?: string | null;
-    billing_period?: string | null;
-    notes?: string | null;
-    building?: { id: number; name: string } | null;
-    floor?: { id: number; level: number | string; building_id: number } | null;
-    type?: { id: string; name: string } | null;
-    photos: {
-        id: string;
-        url: string;
-        is_cover?: boolean;
-        ordering?: number;
-    }[];
-    amenities: { id: number; name: string }[];
-};
+import type { RoomDetail, RoomItem } from '@/types/management';
 
 const statusVariant: Record<
     string,

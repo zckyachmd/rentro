@@ -21,21 +21,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
-
-import { UserItem } from '..';
-
-type TwoFADialogProps = {
-    open: boolean;
-    onOpenChange: (v: boolean) => void;
-    user: UserItem;
-    autoReload?: boolean;
-};
-
-type RequestResponse = {
-    message?: string;
-    codes?: string[];
-    error?: boolean | string;
-};
+import type { RequestResponse, TwoFADialogProps } from '@/types/management';
 
 export function TwoFADialog({
     open,

@@ -6,8 +6,7 @@ import { Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
-
-import { ActivityItem } from '.';
+import type { ActivityItem } from '@/types/management';
 
 const COL = {
     id: 'shrink-0 w-[80px]',

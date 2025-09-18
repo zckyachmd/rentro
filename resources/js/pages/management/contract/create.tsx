@@ -37,63 +37,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatIDR } from '@/lib/format';
-
-type PageOptions = {
-    tenants?: TenantOption[];
-    rooms?: RoomOption[];
-    billing_periods?: PeriodOption[];
-    today_date?: string;
-    contract_settings?: {
-        daily_max_days?: number;
-        weekly_max_weeks?: number;
-        monthly_allowed_terms?: number[];
-        prorata?: boolean;
-        release_day_of_month?: number;
-        due_day_of_month?: number;
-        auto_renew_default?: boolean;
-    };
-};
-
-type TenantOption = { id: number | string; name: string; email?: string };
-type PeriodOption = { value: string; label: string; days?: number | null };
-type RoomOption = {
-    id: string;
-    number: string;
-    name?: string | null;
-    price_cents?: number | null;
-    deposit_cents?: number | null;
-    billing_period?: string | null;
-    type_price_cents?: number | null;
-    building_name?: string | null;
-    floor_level?: number | null;
-    building?: { id: number | string; name?: string | null } | null;
-    floor?: { id: number | string; level?: number | null } | null;
-    floor_label?: string;
-    floor_label_text?: string;
-    building_label?: string;
-    building_short_name?: string;
-    room_name?: string;
-};
-
-type FormData = {
-    user_id: string;
-    room_id: string;
-    start_date: string;
-    end_date?: string;
-    rent_rupiah: string;
-    deposit_rupiah: string;
-    rent_cents?: number;
-    deposit_cents?: number;
-    billing_period: string;
-    billing_day: string;
-    auto_renew: boolean;
-    notes?: string;
-};
-
-type FormLocal = {
-    duration_count: string;
-    monthly_payment_mode: 'per_month' | 'full';
-};
+import type {
+    ContractCreateForm,
+    ContractCreateLocal,
+    PageOptions,
+    ContractPeriodOption as PeriodOption,
+    RoomOption,
+    TenantOption,
+} from '@/types/management';
 
 const BREADCRUMBS: Crumb[] = [
     { label: 'Kontrak', href: route('management.contracts.index') },
@@ -154,7 +105,7 @@ export default function ContractCreate() {
         : [3, 6, 12];
 
     const { data, setData, processing, errors, isDirty } = useForm<
-        FormData & FormLocal
+        ContractCreateForm & ContractCreateLocal
     >({
         user_id: '',
         room_id: '',
@@ -996,7 +947,8 @@ function ContractGuideDialog({ prorata = false }: { prorata?: boolean }) {
 function ContractPreviewDialog(props: {
     open: boolean;
     onOpenChange: (v: boolean) => void;
-    data: FormData & FormLocal;
+    data: import('@/types/management').ContractCreateForm &
+        import('@/types/management').ContractCreateLocal;
     tenantOptions: SearchOption[];
     roomOptions: SearchOption[];
     periodLabel: string;

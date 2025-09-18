@@ -21,13 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-export type CreateUserDialogProps = {
-    open: boolean;
-    onOpenChange: (v: boolean) => void;
-    roles: { id: number; name: string }[];
-    autoReload?: boolean;
-};
+import type { CreateUserDialogProps } from '@/types/management';
 
 export default function CreateUserDialog({
     open,

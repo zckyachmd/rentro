@@ -3,12 +3,7 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import AuthLayout from '@/layouts/auth-layout';
-
-type PageProps = {
-    variant?: 'finish' | 'unfinish' | 'error';
-    return_to?: string;
-    provider?: string | null;
-};
+import type { PaymentResultPageProps as PageProps } from '@/types/payment';
 
 function useCopy(url?: string) {
     const [copied, setCopied] = React.useState(false);

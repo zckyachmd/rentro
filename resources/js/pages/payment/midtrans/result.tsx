@@ -8,16 +8,7 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-type PageProps = {
-    variant: 'finish' | 'unfinish' | 'error';
-    order_id?: string;
-    status_code?: string;
-    transaction_status?: string;
-    fraud_status?: string;
-    gross_amount?: string;
-    return_to: string;
-};
+import type { MidtransResultPageProps as PageProps } from '@/types/payment';
 
 export default function MidtransResultPage(props: PageProps) {
     const {

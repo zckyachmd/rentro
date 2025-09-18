@@ -16,16 +16,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForInvoiceStatus } from '@/lib/status';
-
-export interface TenantInvoiceItem {
-    id: string;
-    number: string;
-    due_date?: string | null;
-    amount_cents: number;
-    outstanding_cents: number;
-    status: string;
-    room_number?: string | null;
-}
+import type {
+    TenantInvoiceColumnOptions as ColumnFactoryOptions,
+    TenantInvoiceItem,
+} from '@/types/tenant';
 
 const COL = {
     number: 'shrink-0 w-[160px]',
@@ -35,12 +29,6 @@ const COL = {
     outstanding: 'shrink-0 w-[140px] text-right',
     status: 'shrink-0 w-[120px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
-};
-
-export type ColumnFactoryOptions = {
-    onPay?: (row: TenantInvoiceItem) => void;
-    onView?: (row: TenantInvoiceItem) => void;
-    onPrint?: (row: TenantInvoiceItem) => void;
 };
 
 export const createColumns = (

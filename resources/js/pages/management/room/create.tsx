@@ -11,13 +11,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import AuthLayout from '@/layouts/auth-layout';
-import RoomUpsertForm, {
-    type RoomUpsertOptions,
-} from '@/pages/management/room/form';
-
-type CreatePageProps = {
-    options?: RoomUpsertOptions;
-};
+import RoomUpsertForm from '@/pages/management/room/form';
+import type { RoomCreatePageProps as CreatePageProps } from '@/types/management';
 
 const BREADCRUMBS: Crumb[] = [
     { label: 'Kamar', href: '#' },

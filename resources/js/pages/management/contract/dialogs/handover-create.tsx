@@ -15,8 +15,11 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-
-type Mode = 'checkin' | 'checkout';
+import type {
+    HandoverCreateErrorKey as ErrorKey,
+    HandoverCreateFormState as FormState,
+    HandoverMode as Mode,
+} from '@/types/management';
 
 export default function HandoverCreate({
     open,
@@ -35,16 +38,6 @@ export default function HandoverCreate({
     minPhotosCheckout?: number;
     onSaved?: () => void | Promise<void>;
 }) {
-    type FormState = {
-        notes: string;
-        files: { general?: File[] };
-    };
-
-    // Type guard for dynamic error keys coming from backend
-    type ErrorKey =
-        | keyof FormState
-        | 'files.general'
-        | `files.general.${number}`;
     const isAllowedErrorKey = (k: string): k is ErrorKey =>
         k === 'notes' ||
         k === 'files.general' ||

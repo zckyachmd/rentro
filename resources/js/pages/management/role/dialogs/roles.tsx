@@ -21,16 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-import { RoleItem } from '..';
-
-export type RoleUpsertDialogProps = {
-    open: boolean;
-    role: RoleItem | null;
-    onOpenChange?: (open: boolean) => void;
-    onSuccess?: () => void;
-    guards?: string[];
-};
+import type { RoleUpsertDialogProps } from '@/types/management';
 
 export default function RoleUpsertDialog({
     open,

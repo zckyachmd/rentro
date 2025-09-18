@@ -12,45 +12,16 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { formatDate, formatIDR } from '@/lib/format';
+import type {
+    ManagementPaymentDetailDTO as PaymentDetailDTO,
+    ManagementPaymentDetailTarget as Target,
+} from '@/types/management';
 
-type Target = { id: string } | null;
-
-type PaymentDetailData = {
-    payment: {
-        id: string;
-        method: string;
-        status: string;
-        amount_cents: number;
-        paid_at?: string | null;
-        reference?: string | null;
-        provider?: string | null;
-        note?: string | null;
-        recorded_by?: string | null;
-        attachment?: string | null;
-        attachment_name?: string | null;
-        attachment_uploaded_at?: string | null;
-        pre_outstanding_cents?: number | null;
-    };
-    invoice: {
-        id: string;
-        number: string;
-        amount_cents: number;
-        due_date?: string | null;
-        status: string;
-        paid_at?: string | null;
-    } | null;
-    tenant: {
-        id: string;
-        name: string;
-        email?: string | null;
-        phone?: string | null;
-    } | null;
-    room: { id: string; number?: string | null; name?: string | null } | null;
-};
+// types moved to pages/types
 
 function usePaymentDetailLoader(target: Target) {
     const [loading, setLoading] = React.useState(false);
-    const [data, setData] = React.useState<PaymentDetailData | null>(null);
+    const [data, setData] = React.useState<PaymentDetailDTO | null>(null);
 
     React.useEffect(() => {
         const controller = new AbortController();
@@ -67,7 +38,7 @@ function usePaymentDetailLoader(target: Target) {
                     },
                 );
                 if (!res.ok) throw new Error('Gagal memuat detail pembayaran');
-                const json = (await res.json()) as PaymentDetailData;
+                const json = (await res.json()) as PaymentDetailDTO;
                 setData(json);
             } catch {
                 // ignore
@@ -138,7 +109,7 @@ function PaymentDetailBody({
     previewOpen,
     setPreviewOpen,
 }: {
-    data: PaymentDetailData;
+    data: PaymentDetailDTO;
     previewOpen: boolean;
     setPreviewOpen: (v: boolean) => void;
 }) {

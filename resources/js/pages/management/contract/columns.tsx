@@ -27,6 +27,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
+import type {
+    ContractColumnOptions as ColumnFactoryOptions,
+    ContractItem,
+} from '@/types/management';
 
 const CS = {
     PENDING_PAYMENT: 'Pending Payment',
@@ -41,21 +45,7 @@ const CS = {
 const CANCELABLE: ReadonlyArray<string> = [CS.PENDING_PAYMENT, CS.BOOKED];
 const RENEW_ALLOWED: ReadonlyArray<string> = [CS.BOOKED, CS.PAID, CS.ACTIVE];
 
-export interface ContractItem {
-    id: string;
-    number?: string | null;
-    tenant?: { id: number; name: string; email: string } | null;
-    room?: { id: string; number: string } | null;
-    start_date?: string | null;
-    end_date?: string | null;
-    rent_cents: number;
-    status: string;
-    auto_renew: boolean;
-    has_checkin?: boolean;
-    has_checkout?: boolean;
-    latest_checkin_status?: string | null;
-    latest_checkout_status?: string | null;
-}
+// ContractItem moved to pages/types
 
 const COL = {
     tenant: 'shrink-0 min-w-[200px] md:w-[260px]',
@@ -67,14 +57,6 @@ const COL = {
     daysLeft: 'shrink-0 w-[120px] text-right',
     renew: 'shrink-0 w-[120px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
-};
-
-export type ColumnFactoryOptions = {
-    onCancel?: (c: ContractItem) => void;
-    onStopAutoRenew?: (c: ContractItem) => void;
-    onStartAutoRenew?: (c: ContractItem) => void;
-    onCheckin?: (c: ContractItem) => void;
-    onCheckout?: (c: ContractItem) => void;
 };
 
 export const createColumns = (

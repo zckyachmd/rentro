@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     DataTableServer,
-    type PaginatorMeta,
     type QueryBag,
 } from '@/components/ui/data-table-server';
 import { Input } from '@/components/ui/input';
@@ -33,54 +32,18 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
-import {
-    createColumns,
-    type ContractItem,
-} from '@/pages/management/contract/columns';
+import { createColumns } from '@/pages/management/contract/columns';
 import ContractsGuideDialog from '@/pages/management/contract/dialogs/contracts-guide';
 import HandoverCreate from '@/pages/management/contract/dialogs/handover-create';
+import type {
+    ContractItem,
+    ContractsPageProps,
+    ContractQueryInit as QueryInit,
+    ContractSafePayload as SafePayload,
+    ContractServerQuery as ServerQuery,
+} from '@/types/management';
 
-type ContractsPaginator = { data: ContractItem[] } & PaginatorMeta;
-
-interface HandoverOptions {
-    min_photos_checkin: number;
-    min_photos_checkout: number;
-    require_tenant_ack_for_complete?: boolean;
-    require_checkin_for_activate?: boolean;
-}
-
-interface ContractsPageProps {
-    contracts?: ContractsPaginator;
-    query?: QueryBag & { status?: string | null; q?: string | null };
-    options?: { statuses?: { value: string; label: string }[] };
-    handover?: HandoverOptions;
-}
-
-type QueryInit = Partial<{
-    page: number;
-    per_page: number;
-    sort: string | null;
-    dir: 'asc' | 'desc' | null;
-    status: string | null;
-    q: string | null;
-}>;
-type SafePayload = Partial<{
-    page: number;
-    per_page: number;
-    sort: string | null;
-    dir: 'asc' | 'desc' | null;
-    status: string | null;
-    q: string | null;
-}>;
-
-type ServerQuery = {
-    [key: string]: unknown;
-    page?: number;
-    per_page?: number;
-    search?: string | undefined;
-    sort?: string | null;
-    dir?: 'asc' | 'desc' | null;
-};
+// types moved to pages/types
 
 export default function ContractIndex(props: ContractsPageProps) {
     const {

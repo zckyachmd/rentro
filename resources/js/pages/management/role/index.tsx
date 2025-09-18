@@ -20,47 +20,19 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    DataTableServer,
-    PaginatorMeta,
-    type QueryBag,
-} from '@/components/ui/data-table-server';
+import { DataTableServer } from '@/components/ui/data-table-server';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import type {
+    RoleDialogKey as DialogKey,
+    RolePageProps as PageProps,
+    RoleDialogs,
+    RoleItem,
+} from '@/types/management';
 
 import { createColumns } from './columns';
-import PermissionsDialog, { Permission } from './dialogs/permissions';
+import PermissionsDialog from './dialogs/permissions';
 import RoleUpsertDialog from './dialogs/roles';
-
-export type RoleItem = {
-    id: number;
-    name: string;
-    guard_name: string;
-    users_count?: number;
-    permissions_count?: number;
-    permission_ids?: number[];
-    created_at?: string;
-    updated_at?: string;
-};
-
-type RoleDialogSlice = { open: boolean; role: RoleItem | null };
-
-export type RoleDialogs = {
-    edit: RoleDialogSlice;
-    perm: RoleDialogSlice;
-    del: RoleDialogSlice;
-};
-
-type DialogKey = keyof RoleDialogs;
-
-type RolePaginator = { data: RoleItem[] } & PaginatorMeta;
-
-type PageProps = {
-    [key: string]: unknown;
-    roles: RolePaginator;
-    permissions?: Permission[];
-    query?: { guard?: string | null } & QueryBag;
-};
 
 export default function RolesIndex() {
     const { props } = usePage<PageProps>();

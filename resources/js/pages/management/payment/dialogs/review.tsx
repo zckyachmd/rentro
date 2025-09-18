@@ -16,22 +16,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 import { formatIDR } from '@/lib/format';
+import type {
+    ManagementPaymentShowDTO as PaymentShow,
+    ManagementPaymentDetailTarget as Target,
+} from '@/types/management';
 
-type Target = { id: string } | null;
-
-type PaymentShow = {
-    payment: {
-        id: string;
-        method: string;
-        status: string;
-        amount_cents: number;
-        paid_at?: string | null;
-        note?: string | null;
-        attachment?: string | null;
-    };
-    invoice?: { number: string } | null;
-    tenant?: { name: string } | null;
-};
+// types moved to pages/types
 
 function usePayment(target: Target) {
     const [loading, setLoading] = React.useState(false);
@@ -73,8 +63,13 @@ export default function PaymentReviewDialog({
     const [ack, setAck] = React.useState(false);
     const [note, setNote] = React.useState('');
     const [decision, setDecision] = React.useState<'approve' | 'reject' | null>(
-        null,
+        'approve',
     );
+
+    const MIN_NOTE = 20;
+    const noteLen = note.trim().length;
+    const showCounter = noteLen <= MIN_NOTE;
+
     // No additional attachment from admin during review
     const toLocal = React.useCallback((d: Date) => {
         const pad = (n: number) => String(n).padStart(2, '0');
@@ -102,15 +97,22 @@ export default function PaymentReviewDialog({
             alert('Centang pernyataan kebenaran data sebelum submit.');
             return;
         }
+        if (decision === 'reject') {
+            if (noteLen < MIN_NOTE) {
+                alert(`Alasan penolakan minimal ${MIN_NOTE} karakter.`);
+                return;
+            }
+        } else {
+            if (noteLen > 0 && noteLen < MIN_NOTE) {
+                alert(`Catatan minimal ${MIN_NOTE} karakter jika diisi.`);
+                return;
+            }
+        }
         const fd = new FormData();
         if (decision === 'approve') {
             fd.append('ack', 'on');
-            if (note) fd.append('note', note);
+            if (noteLen >= MIN_NOTE) fd.append('note', note);
         } else {
-            if (!note.trim()) {
-                alert('Alasan wajib diisi untuk menolak pembayaran.');
-                return;
-            }
             fd.append('reason', note);
         }
         if (paidAt) fd.append('paid_at', paidAt);
@@ -121,7 +123,7 @@ export default function PaymentReviewDialog({
             body: fd,
         });
         if (res.ok) window.location.reload();
-    }, [target, ack, note, paidAt, decision]);
+    }, [target, ack, note, paidAt, decision, noteLen]);
 
     const p = data?.payment;
     const inv = data?.invoice;
@@ -237,6 +239,11 @@ export default function PaymentReviewDialog({
                                                     : 'Opsional: catatan internal konfirmasi'
                                             }
                                         />
+                                        <div className="mt-1 text-right text-[11px] text-muted-foreground">
+                                            {showCounter
+                                                ? `${noteLen}/${MIN_NOTE}`
+                                                : ''}
+                                        </div>
                                     </div>
                                     <label
                                         htmlFor="ack"
@@ -274,7 +281,10 @@ export default function PaymentReviewDialog({
                         disabled={
                             !decision ||
                             !ack ||
-                            (decision === 'reject' && !note.trim())
+                            (decision === 'reject' && noteLen < MIN_NOTE) ||
+                            (decision === 'approve' &&
+                                noteLen > 0 &&
+                                noteLen < MIN_NOTE)
                         }
                         onClick={() => {
                             submit();

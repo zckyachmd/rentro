@@ -10,11 +10,16 @@ import {
 } from '@/components/ui/card';
 import {
     DataTableServer,
-    PaginatorMeta,
     type QueryBag,
 } from '@/components/ui/data-table-server';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import type {
+    ActivityItem,
+    AuditNextShape as NextShape,
+    AuditPageProps as PageProps,
+    AuditSafePayload as SafePayload,
+} from '@/types/management';
 
 import { createColumns } from './columns';
 import DetailDialog from './dialogs/detail';
@@ -48,41 +53,9 @@ function useDebounced<P extends unknown[]>(
     return debounced as typeof fn;
 }
 
-export interface UserLite {
-    id?: number;
-    name?: string;
-    email?: string;
-}
+// types moved to pages/types/management/audit
 
-export interface ActivityItem {
-    id: number;
-    log_name?: string | null;
-    description?: string | null;
-    event?: string | null;
-    subject_id?: number | string | null;
-    subject_type?: string | null;
-    causer_id?: number | null;
-    properties?: Record<string, unknown> | null;
-    created_at: string;
-    updated_at?: string;
-    causer?: UserLite | null;
-    subject?: { id?: number | string | null } | null;
-}
-
-type LogPaginator = { data: ActivityItem[] } & PaginatorMeta;
-
-type PageQuery = QueryBag & {
-    user_id: number | string | null;
-    subject_type: string | null;
-    event: string | null;
-    per_page?: number;
-};
-
-type PageProps = {
-    [key: string]: unknown;
-    logs: LogPaginator;
-    query?: PageQuery;
-};
+// page types moved to pages/types
 
 export default function AuditLogIndex() {
     const { props } = usePage<PageProps>();
@@ -117,23 +90,7 @@ export default function AuditLogIndex() {
         onQueryChange({ page: 1, q: value, search: value });
     }, 350);
 
-    type SafePayload = Partial<
-        Omit<QueryBag, 'search' | 'sort' | 'dir'> & {
-            search?: string | null;
-            sort?: string | null;
-            dir?: 'asc' | 'desc' | null;
-        }
-    > & { q?: string };
-
-    type NextShape = {
-        [key: string]: unknown;
-        page?: number;
-        per_page?: number;
-        search?: string;
-        sort?: string | null;
-        dir?: 'asc' | 'desc' | null;
-        q?: string;
-    };
+    // SafePayload, NextShape moved to pages/types
 
     const safeOnQueryChange = React.useCallback(
         (payload: SafePayload) => {

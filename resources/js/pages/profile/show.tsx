@@ -18,62 +18,14 @@ import {
 import { Separator } from '@/components/ui/separator';
 import ShowMore from '@/components/ui/show-more';
 import AuthLayout from '@/layouts/auth-layout';
+import type { ShowPageProps } from '@/types/profile';
 
-import ContactSection, { ContactDTO } from './contact';
-
-type UserDTO = {
-    id: number;
-    name?: string;
-    username?: string;
-    email: string;
-    phone?: string;
-    avatar_url?: string;
-    gender?: 'male' | 'female' | null;
-    dob?: string | null;
-    created_at?: string;
-    email_verified_at?: string | null;
-};
-
-type AddressDTO = {
-    id: number;
-    label?: string | null;
-    address_line: string;
-    village?: string | null;
-    district?: string | null;
-    city: string;
-    province: string;
-    postal_code?: string | null;
-    country: string;
-    is_primary: boolean;
-};
-
-type DocumentDTO = {
-    id: number;
-    type: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
-    number?: string | null;
-    status: 'pending' | 'approved' | 'rejected';
-    file_path?: string | null;
-    verified_at?: string | null;
-};
-
-type PageProps = {
-    user: UserDTO;
-    addresses: AddressDTO[];
-    document: DocumentDTO | null;
-    contacts: ContactDTO[];
-    mustVerifyEmail: boolean;
-    status?: string | null;
-    preferences: Record<string, unknown>;
-    options: {
-        documentTypes: string[];
-        documentStatuses: string[];
-    };
-};
+import ContactSection from './contact';
 
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : '-');
 
 export default function ShowProfile() {
-    const { props } = usePage<PageProps>();
+    const { props } = usePage<ShowPageProps>();
     const { user, addresses, document, contacts, mustVerifyEmail, options } =
         props;
 

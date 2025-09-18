@@ -19,28 +19,10 @@ import {
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { formatDate } from '@/lib/format';
-
-export type ManagementHandover = {
-    id: string;
-    type: string;
-    status: string;
-    recorded_at?: string | null;
-    notes?: string | null;
-    acknowledged: boolean;
-    acknowledged_at?: string | null;
-    acknowledge_note?: string | null;
-    disputed: boolean;
-    disputed_at?: string | null;
-    dispute_note?: string | null;
-    attachments: string[];
-    meta?: {
-        redone?: boolean;
-        redo?: { checkin?: boolean; checkout?: boolean };
-        [key: string]: unknown;
-    };
-};
-
-type Mode = 'checkin' | 'checkout';
+import type {
+    ManagementHandover,
+    HandoverMode as Mode,
+} from '@/types/management';
 
 export default function HandoverDetail({
     open,

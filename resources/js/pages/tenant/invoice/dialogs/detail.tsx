@@ -1,15 +1,3 @@
-// Strongly-typed meta for invoice items
-export type InvoiceItemMeta = {
-    qty?: number;
-    days?: number;
-    free_days?: number;
-    unit_price_cents?: number;
-    description?: string;
-    desc?: string;
-    note?: string;
-    date_start?: string;
-    date_end?: string;
-};
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -24,61 +12,16 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
+import type {
+    TenantInvoiceDetailDTO,
+    TenantInvoiceDetailTarget as InvoiceDetailTarget,
+} from '@/types/tenant';
 
 import TenantInvoicePayDialog from './pay';
 
-type InvoiceDetailTarget = { id: string; number: string } | null;
-type InvoiceItem = {
-    code: string;
-    label: string;
-    amount_cents: number;
-    meta?: InvoiceItemMeta;
-};
-
-type InvoiceDetailData = {
-    invoice: {
-        id: string;
-        number: string;
-        status: string;
-        due_date?: string | null;
-        period_start?: string | null;
-        period_end?: string | null;
-        amount_cents: number;
-        items: InvoiceItem[];
-        paid_at?: string | null;
-        created_at?: string | null;
-    };
-    contract: {
-        id: string;
-        start_date?: string | null;
-        end_date?: string | null;
-    } | null;
-    tenant: {
-        id: string;
-        name: string;
-        email?: string | null;
-        phone?: string | null;
-    } | null;
-    room: { id: string; number?: string | null; name?: string | null } | null;
-    payments?: {
-        id: string;
-        method: string;
-        status: string;
-        amount_cents: number;
-        paid_at?: string | null;
-        reference?: string | null;
-        provider?: string | null;
-    }[];
-    payment_summary?: {
-        total_invoice: number;
-        total_paid: number;
-        outstanding: number;
-    };
-};
-
 function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
     const [loading, setLoading] = React.useState(false);
-    const [data, setData] = React.useState<null | InvoiceDetailData>(null);
+    const [data, setData] = React.useState<null | TenantInvoiceDetailDTO>(null);
 
     React.useEffect(() => {
         const controller = new AbortController();
@@ -176,7 +119,7 @@ export default function TenantInvoiceDetailDialog({
     );
 }
 
-function InvoiceDetailBody({ data }: { data: InvoiceDetailData }) {
+function InvoiceDetailBody({ data }: { data: TenantInvoiceDetailDTO }) {
     const inv = data.invoice;
     const summary = data.payment_summary;
     return (

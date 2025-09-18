@@ -14,8 +14,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-import { RoleItem } from '.';
+import type {
+    RoleColumnOptions as ColumnFactoryOptions,
+    RoleItem,
+} from '@/types/management';
 
 const COL = {
     name: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
@@ -25,11 +27,7 @@ const COL = {
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 };
 
-export type ColumnFactoryOptions = {
-    onEdit?: (role: RoleItem) => void;
-    onPermissions?: (role: RoleItem) => void;
-    onDelete?: (role: RoleItem) => void;
-};
+// types moved to pages/types
 
 export const createColumns = (
     opts?: ColumnFactoryOptions,

@@ -19,39 +19,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-export type DocumentFormValue = {
-    type: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | '';
-    number: string;
-    issued_at: string;
-    expires_at: string;
-    file: File | null;
-    has_file?: boolean | null;
-    status?: 'pending' | 'approved' | 'rejected';
-    notes?: string | null;
-};
-
-interface Props {
-    value: DocumentFormValue;
-    onChange: (next: DocumentFormValue) => void;
-    errors?: Record<string, string | undefined>;
-    defaultOpen?: boolean;
-    title?: string;
-    messages?: Partial<{
-        infoTitle: string;
-        filePicked: string;
-        pending: string;
-        approved: string;
-        rejected: string;
-        notesTitle: string;
-    }>;
-    documentTypes?: string[];
-    documentStatuses?: string[];
-}
+import type { DocumentFormValue, DocumentSectionProps } from '@/types/profile';
 
 function getAlertText(
     value: DocumentFormValue,
-    messages: Props['messages'] = {},
+    messages: DocumentSectionProps['messages'] = {},
 ) {
     const title = messages.infoTitle || 'Informasi Dokumen';
     const lines: string[] = [];
@@ -101,7 +73,7 @@ export default function DocumentSection({
     title = 'Dokumen Identitas',
     messages = {},
     documentTypes = [],
-}: Props) {
+}: DocumentSectionProps) {
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const setField = React.useCallback(

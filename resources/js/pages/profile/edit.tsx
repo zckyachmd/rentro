@@ -16,97 +16,29 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AuthLayout from '@/layouts/auth-layout';
+import type { EditForm, EditPageProps } from '@/types/profile';
 
 import AddressSection from './address';
 import DocumentSection from './document';
-
-type UserDTO = {
-    id: number;
-    name: string;
-    username: string;
-    email: string;
-    phone?: string | null;
-    dob?: string | null;
-    gender?: 'male' | 'female' | null;
-    avatar_url?: string | null;
-};
-
-type AddressDTO = {
-    id?: number;
-    label?: string | null;
-    address_line: string;
-    village?: string | null;
-    district?: string | null;
-    city: string;
-    province: string;
-    postal_code?: string | null;
-} | null;
-
-type DocumentDTO = {
-    id?: number;
-    type?: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | null;
-    number?: string | null;
-    has_file?: boolean | null;
-    issued_at?: string | null;
-    expires_at?: string | null;
-    status?: 'pending' | 'approved' | 'rejected' | null;
-    notes?: string | null;
-} | null;
-
-type PageProps = {
-    user: UserDTO;
-    address: AddressDTO;
-    document?: DocumentDTO;
-    status?: string | null;
-    options: {
-        genders: string[];
-        documentTypes: string[];
-        documentStatuses: string[];
-    };
-};
-
-type FormData = {
-    name: string;
-    username: string;
-    email: string;
-    phone: string;
-    dob: string;
-    gender: '' | 'male' | 'female' | 'other';
-    avatar: File | null;
-    address: {
-        label: string;
-        address_line: string;
-        village: string;
-        district: string;
-        city: string;
-        province: string;
-        postal_code: string;
-    };
-    document: {
-        type: '' | 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
-        number: string;
-        file: File | null;
-        has_file?: boolean | null;
-        issued_at: string;
-        expires_at: string;
-        status?: 'pending' | 'approved' | 'rejected';
-        notes?: string | null;
-    };
-};
 
 const BREADCRUMBS: Crumb[] = [
     { label: 'Profil', href: route('profile.show') },
     { label: 'Edit Profil' },
 ];
 
-export default function Edit({ user, address, document, options }: PageProps) {
-    const initialData: FormData = {
+export default function Edit({
+    user,
+    address,
+    document,
+    options,
+}: EditPageProps) {
+    const initialData: EditForm = {
         name: user.name ?? '',
         username: user.username ?? '',
         email: user.email ?? '',
         phone: user.phone ?? '',
         dob: user.dob ?? '',
-        gender: (user.gender as FormData['gender']) ?? '',
+        gender: (user.gender as EditForm['gender']) ?? '',
         avatar: null,
         address: {
             label: address?.label ?? '',
@@ -130,7 +62,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
     };
 
     const { data, setData, processing, errors, reset, post, transform } =
-        useForm<FormData>(initialData);
+        useForm<EditForm>(initialData);
 
     const fileRef = React.useRef<HTMLInputElement | null>(null);
     const [avatarPreview, setAvatarPreview] = React.useState<string | null>(
@@ -358,7 +290,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                             onValueChange={(v) =>
                                                 setData(
                                                     'gender',
-                                                    v as FormData['gender'],
+                                                    v as EditForm['gender'],
                                                 )
                                             }
                                         >

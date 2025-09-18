@@ -9,12 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import GuestLayout from '@/layouts/guest-layout';
-
-type LoginForm = {
-    login: string;
-    password: string;
-    remember: boolean;
-};
+import type { LoginForm } from '@/types/auth';
 
 export default function Login({
     status,
