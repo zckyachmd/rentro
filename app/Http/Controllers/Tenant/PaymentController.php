@@ -12,7 +12,7 @@ use App\Models\Contract;
 use App\Models\Invoice;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -33,7 +33,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function payManual(Request $request, Invoice $invoice): JsonResponse
+    public function payManual(Request $request, Invoice $invoice): RedirectResponse
     {
         $this->assertOwnership($invoice, $request);
 
@@ -45,13 +45,13 @@ class PaymentController extends Controller
         ]);
 
         if (!in_array($invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true)) {
-            return response()->json(['message' => 'Invoice tidak dapat dibayar pada status ini.'], 422);
+            return back()->with('error', 'Invoice tidak dapat dibayar pada status ini.');
         }
 
         $totals      = $this->invoices->totals($invoice);
         $outstanding = (int) $totals['outstanding'];
         if ($outstanding <= 0) {
-            return response()->json(['message' => 'Invoice sudah lunas.'], 422);
+            return back()->with('error', 'Invoice sudah lunas.');
         }
 
         $this->payments->voidPendingPaymentsForInvoice($invoice, 'Manual', 'Resubmitted manual transfer', $request->user());
@@ -89,13 +89,6 @@ class PaymentController extends Controller
             // ignore; admin can request re-upload
         }
 
-        // Flash success for Inertia clients; fetch callers will still receive JSON below.
-        session()->flash('success', 'Bukti transfer terkirim. Menunggu review admin.');
-
-        return response()->json([
-            'message'    => 'Bukti transfer terkirim. Menunggu review admin.',
-            'payment_id' => (string) $payment->id,
-            'status'     => (string) $payment->status->value,
-        ]);
+        return back()->with('success', 'Bukti transfer terkirim. Menunggu review admin.');
     }
 }

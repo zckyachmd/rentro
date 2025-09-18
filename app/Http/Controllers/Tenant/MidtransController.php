@@ -15,6 +15,7 @@ use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -178,7 +179,7 @@ class MidtransController extends Controller
         return response()->json(['pending' => $pending]);
     }
 
-    public function cancelPending(Request $request, Invoice $invoice): JsonResponse
+    public function cancelPending(Request $request, Invoice $invoice): RedirectResponse
     {
         $this->assertOwnership($invoice, $request);
 
@@ -196,11 +197,8 @@ class MidtransController extends Controller
             }
         }
 
-        $count = $this->payments->voidPendingPaymentsForInvoice($invoice, 'Midtrans', 'User switched bank from pay-dialog', $request->user());
+        $this->payments->voidPendingPaymentsForInvoice($invoice, 'Midtrans', 'User switched bank from pay-dialog', $request->user());
 
-        // Flash message for Inertia (will be picked by middleware + FlashToaster on reload)
-        session()->flash('success', 'VA sebelumnya dibatalkan.');
-
-        return response()->json(['message' => 'VA sebelumnya dibatalkan.', 'voided_count' => $count]);
+        return back()->with('success', 'VA sebelumnya dibatalkan.');
     }
 }

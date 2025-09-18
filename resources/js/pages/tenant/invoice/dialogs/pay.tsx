@@ -405,7 +405,6 @@ export default function TenantInvoicePayDialog({
         if (manualAttachment) fd.append('attachment', manualAttachment);
         if (manualPaidAt) fd.append('paid_at', manualPaidAt);
         await postForm(route('tenant.invoices.pay.manual', target.id), fd);
-        toast.success('Bukti transfer terkirim. Menunggu review admin.');
         setAutoTickSeed((s) => s + 1);
         window.dispatchEvent(new CustomEvent('tenant:invoices:refresh'));
         close();
