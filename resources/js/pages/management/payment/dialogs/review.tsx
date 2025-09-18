@@ -1,4 +1,5 @@
 import React from 'react';
+import { router } from '@inertiajs/react';
 
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Button } from '@/components/ui/button';
@@ -127,7 +128,7 @@ export default function PaymentReviewDialog({
             credentials: 'same-origin',
             body: fd,
         });
-        if (res.ok) window.location.reload();
+        if (res.ok) router.reload({ only: ['payments'] });
     }, [
         target,
         ack,

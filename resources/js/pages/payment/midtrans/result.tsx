@@ -5,6 +5,7 @@ import {
     XCircle,
 } from 'lucide-react';
 import React from 'react';
+import { Link } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,12 +83,12 @@ export default function MidtransResultPage(props: PageProps) {
                         />
                     </div>
                     <div className="mt-6 flex items-center justify-end gap-2">
-                        <a href={return_to}>
-                            <Button>
+                        <Button asChild>
+                            <Link href={return_to}>
                                 <ExternalLink className="mr-2 h-4 w-4" />{' '}
                                 Kembali ke Tagihan
-                            </Button>
-                        </a>
+                            </Link>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>

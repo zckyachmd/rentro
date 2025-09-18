@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
@@ -106,7 +106,7 @@ export default function ShowProfile() {
                     </div>
                     <div className="flex items-center gap-2">
                         <Button asChild size="sm" variant="outline">
-                            <a href={route('profile.edit')}>Edit Profil</a>
+                            <Link href={route('profile.edit')}>Edit Profil</Link>
                         </Button>
                     </div>
                 </div>

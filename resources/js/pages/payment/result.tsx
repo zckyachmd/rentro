@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle2, Info, XCircle } from 'lucide-react';
 import React from 'react';
 
@@ -79,9 +80,9 @@ export default function PaymentResult(props: PageProps) {
 
                 <div className="mt-6 flex items-center justify-center gap-2">
                     <Button asChild>
-                        <a href={backUrl}>
+                        <Link href={backUrl}>
                             <ArrowLeft className="mr-2 h-4 w-4" /> {meta.action}
-                        </a>
+                        </Link>
                     </Button>
                     <Button
                         type="button"
