@@ -13,8 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatDate, formatIDR } from '@/lib/format';
 import type {
-    TenantInvoiceDetailDTO,
     TenantInvoiceDetailTarget as InvoiceDetailTarget,
+    TenantInvoiceDetailDTO,
 } from '@/types/tenant';
 
 import TenantInvoicePayDialog from './pay';

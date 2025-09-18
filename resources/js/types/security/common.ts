@@ -13,4 +13,3 @@ export type Summary = {
     two_factor_enabled?: boolean;
     last_password_changed_at?: string | null;
 };
-

@@ -12,6 +12,6 @@ export const TAB_KEYS = ['password', '2fa', 'sessions'] as const;
 export type TabKey = (typeof TAB_KEYS)[number];
 
 // Submodules
-export * from './common';
 export * from './2fa';
+export * from './common';
 export * from './sessions';
