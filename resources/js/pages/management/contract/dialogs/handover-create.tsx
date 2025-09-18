@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { useLengthRule } from '@/hooks/use-length-rule';
 import type {
     HandoverCreateErrorKey as ErrorKey,
     HandoverCreateFormState as FormState,
@@ -62,8 +63,11 @@ export default function HandoverCreate({
         ? data.files.general.slice(0, 5)
         : [];
     const photoCount = filesArr.length;
-
-    const notesLength = data.notes?.trim().length || 0;
+    const noteRule = useLengthRule(data.notes ?? '', {
+        min: 20,
+        required: true,
+        trim: true,
+    });
     const minPhotosRequired = Math.max(
         0,
         isCheckin ? minPhotosCheckin : minPhotosCheckout,
@@ -71,10 +75,7 @@ export default function HandoverCreate({
     const meetsPhotoRequirement =
         minPhotosRequired === 0 || photoCount >= minPhotosRequired;
     const canSubmit =
-        !processing &&
-        notesLength >= 20 &&
-        !!contractId &&
-        meetsPhotoRequirement;
+        !processing && noteRule.valid && !!contractId && meetsPhotoRequirement;
 
     const formErrors = errors as Record<string, string | undefined>;
     const fileErrors = Object.entries(formErrors)
@@ -137,7 +138,7 @@ export default function HandoverCreate({
                                             </p>
                                         </div>
                                         <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                                            {notesLength}/20
+                                            {noteRule.length}/20
                                         </span>
                                     </div>
                                     <Textarea
@@ -153,7 +154,7 @@ export default function HandoverCreate({
                                         className="min-h-[160px] resize-y"
                                     />
                                     <div className="flex flex-col gap-1">
-                                        {notesLength < 20 && (
+                                        {noteRule.length < 20 && (
                                             <p className="text-right text-xs text-muted-foreground">
                                                 Minimal 20 karakter.
                                             </p>

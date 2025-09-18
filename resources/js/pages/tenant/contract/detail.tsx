@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useLengthRule } from '@/hooks/use-length-rule';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatDate, formatIDR } from '@/lib/format';
 import {
@@ -58,6 +59,11 @@ export default function TenantContractDetail(props: PageProps) {
         note: string;
         saving: boolean;
     }>({ open: false, note: '', saving: false });
+    const disputeRule = useLengthRule(dispute.note, {
+        min: 5,
+        required: true,
+        trim: true,
+    });
     const [confirmAck, setConfirmAck] = React.useState<{
         open: boolean;
         id?: string;
@@ -590,8 +596,8 @@ export default function TenantContractDetail(props: PageProps) {
                                 Tulis alasan secara ringkas dan jelas (min. 5
                                 karakter).
                             </span>
-                            {dispute.note.trim().length < 5 ? (
-                                <span>{dispute.note.trim().length}/5</span>
+                            {disputeRule.length < 5 ? (
+                                <span>{disputeRule.length}/5</span>
                             ) : null}
                         </div>
                     </div>
@@ -607,11 +613,7 @@ export default function TenantContractDetail(props: PageProps) {
                         </Button>
                         <Button
                             type="button"
-                            disabled={
-                                dispute.saving ||
-                                !dispute.id ||
-                                dispute.note.trim().length < 5
-                            }
+                            disabled={dispute.saving || !dispute.id || !disputeRule.valid}
                             onClick={async () => {
                                 if (!dispute.id) return;
                                 setDispute((p) => ({ ...p, saving: true }));

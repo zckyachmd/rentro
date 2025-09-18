@@ -14,6 +14,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { useLengthRule } from '@/hooks/use-length-rule';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 import { formatIDR } from '@/lib/format';
 import type {
@@ -67,8 +68,12 @@ export default function PaymentReviewDialog({
     );
 
     const MIN_NOTE = 20;
-    const noteLen = note.trim().length;
-    const showCounter = noteLen <= MIN_NOTE;
+    const noteRule = useLengthRule(note, {
+        min: MIN_NOTE,
+        required: decision === 'reject',
+        trim: true,
+    });
+    const showCounter = noteRule.length <= MIN_NOTE;
 
     // No additional attachment from admin during review
     const toLocal = React.useCallback((d: Date) => {
@@ -98,12 +103,12 @@ export default function PaymentReviewDialog({
             return;
         }
         if (decision === 'reject') {
-            if (noteLen < MIN_NOTE) {
+            if (!noteRule.meetsMin) {
                 alert(`Alasan penolakan minimal ${MIN_NOTE} karakter.`);
                 return;
             }
         } else {
-            if (noteLen > 0 && noteLen < MIN_NOTE) {
+            if (noteRule.length > 0 && !noteRule.meetsMin) {
                 alert(`Catatan minimal ${MIN_NOTE} karakter jika diisi.`);
                 return;
             }
@@ -111,7 +116,7 @@ export default function PaymentReviewDialog({
         const fd = new FormData();
         if (decision === 'approve') {
             fd.append('ack', 'on');
-            if (noteLen >= MIN_NOTE) fd.append('note', note);
+            if (noteRule.meetsMin) fd.append('note', note);
         } else {
             fd.append('reason', note);
         }
@@ -123,7 +128,7 @@ export default function PaymentReviewDialog({
             body: fd,
         });
         if (res.ok) window.location.reload();
-    }, [target, ack, note, paidAt, decision, noteLen]);
+    }, [target, ack, note, paidAt, decision, noteRule.length, noteRule.meetsMin]);
 
     const p = data?.payment;
     const inv = data?.invoice;
@@ -241,7 +246,7 @@ export default function PaymentReviewDialog({
                                         />
                                         <div className="mt-1 text-right text-[11px] text-muted-foreground">
                                             {showCounter
-                                                ? `${noteLen}/${MIN_NOTE}`
+                                                ? `${noteRule.length}/${MIN_NOTE}`
                                                 : ''}
                                         </div>
                                     </div>
@@ -278,14 +283,7 @@ export default function PaymentReviewDialog({
                     ) : null}
                     <Button
                         type="button"
-                        disabled={
-                            !decision ||
-                            !ack ||
-                            (decision === 'reject' && noteLen < MIN_NOTE) ||
-                            (decision === 'approve' &&
-                                noteLen > 0 &&
-                                noteLen < MIN_NOTE)
-                        }
+                        disabled={!decision || !ack || !noteRule.valid}
                         onClick={() => {
                             submit();
                         }}

@@ -26,6 +26,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useLengthRule } from '@/hooks/use-length-rule';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatIDR } from '@/lib/format';
@@ -71,6 +72,12 @@ export default function PaymentIndex() {
         target: PaymentRow | null;
         reason: string;
     }>({ target: null, reason: '' });
+    const voidRule = useLengthRule(voiding.reason, {
+        min: 1,
+        max: 200,
+        required: true,
+        trim: true,
+    });
 
     const initialInvoiceNumber = React.useMemo(() => {
         const s = (props.query?.search || '').trim();
@@ -262,7 +269,7 @@ export default function PaymentIndex() {
                             autoFocus
                         />
                         <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
-                            <span>{voiding.reason.length}/200</span>
+                            <span>{voidRule.length}/200</span>
                         </div>
                     </div>
                     <AlertDialogFooter>
@@ -274,7 +281,7 @@ export default function PaymentIndex() {
                             Batal
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            disabled={!voiding.reason.trim() || processing}
+                            disabled={!voidRule.valid || processing}
                             onClick={() => {
                                 const p = voiding.target;
                                 if (!p) return;

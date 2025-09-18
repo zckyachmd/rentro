@@ -30,6 +30,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useLengthRule } from '@/hooks/use-length-rule';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { createColumns } from '@/pages/management/contract/columns';
@@ -159,8 +160,21 @@ export default function ContractIndex(props: ContractsPageProps) {
     type Target = ContractItem | null;
     const [cancelTarget, setCancelTarget] = React.useState<Target>(null);
     const [cancelReason, setCancelReason] = React.useState<string>('');
+    const cancelRule = useLengthRule(cancelReason, {
+        min: 1,
+        max: 200,
+        required: true,
+        trim: true,
+    });
     const [toggleTarget, setToggleTarget] = React.useState<Target>(null);
     const [toggleReason, setToggleReason] = React.useState<string>('');
+    const toggleRequired = Boolean(toggleTarget?.auto_renew);
+    const toggleRule = useLengthRule(toggleReason, {
+        min: 1,
+        max: 200,
+        required: toggleRequired,
+        trim: true,
+    });
     const [checkinTarget, setCheckinTarget] = React.useState<Target>(null);
     const [checkoutTarget, setCheckoutTarget] = React.useState<Target>(null);
 
@@ -338,13 +352,13 @@ export default function ContractIndex(props: ContractsPageProps) {
                         />
                         <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
                             <span>Wajib diisi. Jelaskan secara singkat.</span>
-                            <span>{cancelReason.length}/200</span>
+                            <span>{cancelRule.length}/200</span>
                         </div>
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
-                            disabled={!cancelReason.trim()}
+                            disabled={!cancelRule.valid}
                             onClick={() => {
                                 const c = cancelTarget;
                                 if (!c) return;
@@ -435,17 +449,14 @@ export default function ContractIndex(props: ContractsPageProps) {
                                 maxLength={200}
                             />
                             <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                                <span>{toggleReason.length}/200</span>
+                                <span>{toggleRule.length}/200</span>
                             </div>
                         </div>
                     )}
                     <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
-                            disabled={
-                                Boolean(toggleTarget?.auto_renew) &&
-                                !toggleReason.trim()
-                            }
+                            disabled={toggleRequired && !toggleRule.valid}
                             onClick={() => {
                                 const c = toggleTarget;
                                 if (!c) return;

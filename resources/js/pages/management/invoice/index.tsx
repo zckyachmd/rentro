@@ -34,6 +34,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useLengthRule } from '@/hooks/use-length-rule';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import type {
@@ -87,10 +88,22 @@ export default function InvoiceIndex() {
         target: null,
         reason: '',
     });
+    const cancelRule = useLengthRule(cancel.reason, {
+        min: 1,
+        max: 200,
+        required: true,
+        trim: true,
+    });
     const [extend, setExtend] = React.useState<ExtendState>({
         target: null,
         dueDate: '',
         reason: '',
+    });
+    const extendRule = useLengthRule(extend.reason, {
+        min: 3,
+        max: 200,
+        required: true,
+        trim: true,
     });
 
     const defaultTomorrow = React.useMemo(() => {
@@ -126,7 +139,7 @@ export default function InvoiceIndex() {
         setExtend({ target: null, dueDate: '', reason: '' });
     }, []);
 
-    const canExtendSave = !!extend.dueDate && extend.reason.trim().length >= 3;
+    const canExtendSave = !!extend.dueDate && extendRule.valid;
 
     const onExtendSubmit = React.useCallback(() => {
         const inv = extend.target;
@@ -277,13 +290,13 @@ export default function InvoiceIndex() {
                         />
                         <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
                             <span>Wajib diisi. Jelaskan secara singkat.</span>
-                            <span>{cancel.reason.length}/200</span>
+                            <span>{cancelRule.length}/200</span>
                         </div>
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
-                            disabled={!cancel.reason.trim()}
+                            disabled={!cancelRule.valid}
                             onClick={() => {
                                 const inv = cancel.target;
                                 if (!inv) return;
@@ -364,7 +377,7 @@ export default function InvoiceIndex() {
                                 maxLength={200}
                             />
                             <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                                {extend.reason.length}/200
+                                {extendRule.length}/200
                             </div>
                         </div>
                     </div>
