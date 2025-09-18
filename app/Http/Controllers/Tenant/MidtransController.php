@@ -198,6 +198,9 @@ class MidtransController extends Controller
 
         $count = $this->payments->voidPendingPaymentsForInvoice($invoice, 'Midtrans', 'User switched bank from pay-dialog', $request->user());
 
+        // Flash message for Inertia (will be picked by middleware + FlashToaster on reload)
+        session()->flash('success', 'VA sebelumnya dibatalkan.');
+
         return response()->json(['message' => 'VA sebelumnya dibatalkan.', 'voided_count' => $count]);
     }
 }

@@ -89,6 +89,9 @@ class PaymentController extends Controller
             // ignore; admin can request re-upload
         }
 
+        // Flash success for Inertia clients; fetch callers will still receive JSON below.
+        session()->flash('success', 'Bukti transfer terkirim. Menunggu review admin.');
+
         return response()->json([
             'message'    => 'Bukti transfer terkirim. Menunggu review admin.',
             'payment_id' => (string) $payment->id,
