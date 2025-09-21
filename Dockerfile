@@ -149,9 +149,18 @@ RUN set -eux; \
       npm install --prefer-offline --no-audit --fund=false; \
     fi
 
-# Copy source and build
+# Copy source, include PHP vendor (for Ziggy) and build
 COPY . .
-RUN npm run build
+# Bring in Composer vendor so Vite can resolve 'vendor/tightenco/ziggy'
+COPY --from=vendor /app/vendor ./vendor
+RUN set -eux; \
+    if [ -f pnpm-lock.yaml ]; then \
+      pnpm run build; \
+    elif [ -f yarn.lock ]; then \
+      yarn build; \
+    else \
+      npm run build; \
+    fi
 
 # =========================
 # Stage 3: Final application (production)
@@ -170,20 +179,15 @@ RUN set -eux; \
     mkdir -p storage/logs bootstrap/cache; \
     chown -R www-data:www-data storage bootstrap
 
-ARG APP_ENV=production
-RUN if [ "$APP_ENV" = "production" ]; then \
-      php artisan config:cache && \
-      php artisan route:cache && \
-      php artisan view:cache; \
-    else \
-      echo "Skip artisan caches for APP_ENV=$APP_ENV"; \
-    fi
+# Move artisan cache steps to runtime entrypoint (requires real env)
+COPY docker/entrypoint/app-prod.sh /usr/local/bin/app-prod.sh
+RUN chmod +x /usr/local/bin/app-prod.sh
 
 # Healthcheck (simple)
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD php -v || exit 1
 
-USER www-data
-CMD ["php-fpm", "-F"]
+USER root
+CMD ["/usr/local/bin/app-prod.sh"]
 
 # =========================
 # Stage 4: Final application (development)
@@ -206,6 +210,9 @@ WORKDIR /var/www/html
 # Copy app source & dev vendor
 COPY --chown=www-data:www-data . .
 COPY --from=vendor_dev --chown=www-data:www-data /app/vendor ./vendor
+
+# Composer binary for dev container convenience
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Ensure writable dirs
 RUN set -eux; \

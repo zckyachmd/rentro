@@ -19,6 +19,9 @@ services:
     env_file: [.env]
     environment:
       APP_ENV: production
+      DB_HOST: db
+      DB_PORT: 5432
+      REDIS_HOST: redis
       FPM_MAX_CHILDREN: ${FPM_MAX_CHILDREN:-30}
       FPM_START_SERVERS: ${FPM_START_SERVERS:-6}
       FPM_MIN_SPARE_SERVERS: ${FPM_MIN_SPARE_SERVERS:-6}
@@ -28,9 +31,12 @@ services:
     volumes:
       - app_storage:/var/www/html/storage
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    init: true
     healthcheck:
       test: ["CMD", "php", "-v"]
       interval: 30s
@@ -48,8 +54,10 @@ services:
       # Mount storage volume so Nginx can serve public/storage (via symlink)
       - app_storage:/var/www/html/storage:ro
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     restart: unless-stopped
+    init: true
 
   db:
     image: postgres:17
@@ -90,12 +98,18 @@ services:
     environment:
       APP_ENV: production
       QUEUE_CONNECTION: redis
+      DB_HOST: db
+      DB_PORT: 5432
+      REDIS_HOST: redis
     volumes:
       - app_storage:/var/www/html/storage
     depends_on:
-      - app
-      - db
-      - redis
+      app:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     init: true
 
@@ -111,12 +125,18 @@ services:
     env_file: [.env]
     environment:
       APP_ENV: production
+      DB_HOST: db
+      DB_PORT: 5432
+      REDIS_HOST: redis
     volumes:
       - app_storage:/var/www/html/storage
     depends_on:
-      - app
-      - db
-      - redis
+      app:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     init: true
 

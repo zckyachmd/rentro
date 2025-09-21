@@ -37,6 +37,17 @@ export default defineConfig(({ mode }) => {
             host: '0.0.0.0',
             port: 5173,
             strictPort: true,
+            watch: {
+                usePolling: (process.env.CHOKIDAR_USEPOLLING || '').toLowerCase() === 'true',
+                interval: Number(process.env.CHOKIDAR_INTERVAL || '300'),
+                ignored: [
+                    '**/node_modules/**',
+                    '**/.git/**',
+                    '**/vendor/**',
+                    '**/storage/**',
+                    '**/public/build/**',
+                ],
+            },
             hmr: disableHmr
                 ? false
                 : {

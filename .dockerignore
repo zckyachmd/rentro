@@ -1,0 +1,37 @@
+# VCS
+.git
+.gitignore
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# PHP/Composer
+vendor/
+
+# Laravel runtime/cache
+storage/debugbar/
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+bootstrap/cache/
+
+# Build artifacts
+public/build/
+public/hot
+
+# Env files (mounted via compose)
+.env
+.env.*
+
+# Docker
+Dockerfile
+.dockerignore
