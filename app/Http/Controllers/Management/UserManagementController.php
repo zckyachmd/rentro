@@ -9,9 +9,9 @@ use App\Http\Requests\Management\User\ForceLogoutRequest;
 use App\Http\Requests\Management\User\ResetPasswordRequest;
 use App\Http\Requests\Management\User\TwoFactorRequest;
 use App\Http\Requests\Management\User\UpdateRolesRequest;
+use App\Jobs\SendUserInvitationEmail;
 use App\Models\Session;
 use App\Models\User;
-use App\Notifications\UserInvited;
 use App\Services\TwoFactorService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
@@ -150,7 +150,7 @@ class UserManagementController extends Controller
 
         $inviteOk = false;
         try {
-            $user->notify(new UserInvited($user->username, $tempPassword, $resetUrl));
+            SendUserInvitationEmail::dispatch($user->id, $user->username, $tempPassword, $resetUrl);
             $inviteOk = true;
         } catch (\Throwable $e) {
             $inviteOk = false;

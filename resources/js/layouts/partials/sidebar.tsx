@@ -50,7 +50,7 @@ function Sidebar({
     return (
         <aside
             className={[
-                'sticky top-0 hidden h-screen shrink-0 border-r bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:block',
+                'sticky top-0 hidden h-screen shrink-0 border-r bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 md:block',
                 'overflow-hidden',
                 hydrated
                     ? 'transition-[width] duration-300 ease-in-out'

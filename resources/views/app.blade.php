@@ -36,7 +36,7 @@
     @inertiaHead
 </head>
 
-<body class="font-sans antialiased">
+<body class="min-h-screen bg-background text-foreground font-sans antialiased">
     @inertia
 </body>
 

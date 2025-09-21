@@ -2,7 +2,7 @@ import * as React from 'react';
 
 export default function PrettyJson({
   value,
-  className = 'max-h-[50vh] w-full min-w-0 overflow-auto rounded-md bg-muted p-3 text-xs font-mono whitespace-pre-wrap break-words [overflow-wrap:anywhere]'
+  className = 'max-h-[50vh] w-full min-w-0 overflow-auto rounded-md bg-muted p-3 text-xs font-mono whitespace-pre-wrap break-words wrap-anywhere'
 }: {
   value?: unknown;
   className?: string;

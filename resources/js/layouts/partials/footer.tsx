@@ -24,7 +24,7 @@ export default function Footer({
     return (
         <footer
             className={[
-                'z-40 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60',
+                'z-40 border-t bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60',
                 heightClass,
                 fullWidth ? 'fixed inset-x-0 bottom-0' : 'sticky bottom-0',
                 className,

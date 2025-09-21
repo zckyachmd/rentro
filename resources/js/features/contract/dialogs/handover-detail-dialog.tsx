@@ -217,7 +217,7 @@ export default function HandoverDetail({
                                                 Catatan
                                             </div>
                                             <ScrollArea className="max-h-48 min-h-[84px] overflow-auto rounded-lg border bg-background/80">
-                                                <div className="max-w-full whitespace-pre-wrap break-words p-4 text-sm leading-relaxed [overflow-wrap:anywhere]">
+                                                <div className="max-w-full whitespace-pre-wrap break-words p-4 text-sm leading-relaxed wrap-anywhere">
                                                     {String(
                                                         currentHandover.notes,
                                                     )}
@@ -321,7 +321,7 @@ export default function HandoverDetail({
                                                                         alt={
                                                                             fileName
                                                                         }
-                                                                        className="aspect-[4/3] w-full object-cover transition duration-150 group-hover:scale-[1.01]"
+                                                                        className="aspect-4/3 w-full object-cover transition duration-150 group-hover:scale-[1.01]"
                                                                     />
                                                                 </button>
                                                             );
