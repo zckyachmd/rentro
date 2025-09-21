@@ -8,6 +8,7 @@
 # - horizon   : Laravel Horizon (queue worker)
 # - scheduler : Laravel Scheduler (schedule:work)
 # - vite      : Vite dev server (optional, enable via profile)
+# - mailhog   : Mail testing tool (SMTP capture + Web UI)
 
 name: rentro-dev
 
@@ -31,6 +32,12 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       REDIS_HOST: redis
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: ""
     volumes:
       - .:/var/www/html:cached
       - vendor:/var/www/html/vendor
@@ -114,6 +121,12 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       REDIS_HOST: redis
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: ""
     volumes:
       - .:/var/www/html:cached
       - vendor:/var/www/html/vendor
@@ -142,6 +155,12 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       REDIS_HOST: redis
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: ""
     volumes:
       - .:/var/www/html:cached
       - vendor:/var/www/html/vendor
@@ -185,6 +204,14 @@ services:
         condition: service_started
     profiles: ["devtools"]
     restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    restart: unless-stopped
+    profiles: ["devtools"]
 
 volumes:
   pgdata:
