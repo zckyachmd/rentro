@@ -1,0 +1,131 @@
+name: "Release – Docker Images"
+
+on:
+  release:
+    types: [published, prereleased]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: container-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    name: Build and push (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: app
+            suffix: api
+          - target: web
+            suffix: web
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_OWNER: ${{ github.repository_owner }}
+      IMAGE_REPO: rentro
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}-${{ matrix.suffix }}
+          flavor: |
+            latest=true
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Prepare fallback tags
+        id: prep
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMG="${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}-${{ matrix.suffix }}"
+          TAG=""
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            TAG="${{ github.ref_name }}"
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          if [[ -n "$TAG" ]]; then
+            NOV="${TAG#v}"
+            {
+              echo "tags<<EOF"
+              echo "${IMG}:${TAG}"
+              echo "${IMG}:${NOV}"
+              if [[ "${{ github.event_name }}" == "release" && "${{ github.event.release.prerelease }}" != "true" ]]; then
+                echo "${IMG}:latest"
+              fi
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+      
+      - name: Combine tags (metadata + fallback + sha)
+        id: tags
+        shell: bash
+        env:
+          META_TAGS: ${{ steps.meta.outputs.tags }}
+          PREP_TAGS: ${{ steps.prep.outputs.tags }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}-${{ matrix.suffix }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          ALL=""
+          if [[ -n "${META_TAGS:-}" ]]; then ALL+="$META_TAGS"$'\n'; fi
+          if [[ -n "${PREP_TAGS:-}" ]]; then ALL+="$PREP_TAGS"$'\n'; fi
+          if [[ -z "$ALL" ]]; then
+            SHORT="${GITHUB_SHA::7}"
+            ALL+="${IMAGE}:sha-${SHORT}"$'\n'
+          fi
+          # Emit combined tags
+          {
+            echo "tags<<EOF"
+            # Remove empty lines
+            echo "$ALL" | sed '/^$/d'
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: ${{ matrix.target }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_ENV=production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

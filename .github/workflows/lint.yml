@@ -1,4 +1,4 @@
-name: linter
+name: "CI - Lint"
 
 on:
   push:
@@ -24,22 +24,11 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          version: 8
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
-
-      - name: Cache pnpm
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+          node-version: '20'
+          cache: 'npm'
 
       - name: Cache Composer
         uses: actions/cache@v3
@@ -52,21 +41,21 @@ jobs:
       - name: Install Dependencies
         run: |
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-          pnpm install --no-frozen-lockfile
+          npm ci
 
       - name: Run GrumPHP
         run: vendor/bin/grumphp run
 
       - name: Format Frontend
-        run: pnpm run format
+        run: npm run format
 
       - name: Lint Frontend
-        run: pnpm run lint
+        run: npm run lint
 
-      - name: Commit Changes
+      - name: Commit formatting changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: fix code style
+          commit_message: "style: apply code style fixes"
           commit_options: '--no-verify'
           file_pattern: |
             app/**/*.php
