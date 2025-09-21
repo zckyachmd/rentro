@@ -45,11 +45,10 @@ class UserDocumentFactory extends Factory
             'user_id'     => null, // set explicitly when creating
             'type'        => $type,
             'number'      => $number,
-            'file_path'   => 'documents/' . fake()->uuid() . '.jpg',
+            'attachments' => [],
             'issued_at'   => $issuedAt,
             'expires_at'  => $expiresAt,
             'status'      => fake()->randomElement(DocumentStatus::values()),
-            'verified_by' => null,
             'verified_at' => null,
             'notes'       => null,
         ];

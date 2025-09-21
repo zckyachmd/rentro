@@ -243,7 +243,7 @@ export default function Navbar({
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                                <Link href={route('profile.show')}>
+                                <Link href={route('profile.index')}>
                                     Profile
                                 </Link>
                             </DropdownMenuItem>

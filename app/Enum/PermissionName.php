@@ -76,4 +76,10 @@ enum PermissionName: string
     case PAYMENT_CREATE = 'payment.create';
     case PAYMENT_UPDATE = 'payment.update';
     case PAYMENT_DELETE = 'payment.delete';
+
+    // Handover (Check-in/Check-out)
+    case HANDOVER_VIEW   = 'handover.view';
+    case HANDOVER_CREATE = 'handover.create';
+    case HANDOVER_UPDATE = 'handover.update';
+    case HANDOVER_DELETE = 'handover.delete';
 }

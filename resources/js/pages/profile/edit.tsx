@@ -1,12 +1,12 @@
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Crumb } from '@/components/breadcrumbs';
 import { DatePickerInput } from '@/components/date-picker';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import AvatarPicker from '@/components/form/avatar-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -16,97 +16,30 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AuthLayout from '@/layouts/auth-layout';
+import { yesterdayISO } from '@/lib/date';
+import type { EditForm, EditPageProps } from '@/types/profile';
 
 import AddressSection from './address';
 import DocumentSection from './document';
 
-type UserDTO = {
-    id: number;
-    name: string;
-    username: string;
-    email: string;
-    phone?: string | null;
-    dob?: string | null;
-    gender?: 'male' | 'female' | null;
-    avatar_url?: string | null;
-};
-
-type AddressDTO = {
-    id?: number;
-    label?: string | null;
-    address_line: string;
-    village?: string | null;
-    district?: string | null;
-    city: string;
-    province: string;
-    postal_code?: string | null;
-} | null;
-
-type DocumentDTO = {
-    id?: number;
-    type?: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | null;
-    number?: string | null;
-    has_file?: boolean | null;
-    issued_at?: string | null;
-    expires_at?: string | null;
-    status?: 'pending' | 'approved' | 'rejected' | null;
-    notes?: string | null;
-} | null;
-
-type PageProps = {
-    user: UserDTO;
-    address: AddressDTO;
-    document?: DocumentDTO;
-    status?: string | null;
-    options: {
-        genders: string[];
-        documentTypes: string[];
-        documentStatuses: string[];
-    };
-};
-
-type FormData = {
-    name: string;
-    username: string;
-    email: string;
-    phone: string;
-    dob: string;
-    gender: '' | 'male' | 'female' | 'other';
-    avatar: File | null;
-    address: {
-        label: string;
-        address_line: string;
-        village: string;
-        district: string;
-        city: string;
-        province: string;
-        postal_code: string;
-    };
-    document: {
-        type: '' | 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
-        number: string;
-        file: File | null;
-        has_file?: boolean | null;
-        issued_at: string;
-        expires_at: string;
-        status?: 'pending' | 'approved' | 'rejected';
-        notes?: string | null;
-    };
-};
-
 const BREADCRUMBS: Crumb[] = [
-    { label: 'Profil', href: route('profile.show') },
+    { label: 'Profil', href: route('profile.index') },
     { label: 'Edit Profil' },
 ];
 
-export default function Edit({ user, address, document, options }: PageProps) {
-    const initialData: FormData = {
+export default function Edit({
+    user,
+    address,
+    document,
+    options,
+}: EditPageProps) {
+    const initialData: EditForm = {
         name: user.name ?? '',
         username: user.username ?? '',
         email: user.email ?? '',
         phone: user.phone ?? '',
         dob: user.dob ?? '',
-        gender: (user.gender as FormData['gender']) ?? '',
+        gender: (user.gender as EditForm['gender']) ?? '',
         avatar: null,
         address: {
             label: address?.label ?? '',
@@ -130,23 +63,15 @@ export default function Edit({ user, address, document, options }: PageProps) {
     };
 
     const { data, setData, processing, errors, reset, post, transform } =
-        useForm<FormData>(initialData);
+        useForm<EditForm>(initialData);
 
-    const fileRef = React.useRef<HTMLInputElement | null>(null);
     const [avatarPreview, setAvatarPreview] = React.useState<string | null>(
         null,
     );
-
-    const onPickAvatar = () => fileRef.current?.click();
-    const onAvatarChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-        const file = e.target.files?.[0] || null;
+    const onAvatarPicked = (file: File | null) => {
         setData('avatar', file ?? null);
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setAvatarPreview(url);
-        } else {
-            setAvatarPreview(null);
-        }
+        if (file) setAvatarPreview(URL.createObjectURL(file));
+        else setAvatarPreview(null);
     };
 
     const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -154,16 +79,13 @@ export default function Edit({ user, address, document, options }: PageProps) {
         transform((form) => ({ ...form, _method: 'PATCH' }));
         post(route('profile.update'), {
             onSuccess: () => {
-                toast.success('Profil berhasil diperbarui');
                 setData((prev) => ({
                     ...prev,
                     avatar: null,
                     document: { ...prev.document, file: null },
                 }));
                 setAvatarPreview(null);
-                if (fileRef.current) fileRef.current.value = '';
             },
-            onError: () => toast.error('Gagal memperbarui profil'),
             preserveScroll: true,
             forceFormData: true,
         });
@@ -190,46 +112,21 @@ export default function Edit({ user, address, document, options }: PageProps) {
                             <div className="space-y-3 md:col-span-1 lg:col-span-1 xl:col-span-1">
                                 <Label>Foto Profil</Label>
                                 <div className="flex flex-col items-center gap-1">
-                                    <div
-                                        className="group relative cursor-pointer"
-                                        onClick={onPickAvatar}
-                                    >
-                                        <Avatar className="size-28 ring-2 ring-transparent transition group-hover:ring-primary md:size-32 lg:size-36">
-                                            <AvatarImage
-                                                src={
-                                                    avatarPreview ??
-                                                    user.avatar_url ??
-                                                    undefined
-                                                }
-                                                alt={user.name}
-                                            />
-                                            <AvatarFallback>
-                                                {user.name
-                                                    ?.split(' ')
-                                                    .map((n) => n[0])
-                                                    .join('')
-                                                    .slice(0, 2)
-                                                    .toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition group-hover:opacity-100">
-                                            <span className="text-xs text-white">
-                                                Klik untuk ganti
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <AvatarPicker
+                                        src={avatarPreview ?? user.avatar_url}
+                                        alt={user.name}
+                                        fallback={user.name
+                                            ?.split(' ')
+                                            .map((n) => n[0])
+                                            .join('')
+                                            .slice(0, 2)
+                                            .toUpperCase()}
+                                        onPick={onAvatarPicked}
+                                    />
                                     <p className="mt-2 text-center text-xs text-muted-foreground">
                                         JPG/PNG, maks 2MB. Rasio square
                                         disarankan.
                                     </p>
-                                    <input
-                                        ref={fileRef}
-                                        type="file"
-                                        name="avatar"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={onAvatarChange}
-                                    />
                                 </div>
                             </div>
 
@@ -251,11 +148,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                             }
                                             placeholder="Masukkan nama lengkap"
                                         />
-                                        {errors.name && (
-                                            <p className="text-xs text-destructive">
-                                                {errors.name}
-                                            </p>
-                                        )}
+                                        <InputError message={errors.name} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="username">
@@ -276,11 +169,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                             }
                                             placeholder="Masukkan username"
                                         />
-                                        {errors.username && (
-                                            <p className="text-xs text-destructive">
-                                                {errors.username}
-                                            </p>
-                                        )}
+                                        <InputError message={errors.username} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="email">
@@ -299,11 +188,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                             }
                                             placeholder="Masukkan alamat email"
                                         />
-                                        {errors.email && (
-                                            <p className="text-xs text-destructive">
-                                                {errors.email}
-                                            </p>
-                                        )}
+                                        <InputError message={errors.email} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="phone">
@@ -321,11 +206,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                             }
                                             placeholder="Masukkan nomor telepon"
                                         />
-                                        {errors.phone && (
-                                            <p className="text-xs text-destructive">
-                                                {errors.phone}
-                                            </p>
-                                        )}
+                                        <InputError message={errors.phone} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="dob">
@@ -339,12 +220,9 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                                 setData('dob', v ?? '')
                                             }
                                             placeholder="Pilih tanggal lahir"
+                                            max={yesterdayISO()}
                                         />
-                                        {errors.dob && (
-                                            <p className="text-xs text-destructive">
-                                                {errors.dob}
-                                            </p>
-                                        )}
+                                        <InputError message={errors.dob} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>
@@ -358,7 +236,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                             onValueChange={(v) =>
                                                 setData(
                                                     'gender',
-                                                    v as FormData['gender'],
+                                                    v as EditForm['gender'],
                                                 )
                                             }
                                         >
@@ -384,11 +262,7 @@ export default function Edit({ user, address, document, options }: PageProps) {
                                             name="gender"
                                             value={data.gender}
                                         />
-                                        {errors.gender && (
-                                            <p className="text-xs text-destructive">
-                                                {errors.gender}
-                                            </p>
-                                        )}
+                                        <InputError message={errors.gender} />
                                     </div>
                                 </div>
                             </div>

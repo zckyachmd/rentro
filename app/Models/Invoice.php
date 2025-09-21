@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property-read Contract|null $contract
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
+ */
 class Invoice extends Model
 {
     use HasFactory;
@@ -29,19 +33,21 @@ class Invoice extends Model
         'period_end',
         'due_date',
         'amount_cents',
+        'outstanding_cents',
         'items',
         'status',
         'paid_at',
     ];
 
     protected $casts = [
-        'period_start' => 'date',
-        'period_end'   => 'date',
-        'due_date'     => 'date',
-        'paid_at'      => 'datetime',
-        'amount_cents' => 'integer',
-        'items'        => 'array',
-        'status'       => InvoiceStatus::class,
+        'period_start'      => 'date',
+        'period_end'        => 'date',
+        'due_date'          => 'date',
+        'paid_at'           => 'datetime',
+        'amount_cents'      => 'integer',
+        'outstanding_cents' => 'integer',
+        'items'             => 'array',
+        'status'            => InvoiceStatus::class,
     ];
 
     public function contract(): BelongsTo
@@ -117,12 +123,34 @@ class Invoice extends Model
     }
 
     /**
-     * Generate unique invoice number (INV-YYYYMM-XXXXXX).
+     * Generate invoice number with format: INV-YYYYMMDD-SEQ
+     * - YYYYMMDD: release date (today by default)
+     * - SEQ: running sequence for that day, zero-padded 4 digits (0001)
+     * Ensures uniqueness by checking existing numbers with the same prefix.
+     *
+     * Note: Signature keeps $amountCents for backward compatibility; it is ignored.
      */
-    public static function makeNumber(): string
+    public static function makeNumberFor(int $amountCents, ?Carbon $date = null): string
     {
+        $d       = ($date ?? now())->copy();
+        $dateStr = $d->format('Ymd');
+        $prefix  = 'INV-' . $dateStr . '-';
+
+        $latestNumber = static::query()
+            ->where('number', 'like', $prefix . '%')
+            ->orderByDesc('number')
+            ->value('number');
+
+        $lastSeq = 0;
+        if (is_string($latestNumber) && preg_match('/(\d{4})$/', $latestNumber, $m)) {
+            $lastSeq = (int) $m[1];
+        }
+
+        $seq = max(1, $lastSeq + 1);
+
         do {
-            $candidate = 'INV-' . now()->format('Ym') . '-' . strtoupper(str()->random(6));
+            $candidate = sprintf('%s%04d', $prefix, $seq);
+            $seq++;
         } while (static::where('number', $candidate)->exists());
 
         return $candidate;

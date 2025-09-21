@@ -23,33 +23,55 @@ class UpdateRoomRequest extends FormRequest
         return [
             'building_id'  => ['required', 'integer', 'exists:buildings,id'],
             'floor_id'     => ['required', 'integer', 'exists:floors,id'],
-            'room_type_id' => ['required', 'integer', 'exists:room_types,id'],
-            'number'       => ['required', 'string', 'max:100'],
-            'name'         => ['nullable', 'string', 'max:150'],
-            'status'       => [
+            'room_type_id' => ['required', 'exists:room_types,id'],
+            'number'       => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('rooms', 'number')
+                    ->where(fn ($q) => $q->where('building_id', $this->input('building_id')))
+                    ->ignore(
+                        $this->route('room') instanceof \App\Models\Room
+                            ? $this->route('room')->getAttribute('id')
+                            : $this->route('room'),
+                    ),
+            ],
+            'name'   => ['nullable', 'string', 'max:150'],
+            'status' => [
                 'required',
                 Rule::enum(RoomStatus::class),
             ],
-            'max_occupancy'  => ['required', 'integer', 'min:1', 'max:255'],
-            'price_rupiah'   => ['nullable', 'numeric', 'min:0'],
-            'notes'          => ['nullable', 'string'],
-            'amenities'      => ['required', 'array'],
-            'amenities.*'    => ['integer', 'distinct', 'exists:amenities,id'],
-            'gender_policy'  => ['required', 'in:any,male,female'],
-            'billing_period' => ['required', 'in:monthly,weekly,daily'],
-            'photos'         => ['required', 'array'],
-            'photos.*'       => ['file', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240'],
+            'max_occupancy'         => ['required', 'integer', 'min:1', 'max:255'],
+            'price_rupiah'          => ['nullable', 'numeric', 'min:0'],
+            'price_weekly_rupiah'   => ['nullable', 'numeric', 'min:0'],
+            'price_daily_rupiah'    => ['nullable', 'numeric', 'min:0'],
+            'deposit_rupiah'        => ['nullable', 'numeric', 'min:0'],
+            'deposit_weekly_rupiah' => ['nullable', 'numeric', 'min:0'],
+            'deposit_daily_rupiah'  => ['nullable', 'numeric', 'min:0'],
+            'size_m2'               => ['nullable', 'numeric', 'min:0'],
+            'notes'                 => ['nullable', 'string'],
+            'amenities'             => ['required', 'array'],
+            'amenities.*'           => ['integer', 'distinct', 'exists:amenities,id'],
+            'gender_policy'         => ['required', 'in:any,male,female'],
+            'photos'                => ['nullable', 'array'],
+            'photos.*'              => ['file', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240'],
         ];
     }
 
     public function prepareForValidation(): void
     {
         $this->merge([
-            'building_id'   => $this->toNullableInt($this->input('building_id')),
-            'floor_id'      => $this->toNullableInt($this->input('floor_id')),
-            'room_type_id'  => $this->toNullableInt($this->input('room_type_id')),
-            'max_occupancy' => $this->toNullableInt($this->input('max_occupancy')),
-            'price_rupiah'  => $this->toNullableFloat($this->input('price_rupiah')),
+            'building_id'           => $this->toNullableInt($this->input('building_id')),
+            'floor_id'              => $this->toNullableInt($this->input('floor_id')),
+            'room_type_id'          => $this->input('room_type_id'),
+            'max_occupancy'         => $this->toNullableInt($this->input('max_occupancy')),
+            'price_rupiah'          => $this->toNullableFloat($this->input('price_rupiah')),
+            'price_weekly_rupiah'   => $this->toNullableFloat($this->input('price_weekly_rupiah')),
+            'price_daily_rupiah'    => $this->toNullableFloat($this->input('price_daily_rupiah')),
+            'deposit_rupiah'        => $this->toNullableFloat($this->input('deposit_rupiah')),
+            'deposit_weekly_rupiah' => $this->toNullableFloat($this->input('deposit_weekly_rupiah')),
+            'deposit_daily_rupiah'  => $this->toNullableFloat($this->input('deposit_daily_rupiah')),
+            'size_m2'               => $this->toNullableFloat($this->input('size_m2')),
         ]);
     }
 

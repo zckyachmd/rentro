@@ -1,9 +1,8 @@
-import { router, usePage } from '@inertiajs/react';
-import { RefreshCw, UserPlus } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { UserPlus } from 'lucide-react';
 import React from 'react';
 
 import { Can } from '@/components/acl';
-import type { Crumb } from '@/components/breadcrumbs';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -12,10 +11,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import type {
-    PaginatorMeta,
-    QueryBag,
-} from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import {
     Select,
@@ -24,49 +19,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import CreateUserDialog from '@/features/user/dialogs/create-user-dialog';
+import ForceLogoutDialog from '@/features/user/dialogs/force-logout-dialog';
+import ResetPasswordDialog from '@/features/user/dialogs/reset-password-dialog';
+import { RoleDialog } from '@/features/user/dialogs/role-dialog';
+import { TwoFADialog } from '@/features/user/dialogs/two-factor-dialog';
+import { createColumns } from '@/features/user/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import type {
+    UserDialogKind as DialogKind,
+    UserDialogState as DialogState,
+    UserIndexPageProps as PageProps,
+    Role,
+    UserItem,
+} from '@/types/management';
 
-import { createColumns } from './columns';
-import CreateUserDialog from './create-user';
-import ForceLogoutDialog from './force-logout';
-import ResetPasswordDialog from './reset-password';
-import { Role, RoleDialog } from './role';
-import { TwoFADialog } from './two-factor';
-
-const BREADCRUMBS: Crumb[] = [
-    { label: 'Akses & Peran', href: '#' },
-    { label: 'Pengguna' },
-];
-
-export type UserItem = {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string | null;
-    phone?: string | null;
-    roles: Role[];
-    two_factor_enabled: boolean;
-    last_active_at?: string | null;
-    initials?: string | null;
-};
-
-type UsersPaginator = { data: UserItem[] } & PaginatorMeta;
-
-type PageProps = {
-    users?: UsersPaginator;
-    roles?: Role[];
-    query?: { roleId: number | null } & QueryBag;
-};
-
-type DialogKind = 'create' | 'role' | 'reset' | 'twofa' | 'revoke';
-
-type DialogState = {
-    kind: DialogKind | null;
-    open: boolean;
-    saving: boolean;
-    user: UserItem | (UserItem & { two_factor_enabled?: boolean }) | null;
-};
+// types moved to pages/types
 
 const computeInitials = (name?: string | null) =>
     (name?.slice(0, 1) ?? '?').toUpperCase();
@@ -89,14 +58,6 @@ export default function UsersIndex() {
         () => (typeof window !== 'undefined' ? window.location.pathname : '/'),
         [],
     );
-
-    const reload = React.useCallback(() => {
-        setProcessing(true);
-        router.reload({
-            preserveUrl: true,
-            onFinish: () => setProcessing(false),
-        });
-    }, []);
 
     const rolesOptions = React.useMemo(
         () =>
@@ -153,7 +114,6 @@ export default function UsersIndex() {
         <AuthLayout
             pageTitle="Pengguna"
             pageDescription="Kelola akun, peran, keamanan, dan sesi login"
-            breadcrumbs={BREADCRUMBS}
         >
             <div className="space-y-6">
                 <Card>
@@ -176,7 +136,7 @@ export default function UsersIndex() {
                                     onValueChange={(v) =>
                                         onQueryChange({
                                             page: 1,
-                                            roleId:
+                                            role_id:
                                                 v === 'all' ? null : Number(v),
                                         })
                                     }
@@ -193,14 +153,6 @@ export default function UsersIndex() {
                                 </Select>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={reload}
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" /> Muat
-                                    ulang
-                                </Button>
                                 <Can all={['user.create']}>
                                     <Button
                                         size="sm"

@@ -1,9 +1,7 @@
 'use client';
-
 import {
     Building2,
     Calendar,
-    ClipboardCopy,
     DoorOpen,
     Info,
     Layers3,
@@ -14,8 +12,8 @@ import {
 
 import { Crumb } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CopyInline } from '@/components/ui/copy-inline';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Table,
@@ -25,105 +23,41 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import HandoverRoomSection from '@/features/contract/components/handover-room';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatDate, formatIDR } from '@/lib/format';
+import { variantForContractStatus } from '@/lib/status';
+import type {
+    ContractDTO,
+    HandoverOptions,
+    ContractInvoiceItem as InvoiceItem,
+    ManagementPaginator as Paginator,
+    RoomDTO,
+    TenantDTO,
+} from '@/types/management';
 
 const BREADCRUMBS: Crumb[] = [
     { label: 'Kontrak', href: route('management.contracts.index') },
     { label: 'Detail Kontrak', href: '#' },
 ];
 
-type ContractDTO = {
-    id: string;
-    start_date?: string | null;
-    end_date?: string | null;
-    rent_cents: number;
-    deposit_cents: number;
-    billing_period: string;
-    billing_day?: number | null;
-    auto_renew: boolean;
-    status: string;
-    notes?: string | null;
-    paid_in_full_at?: string | null;
-    deposit_refund_cents?: number | null;
-    deposit_refunded_at?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-};
-
-type TenantDTO = {
-    id: string;
-    name: string;
-    email?: string | null;
-    phone?: string | null;
-} | null;
-type RoomDTO = {
-    id: string;
-    number: string;
-    name?: string | null;
-    billing_period?: string | null;
-    price_cents?: number | null;
-    type?: {
-        id: string;
-        name: string;
-        deposit_cents?: number | null;
-        price_cents?: number | null;
-    } | null;
-    building?: { id: string; name: string; code?: string | null } | null;
-    floor?: { id: string; level: number | string } | null;
-} | null;
-
-type InvoiceItem = {
-    id: string;
-    number: string;
-    status: string;
-    due_date?: string | null;
-    period_start?: string | null;
-    period_end?: string | null;
-    amount_cents: number;
-    paid_at?: string | null;
-};
-
-type Paginator<T> = {
-    data: T[];
-    current_page: number;
-    per_page: number;
-    total: number;
-};
-
-function statusVariant(
-    s: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-    const map: Record<
-        string,
-        'default' | 'secondary' | 'destructive' | 'outline'
-    > = {
-        Active: 'default',
-        'Pending Payment': 'secondary',
-        Booked: 'secondary',
-        Overdue: 'destructive',
-        Cancelled: 'outline',
-        Completed: 'outline',
-        Paid: 'default',
-    };
-    return map[s] ?? 'secondary';
-}
+// types moved to pages/types
 
 export default function ContractDetailPage(props: {
     contract: ContractDTO;
     tenant: TenantDTO;
     room: RoomDTO;
     invoices: Paginator<InvoiceItem>;
+    handover?: HandoverOptions;
 }) {
-    const { contract, tenant, room, invoices } = props;
+    const { contract, tenant, room, invoices, handover } = props;
 
     return (
         <AuthLayout
-            pageTitle={`Kontrak #${contract.id}`}
+            pageTitle={`Kontrak #${contract.number ?? contract.id}`}
             pageDescription="Detail lengkap kontrak, penyewa, kamar, dan invoice."
             breadcrumbs={BREADCRUMBS}
         >
-            {/* Header ringkas dengan status & ID copyable */}
             <div className="mb-2 flex items-center justify-end gap-3">
                 <div className="hidden text-xs text-muted-foreground md:block">
                     Terakhir diperbarui: {formatDate(contract.updated_at, true)}
@@ -145,6 +79,12 @@ export default function ContractDetailPage(props: {
                                 </div>
                                 <div className="grid grid-cols-2 gap-y-2">
                                     <div className="text-muted-foreground">
+                                        Nomor Kontrak
+                                    </div>
+                                    <div className="text-right font-mono">
+                                        {contract.number ?? '-'}
+                                    </div>
+                                    <div className="text-muted-foreground">
                                         Tanggal Mulai
                                     </div>
                                     <div className="text-right">
@@ -164,12 +104,16 @@ export default function ContractDetailPage(props: {
                                             {contract.billing_period}
                                         </Badge>
                                     </div>
-                                    <div className="text-muted-foreground">
-                                        Hari Tagihan
-                                    </div>
-                                    <div className="text-right">
-                                        {contract.billing_day ?? '-'}
-                                    </div>
+                                    {contract.auto_renew ? (
+                                        <>
+                                            <div className="text-muted-foreground">
+                                                Tanggal Penagihan
+                                            </div>
+                                            <div className="text-right">
+                                                {contract.billing_day ?? '-'}
+                                            </div>
+                                        </>
+                                    ) : null}
                                 </div>
                             </div>
 
@@ -184,7 +128,7 @@ export default function ContractDetailPage(props: {
                                     </div>
                                     <div className="text-right">
                                         <Badge
-                                            variant={statusVariant(
+                                            variant={variantForContractStatus(
                                                 contract.status,
                                             )}
                                         >
@@ -275,13 +219,35 @@ export default function ContractDetailPage(props: {
                                         Email
                                     </div>
                                     <div className="text-right">
-                                        {tenant?.email ?? '-'}
+                                        {tenant?.email ? (
+                                            <CopyInline
+                                                value={tenant.email}
+                                                variant="link"
+                                                className="break-words"
+                                                successMessage="Email disalin"
+                                            >
+                                                {tenant.email}
+                                            </CopyInline>
+                                        ) : (
+                                            <span>-</span>
+                                        )}
                                     </div>
                                     <div className="text-muted-foreground">
                                         Telepon
                                     </div>
                                     <div className="text-right">
-                                        {tenant?.phone ?? '-'}
+                                        {tenant?.phone ? (
+                                            <CopyInline
+                                                value={tenant.phone}
+                                                variant="link"
+                                                className="break-words"
+                                                successMessage="Nomor telepon disalin"
+                                            >
+                                                {tenant.phone}
+                                            </CopyInline>
+                                        ) : (
+                                            <span>-</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -360,29 +326,19 @@ export default function ContractDetailPage(props: {
                                                 <TableCell className="font-mono text-xs">
                                                     <div className="flex items-center gap-2">
                                                         <a
-                                                            href={route(
-                                                                'management.invoices.print',
-                                                                inv.id,
-                                                            )}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
+                                                            href={`${route('management.invoices.index')}?search=${encodeURIComponent(inv.number)}`}
                                                             className="hover:underline"
-                                                            title="Lihat halaman cetak invoice"
+                                                            title="Cari invoice ini di menu Invoice"
                                                         >
                                                             {inv.number}
                                                         </a>
-                                                        <Button
-                                                            type="button"
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            className="js-copy h-7 w-7"
-                                                            data-clipboard-text={
-                                                                inv.number
-                                                            }
+                                                        <CopyInline
+                                                            value={inv.number}
+                                                            variant="icon"
+                                                            size="sm"
+                                                            title="Salin nomor invoice"
                                                             aria-label="Salin nomor invoice"
-                                                        >
-                                                            <ClipboardCopy className="h-4 w-4" />
-                                                        </Button>
+                                                        />
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -399,7 +355,7 @@ export default function ContractDetailPage(props: {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge
-                                                        variant={statusVariant(
+                                                        variant={variantForContractStatus(
                                                             inv.status,
                                                         )}
                                                     >
@@ -429,6 +385,8 @@ export default function ContractDetailPage(props: {
                     </ScrollArea>
                 </CardContent>
             </Card>
+
+            <HandoverRoomSection contract={contract} handover={handover} />
         </AuthLayout>
     );
 }

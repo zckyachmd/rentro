@@ -6,7 +6,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -15,25 +15,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-
-export type AddressValue = {
-    label: string;
-    address_line: string;
-    village: string;
-    district: string;
-    city: string;
-    province: string;
-    postal_code: string;
-};
-
-interface AddressProps {
-    value: AddressValue;
-    onChange: (next: AddressValue) => void;
-    errors?: Record<string, string | undefined>;
-    defaultOpen?: boolean;
-    title?: string;
-}
+import AddressInput from '@/features/profile/components/address-input';
+import AddressTextarea from '@/features/profile/components/address-textarea';
+import type { AddressProps, AddressValue } from '@/types/profile';
 
 export default function AddressSection({
     value,
@@ -62,132 +46,118 @@ export default function AddressSection({
                 </AccordionTrigger>
                 <AccordionContent>
                     <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="address_line">
-                                Alamat{' '}
-                                <span className="text-destructive">*</span>
-                            </Label>
-                            <Textarea
-                                id="address_line"
-                                name="address[address_line]"
-                                rows={3}
-                                value={value.address_line}
+                        <AddressTextarea
+                            id="address_line"
+                            name="address[address_line]"
+                            rows={3}
+                            value={value.address_line}
+                            onChange={(e) =>
+                                setField('address_line', e.target.value)
+                            }
+                            placeholder="Nama jalan, nomor rumah, RT/RW"
+                            label={
+                                <>
+                                    Alamat{' '}
+                                    <span className="text-destructive">*</span>
+                                </>
+                            }
+                            errorMessage={errors['address.address_line']}
+                        />
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <AddressInput
+                                id="village"
+                                name="address[village]"
+                                value={value.village}
                                 onChange={(e) =>
-                                    setField('address_line', e.target.value)
+                                    setField('village', e.target.value)
                                 }
-                                placeholder="Nama jalan, nomor rumah, RT/RW"
+                                placeholder="Masukkan kelurahan/desa"
+                                label={
+                                    <>
+                                        Kelurahan/Desa{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
+                                    </>
+                                }
+                                errorMessage={errors['address.village']}
                             />
-                            {errors['address.address_line'] && (
-                                <p className="text-xs text-destructive">
-                                    {errors['address.address_line']}
-                                </p>
-                            )}
+                            <AddressInput
+                                id="district"
+                                name="address[district]"
+                                value={value.district}
+                                onChange={(e) =>
+                                    setField('district', e.target.value)
+                                }
+                                placeholder="Masukkan kecamatan"
+                                label={
+                                    <>
+                                        Kecamatan{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
+                                    </>
+                                }
+                                errorMessage={errors['address.district']}
+                            />
+                            <AddressInput
+                                id="postal_code"
+                                name="address[postal_code]"
+                                value={value.postal_code}
+                                onChange={(e) =>
+                                    setField('postal_code', e.target.value)
+                                }
+                                placeholder="Masukkan kode pos"
+                                label={
+                                    <>
+                                        Kode Pos{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
+                                    </>
+                                }
+                                errorMessage={errors['address.postal_code']}
+                            />
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <Label htmlFor="village">
-                                    Kelurahan/Desa{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="village"
-                                    name="address[village]"
-                                    value={value.village}
-                                    onChange={(e) =>
-                                        setField('village', e.target.value)
-                                    }
-                                    placeholder="Masukkan kelurahan/desa"
-                                />
-                                {errors['address.village'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['address.village']}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="district">
-                                    Kecamatan{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="district"
-                                    name="address[district]"
-                                    value={value.district}
-                                    onChange={(e) =>
-                                        setField('district', e.target.value)
-                                    }
-                                    placeholder="Masukkan kecamatan"
-                                />
-                                {errors['address.district'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['address.district']}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="postal_code">
-                                    Kode Pos{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="postal_code"
-                                    name="address[postal_code]"
-                                    value={value.postal_code}
-                                    onChange={(e) =>
-                                        setField('postal_code', e.target.value)
-                                    }
-                                    placeholder="Masukkan kode pos"
-                                />
-                                {errors['address.postal_code'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['address.postal_code']}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <Label htmlFor="city">
-                                    Kota{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="city"
-                                    name="address[city]"
-                                    value={value.city}
-                                    onChange={(e) =>
-                                        setField('city', e.target.value)
-                                    }
-                                    placeholder="Masukkan kota/kabupaten"
-                                />
-                                {errors['address.city'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['address.city']}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="province">
-                                    Provinsi{' '}
-                                    <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="province"
-                                    name="address[province]"
-                                    value={value.province}
-                                    onChange={(e) =>
-                                        setField('province', e.target.value)
-                                    }
-                                    placeholder="Masukkan provinsi"
-                                />
-                                {errors['address.province'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['address.province']}
-                                    </p>
-                                )}
-                            </div>
+                            <AddressInput
+                                id="city"
+                                name="address[city]"
+                                value={value.city}
+                                onChange={(e) =>
+                                    setField('city', e.target.value)
+                                }
+                                placeholder="Masukkan kota/kabupaten"
+                                label={
+                                    <>
+                                        Kota{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
+                                    </>
+                                }
+                                errorMessage={errors['address.city']}
+                            />
+                            <AddressInput
+                                id="province"
+                                name="address[province]"
+                                value={value.province}
+                                onChange={(e) =>
+                                    setField('province', e.target.value)
+                                }
+                                placeholder="Masukkan provinsi"
+                                label={
+                                    <>
+                                        Provinsi{' '}
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
+                                    </>
+                                }
+                                errorMessage={errors['address.province']}
+                            />
                             <div className="space-y-2">
                                 <Label htmlFor="label">Label Alamat</Label>
                                 <Select
@@ -208,11 +178,7 @@ export default function AddressSection({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors['address.label'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['address.label']}
-                                    </p>
-                                )}
+                                <InputError message={errors['address.label']} />
                             </div>
                         </div>
                     </div>

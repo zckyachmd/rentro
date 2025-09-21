@@ -1,4 +1,3 @@
-import { ShieldCheck } from 'lucide-react';
 import * as React from 'react';
 
 import { DatePickerInput } from '@/components/date-picker';
@@ -9,8 +8,8 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -19,39 +18,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-export type DocumentFormValue = {
-    type: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | '';
-    number: string;
-    issued_at: string;
-    expires_at: string;
-    file: File | null;
-    has_file?: boolean | null;
-    status?: 'pending' | 'approved' | 'rejected';
-    notes?: string | null;
-};
-
-interface Props {
-    value: DocumentFormValue;
-    onChange: (next: DocumentFormValue) => void;
-    errors?: Record<string, string | undefined>;
-    defaultOpen?: boolean;
-    title?: string;
-    messages?: Partial<{
-        infoTitle: string;
-        filePicked: string;
-        pending: string;
-        approved: string;
-        rejected: string;
-        notesTitle: string;
-    }>;
-    documentTypes?: string[];
-    documentStatuses?: string[];
-}
+import DocumentFilePicker from '@/features/profile/components/document-file-picker';
+import DocumentStatusBadge from '@/features/profile/components/document-status-badge';
+import { todayISO, tomorrowISO } from '@/lib/date';
+import type { DocumentFormValue, DocumentSectionProps } from '@/types/profile';
 
 function getAlertText(
     value: DocumentFormValue,
-    messages: Props['messages'] = {},
+    messages: DocumentSectionProps['messages'] = {},
 ) {
     const title = messages.infoTitle || 'Informasi Dokumen';
     const lines: string[] = [];
@@ -101,9 +75,7 @@ export default function DocumentSection({
     title = 'Dokumen Identitas',
     messages = {},
     documentTypes = [],
-}: Props) {
-    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-
+}: DocumentSectionProps) {
     const setField = React.useCallback(
         <K extends keyof DocumentFormValue>(
             key: K,
@@ -113,29 +85,6 @@ export default function DocumentSection({
         },
         [onChange, value],
     );
-
-    const onPickFile = React.useCallback(
-        () => fileInputRef.current?.click(),
-        [],
-    );
-
-    const onFileChange: React.ChangeEventHandler<HTMLInputElement> =
-        React.useCallback(
-            (e) => {
-                const input = e.target;
-                const file = input.files?.[0] ?? null;
-
-                if (!file) return;
-
-                onChange({
-                    ...value,
-                    file,
-                    status:
-                        value.status !== 'pending' ? 'pending' : value.status,
-                });
-            },
-            [onChange, value],
-        );
 
     const shouldShowAlert = Boolean(
         value.file ||
@@ -185,11 +134,7 @@ export default function DocumentSection({
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors['document.type'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['document.type']}
-                                    </p>
-                                )}
+                                <InputError message={errors['document.type']} />
                             </div>
 
                             {/* Nomor Dokumen */}
@@ -207,17 +152,16 @@ export default function DocumentSection({
                                     }
                                     placeholder="Masukkan nomor"
                                 />
-                                {errors['document.number'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['document.number']}
-                                    </p>
-                                )}
+                                <InputError
+                                    message={errors['document.number']}
+                                />
                             </div>
 
                             {/* Tanggal Terbit */}
                             <div className="space-y-2">
                                 <Label htmlFor="issued_at">
-                                    Tanggal Terbit
+                                    Tanggal Terbit{' '}
+                                    <span className="text-destructive">*</span>
                                 </Label>
                                 <DatePickerInput
                                     id="issued_at"
@@ -227,12 +171,11 @@ export default function DocumentSection({
                                         setField('issued_at', v ?? '')
                                     }
                                     placeholder="Pilih tanggal"
+                                    max={todayISO()}
                                 />
-                                {errors['document.issued_at'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['document.issued_at']}
-                                    </p>
-                                )}
+                                <InputError
+                                    message={errors['document.issued_at']}
+                                />
                             </div>
 
                             {/* Berlaku Hingga */}
@@ -248,12 +191,11 @@ export default function DocumentSection({
                                         setField('expires_at', v ?? '')
                                     }
                                     placeholder="Pilih tanggal"
+                                    min={tomorrowISO()}
                                 />
-                                {errors['document.expires_at'] && (
-                                    <p className="text-xs text-destructive">
-                                        {errors['document.expires_at']}
-                                    </p>
-                                )}
+                                <InputError
+                                    message={errors['document.expires_at']}
+                                />
                             </div>
 
                             <div className="space-y-2 md:col-span-4">
@@ -266,36 +208,20 @@ export default function DocumentSection({
                                             : ''}
                                     </span>
                                 </Label>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                                    <button
-                                        type="button"
-                                        className="inline-flex h-9 items-center rounded-md border px-3 text-sm"
-                                        onClick={onPickFile}
-                                    >
-                                        Pilih File
-                                    </button>
-                                    {value.file?.name && (
-                                        <span
-                                            className="truncate text-sm text-muted-foreground"
-                                            title={value.file.name}
-                                        >
-                                            {value.file.name}
-                                        </span>
-                                    )}
-                                </div>
-                                <Input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    name="document[file]"
-                                    accept="image/*,application/pdf"
-                                    className="hidden"
-                                    onChange={onFileChange}
+                                <DocumentFilePicker
+                                    onPick={(file) =>
+                                        onChange({
+                                            ...value,
+                                            file: file ?? null,
+                                            status:
+                                                value.status !== 'pending'
+                                                    ? 'pending'
+                                                    : value.status,
+                                        })
+                                    }
+                                    fileName={value.file?.name ?? null}
+                                    errorMessage={errors['document.file']}
                                 />
-                                {errors['document.file'] && (
-                                    <p className="mt-1 text-xs text-destructive">
-                                        {errors['document.file']}
-                                    </p>
-                                )}
                             </div>
 
                             {value.status && (
@@ -304,20 +230,9 @@ export default function DocumentSection({
                                         Status Verifikasi
                                     </Label>
                                     <span>
-                                        {value.status === 'approved' ? (
-                                            <Badge className="gap-1">
-                                                <ShieldCheck className="h-3 w-3" />{' '}
-                                                Disetujui
-                                            </Badge>
-                                        ) : value.status === 'pending' ? (
-                                            <Badge variant="secondary">
-                                                Menunggu
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="destructive">
-                                                Ditolak
-                                            </Badge>
-                                        )}
+                                        <DocumentStatusBadge
+                                            status={value.status}
+                                        />
                                     </span>
                                 </div>
                             )}

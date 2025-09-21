@@ -47,7 +47,6 @@ class SecurityController extends Controller
         });
 
         return Inertia::render('security/index', [
-            'status'  => session('status'),
             'summary' => [
                 'email_verified'           => !is_null($user->email_verified_at),
                 'two_factor_enabled'       => !empty($user->two_factor_secret) && !empty($user->two_factor_confirmed_at),
@@ -73,7 +72,7 @@ class SecurityController extends Controller
             logName: 'security',
         );
 
-        return back()->with('status', 'password-updated');
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 
     public function revokeOthers(Request $request)
@@ -91,7 +90,7 @@ class SecurityController extends Controller
             ->withProperties(['action' => 'revoke_others'])
             ->log('User revoked all other sessions');
 
-        return back()->with('status', 'Other sessions have been logged out.');
+        return back()->with('success', 'Berhasil logout dari semua sesi lain.');
     }
 
     public function destroySession(Request $request, string $id)
@@ -105,11 +104,11 @@ class SecurityController extends Controller
             ->first();
 
         if (!$target) {
-            return back()->withErrors(['sessions' => 'Session not found or not owned by you.']);
+            return back()->withErrors(['sessions' => 'Sesi tidak ditemukan atau bukan milik Anda.']);
         }
 
         if ($id === $currentId) {
-            return back()->withErrors(['sessions' => 'You cannot log out the current session from here.']);
+            return back()->withErrors(['sessions' => 'Anda tidak dapat logout sesi saat ini dari sini.']);
         }
 
         $target->delete();
@@ -119,6 +118,6 @@ class SecurityController extends Controller
             ->withProperties(['action' => 'logout_remote', 'session_id' => $id])
             ->log('User logged out a remote session');
 
-        return back()->with('status', 'Selected session has been logged out.');
+        return back()->with('success', 'Sesi berhasil di-logout.');
     }
 }

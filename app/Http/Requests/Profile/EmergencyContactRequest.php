@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Profile;
 
+use App\Models\AppSetting;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class EmergencyContactRequest extends FormRequest
 {
@@ -21,11 +23,23 @@ class EmergencyContactRequest extends FormRequest
      */
     public function rules(): array
     {
+        $contactId = optional($this->route('contact'))->id;
+
         return [
-            'name'         => ['required', 'string', 'max:255'],
-            'phone'        => ['required', 'string', 'max:20'],
+            'name'  => ['required', 'string', 'max:255'],
+            'phone' => [
+                'required', 'string', 'max:20',
+                Rule::unique('emergency_contacts', 'phone')
+                    ->ignore($contactId)
+                    ->where(fn ($q) => $q->where('user_id', $this->user()->id)),
+            ],
             'relationship' => ['required', 'string', 'max:50'],
-            'email'        => ['nullable', 'email', 'max:255'],
+            'email'        => [
+                'nullable', 'email', 'max:255',
+                Rule::unique('emergency_contacts', 'email')
+                    ->ignore($contactId)
+                    ->where(fn ($q) => $q->where('user_id', $this->user()->id)),
+            ],
             'address_line' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -34,8 +48,9 @@ class EmergencyContactRequest extends FormRequest
     {
         if ($this->isMethod('post')) {
             $validator->after(function ($v) {
-                if ($this->user()->emergencyContacts()->count() >= 3) {
-                    $v->errors()->add('name', 'Maksimal 3 kontak darurat.');
+                $max = (int) AppSetting::config('profile.emergency_contacts_max', 3);
+                if ($this->user()->emergencyContacts()->count() >= $max) {
+                    $v->errors()->add('name', 'Maksimal ' . $max . ' kontak darurat.');
                 }
             });
         }

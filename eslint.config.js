@@ -63,6 +63,36 @@ export default [
                     alphabetize: { order: 'asc', caseInsensitive: true },
                 },
             ],
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            // Block deep imports inside types; allow only top-level barrels like
+                            // `@/types/management`, `@/types/tenant`, etc.
+                            group: ['@/types/*/**'],
+                            message:
+                                'Import types only from top-level barrels (e.g., @/types/management). Deep imports are not allowed.',
+                        },
+                    ],
+                },
+            ],
+            // discourage using *Data suffix for type-like (prefer *DTO)
+            '@typescript-eslint/naming-convention': [
+                'error',
+                {
+                    selector: 'typeLike',
+                    format: ['PascalCase'],
+                },
+                {
+                    selector: 'typeLike',
+                    format: ['PascalCase'],
+                    custom: {
+                        regex: '^(?!.*Data$).*',
+                        match: true,
+                    },
+                },
+            ],
         },
     },
     prettier,

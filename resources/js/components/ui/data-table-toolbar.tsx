@@ -29,6 +29,8 @@ type Props<TData> = {
   storageKey?: string
   columnsButtonLabel?: string
   showColumn?: boolean
+  autoRefreshValue?: string
+  onAutoRefreshChange?: (v: string) => void
 }
 
 const resolveColumnLabel = <TData,>(col: Column<TData, unknown>): string => {
@@ -60,8 +62,12 @@ export function DataTableToolbar<TData>({
   storageKey,
   columnsButtonLabel,
   showColumn = true,
+  autoRefreshValue,
+  onAutoRefreshChange,
 }: Props<TData>) {
-  const column = table.getColumn(filterKey) as Column<TData, unknown> | undefined
+  const column = (table.getAllLeafColumns() as Column<TData, unknown>[]).find(
+    (c) => String(c.id) === String(filterKey)
+  ) as Column<TData, unknown> | undefined
   const visibility = table.getState?.().columnVisibility as Record<string, boolean> | undefined
   const allLeaf = table.getAllLeafColumns() as Column<TData, unknown>[]
 
@@ -202,6 +208,27 @@ export function DataTableToolbar<TData>({
                 >
                   {resolveColumnLabel<TData>(c)}
                 </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Auto refresh selector (dropdown like columns) */}
+        {typeof onAutoRefreshChange === 'function' && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Auto refresh: {(autoRefreshValue ?? 'off')}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuLabel>Pembaruan Otomatis</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {['off','5s','10s','15s','30s','1m','5m','10m'].map((v) => (
+                <DropdownMenuItem key={v} onClick={() => onAutoRefreshChange(v)}>
+                  {v === 'off' ? 'Off' : v.replace('s',' detik').replace('m',' menit')}
+                </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>

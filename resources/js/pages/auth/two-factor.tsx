@@ -1,8 +1,9 @@
 import { useForm } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
 
+import OtpInput from '@/components/form/otp-input';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import GuestLayout from '@/layouts/guest-layout';
 
@@ -25,22 +26,14 @@ export default function TwoFactorChallenge() {
                         <Label htmlFor="token">
                             Kode OTP atau Recovery Code
                         </Label>
-                        <Input
+                        <OtpInput
                             id="token"
                             placeholder="Contoh: 123456 atau 12345678-ABCDEFGH"
                             value={form.data.token}
-                            onChange={(e) =>
-                                form.setData('token', e.target.value)
-                            }
-                            autoComplete="one-time-code"
-                            inputMode="text"
+                            onChange={(v) => form.setData('token', v)}
                             aria-invalid={Boolean(form.errors.token)}
                         />
-                        {form.errors.token && (
-                            <p className="text-sm text-red-500 dark:text-red-400">
-                                {form.errors.token}
-                            </p>
-                        )}
+                        <InputError message={form.errors.token} />
                     </div>
 
                     <div className="my-2 flex items-center justify-start">

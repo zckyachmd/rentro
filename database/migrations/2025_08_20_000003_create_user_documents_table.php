@@ -11,15 +11,14 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
-            $table->string('type', 50)->nullable();
-            $table->string('number', 50)->nullable();
-            $table->string('file_path', 255);
+            $table->string('type', 50);
+            $table->string('number', 50);
+            $table->json('attachments');
 
-            $table->date('issued_at')->nullable();
+            $table->date('issued_at');
             $table->date('expires_at')->nullable();
 
             $table->string('status', 50)->default('pending');
-            $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('verified_at')->nullable();
             $table->text('notes')->nullable();
 

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AppSetting;
+use App\Enum\ProrataCharging;
 use Illuminate\Database\Seeder;
 
 class AppSettingSeeder extends Seeder
@@ -13,40 +14,70 @@ class AppSettingSeeder extends Seeder
         // Single gateway casting via AppSetting::config() uses the `type` stored here.
         $settings = [
             // Contract basics
-            ['contract.grace_days',             7,          'int'],
-            ['contract.auto_renew_default',     false,      'bool'],
-            ['contract.invoice_due_hours',      48,         'int'],
-            ['contract.single_room_per_tenant', true,       'bool'],
+            ['key' => 'contract.grace_days', 'value' => 7, 'type' => 'int', 'description' => 'Batas toleransi hari sebelum kontrak dianggap terlambat (overdue)'],
+            ['key' => 'contract.stop_auto_renew_forfeit_days', 'value' => 7, 'type' => 'int', 'description' => 'Batas minimal hari sebelum akhir agar penghentian auto‑renew tidak menghanguskan deposit'],
+            ['key' => 'contract.auto_renew_default', 'value' => false, 'type' => 'bool', 'description' => 'Default auto‑renew untuk kontrak baru'],
+            ['key' => 'contract.invoice_due_hours', 'value' => 48, 'type' => 'int', 'description' => 'Jam jatuh tempo sejak invoice dibuat'],
 
             // Contract duration limits & behavior
-            ['contract.daily_max_days',         5,          'int'],
-            ['contract.weekly_max_weeks',       3,          'int'],
-            ['contract.monthly_allowed_terms',  [3, 6, 12], 'array'],
+            ['key' => 'contract.daily_max_days', 'value' => 5, 'type' => 'int', 'description' => 'Batas maksimal lama sewa harian'],
+            ['key' => 'contract.weekly_max_weeks', 'value' => 3, 'type' => 'int', 'description' => 'Batas maksimal lama sewa mingguan'],
+            ['key' => 'contract.monthly_allowed_terms', 'value' => [3, 6, 12], 'type' => 'array', 'description' => 'Pilihan durasi (bulan) untuk sewa bulanan'],
 
             // Billing behavior
-            ['billing.prorata',                 true,      'bool'],
-            ['billing.prorata_charging',        'threshold',     'string'], // full|free|threshold
-            ['billing.prorata_free_threshold_days', 7,      'int'],    // only for threshold mode
-            ['billing.release_day_of_month',    1,          'int'],   // anchor day for monthly cycle start
-            ['billing.due_day_of_month',        7,          'int'],   // default due day
-            ['billing.deposit_upfront',         true,       'bool'],
+            ['key' => 'billing.prorata', 'value' => true, 'type' => 'bool', 'description' => 'Aktifkan perhitungan prorata saat mulai tidak di tanggal anchor'],
+            ['key' => 'billing.prorata_charging', 'value' => ProrataCharging::THRESHOLD->value, 'type' => 'string', 'description' => 'Strategi penagihan prorata: full|free|threshold'],
+            ['key' => 'billing.prorata_free_threshold_days', 'value' => 7, 'type' => 'int', 'description' => 'Ambang hari bebas biaya pada mode threshold'],
+            ['key' => 'billing.release_day_of_month', 'value' => 1, 'type' => 'int', 'description' => 'Tanggal acuan siklus tagihan bulanan (DOM)'],
+            ['key' => 'billing.due_day_of_month', 'value' => 7, 'type' => 'int', 'description' => 'Tanggal jatuh tempo default untuk tagihan bulanan'],
+            ['key' => 'billing.deposit_renewal_rollover', 'value' => true, 'type' => 'bool', 'description' => 'Deposit diperhitungkan/bergulir saat perpanjangan'],
+            // Removed: harga invoice selalu mengikuti nilai kontrak
 
             // Scheduler / automation
-            ['contract.auto_renew_lead_days',   7,          'int'],
+            ['key' => 'contract.auto_renew_lead_days', 'value' => 7, 'type' => 'int', 'description' => 'Hari sebelum akhir kontrak untuk memproses auto‑renew'],
+            ['key' => 'contract.prebook_lead_days', 'value' => 7, 'type' => 'int', 'description' => 'Jendela pre‑booking untuk kamar yang akan habis masa kontraknya'],
+            ['key' => 'contract.global_sequence', 'value' => 0, 'type' => 'int', 'description' => 'Counter sequence global untuk penomoran kontrak (4 digit)'],
 
-            // Queue preferences for jobs
-            ['queue.mark_overdue.queue',               'default', 'string'],
-            ['queue.mark_overdue.backoff_seconds',     3,         'int'],
-            ['queue.mark_overdue.retry_until_minutes', 30,        'int'],
-            ['queue.cancel_overdue.queue',             'high',    'string'],
-            ['queue.cancel_overdue.backoff_seconds',   5,         'int'],
-            ['queue.cancel_overdue.retry_until_minutes', 60,      'int'],
+
+            // Handover (Check-in/Check-out)
+            ['key' => 'handover.require_checkin_for_activate', 'value' => true, 'type' => 'bool', 'description' => 'Wajib check‑in untuk mengaktifkan kontrak'],
+            ['key' => 'handover.require_checkout_for_complete', 'value' => false, 'type' => 'bool', 'description' => 'Wajib checkout untuk menyelesaikan kontrak'],
+            ['key' => 'handover.min_photos_checkin', 'value' => 3, 'type' => 'int', 'description' => 'Minimal jumlah foto untuk check‑in'],
+            ['key' => 'handover.min_photos_checkout', 'value' => 0, 'type' => 'int', 'description' => 'Minimal jumlah foto untuk checkout'],
+            ['key' => 'handover.require_tenant_ack_for_activate', 'value' => false, 'type' => 'bool', 'description' => 'Wajib konfirmasi tenant untuk aktivasi kontrak'],
+            ['key' => 'handover.require_tenant_ack_for_complete', 'value' => false, 'type' => 'bool', 'description' => 'Wajib konfirmasi tenant untuk penyelesaian kontrak'],
+
+            // Payments
+            [
+                'key' => 'payments.manual_bank_accounts',
+                'value' => [
+                    [
+                        'bank'    => 'BCA',
+                        'holder'  => 'PT Rentro Sejahtera',
+                        'account' => '8888888888',
+                    ],
+                    [
+                        'bank'    => 'BRI',
+                        'holder'  => 'PT Rentro Sejahtera',
+                        'account' => '123456789012345',
+                    ],
+                ],
+                'type' => 'array',
+                'description' => 'Daftar rekening tujuan untuk transfer manual (bank, nama pemegang, nomor rekening).',
+            ],
+
+            // Profile
+            ['key' => 'profile.emergency_contacts_max', 'value' => 3, 'type' => 'int', 'description' => 'Batas maksimal jumlah kontak darurat per pengguna'],
         ];
 
-        foreach ($settings as [$key, $value, $type]) {
+        foreach ($settings as $row) {
             AppSetting::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value, 'type' => $type]
+                ['key' => $row['key']],
+                [
+                    'value' => $row['value'],
+                    'type' => $row['type'],
+                    'description' => $row['description'] ?? null,
+                ],
             );
         }
     }

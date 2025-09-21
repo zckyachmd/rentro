@@ -1,22 +1,12 @@
 import { router } from '@inertiajs/react';
-import { Filter, Plus, RefreshCw, Search } from 'lucide-react';
+import { Filter, Plus, Search } from 'lucide-react';
 import React from 'react';
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     DataTableServer,
-    type PaginatorMeta,
     type QueryBag,
 } from '@/components/ui/data-table-server';
 import { Input } from '@/components/ui/input';
@@ -29,53 +19,53 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import CancelContractDialog from '@/features/contract/dialogs/cancel-contract-dialog';
+import ContractsActionGuideDialog from '@/features/contract/dialogs/contracts-action-guide-dialog';
+import HandoverCreate from '@/features/contract/dialogs/handover-create-dialog';
+import ToggleAutoRenewDialog from '@/features/contract/dialogs/toggle-autorenew-dialog';
+import { createColumns } from '@/features/contract/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
-import {
-    createColumns,
-    type ContractItem,
-} from '@/pages/management/contract/columns';
-
-type ContractsPaginator = { data: ContractItem[] } & PaginatorMeta;
-
-interface ContractsPageProps {
-    contracts?: ContractsPaginator;
-    query?: QueryBag & { status?: string | null; q?: string | null };
-    options?: { statuses?: { value: string; label: string }[] };
-}
-
-type QueryInit = Partial<{
-    page: number;
-    per_page: number;
-    sort: string | null;
-    dir: 'asc' | 'desc' | null;
-    status: string | null;
-    q: string | null;
-}>;
-type SafePayload = Partial<{
-    page: number;
-    per_page: number;
-    sort: string | null;
-    dir: 'asc' | 'desc' | null;
-    status: string | null;
-    q: string | null;
-}>;
-
-type ServerQuery = {
-    [key: string]: unknown;
-    page?: number;
-    per_page?: number;
-    search?: string | undefined;
-    sort?: string | null;
-    dir?: 'asc' | 'desc' | null;
-};
+import type {
+    ContractItem,
+    ContractsPageProps,
+    ContractQueryInit as QueryInit,
+    ContractSafePayload as SafePayload,
+    ContractServerQuery as ServerQuery,
+} from '@/types/management';
 
 export default function ContractIndex(props: ContractsPageProps) {
-    const { contracts: paginator, query = {}, options = {} } = props;
+    const {
+        contracts: paginator,
+        query = {},
+        options = {},
+        handover: handoverOptions,
+    } = props;
     const contracts: ContractItem[] = (paginator?.data ?? []) as ContractItem[];
     const statuses = React.useMemo(
         () => options.statuses ?? [],
         [options.statuses],
+    );
+
+    const handoverSettings = React.useMemo(
+        () => ({
+            min_photos_checkin: Math.max(
+                0,
+                handoverOptions?.min_photos_checkin ?? 0,
+            ),
+            min_photos_checkout: Math.max(
+                0,
+                handoverOptions?.min_photos_checkout ?? 0,
+            ),
+            require_checkin_for_activate: Boolean(
+                handoverOptions?.require_checkin_for_activate ?? false,
+            ),
+        }),
+        [
+            handoverOptions?.min_photos_checkin,
+            handoverOptions?.min_photos_checkout,
+            handoverOptions?.require_checkin_for_activate,
+        ],
     );
 
     const [status, setStatus] = React.useState<string>(
@@ -103,6 +93,7 @@ export default function ContractIndex(props: ContractsPageProps) {
     );
 
     const [processing, setProcessing] = React.useState(false);
+    const [openGuide, setOpenGuide] = React.useState(false);
 
     const { q, onQueryChange, handleSortChange } = useServerTable({
         paginator,
@@ -157,6 +148,8 @@ export default function ContractIndex(props: ContractsPageProps) {
     type Target = ContractItem | null;
     const [cancelTarget, setCancelTarget] = React.useState<Target>(null);
     const [toggleTarget, setToggleTarget] = React.useState<Target>(null);
+    const [checkinTarget, setCheckinTarget] = React.useState<Target>(null);
+    const [checkoutTarget, setCheckoutTarget] = React.useState<Target>(null);
 
     const tableColumns = React.useMemo(
         () =>
@@ -164,12 +157,23 @@ export default function ContractIndex(props: ContractsPageProps) {
                 onCancel: (c) => setCancelTarget(c),
                 onStopAutoRenew: (c) => setToggleTarget(c),
                 onStartAutoRenew: (c) => setToggleTarget(c),
+                onCheckin: (c) => setCheckinTarget(c),
+                onCheckout: (c) => setCheckoutTarget(c),
+                requireCheckinForActivate:
+                    handoverSettings.require_checkin_for_activate,
             }),
-        [],
+        [handoverSettings.require_checkin_for_activate],
     );
 
     const headerActions = (
         <div className="flex items-center gap-2">
+            <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpenGuide(true)}
+            >
+                Panduan Aksi
+            </Button>
             <Button
                 type="button"
                 onClick={() =>
@@ -189,6 +193,10 @@ export default function ContractIndex(props: ContractsPageProps) {
             actions={headerActions}
         >
             <div className="space-y-6">
+                <ContractsActionGuideDialog
+                    open={openGuide}
+                    onOpenChange={setOpenGuide}
+                />
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
@@ -214,8 +222,8 @@ export default function ContractIndex(props: ContractsPageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder="Cari penyewa/kamar…"
-                                        aria-label="Cari penyewa atau kamar"
+                                        placeholder="Cari nomor kontrak/penyewa/kamar…"
+                                        aria-label="Cari nomor kontrak, penyewa, atau kamar"
                                     />
                                 </div>
                             </div>
@@ -260,7 +268,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                                 variant="outline"
                                 onClick={resetFilter}
                             >
-                                <RefreshCw className="mr-2 h-4 w-4" /> Reset
+                                Reset
                             </Button>
                         </div>
                     </CardContent>
@@ -279,90 +287,92 @@ export default function ContractIndex(props: ContractsPageProps) {
                             loading={processing}
                             emptyText="Tidak ada kontrak."
                             showColumn={false}
+                            autoRefreshDefault="1m"
+                            showRefresh={false}
                         />
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Cancel Contract Dialog */}
-            <AlertDialog
-                open={!!cancelTarget}
-                onOpenChange={(v) => !v && setCancelTarget(null)}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Batalkan Kontrak</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Konfirmasi untuk membatalkan kontrak ini. Status
-                            akan menjadi Cancelled dan auto‑renew dimatikan.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const c = cancelTarget;
-                                if (!c) return;
-                                router.post(
-                                    route('management.contracts.cancel', {
-                                        contract: c.id,
-                                    }),
-                                    {},
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () => setCancelTarget(null),
-                                    },
-                                );
-                            }}
-                        >
-                            Ya, Batalkan
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <CancelContractDialog
+                target={cancelTarget}
+                onOpenChange={(o) => {
+                    if (!o) setCancelTarget(null);
+                }}
+                onConfirm={(reason) => {
+                    const c = cancelTarget;
+                    if (!c) return;
+                    router.post(
+                        route('management.contracts.cancel', {
+                            contract: c.id,
+                        }),
+                        { reason },
+                        {
+                            preserveScroll: true,
+                            onFinish: () => setCancelTarget(null),
+                        },
+                    );
+                }}
+            />
 
-            {/* Toggle Auto‑renew Dialog */}
-            <AlertDialog
-                open={!!toggleTarget}
-                onOpenChange={(v) => !v && setToggleTarget(null)}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {toggleTarget?.auto_renew
-                                ? 'Hentikan Auto‑renew'
-                                : 'Nyalakan Auto‑renew'}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {toggleTarget?.auto_renew
-                                ? 'Kontrak tidak akan diperpanjang otomatis di akhir periode.'
-                                : 'Kontrak akan diperpanjang otomatis di akhir periode.'}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const c = toggleTarget;
-                                if (!c) return;
-                                const next = !c.auto_renew;
-                                router.post(
-                                    route('management.contracts.setAutoRenew', {
-                                        contract: c.id,
-                                    }),
-                                    { auto_renew: next },
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () => setToggleTarget(null),
-                                    },
-                                );
-                            }}
-                        >
-                            Konfirmasi
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <Can any={['handover.create']}>
+                <HandoverCreate
+                    open={!!checkinTarget}
+                    onOpenChange={(o) => {
+                        if (!o) setCheckinTarget(null);
+                    }}
+                    contractId={checkinTarget?.id ?? null}
+                    mode="checkin"
+                    minPhotosCheckin={handoverSettings.min_photos_checkin}
+                    minPhotosCheckout={handoverSettings.min_photos_checkout}
+                    redo={String(
+                        checkinTarget?.latest_checkin_status || '',
+                    ).toLowerCase() === 'disputed'}
+                    onSaved={() => {
+                        router.reload({ only: ['contracts'] });
+                    }}
+                />
+                <HandoverCreate
+                    open={!!checkoutTarget}
+                    onOpenChange={(o) => {
+                        if (!o) setCheckoutTarget(null);
+                    }}
+                    contractId={checkoutTarget?.id ?? null}
+                    mode="checkout"
+                    minPhotosCheckin={handoverSettings.min_photos_checkin}
+                    minPhotosCheckout={handoverSettings.min_photos_checkout}
+                    redo={String(
+                        checkoutTarget?.latest_checkout_status || '',
+                    ).toLowerCase() === 'disputed'}
+                    onSaved={() => {
+                        router.reload({ only: ['contracts'] });
+                    }}
+                />
+            </Can>
+
+            <ToggleAutoRenewDialog
+                target={toggleTarget}
+                onOpenChange={(o) => {
+                    if (!o) setToggleTarget(null);
+                }}
+                onConfirm={(reason) => {
+                    const c = toggleTarget;
+                    if (!c) return;
+                    const next = !c.auto_renew;
+                    router.post(
+                        route('management.contracts.setAutoRenew', {
+                            contract: c.id,
+                        }),
+                        next
+                            ? { auto_renew: next }
+                            : { auto_renew: next, reason },
+                        {
+                            preserveScroll: true,
+                            onFinish: () => setToggleTarget(null),
+                        },
+                    );
+                }}
+            />
         </AuthLayout>
     );
 }

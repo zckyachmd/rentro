@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Room> $rooms
+ */
 class RoomType extends Model
 {
     use HasFactory;
@@ -22,19 +25,17 @@ class RoomType extends Model
         'name',
         'slug',
         'capacity',
-        'size_m2',
-        'price_cents',
-        'deposit_cents',
+        'prices',
+        'deposits',
         'description',
         'is_active',
     ];
 
     protected $casts = [
-        'capacity'      => 'integer',
-        'size_m2'       => 'decimal:2',
-        'price_cents'   => 'integer',
-        'deposit_cents' => 'integer',
-        'is_active'     => 'boolean',
+        'capacity'  => 'integer',
+        'prices'    => 'array',
+        'deposits'  => 'array',
+        'is_active' => 'boolean',
     ];
 
     public function rooms()

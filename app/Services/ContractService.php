@@ -29,53 +29,125 @@ class ContractService implements ContractServiceInterface
     {
         try {
             return DB::transaction(function () use ($data) {
-                /** @var Room $room */
-                $room = Room::findOrFail($data['room_id']);
-                /** @var User $tenant */
+                $room   = Room::query()->whereKey($data['room_id'])->lockForUpdate()->firstOrFail();
                 $tenant = User::findOrFail($data['user_id']);
 
                 $start            = Carbon::parse($data['start_date'])->startOfDay();
                 $period           = (string) $data['billing_period'];
                 $duration         = isset($data['duration_count']) ? (int) $data['duration_count'] : null;
-                $end              = null; // always computed
+                $end              = null;
                 $prorata          = AppSetting::config('billing.prorata', false);
                 $autoRenewDefault = AppSetting::config('contract.auto_renew_default', false);
                 $status           = ContractStatus::PENDING_PAYMENT;
 
                 if ($period === BillingPeriod::DAILY->value) {
-                    $duration = $duration ?? 1;
-                    $end      = $start->copy()->addDays($duration)->toDateString();
+                    $duration = max(1, $duration ?? 1);
+                    $end      = $start->copy()->addDays($duration)->subDay()->toDateString();
                 } elseif ($period === BillingPeriod::WEEKLY->value) {
-                    $duration = $duration ?? 1;
-                    $end      = $start->copy()->addWeeks($duration)->toDateString();
+                    $duration = max(1, $duration ?? 1);
+                    $end      = $start->copy()->addWeeks($duration)->subDay()->toDateString();
                 } elseif ($period === BillingPeriod::MONTHLY->value) {
-                    $end = Contract::monthlyEndDate($start, (int) $duration, (bool) $prorata);
+                    $end = Contract::monthlyEndDate($start, (int) max(1, $duration ?? 1), (bool) $prorata);
                 } else {
                     $daysMap = BillingPeriod::units();
                     $days    = (int) ($daysMap[(string) $data['billing_period']] ?? 30);
-                    $end     = $start->copy()->addDays($days)->toDateString();
+                    $end     = $start->copy()->addDays($days)->subDay()->toDateString();
                 }
 
-                // Decide billing day (ignore payload; compute)
-                $billingDay = $start->day;
+                $leadDays    = (int) AppSetting::config('contract.prebook_lead_days', 7);
+                $today       = now()->startOfDay();
+                $computedEnd = Carbon::parse($end)->startOfDay();
 
-                // Align billing day for prorata monthly contracts to global release day
-                if ($period === BillingPeriod::MONTHLY->value && $prorata && $start->day !== 1 && ($duration ?? 1) >= 2) {
-                    $releaseDom = AppSetting::config('billing.release_day_of_month', 1);
-                    $billingDay = max(1, min(31, $releaseDom));
+                $hasOverlap = Contract::query()
+                    ->where('room_id', $room->id)
+                    ->whereIn('status', [
+                        ContractStatus::PENDING_PAYMENT->value,
+                        ContractStatus::BOOKED->value,
+                        ContractStatus::ACTIVE->value,
+                    ])
+                    ->where(function ($q) use ($start, $computedEnd) {
+                        $q->whereDate('start_date', '<=', $computedEnd->toDateString())
+                            ->whereDate('end_date', '>=', $start->toDateString());
+                    })
+                    ->exists();
+                if ($hasOverlap) {
+                    throw new \RuntimeException('Jadwal kamar bentrok dengan kontrak lain.');
+                }
+
+                $activeNow = Contract::query()
+                    ->where('room_id', $room->id)
+                    ->where('status', ContractStatus::ACTIVE->value)
+                    ->orderByDesc('end_date')
+                    ->first();
+                if ($activeNow) {
+                    $activeEnd = $activeNow->end_date ? $activeNow->end_date->copy()->startOfDay() : null;
+                    $renewOff  = !$activeNow->auto_renew || !empty($activeNow->renewal_cancelled_at);
+
+                    if (!$activeEnd) {
+                        throw new \RuntimeException('Tidak dapat memesan: kontrak aktif tidak memiliki tanggal berakhir.');
+                    }
+
+                    if (!$start->greaterThan($activeEnd)) {
+                        throw new \RuntimeException('Tanggal mulai harus setelah tanggal berakhir kontrak saat ini.');
+                    }
+
+                    $withinWindow = $activeEnd->lessThanOrEqualTo($today->copy()->addDays(max(1, $leadDays)));
+                    if (!$renewOff || !$withinWindow) {
+                        throw new \RuntimeException('Kamar belum dapat dipesan saat ini. Hanya dapat dipesan 7 hari sebelum kontrak berakhir jika auto‑renew nonaktif.');
+                    }
+
+                    $hasFutureHolder = Contract::query()
+                        ->where('room_id', $room->id)
+                        ->whereIn('status', [
+                            ContractStatus::PENDING_PAYMENT->value,
+                            ContractStatus::BOOKED->value,
+                            ContractStatus::ACTIVE->value,
+                        ])
+                        ->whereDate('start_date', '>', $today->toDateString())
+                        ->exists();
+                    if ($hasFutureHolder) {
+                        throw new \RuntimeException('Kamar sudah memiliki pemesanan berikutnya.');
+                    }
+                }
+
+                if ($period === BillingPeriod::MONTHLY->value) {
+                    if ($prorata) {
+                        $releaseDom = AppSetting::config('billing.release_day_of_month', 1);
+                        $billingDay = max(1, min(31, (int) $releaseDom));
+                    } else {
+                        $billingDay = (int) $start->day;
+                    }
+                } else {
+                    $billingDay = null;
                 }
 
                 $autoRenew = array_key_exists('auto_renew', $data)
                     ? (bool) $data['auto_renew']
                     : $autoRenewDefault;
 
+                $seq            = self::nextGlobalContractSequence();
+                $datePart       = $start->format('Ymd');
+                $seqPart        = sprintf('%04d', $seq);
+                $roomPart       = (string) $room->number;
+                $contractNumber = $datePart . '-' . $seqPart . '-' . $roomPart;
+
+                $payloadRent            = isset($data['rent_cents']) ? (int) $data['rent_cents'] : 0;
+                $payloadDeposit         = isset($data['deposit_cents']) ? (int) $data['deposit_cents'] : 0;
+                $effectiveRoomRentCents = (int) ($room->effectivePriceCents($period) ?? 0);
+                $effectiveRoomDepCents  = (int) ($room->effectiveDepositCents($period) ?? 0);
+                $fallbackRentRupiah     = (int) round($effectiveRoomRentCents / 100);
+                $fallbackDepositRupiah  = (int) round($effectiveRoomDepCents / 100);
+                $finalRent              = $payloadRent > 0 ? $payloadRent : $fallbackRentRupiah;
+                $finalDeposit           = $payloadDeposit > 0 ? $payloadDeposit : $fallbackDepositRupiah;
+
                 $contract = Contract::create([
+                    'number'         => $contractNumber,
                     'user_id'        => $tenant->id,
                     'room_id'        => $room->id,
                     'start_date'     => $start->toDateString(),
                     'end_date'       => $end,
-                    'rent_cents'     => $data['rent_cents'],
-                    'deposit_cents'  => $data['deposit_cents'] ?? 0,
+                    'rent_cents'     => $finalRent,
+                    'deposit_cents'  => $finalDeposit,
                     'billing_period' => $data['billing_period'],
                     'billing_day'    => $billingDay,
                     'auto_renew'     => $autoRenew,
@@ -83,28 +155,15 @@ class ContractService implements ContractServiceInterface
                     'notes'          => $data['notes'] ?? null,
                 ]);
 
-                // Generate initial invoice using the new general API for predictability.
-                // Strategy:
-                // - First invoice includes deposit and (when applicable) prorata based on app settings.
-                // - For Monthly contracts: first invoice covers prorata (jika perlu) + 1 bulan penuh.
-                // - For Daily/Weekly: first invoice menagih sisa durasi awal kontrak.
-                // - InvoiceService::generate() will guard overlaps.
-                try {
-                    $this->invoices->generate($contract, ['first' => true]);
-                } catch (\Throwable $e) {
-                    // Log and rethrow to surface error to controller layer
-                    Log::error('Initial invoice generation failed', [
-                        'contract_id' => $contract->id,
-                        'error'       => $e->getMessage(),
-                    ]);
-                    throw $e;
+                $mode = (string) ($data['monthly_payment_mode'] ?? 'per_month');
+                if ($period === BillingPeriod::MONTHLY->value && $mode === 'full') {
+                    $this->invoices->generate($contract, ['full' => true, 'include_deposit' => true]);
+                } else {
+                    $this->generateInitialInvoice($contract);
                 }
 
-                // Initial creation sets status to PENDING_PAYMENT → room becomes RESERVED
-                $newRoomStatus = RoomStatus::RESERVED->value;
-
-                if ($newRoomStatus !== $room->status) {
-                    $room->update(['status' => $newRoomStatus]);
+                if ($room->status->value !== RoomStatus::OCCUPIED->value && $room->status->value !== RoomStatus::RESERVED->value) {
+                    $room->update(['status' => RoomStatus::RESERVED->value]);
                 }
 
                 return $contract;
@@ -117,6 +176,36 @@ class ContractService implements ContractServiceInterface
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Atomically increment and return the next global contract sequence number.
+     */
+    protected static function nextGlobalContractSequence(): int
+    {
+        return DB::transaction(function () {
+            $row = AppSetting::query()
+                ->where('key', 'contract.global_sequence')
+                ->lockForUpdate()
+                ->first();
+
+            if (!$row) {
+                $row = new AppSetting([
+                    'key'   => 'contract.global_sequence',
+                    'type'  => 'int',
+                    'value' => 0,
+                ]);
+                $row->save();
+            }
+
+            $current = (int) ($row->getAttribute('value') ?? 0);
+            $next    = $current + 1;
+            $row->setAttribute('value', $next);
+            $row->type = 'int';
+            $row->save();
+
+            return $next;
+        });
     }
 
     public function markOverdue(Contract $contract): void
@@ -148,8 +237,6 @@ class ContractService implements ContractServiceInterface
             throw $e;
         }
     }
-
-    // extendDue moved to InvoiceService
 
     public function cancel(Contract $contract): void
     {
@@ -183,15 +270,10 @@ class ContractService implements ContractServiceInterface
                     'status'               => ContractStatus::CANCELLED,
                 ])->save();
 
-                /** @var Room|null $room */
-                $room = $contract->room()
-                    ->withCount(['holdingContracts as other_holders_count' => function ($q) use ($contract) {
-                        $q->where('id', '!=', $contract->id);
-                    }])
-                    ->first();
-
-                if ($room && (int) ($room->getAttribute('other_holders_count') ?? 0) === 0) {
-                    $room->update(['status' => RoomStatus::VACANT->value]);
+                $room = $contract->room()->first();
+                /** @var \App\Models\Room|null $room */
+                if ($room instanceof \App\Models\Room) {
+                    $this->recomputeRoomStatus($room);
                 }
             });
         } catch (\Throwable $e) {
@@ -221,6 +303,83 @@ class ContractService implements ContractServiceInterface
                 'enabled'     => $enabled,
             ]);
             throw $e;
+        }
+    }
+
+    public function generateInitialInvoice(Contract $contract): void
+    {
+        try {
+            // If any invoice exists already, do nothing
+            $hasAny = $contract->invoices()->exists();
+            if ($hasAny) {
+                return;
+            }
+
+            $this->invoices->generate($contract, ['first' => true]);
+        } catch (\Throwable $e) {
+            Log::error('ContractService::generateInitialInvoice failed', [
+                'contract_id' => $contract->id,
+                'error'       => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    public function complete(Contract $contract): void
+    {
+        try {
+            DB::transaction(function () use ($contract): void {
+                $contract->forceFill([
+                    'status'     => ContractStatus::COMPLETED,
+                    'auto_renew' => false,
+                ])->save();
+
+                $room = $contract->room()->first();
+                /** @var \App\Models\Room|null $room */
+                if ($room instanceof \App\Models\Room) {
+                    $this->recomputeRoomStatus($room);
+                }
+            });
+        } catch (\Throwable $e) {
+            Log::error('ContractService::complete failed', [
+                'error'       => $e->getMessage(),
+                'trace'       => $e->getTraceAsString(),
+                'contract_id' => $contract->id,
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Recompute and update the room status based on current contracts.
+     * Priority: Active => OCCUPIED; else if Pending/Booked/Paid exists => RESERVED; else VACANT.
+     */
+    private function recomputeRoomStatus(Room $room): void
+    {
+        $hasActive = Contract::query()
+            ->where('room_id', $room->id)
+            ->where('status', ContractStatus::ACTIVE->value)
+            ->exists();
+
+        if ($hasActive) {
+            if ($room->status->value !== RoomStatus::OCCUPIED->value) {
+                $room->update(['status' => RoomStatus::OCCUPIED->value]);
+            }
+
+            return;
+        }
+
+        $hasHolder = Contract::query()
+            ->where('room_id', $room->id)
+            ->whereIn('status', [
+                ContractStatus::PENDING_PAYMENT->value,
+                ContractStatus::BOOKED->value,
+            ])
+            ->exists();
+
+        $target = $hasHolder ? RoomStatus::RESERVED->value : RoomStatus::VACANT->value;
+        if ($room->status->value !== $target) {
+            $room->update(['status' => $target]);
         }
     }
 }

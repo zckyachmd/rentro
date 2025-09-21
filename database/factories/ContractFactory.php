@@ -23,12 +23,16 @@ class ContractFactory extends Factory
         $start = $this->faker->dateTimeBetween('-2 months', '+1 day');
         $rent  = $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]) * 100;
 
+        $seq4 = str_pad((string) $this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT);
+        $number = $seq4;
+
         return [
             'id'             => $sf->id(),
+            'number'         => $number,
             'user_id'        => User::factory(),
             'room_id'        => Room::factory(),
             'start_date'     => $start->format('Y-m-d'),
-            'end_date'       => (clone $start)->modify('+1 month')->format('Y-m-d'),
+            'end_date'       => (clone $start)->modify('+1 month -1 day')->format('Y-m-d'),
             'rent_cents'     => $rent,
             'deposit_cents'  => (int) round($rent * 0.5),
             'billing_period' => BillingPeriod::MONTHLY->value,

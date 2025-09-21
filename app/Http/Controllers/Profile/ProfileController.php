@@ -8,8 +8,9 @@ use App\Enum\DocumentType;
 use App\Enum\EmergencyRelationship;
 use App\Enum\Gender;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\ConfirmPasswordRequest;
+use App\Http\Requests\Auth\DeleteAccountRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
+use App\Models\AppSetting;
 use App\Models\UserAddress;
 use App\Traits\LogActivity;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +27,7 @@ class ProfileController extends Controller
     /**
      * Display the user's profile (read-only view).
      */
-    public function show(Request $request): Response
+    public function index(Request $request): Response
     {
         $user = $request->user()->load([
             'addresses' => fn ($q) => $q->orderBy('id'),
@@ -34,7 +35,20 @@ class ProfileController extends Controller
             'emergencyContacts' => fn ($q) => $q->orderBy('id'),
         ]);
 
-        return Inertia::render('profile/show', [
+        $doc           = $user->document;
+        $hasAttachment = $doc && method_exists($doc, 'getAttachments') && !empty($doc->getAttachments('private'));
+        $docDto        = $doc ? [
+            'id'          => $doc->id,
+            'type'        => $doc->type,
+            'number'      => $doc->number,
+            'issued_at'   => $doc->issued_at,
+            'expires_at'  => $doc->expires_at,
+            'status'      => $doc->status,
+            'verified_at' => $doc->verified_at,
+            'has_file'    => $hasAttachment,
+        ] : null;
+
+        return Inertia::render('profile/index', [
             'user' => $user->append('avatar_url')->only([
                 'id',
                 'name',
@@ -59,7 +73,7 @@ class ProfileController extends Controller
                 'country',
                 'is_primary',
             ]),
-            'document' => $user->getDocument(),
+            'document' => $docDto,
             'contacts' => $user->emergencyContacts->map->only([
                 'id',
                 'name',
@@ -70,11 +84,11 @@ class ProfileController extends Controller
                 'is_primary',
             ]),
             'mustVerifyEmail' => is_null($user->email_verified_at),
-            'status'          => session('status'),
             'options'         => [
                 'documentTypes'              => DocumentType::values(),
                 'documentStatuses'           => DocumentStatus::values(),
                 'emergencyRelationshipLabel' => EmergencyRelationship::values(),
+                'emergencyContactsMax'       => (int) AppSetting::config('profile.emergency_contacts_max', 3),
             ],
         ]);
     }
@@ -85,8 +99,21 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user()->load(['addresses' => fn ($q) => $q->orderBy('id')]);
-        /** @var \App\Models\UserAddress|null $address */
+
         $address = $user->addresses->first();
+
+        $doc           = $user->document;
+        $hasAttachment = $doc && method_exists($doc, 'getAttachments') && !empty($doc->getAttachments('private'));
+        $docDto        = $doc ? [
+            'id'          => $doc->id,
+            'type'        => $doc->type,
+            'number'      => $doc->number,
+            'issued_at'   => $doc->issued_at,
+            'expires_at'  => $doc->expires_at,
+            'status'      => $doc->status,
+            'verified_at' => $doc->verified_at,
+            'has_file'    => $hasAttachment,
+        ] : null;
 
         return Inertia::render('profile/edit', [
             'user' => [
@@ -109,9 +136,8 @@ class ProfileController extends Controller
                 'province'     => $address->province,
                 'postal_code'  => $address->postal_code,
             ] : null,
-            'document'        => $user->getDocument(),
+            'document'        => $docDto,
             'mustVerifyEmail' => is_null($user->email_verified_at),
-            'status'          => session('status'),
             'options'         => [
                 'genders'          => Gender::values(),
                 'documentTypes'    => DocumentType::values(),
@@ -174,28 +200,57 @@ class ProfileController extends Controller
                 $validated['document'],
             );
 
-            $attributes = [
-                'type'       => $docInput['type'] ?? null,
-                'number'     => $docInput['number'] ?? null,
-                'issued_at'  => $docInput['issued_at'] ?? null,
-                'expires_at' => $docInput['expires_at'] ?? null,
-            ];
+            $doc     = $user->document()->first();
+            $created = false;
+            if (!$doc) {
+                $doc = new \App\Models\UserDocument();
+                $doc->user()->associate($user);
+                $doc->fill([
+                    'type'       => $docInput['type'] ?? null,
+                    'number'     => $docInput['number'] ?? null,
+                    'issued_at'  => $docInput['issued_at'] ?? null,
+                    'expires_at' => $docInput['expires_at'] ?? null,
+                    'status'     => 'pending',
+                ]);
+                $doc->save();
+                $created = true;
+            } else {
+                $doc->fill([
+                    'type'       => $docInput['type'] ?? null,
+                    'number'     => $docInput['number'] ?? null,
+                    'issued_at'  => $docInput['issued_at'] ?? null,
+                    'expires_at' => $docInput['expires_at'] ?? null,
+                ]);
+            }
+            /** @var \App\Models\UserDocument $doc */
 
-            $user->syncDocument($attributes, $docInput['file']);
+            $dirtyKeys = array_keys($doc->getDirty());
+
+            $file = $docInput['file'] ?? null;
+            if ($file && method_exists($doc, 'storeAttachmentFiles')) {
+                $doc->forceFill(['attachments' => []])->save();
+                $doc->storeAttachmentFiles([$file], 'private', 1);
+                $dirtyKeys = array_unique(array_merge($dirtyKeys, ['attachments']));
+            }
+
+            if (!empty(array_intersect($dirtyKeys, ['type', 'number', 'issued_at', 'expires_at', 'attachments']))) {
+                $doc->status      = 'pending';
+                $doc->verified_at = null;
+            }
+
+            if ($doc->isDirty()) {
+                $doc->save();
+            }
         }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
     }
 
     /**
      * Delete the user's account.
      */
-    public function destroy(ConfirmPasswordRequest $request): RedirectResponse
+    public function destroy(DeleteAccountRequest $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
 
         Auth::logout();

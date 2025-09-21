@@ -1,6 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
 import { LogOut, MonitorSmartphone } from 'lucide-react';
-import { toast } from 'sonner';
 
 import ConfirmPasswordDialog, {
     useConfirmPasswordModal,
@@ -14,19 +13,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-
-type SessionItem = {
-    id: string;
-    agent?: string;
-    agent_label?: string;
-    ip_address?: string;
-    last_active?: string;
-    current?: boolean;
-};
-
-type SessionsTabProps = {
-    sessions: SessionItem[];
-};
+import type { SessionItem, SessionsTabProps } from '@/types/security';
 
 export function SessionsTab({ sessions }: SessionsTabProps) {
     const destroyForm = useForm({});
@@ -41,10 +28,6 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
             {},
             {
                 preserveScroll: true,
-                onSuccess: () =>
-                    toast.success('Berhasil logout dari semua sesi lain.'),
-                onError: () =>
-                    toast.error('Gagal melakukan logout dari sesi lain.'),
             },
         );
     };
@@ -52,8 +35,6 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
     const onDestroyOne = (id: string) => {
         destroyForm.delete(route('security.sessions.destroy', id), {
             preserveScroll: true,
-            onSuccess: () => toast.success('Sesi berhasil di-logout.'),
-            onError: () => toast.error('Gagal logout sesi.'),
         });
     };
 

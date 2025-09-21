@@ -7,6 +7,7 @@ use App\Http\Controllers\Management\AuditLogController;
 use App\Http\Controllers\Management\BuildingManagementController;
 use App\Http\Controllers\Management\ContractManagementController;
 use App\Http\Controllers\Management\FloorManagementController;
+use App\Http\Controllers\Management\HandoverManagementController;
 use App\Http\Controllers\Management\InvoiceManagementController;
 use App\Http\Controllers\Management\PaymentManagementController;
 use App\Http\Controllers\Management\RoleManagementController;
@@ -14,23 +15,23 @@ use App\Http\Controllers\Management\RoomManagementController;
 use App\Http\Controllers\Management\RoomPhotoManagementController;
 use App\Http\Controllers\Management\RoomTypeManagementController;
 use App\Http\Controllers\Management\UserManagementController;
+use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
+use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;
 use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
+use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
+use App\Http\Controllers\Webhook\MidtransWebhookController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('welcome', [
-    'canLogin'       => Route::has('login'),
-    'canRegister'    => Route::has('register'),
-    'laravelVersion' => Application::VERSION,
-    'phpVersion'     => PHP_VERSION,
-]));
+Route::get('/', fn () => redirect()->route('dashboard'));
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', fn () => Inertia::render('dashboard'))
@@ -38,7 +39,7 @@ Route::middleware('auth')->group(function (): void {
 
     // Profile
     Route::prefix('profile')->name('profile.')->group(function (): void {
-        Route::get('/', [ProfileController::class, 'show'])->name('show');
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
         // Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
@@ -55,38 +56,38 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/', [SecurityController::class, 'index'])->name('index');
 
         Route::patch('/password', [SecurityController::class, 'updatePassword'])
-            ->middleware('password.confirm')
+            ->middleware('throttle:6,1')
             ->name('password.update');
 
         Route::prefix('sessions')->name('sessions.')->group(function (): void {
             Route::post('/revoke-others', [SecurityController::class, 'revokeOthers'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('revokeOthers');
 
             Route::delete('/{id}', [SecurityController::class, 'destroySession'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('destroy');
         });
 
         Route::prefix('2fa')->name('2fa.')->group(function (): void {
             Route::post('/start', [TwoFactorController::class, 'start'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('start');
             Route::get('/qr', [TwoFactorController::class, 'qr'])->name('qr');
             Route::post('/cancel', [TwoFactorController::class, 'cancel'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('cancel');
             Route::post('/confirm', [TwoFactorController::class, 'confirm'])
                 ->middleware(['password.confirm', 'throttle:6,1'])
                 ->name('confirm');
             Route::delete('/disable', [TwoFactorController::class, 'disable'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('disable');
 
             Route::prefix('recovery-codes')->name('recovery.')->group(function (): void {
                 Route::get('/', [TwoFactorController::class, 'recoveryCode'])->name('index');
                 Route::post('/regenerate', [TwoFactorController::class, 'recoveryRegenerate'])
-                    ->middleware('password.confirm')
+                    ->middleware(['password.confirm', 'throttle:secure-2fa-recovery'])
                     ->name('regenerate');
             });
         });
@@ -94,9 +95,65 @@ Route::middleware('auth')->group(function (): void {
 
     // Tenant
     Route::prefix('tenant')->name('tenant.')->middleware(['role:' . RoleName::TENANT->value])->group(function (): void {
-        Route::get('/bookings', [TenantBookingController::class, 'index'])->name('bookings.index');
-        Route::get('/contracts', [TenantContractController::class, 'index'])->name('contracts.index');
-        Route::get('/invoices', [TenantInvoiceController::class, 'index'])->name('invoices.index');
+        // Bookings
+        Route::prefix('bookings')->name('bookings.')->group(function (): void {
+            Route::get('/', [TenantBookingController::class, 'index'])->name('index');
+        });
+
+        // Contracts
+        Route::prefix('contracts')->name('contracts.')->group(function (): void {
+            Route::get('/', [TenantContractController::class, 'index'])->name('index');
+            Route::get('/{contract}', [TenantContractController::class, 'show'])->name('show');
+            Route::get('/{contract}/print', [TenantContractController::class, 'print'])->name('print');
+            Route::post('/{contract}/stop-auto-renew', [TenantContractController::class, 'stopAutoRenew'])
+                ->name('stopAutoRenew');
+            Route::get('/{contract}/handovers', [TenantHandoverController::class, 'index'])
+                ->name('handovers.index');
+        });
+
+        // Tenant Handover Attachments (private)
+        Route::get('/handovers/{handover}/attachments/{path}', [TenantHandoverController::class, 'attachmentGeneral'])
+            ->where('path', '.*')
+            ->name('handovers.attachment.general');
+
+        // Tenant handover acknowledge/dispute
+        Route::post('/handovers/{handover}/ack', [TenantHandoverController::class, 'acknowledge'])
+            ->name('handovers.ack');
+        Route::post('/handovers/{handover}/dispute', [TenantHandoverController::class, 'dispute'])
+            ->name('handovers.dispute');
+
+        // Invoices
+        Route::prefix('invoices')->name('invoices.')->group(function (): void {
+            Route::get('/', [TenantInvoiceController::class, 'index'])->name('index');
+            Route::get('/{invoice}', [TenantInvoiceController::class, 'show'])
+                ->whereNumber('invoice')
+                ->name('show');
+            Route::get('/{invoice}/print', [TenantInvoiceController::class, 'print'])
+                ->whereNumber('invoice')
+                ->name('print');
+            Route::get('/{invoice}/pay/status', [TenantMidtransController::class, 'status'])
+                ->whereNumber('invoice')
+                ->middleware('throttle:secure-tenant-status')
+                ->name('pay.status');
+            Route::post('/{invoice}/pay/cancel', [TenantMidtransController::class, 'cancelPending'])
+                ->whereNumber('invoice')
+                ->middleware('throttle:secure-tenant-pay')
+                ->name('pay.cancel');
+            Route::post('/{invoice}/pay/midtrans/va', [TenantMidtransController::class, 'payVa'])
+                ->whereNumber('invoice')
+                ->middleware('throttle:secure-tenant-pay')
+                ->name('pay.midtrans.va');
+            Route::post('/{invoice}/pay/manual', [TenantPaymentController::class, 'payManual'])
+                ->whereNumber('invoice')
+                ->middleware('throttle:secure-tenant-pay')
+                ->name('pay.manual');
+            Route::get('/payments/{payment}', [TenantPaymentController::class, 'show'])
+                ->whereNumber('payment')
+                ->name('payments.show');
+            Route::get('/payments/{payment}/attachment', [TenantPaymentController::class, 'attachment'])
+                ->whereNumber('payment')
+                ->name('payments.attachment');
+        });
     });
 
     // Management
@@ -172,13 +229,33 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/{contract}', [ContractManagementController::class, 'show'])
                 ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
                 ->name('show');
+            Route::get('/{contract}/print', [ContractManagementController::class, 'print'])
+                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
+                ->name('print');
             Route::post('/{contract}/cancel', [ContractManagementController::class, 'cancel'])
                 ->middleware('can:' . PermissionName::CONTRACT_CANCEL->value)
                 ->name('cancel');
             Route::post('/{contract}/set-auto-renew', [ContractManagementController::class, 'setAutoRenew'])
                 ->middleware('can:' . PermissionName::CONTRACT_RENEW->value)
                 ->name('setAutoRenew');
+
+            // Handover (Check-in/Check-out) management
+            Route::get('/{contract}/handovers', [HandoverManagementController::class, 'index'])
+                ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
+                ->name('handovers.index');
+            Route::post('/{contract}/checkin', [HandoverManagementController::class, 'checkin'])
+                ->middleware('can:' . PermissionName::HANDOVER_CREATE->value)
+                ->name('handovers.checkin');
+            Route::post('/{contract}/checkout', [HandoverManagementController::class, 'checkout'])
+                ->middleware('can:' . PermissionName::HANDOVER_CREATE->value)
+                ->name('handovers.checkout');
         });
+
+        // Handovers
+        Route::get('/handovers/{handover}/attachments/{path}', [HandoverManagementController::class, 'attachmentGeneral'])
+            ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
+            ->where('path', '.*')
+            ->name('handovers.attachment.general');
 
         // Invoices
         Route::prefix('invoices')->name('invoices.')->group(function (): void {
@@ -187,18 +264,25 @@ Route::middleware('auth')->group(function (): void {
                 ->name('index');
             Route::get('/{invoice}', [InvoiceManagementController::class, 'show'])
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->whereNumber('invoice')
                 ->name('show');
+            Route::get('/lookup', [InvoiceManagementController::class, 'lookup'])
+                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->name('lookup');
             Route::post('/generate', [InvoiceManagementController::class, 'generate'])
-                ->middleware('can:' . PermissionName::INVOICE_CREATE->value)
+                ->middleware(['can:' . PermissionName::INVOICE_CREATE->value, 'throttle:secure-sensitive'])
                 ->name('generate');
             Route::get('/{invoice}/print', [InvoiceManagementController::class, 'print'])
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+                ->whereNumber('invoice')
                 ->name('print');
             Route::post('/{invoice}/extend-due', [InvoiceManagementController::class, 'extendDue'])
-                ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->middleware(['can:' . PermissionName::INVOICE_UPDATE->value, 'throttle:secure-sensitive'])
+                ->whereNumber('invoice')
                 ->name('extendDue');
             Route::post('/{invoice}/cancel', [InvoiceManagementController::class, 'cancel'])
-                ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->middleware(['can:' . PermissionName::INVOICE_UPDATE->value, 'throttle:secure-sensitive'])
+                ->whereNumber('invoice')
                 ->name('cancel');
         });
 
@@ -207,15 +291,24 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/', [PaymentManagementController::class, 'index'])
                 ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
                 ->name('index');
+            Route::get('/{payment}', [PaymentManagementController::class, 'show'])
+                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
+                ->name('show');
             Route::post('/', [PaymentManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::PAYMENT_CREATE->value)
+                ->middleware(['can:' . PermissionName::PAYMENT_CREATE->value, 'throttle:secure-sensitive'])
                 ->name('store');
-            Route::put('/{payment}', [PaymentManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::PAYMENT_UPDATE->value)
-                ->name('update');
-            Route::delete('/{payment}', [PaymentManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::PAYMENT_DELETE->value)
-                ->name('destroy');
+            Route::get('/{payment}/attachment', [PaymentManagementController::class, 'attachment'])
+                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
+                ->name('attachment');
+            Route::get('/{payment}/print', [PaymentManagementController::class, 'print'])
+                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
+                ->name('print');
+            Route::post('/{payment}/void', [PaymentManagementController::class, 'void'])
+                ->middleware(['can:' . PermissionName::PAYMENT_UPDATE->value, 'throttle:secure-sensitive'])
+                ->name('void');
+            Route::post('/{payment}/ack', [PaymentManagementController::class, 'ack'])
+                ->middleware(['can:' . PermissionName::PAYMENT_UPDATE->value, 'throttle:secure-sensitive'])
+                ->name('ack');
         });
 
         // Rooms
@@ -345,5 +438,29 @@ Route::middleware('auth')->group(function (): void {
         });
     });
 });
+
+// Payment redirect endpoints (generic + provider-specific)
+Route::prefix('payments')->name('payments.')->group(function (): void {
+    // Generic redirect routes
+    Route::prefix('redirect')->name('redirect.')->group(function (): void {
+        // /payments/redirect/{status}
+        Route::get('/{status}', [PaymentRedirectController::class, 'status'])
+            ->where('status', 'finish|unfinish|error')
+            ->name('status');
+        // /payments/redirect/{provider}/{status}
+        Route::get('/{provider}/{status}', [PaymentRedirectController::class, 'providerStatus'])
+            ->where('status', 'finish|unfinish|error')
+            ->name('provider.status');
+    });
+});
+
+// Midtrans webhooks
+Route::prefix('webhooks/midtrans')
+    ->name('webhooks.midtrans.')
+    ->withoutMiddleware([VerifyCsrfToken::class])
+    ->group(function (): void {
+        Route::post('/', [MidtransWebhookController::class, 'handle'])->name('index');
+        Route::post('/recurring', [MidtransWebhookController::class, 'handleRecurring'])->name('recurring');
+    });
 
 require __DIR__ . '/auth.php';

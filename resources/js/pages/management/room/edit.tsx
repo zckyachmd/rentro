@@ -11,15 +11,10 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import AuthLayout from '@/layouts/auth-layout';
-import RoomUpsertForm, {
-    type RoomUpsertData,
-    type RoomUpsertOptions,
-} from '@/pages/management/room/form';
+import RoomUpsertForm from '@/pages/management/room/form';
+import type { RoomEditPageProps as PageProps } from '@/types/management';
 
-type PageProps = {
-    room?: RoomUpsertData;
-    options?: RoomUpsertOptions;
-};
+// PageProps moved to pages/types
 
 const BREADCRUMBS: Crumb[] = [
     { label: 'Kamar', href: '#' },

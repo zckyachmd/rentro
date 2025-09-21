@@ -8,22 +8,22 @@ class StorePaymentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null;
     }
 
     public function rules(): array
     {
         return [
             'invoice_id'    => ['required', 'integer', 'exists:invoices,id'],
-            'method'        => ['required', 'in:Cash,VirtualAccount'],
-            'status'        => ['required', 'in:Pending,Completed,Failed,Cancelled'],
-            'amount_cents'  => ['required', 'integer', 'min:0'],
+            'method'        => ['required', 'in:Cash,Transfer'],
+            'amount_cents'  => ['required', 'integer', 'min:1'],
             'paid_at'       => ['nullable', 'date'],
-            'reference'     => ['nullable', 'string', 'max:100'],
             'provider'      => ['nullable', 'string', 'max:50'],
             'va_number'     => ['nullable', 'string', 'max:50'],
             'va_expired_at' => ['nullable', 'date'],
             'meta'          => ['nullable', 'array'],
+            'note'          => ['nullable', 'string'],
+            'attachment'    => ['required_if:method,Transfer', 'file', 'max:5120', 'mimes:jpg,jpeg,png,pdf'],
         ];
     }
 }

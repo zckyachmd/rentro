@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('period_end')->nullable();
             $table->timestamp('due_date');
             $table->unsignedBigInteger('amount_cents');
+            $table->unsignedBigInteger('outstanding_cents')->default(0);
             $table->json('items')->nullable();
             $table->string('status', 20)->default(InvoiceStatus::PENDING->value)->index();
             $table->timestamp('paid_at')->nullable();
@@ -24,6 +25,9 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index(['contract_id', 'due_date']);
+            $table->index(['contract_id', 'status']);
+            $table->index(['contract_id', 'period_start', 'period_end']);
+            $table->index(['due_date', 'status']);
         });
     }
 

@@ -1,26 +1,19 @@
 import { Form, Link } from '@inertiajs/react';
 import { AtSign, Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import GuestLayout from '@/layouts/guest-layout';
 
-export default function ForgotPassword({ status }: { status?: string }) {
-    useEffect(() => {
-        if (status) {
-            toast.success(status);
-        }
-    }, [status]);
-
+export default function ForgotPassword() {
     return (
         <GuestLayout
             title="Forgot password"
             description="Enter your email to receive a password reset link"
             content={
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <Form method="post" action={route('password.email')}>
                         {({ processing, errors }) => (
                             <>
@@ -41,11 +34,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                             className="pl-10"
                                         />
                                     </div>
-                                    {errors.email && (
-                                        <p className="text-sm text-red-500 dark:text-red-400">
-                                            {errors.email}
-                                        </p>
-                                    )}
+                                    <InputError message={errors.email} />
                                 </div>
 
                                 <div className="my-6 flex items-center justify-start">

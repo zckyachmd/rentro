@@ -13,6 +13,7 @@ class AppSetting extends Model
         'key',
         'value',
         'type',
+        'description',
     ];
 
     protected $casts = [

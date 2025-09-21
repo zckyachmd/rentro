@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import React from 'react';
 
 import {
@@ -25,7 +26,9 @@ export default function Breadcrumbs({ items }: { items: Crumb[] }) {
                                     <BreadcrumbPage>{c.label}</BreadcrumbPage>
                                 ) : (
                                     <BreadcrumbLink asChild>
-                                        <a href={c.href}>{c.label}</a>
+                                        <Link href={c.href} preserveScroll>
+                                            {c.label}
+                                        </Link>
                                     </BreadcrumbLink>
                                 )}
                             </BreadcrumbItem>

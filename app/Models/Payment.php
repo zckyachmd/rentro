@@ -4,19 +4,22 @@ namespace App\Models;
 
 use App\Enum\PaymentMethod;
 use App\Enum\PaymentStatus;
+use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasSnowflakeId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property-read Invoice|null $invoice
+ */
 class Payment extends Model
 {
     use HasFactory;
-    use SoftDeletes;
     use HasAudit;
     use HasSnowflakeId;
+    use HasAttachments;
 
     public $incrementing = false;
     protected $keyType   = 'int';
@@ -26,21 +29,26 @@ class Payment extends Model
         'method',
         'status',
         'amount_cents',
+        'pre_outstanding_cents',
         'paid_at',
         'reference',
         'provider',
         'va_number',
         'va_expired_at',
         'meta',
+        'note',
+        'attachments',
     ];
 
     protected $casts = [
-        'amount_cents'  => 'integer',
-        'paid_at'       => 'datetime',
-        'va_expired_at' => 'datetime',
-        'method'        => PaymentMethod::class,
-        'status'        => PaymentStatus::class,
-        'meta'          => 'array',
+        'amount_cents'          => 'integer',
+        'paid_at'               => 'datetime',
+        'pre_outstanding_cents' => 'integer',
+        'va_expired_at'         => 'datetime',
+        'method'                => PaymentMethod::class,
+        'status'                => PaymentStatus::class,
+        'meta'                  => 'array',
+        'attachments'           => 'array',
     ];
 
     public function invoice(): BelongsTo

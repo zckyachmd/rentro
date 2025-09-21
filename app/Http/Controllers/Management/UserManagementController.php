@@ -16,7 +16,6 @@ use App\Services\TwoFactorService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Carbon\Carbon;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -46,6 +45,15 @@ class UserManagementController extends Controller
             'sortable'     => [
                 'name'  => 'name',
                 'email' => 'email',
+                // Sort by latest session activity timestamp
+                'last_active_at' => function ($q, $dir) {
+                    $q->orderBy(
+                        \App\Models\Session::query()
+                            ->selectRaw('MAX(last_activity)')
+                            ->whereColumn('sessions.user_id', 'users.id'),
+                        $dir,
+                    );
+                },
             ],
             'default_sort' => ['name', 'asc'],
             'filters'      => [
@@ -63,7 +71,6 @@ class UserManagementController extends Controller
 
         $mapped = $collection->map(function (User $u): array {
             $last = null;
-            /** @var \App\Models\Session|null $sess */
             $sess = $u->latestSession;
             if ($sess?->last_activity) {
                 $ts   = (int) $sess->last_activity;
@@ -126,7 +133,6 @@ class UserManagementController extends Controller
 
         $attrs['force_password_change'] = (bool) ($validated['force_password_change'] ?? true);
 
-        /** @var \App\Models\User $user */
         $user = User::create($attrs);
 
         // Assign roles
@@ -142,18 +148,22 @@ class UserManagementController extends Controller
         $token    = $broker->createToken($user);
         $resetUrl = route('password.reset', ['token' => $token, 'email' => $user->email]);
 
+        $inviteOk = false;
         try {
             $user->notify(new UserInvited($user->username, $tempPassword, $resetUrl));
+            $inviteOk = true;
         } catch (\Throwable $e) {
-            // ignore
+            $inviteOk = false;
         }
 
-        $sendVerification = (bool) ($validated['send_verification'] ?? true);
-        if ($sendVerification && !$user->hasVerifiedEmail()) {
+        $verificationRequested = (bool) ($validated['send_verification'] ?? false);
+        $verifyOk              = false;
+        if ($verificationRequested && !$user->hasVerifiedEmail()) {
             try {
                 $user->sendEmailVerificationNotification();
+                $verifyOk = true;
             } catch (\Throwable $e) {
-                // ignore
+                $verifyOk = false;
             }
         }
 
@@ -168,7 +178,28 @@ class UserManagementController extends Controller
             ],
         );
 
-        return back()->with('success', 'Pengguna berhasil dibuat. Username & password sementara dikirim ke email beserta tautan ubah password.');
+        $messages = [];
+        $status   = 'success';
+
+        $messages[] = 'Pengguna berhasil dibuat.';
+        if ($inviteOk) {
+            $messages[] = 'Email undangan akun telah dikirim (berisi username & password sementara serta tautan ubah password).';
+        } else {
+            $messages[] = 'PERHATIAN: Email undangan akun gagal dikirim. Anda dapat mengirim secara manual dari halaman reset password.';
+            $status     = 'warning';
+        }
+        if ($verificationRequested) {
+            if ($verifyOk) {
+                $messages[] = 'Email verifikasi juga telah dikirim.';
+            } else {
+                $messages[] = 'Email verifikasi tidak terkirim. Pengguna dapat meminta verifikasi dari profil atau Anda dapat mengirim ulang.';
+                if ($status === 'success') {
+                    $status = 'warning';
+                }
+            }
+        }
+
+        return back()->with($status, implode(' ', $messages));
     }
 
     public function updateRoles(UpdateRolesRequest $request, User $user): RedirectResponse
@@ -198,12 +229,14 @@ class UserManagementController extends Controller
         return back()->with('success', 'Peran pengguna berhasil diperbarui.');
     }
 
-    public function resetPasswordLink(ResetPasswordRequest $request, User $user): JsonResponse
+    public function resetPasswordLink(ResetPasswordRequest $request, User $user)
     {
         if (!$user->email) {
-            return response()->json([
-                'error' => 'Pengguna tidak memiliki email.',
-            ], 400);
+            if ($request->input('mode') === 'generate') {
+                return response()->json(['message' => 'Pengguna tidak memiliki email.'], 400);
+            }
+
+            return back()->with('error', 'Pengguna tidak memiliki email.');
         }
 
         $validated = $request->validated();
@@ -228,6 +261,7 @@ class UserManagementController extends Controller
                         'mode'     => 'generate',
                         'delivery' => 'manual',
                         'email'    => $user->email,
+                        'reason'   => $request->input('reason'),
                     ],
                 );
 
@@ -249,12 +283,11 @@ class UserManagementController extends Controller
                             'delivery' => 'email',
                             'email'    => $user->email,
                             'status'   => $status,
+                            'reason'   => $request->input('reason'),
                         ],
                     );
 
-                    return response()->json([
-                        'message' => 'Tautan reset dikirim ke email pengguna.',
-                    ]);
+                    return back()->with('success', 'Tautan reset dikirim ke email pengguna.');
                 }
 
                 $this->logEvent(
@@ -266,12 +299,11 @@ class UserManagementController extends Controller
                         'delivery' => 'email',
                         'email'    => $user->email,
                         'status'   => $status,
+                        'reason'   => $request->input('reason'),
                     ],
                 );
 
-                return response()->json([
-                    'error' => __($status),
-                ], 400);
+                return back()->with('error', __($status));
             })(),
 
             default => (function () use ($request, $validated, $user) {
@@ -284,14 +316,19 @@ class UserManagementController extends Controller
                     ],
                 );
 
-                return response()->json([
-                    'error' => 'Invalid mode for reset password link.',
-                ], 400);
+                // If FE sent JSON (e.g., for generate), return JSON error
+                if ($request->input('mode') === 'generate') {
+                    return response()->json([
+                        'message' => 'Invalid mode for reset password link.',
+                    ], 400);
+                }
+
+                return back()->with('error', 'Invalid mode for reset password link.');
             })(),
         };
     }
 
-    public function twoFactor(TwoFactorRequest $request, User $user): JsonResponse
+    public function twoFactor(TwoFactorRequest $request, User $user)
     {
         $validated = $request->validated();
         $mode      = $validated['mode'] ?? null;
@@ -309,12 +346,11 @@ class UserManagementController extends Controller
                     subject: $user,
                     properties: [
                         'method' => 'totp',
+                        'reason' => $request->input('reason'),
                     ],
                 );
 
-                return response()->json([
-                    'message' => 'Two-factor authentication has been disabled.',
-                ]);
+                return back()->with('success', 'Two-factor authentication has been disabled.');
             })(),
 
             'recovery_show' => (function () use ($user, $request) {
@@ -326,6 +362,7 @@ class UserManagementController extends Controller
                     subject: $user,
                     properties: [
                         'codes_count' => count($codes),
+                        'reason'      => $request->input('reason'),
                     ],
                 );
 
@@ -336,7 +373,7 @@ class UserManagementController extends Controller
             })(),
 
             'recovery_regenerate' => (function () use ($user, $request) {
-                $newCodes                        = $this->twofa->generateRecoveryCodes(8);
+                $newCodes                        = $this->twofa->generateRecoveryCodes();
                 $user->two_factor_recovery_codes = $newCodes;
                 $user->save();
 
@@ -345,7 +382,7 @@ class UserManagementController extends Controller
                     causer: $request->user(),
                     subject: $user,
                     properties: [
-                        'generated' => 8,
+                        'reason' => $request->input('reason'),
                     ],
                 );
 
