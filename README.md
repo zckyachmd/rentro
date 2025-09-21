@@ -1,5 +1,5 @@
 # Rentro 🏠
-Rental Property Management Platform for Landlords and Property Managers
+The all-in-one rental property platform for landlords & property managers — easy, fast, and fun!
 
 ---
 
@@ -16,28 +16,34 @@ Rental Property Management Platform for Landlords and Property Managers
 
 ## 🚀 Overview
 
-Rentro is a modern platform for managing rental properties, contracts, tenants, payments, and assets. Built for property managers and landlords, it streamlines administrative tasks, automates notifications, and provides actionable reports via an efficient web interface.
+Rentro is a robust platform designed to simplify rental property management by centralizing tenant, contract, payment, and asset workflows. Tailored for property managers and landlords, it enhances operational efficiency through automation, real-time insights, and an intuitive web interface.
 
 ---
 
 ## ✨ Features
 
-- Tenant and contract management with automated reminders
-- Payment and invoice tracking with real-time status
-- Asset inventory and maintenance scheduling
-- Automated notifications for payments and contract events
-- Occupancy, financial, and property performance reporting
+- Streamlined tenant and lease management with automated notifications
+- Real-time payment and invoice tracking with status updates
+- Comprehensive asset inventory and proactive maintenance scheduling
+- Event-driven alerts for payments, contract milestones, and renewals
+- Data-driven occupancy, financial, and property performance reporting
 
 ---
 
 ## 🛠️ Tech Stack
 
-- Backend: Laravel 12 (PHP 8.4)
-- Frontend: ReactJS (Inertia.js), Vite
-- Database: PostgreSQL 17
-- Cache/Queue: Redis 7, Laravel Horizon
-- Web Server: Nginx
-- Containerization: Docker, Docker Compose
+- Backend: `Laravel` `PHP 8.4`
+- Frontend: `React`, `shadcn/ui`, `Inertia.js` `Vite`
+- Database: `PostgreSQL 17`
+- Cache & Queue: `Redis 7` `Laravel Horizon`
+- Web Server: `Nginx`
+- Containerization: `Docker` `Docker Compose`
+
+---
+
+## 🏗️ Architecture
+
+Rentro employs a modular, service-oriented architecture leveraging Laravel’s MVC framework and Inertia.js to deliver a seamless SPA experience. The backend handles business logic, data persistence, and asynchronous processing, while the frontend offers reactive UI components optimized for performance.
 
 ---
 
@@ -45,7 +51,7 @@ Rentro is a modern platform for managing rental properties, contracts, tenants, 
 
 ### Installation
 
-1. Copy the example environment file and generate the app key:
+1. Duplicate the environment configuration and generate the application key:
     ```bash
     cp .env.example .env
     docker compose exec app php artisan key:generate
@@ -53,23 +59,28 @@ Rentro is a modern platform for managing rental properties, contracts, tenants, 
 
 ### Running the Application
 
-2. Build and start all services:
+2. Build and launch all services:
     ```bash
     docker compose up -d --build
     ```
 
-3. (Optional) Start frontend hot reloading:
+3. (Optional) Enable frontend hot-reloading during development:
     ```bash
     docker compose --profile devtools up -d vite
     ```
 
-4. Run database migrations:
+4. Apply database migrations:
     ```bash
     docker compose exec app php artisan migrate
     ```
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and instructions.
 
 ---
 
 ## 📄 License
 
-Released under a permissive license. See [LICENSE.md](LICENSE.md) for details.
+Distributed under a permissive license. Refer to [LICENSE.md](LICENSE.md) for full terms.

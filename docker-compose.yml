@@ -179,26 +179,21 @@ services:
     image: node:20-alpine
     working_dir: /var/www/html
     environment:
-      COREPACK_ENABLE_DOWNLOAD_PROMPT: "1"
       LARAVEL_BYPASS_ENV_CHECK: "1"
       CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-false}
       CHOKIDAR_INTERVAL: ${CHOKIDAR_INTERVAL:-500}
-      PNPM_STORE_DIR: /pnpm-store
-      PNPM_VERSION: ${PNPM_VERSION:-9.12.3}
     command: >-
-      sh -lc "corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate && \
-      if [ -x node_modules/.bin/vite ]; then \
+      sh -lc "if [ -x node_modules/.bin/vite ]; then \
         echo '[vite] deps present, skipping install'; \
       else \
-        echo '[vite] installing deps...'; \
-        pnpm install --frozen-lockfile --config.confirmModulesPurge=false; \
-      fi && pnpm run dev -- --host"
+        echo '[vite] installing deps with npm...'; \
+        npm install --prefer-offline --no-audit --fund=false; \
+      fi && npm run dev -- --host"
     ports:
       - "5173:5173"
     volumes:
       - .:/var/www/html:cached
       - node_modules:/var/www/html/node_modules
-      - pnpm_store:/pnpm-store
     depends_on:
       app:
         condition: service_started
@@ -217,4 +212,3 @@ volumes:
   pgdata:
   vendor:
   node_modules:
-  pnpm_store:

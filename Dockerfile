@@ -133,17 +133,12 @@ RUN --mount=type=cache,target=/tmp/composer/cache composer install --prefer-dist
 # =========================
 FROM node:20-alpine AS assets
 WORKDIR /app
-ENV CI=true COREPACK_ENABLE_DOWNLOAD_PROMPT=1
+ENV CI=true
 
-# Install JS deps (auto-detect pnpm/yarn/npm)
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+# Install JS deps with npm only
+COPY package.json package-lock.json* ./
 RUN set -eux; \
-    corepack enable; \
-    if [ -f pnpm-lock.yaml ]; then \
-      pnpm install --frozen-lockfile --config.confirmModulesPurge=false; \
-    elif [ -f yarn.lock ]; then \
-      yarn install --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then \
+    if [ -f package-lock.json ]; then \
       npm ci --prefer-offline --no-audit --fund=false; \
     else \
       npm install --prefer-offline --no-audit --fund=false; \
@@ -153,14 +148,7 @@ RUN set -eux; \
 COPY . .
 # Bring in Composer vendor so Vite can resolve 'vendor/tightenco/ziggy'
 COPY --from=vendor /app/vendor ./vendor
-RUN set -eux; \
-    if [ -f pnpm-lock.yaml ]; then \
-      pnpm run build; \
-    elif [ -f yarn.lock ]; then \
-      yarn build; \
-    else \
-      npm run build; \
-    fi
+RUN npm run build
 
 # =========================
 # Stage 3: Final application (production)
