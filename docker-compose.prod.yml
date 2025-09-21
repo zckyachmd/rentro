@@ -1,0 +1,125 @@
+# Production docker-compose for Rentro (Laravel 12 + Inertia/React)
+# Compose Spec: version key omitted (spec auto-detected). See docs.
+# - Uses PHP-FPM image built from Dockerfile target `app` (production)
+# - Persists only Laravel storage via named volume
+# - Does NOT expose Postgres/Redis to host
+# - Nginx uses production config at docker/nginx/nginx.conf
+
+name: rentro-prod
+
+services:
+  app:
+    build:
+      context: .
+      target: app
+      args:
+        TZ: ${TZ:-Asia/Jakarta}
+        PHP_TAG: ${PHP_TAG:-8.4-fpm-bookworm}
+        APP_ENV: production
+    env_file: [.env]
+    environment:
+      APP_ENV: production
+      FPM_MAX_CHILDREN: ${FPM_MAX_CHILDREN:-30}
+      FPM_START_SERVERS: ${FPM_START_SERVERS:-6}
+      FPM_MIN_SPARE_SERVERS: ${FPM_MIN_SPARE_SERVERS:-6}
+      FPM_MAX_SPARE_SERVERS: ${FPM_MAX_SPARE_SERVERS:-12}
+      FPM_MAX_REQUESTS: ${FPM_MAX_REQUESTS:-800}
+      FPM_REQUEST_TERMINATE_TIMEOUT: ${FPM_REQUEST_TERMINATE_TIMEOUT:-60s}
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      target: web
+    ports:
+      - "80:80"         # terminate TLS upstream or add separate TLS terminator
+      # - "443:443"     # enable only if you add TLS config/certs
+    volumes:
+      # Mount storage volume so Nginx can serve public/storage (via symlink)
+      - app_storage:/var/www/html/storage:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-rentro}
+      POSTGRES_USER: ${DB_USERNAME:-rentro}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me}
+      TZ: ${TZ:-Asia/Jakarta}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  horizon:
+    build:
+      context: .
+      target: app
+      args:
+        TZ: ${TZ:-Asia/Jakarta}
+        PHP_TAG: ${PHP_TAG:-8.4-fpm-bookworm}
+        APP_ENV: production
+    command: php artisan horizon
+    env_file: [.env]
+    environment:
+      APP_ENV: production
+      QUEUE_CONNECTION: redis
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      - app
+      - db
+      - redis
+    restart: unless-stopped
+    init: true
+
+  scheduler:
+    build:
+      context: .
+      target: app
+      args:
+        TZ: ${TZ:-Asia/Jakarta}
+        PHP_TAG: ${PHP_TAG:-8.4-fpm-bookworm}
+        APP_ENV: production
+    command: php artisan schedule:work
+    env_file: [.env]
+    environment:
+      APP_ENV: production
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      - app
+      - db
+      - redis
+    restart: unless-stopped
+    init: true
+
+volumes:
+  app_storage: {}
+  pgdata: {}

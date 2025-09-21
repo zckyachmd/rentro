@@ -178,12 +178,12 @@ export default function AuthLayout({
                                         header ||
                                         actions ||
                                         titleIcon) && (
-                                        <div className="grid grid-cols-[1fr,auto] items-center gap-3">
+                                        <div className="grid grid-cols-[1fr_auto] items-center gap-3">
                                             <div className="min-w-0">
                                                 <div
                                                     className={
                                                         titleIcon
-                                                            ? 'grid grid-cols-[auto,1fr] items-center gap-3'
+                                                            ? 'grid grid-cols-[auto_1fr] items-center gap-3'
                                                             : ''
                                                     }
                                                 >

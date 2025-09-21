@@ -90,7 +90,7 @@ export default function ContractCreatePreviewDialog({
                             Rincian Kontrak
                         </div>
                         <div className="grid grid-cols-1 items-stretch gap-3 text-sm sm:grid-cols-2">
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                            <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Kamar
                                 </span>
@@ -101,7 +101,7 @@ export default function ContractCreatePreviewDialog({
                                     {room?.label ?? '-'}
                                 </span>
                             </div>
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                            <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Lokasi
                                 </span>
@@ -112,7 +112,7 @@ export default function ContractCreatePreviewDialog({
                                     {room?.description || '-'}
                                 </span>
                             </div>
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                            <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Periode
                                 </span>
@@ -126,7 +126,7 @@ export default function ContractCreatePreviewDialog({
                             {(data.billing_period === 'Monthly' ||
                                 data.billing_period === 'Weekly' ||
                                 data.billing_period === 'Daily') && (
-                                <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                                <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                     <span className="text-muted-foreground">
                                         Pembayaran
                                     </span>
@@ -150,7 +150,7 @@ export default function ContractCreatePreviewDialog({
                                     </span>
                                 </div>
                             )}
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                            <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Auto-renew
                                 </span>
@@ -163,7 +163,7 @@ export default function ContractCreatePreviewDialog({
                                     {data.auto_renew ? 'Aktif' : 'Nonaktif'}
                                 </span>
                             </div>
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                            <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Tanggal Penagihan
                                 </span>
@@ -174,7 +174,7 @@ export default function ContractCreatePreviewDialog({
                                     {data.billing_day || '-'}
                                 </span>
                             </div>
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                            <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Tanggal Mulai
                                 </span>
@@ -185,7 +185,7 @@ export default function ContractCreatePreviewDialog({
                                     {data.start_date || '-'}
                                 </span>
                             </div>
-                            <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                            <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                 <span className="text-muted-foreground">
                                     Tanggal Berakhir
                                 </span>
@@ -197,7 +197,7 @@ export default function ContractCreatePreviewDialog({
                                 </span>
                             </div>
                             <div className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
-                                <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                                <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                     <span className="text-muted-foreground">
                                         Deposit
                                     </span>
@@ -210,7 +210,7 @@ export default function ContractCreatePreviewDialog({
                                         {formatRupiah(data.deposit_rupiah)}
                                     </span>
                                 </div>
-                                <div className="grid h-full grid-cols-[auto,1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
+                                <div className="grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md bg-muted/30 p-3">
                                     <span className="text-muted-foreground">
                                         Biaya Sewa
                                     </span>

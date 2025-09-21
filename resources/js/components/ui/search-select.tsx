@@ -117,7 +117,7 @@ export default function SearchSelect({ value, onChange, options, placeholder = '
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 overflow-hidden" align="start">
+      <PopoverContent className="w-(--radix-popover-trigger-width) p-0 overflow-hidden" align="start">
         <div className="p-2 border-b">
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 text-muted-foreground" />

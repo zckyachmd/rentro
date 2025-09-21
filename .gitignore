@@ -15,6 +15,7 @@
 .phpactor.json
 .phpunit.result.cache
 .php-cs-fixer.cache
+.pnpm-store
 phpstan-baseline.neon
 Homestead.json
 Homestead.yaml
