@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -129,6 +130,48 @@ class RateLimitServiceProvider extends ServiceProvider
             return [
                 Limit::perMinute(30)->by($makeKey($request, 'tenant-status', (string) $request->route('invoice'))),
                 Limit::perMinute(60)->by('ip:' . $request->ip()),
+            ];
+        });
+
+        // Queue listeners (global & per-contract caps)
+        RateLimiter::for('listener:invoice-paid', function () {
+            return [
+                Limit::perMinute(300)->by('listener:invoice-paid:global'),
+            ];
+        });
+
+        RateLimiter::for('listener:invoice-reopened', function () {
+            return [
+                Limit::perMinute(300)->by('listener:invoice-reopened:global'),
+            ];
+        });
+
+        RateLimiter::for('listener:invoice-contract', function ($job) {
+            $key = 'contract:unknown';
+            try {
+                if ($job instanceof CallQueuedListener) {
+                    $ref  = new \ReflectionClass($job);
+                    $prop = $ref->getProperty('data');
+                    $prop->setAccessible(true);
+                    $data = $prop->getValue($job);
+                    if (is_array($data) && isset($data[0]) && is_object($data[0])) {
+                        $event      = $data[0];
+                        $contractId = null;
+                        if (property_exists($event, 'invoice') && is_object($event->invoice)) {
+                            $inv        = $event->invoice;
+                            $contractId = $inv->contract_id ?? (method_exists($inv, 'getAttribute') ? $inv->getAttribute('contract_id') : null);
+                        }
+                        if (!empty($contractId)) {
+                            $key = 'contract:' . (string) $contractId;
+                        }
+                    }
+                }
+            } catch (\Throwable) {
+                // ignore
+            }
+
+            return [
+                Limit::perMinute(60)->by('listener:invoice:' . $key),
             ];
         });
     }

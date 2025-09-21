@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enum\Gender;
+use App\Jobs\SendPasswordResetEmail;
+use App\Jobs\SendVerificationEmail;
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasAvatar;
 use App\Models\Concerns\HasRoles;
@@ -83,6 +85,45 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /**
+     * Send the email verification notification via queued Job.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        SendVerificationEmail::dispatch($this->id);
+    }
+
+    /**
+     * Send the password reset notification via queued Job.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        SendPasswordResetEmail::dispatch($this->id, (string) $token);
+    }
+
+    public static function generateUniqueUsername(string $name = ''): string
+    {
+        $base = Str::slug($name, '');
+        $base = substr($base, 0, 20);
+        if ($base === '') {
+            $base = strtolower(Str::random(6));
+        }
+
+        for ($i = 0; $i < 10; $i++) {
+            $suffix    = strtolower(Str::random(4));
+            $candidate = substr($base . $suffix, 0, 30);
+            if (!User::where('username', $candidate)->exists()) {
+                return $candidate;
+            }
+        }
+
+        do {
+            $username = strtolower(Str::random(8));
+        } while (User::where('username', $username)->exists());
+
+        return $username;
+    }
+
     public function sessions(): HasMany
     {
         return $this->hasMany(Session::class);
@@ -120,35 +161,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasManyThrough(
             Invoice::class,
             Contract::class,
-            'user_id',      // Foreign key on contracts...
-            'contract_id',  // Foreign key on invoices...
-            'id',           // Local key on users...
-            'id',            // Local key on contracts...
+            'user_id',
+            'contract_id',
+            'id',
+            'id',
         );
-    }
-
-    // Payments: traverse via invoices() -> payments() when needed.
-
-    public static function generateUniqueUsername(string $name = ''): string
-    {
-        $base = Str::slug($name, '');
-        $base = substr($base, 0, 20);
-        if ($base === '') {
-            $base = strtolower(Str::random(6));
-        }
-
-        for ($i = 0; $i < 10; $i++) {
-            $suffix    = strtolower(Str::random(4));
-            $candidate = substr($base . $suffix, 0, 30);
-            if (!User::where('username', $candidate)->exists()) {
-                return $candidate;
-            }
-        }
-
-        do {
-            $username = strtolower(Str::random(8));
-        } while (User::where('username', $username)->exists());
-
-        return $username;
     }
 }

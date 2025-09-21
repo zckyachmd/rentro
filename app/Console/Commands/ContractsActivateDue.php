@@ -3,22 +3,19 @@
 namespace App\Console\Commands;
 
 use App\Enum\ContractStatus;
-use App\Enum\RoomStatus;
+use App\Jobs\ActivateDueContract;
 use App\Models\AppSetting;
 use App\Models\Contract;
-use App\Traits\LogActivity;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
 class ContractsActivateDue extends Command
 {
-    use LogActivity;
-
     protected $signature = 'contracts:activate-due
         {--chunk=200 : Chunk size for processing contracts}
         {--dry-run : Only show counts without updating}';
 
-    protected $description = 'Activate contracts with status PAID whose start_date has arrived; mark related room as OCCUPIED.';
+    protected $description = 'Queue activation jobs for Booked contracts whose start_date has arrived (mark room OCCUPIED).';
 
     public function handle(): int
     {
@@ -31,7 +28,7 @@ class ContractsActivateDue extends Command
 
         $chunkSize = (int) $this->option('chunk');
         $today     = Carbon::now()->startOfDay()->toDateString();
-        $count     = 0;
+        $queued    = 0;
         $dryRun    = (bool) $this->option('dry-run');
 
         Contract::query()
@@ -39,53 +36,19 @@ class ContractsActivateDue extends Command
             ->where('status', ContractStatus::BOOKED->value)
             ->whereDate('start_date', '<=', $today)
             ->orderBy('id')
-            ->chunkById($chunkSize, function ($rows) use (&$count, $today, $dryRun): void {
-                $this->processChunk($rows, $count, $today, $dryRun);
+            ->chunkById($chunkSize, function ($rows) use (&$queued, $today, $dryRun): void {
+                $ids = collect($rows)->pluck('id')->all();
+                foreach ($ids as $id) {
+                    $queued++;
+                    if ($dryRun) {
+                        continue;
+                    }
+                    ActivateDueContract::dispatch((int) $id, $today);
+                }
             });
 
-        $this->info(($dryRun ? '[dry-run] ' : '') . "Activated {$count} contract(s) due to start (from Booked).");
+        $this->info(($dryRun ? '[dry-run] ' : '') . "Queued activation jobs for {$queued} contract(s).");
 
         return self::SUCCESS;
-    }
-
-    /**
-     * @param iterable<int, object> $rows
-     */
-    private function processChunk(iterable $rows, int &$count, string $today, bool $dryRun): void
-    {
-        $ids = collect($rows)->pluck('id')->all();
-        if (empty($ids)) {
-            return;
-        }
-
-        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Contract> $contracts */
-        $contracts = Contract::query()
-            ->whereIn('id', $ids)
-            ->with(['room:id,status'])
-            ->get();
-
-        foreach ($contracts as $contract) {
-            $count++;
-            if ($dryRun) {
-                continue;
-            }
-
-            $contract->forceFill(['status' => ContractStatus::ACTIVE])->save();
-
-            /** @var \App\Models\Room|null $room */
-            $room = $contract->room;
-            if ($room && $room->status->value !== RoomStatus::OCCUPIED->value) {
-                $room->update(['status' => RoomStatus::OCCUPIED->value]);
-            }
-
-            $this->logEvent(
-                event: 'contract_activated_by_scheduler',
-                subject: $contract,
-                properties: [
-                    'date' => $today,
-                ],
-                description: 'Contract activated by scheduler as start date has arrived.',
-            );
-        }
     }
 }

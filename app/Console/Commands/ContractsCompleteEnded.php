@@ -3,24 +3,21 @@
 namespace App\Console\Commands;
 
 use App\Enum\ContractStatus;
+use App\Jobs\CompleteEndedContract;
 use App\Models\AppSetting;
 use App\Models\Contract;
-use App\Services\Contracts\ContractServiceInterface;
-use App\Traits\LogActivity;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class ContractsCompleteEnded extends Command
 {
-    use LogActivity;
-
     protected $signature = 'contracts:complete-ended
         {--chunk=200 : Chunk size for processing}
         {--dry-run : Only show counts without updating}';
 
     protected $description = 'Mark ended, non-renewing contracts as COMPLETED and free rooms (regardless of unpaid invoices).';
 
-    public function handle(ContractServiceInterface $contracts): int
+    public function handle(): int
     {
         $requireCheckout  = (bool) AppSetting::config('handover.require_checkout_for_complete', true);
         $requireTenantAck = (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false);
@@ -48,35 +45,20 @@ class ContractsCompleteEnded extends Command
                     ->orWhereNotNull('renewal_cancelled_at');
             })
             ->orderBy('id')
-            ->chunkById($chunk, function ($rows) use (&$count, &$skipped, $contracts, $dryRun): void {
+            ->chunkById($chunk, function ($rows) use (&$count, &$skipped, $dryRun): void {
                 $ids = collect($rows)->pluck('id')->all();
                 if (empty($ids)) {
                     return;
                 }
 
-                $batch = Contract::query()
-                    ->whereIn('id', $ids)
-                    ->with(['room:id,status'])
-                    ->get();
-
-                foreach ($batch as $c) {
+                foreach ($ids as $id) {
                     if ($dryRun) {
                         $count++;
                         continue;
                     }
-
                     try {
-                        $contracts->complete($c);
+                        CompleteEndedContract::dispatch((int) $id);
                         $count++;
-
-                        $this->logEvent(
-                            event: 'contract_completed_by_scheduler',
-                            subject: $c,
-                            properties: [
-                                'end_date' => (string) $c->end_date,
-                            ],
-                            description: 'Contract completed by scheduler as contract ended and not renewed.',
-                        );
                     } catch (\Throwable $e) {
                         $skipped++;
                     }

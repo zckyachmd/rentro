@@ -15,7 +15,9 @@ class UserInvited extends Notification implements ShouldQueue
         private readonly string $username,
         private readonly string $tempPassword,
         private readonly string $resetUrl,
+        private readonly ?int $userId = null,
     ) {
+        $this->onQueue('mail');
     }
 
     /**
@@ -48,6 +50,45 @@ class UserInvited extends Notification implements ShouldQueue
     {
         return [
             //
+        ];
+    }
+
+    /**
+     * Horizon tags for queued notification (when used directly as queued notification).
+     * Accept optional context argument for compatibility with Horizon tag resolution.
+     *
+     * @param mixed $context
+     * @return array<int, string>
+     */
+    public function tags($context = null): array
+    {
+        $uid = $this->userId;
+        if (!$uid && is_object($context)) {
+            if (method_exists($context, 'getAttribute')) {
+                $val = $context->getAttribute('id');
+                $uid = is_numeric($val) ? (int) $val : null;
+            } elseif (property_exists($context, 'id')) {
+                $val = $context->id;
+                $uid = is_numeric($val) ? (int) $val : null;
+            }
+        }
+
+        return array_values(array_filter([
+            'mail',
+            'notify:user_invited',
+            $uid ? ('user:' . (string) $uid) : null,
+        ]));
+    }
+
+    /**
+     * Map notification channels to specific queues (for Horizon separation).
+     *
+     * @return array<string, string>
+     */
+    public function viaQueues(): array
+    {
+        return [
+            'mail' => 'mail',
         ];
     }
 }

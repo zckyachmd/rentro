@@ -12,11 +12,20 @@ use App\Models\Contract;
 use App\Models\Invoice;
 use App\Traits\LogActivity;
 use Carbon\Carbon;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\DB;
 
-class UpdateContractStatusOnInvoicePaid
+class UpdateContractStatusOnInvoicePaid implements ShouldQueue
 {
     use LogActivity;
+    use Queueable;
+
+    public function __construct()
+    {
+        $this->onQueue('contracts');
+    }
 
     public function handle(InvoicePaid $event): void
     {
@@ -140,5 +149,31 @@ class UpdateContractStatusOnInvoicePaid
                 ]);
             }
         }
+    }
+
+    /**
+     * Provide Horizon tags for this queued listener.
+     *
+     * @return array<int, string>
+     */
+    public function tags(InvoicePaid $event): array
+    {
+        $invoiceId  = (string) ($event->invoice->getAttribute('id') ?? '');
+        $contractId = (string) ($event->invoice->getAttribute('contract_id') ?? '');
+
+        return ['contracts', 'listener:invoice_paid', 'invoice:' . $invoiceId, 'contract:' . $contractId];
+    }
+
+    /**
+     * Queue middleware for rate limiting.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [
+            new RateLimited('listener:invoice-paid'),
+            new RateLimited('listener:invoice-contract'),
+        ];
     }
 }

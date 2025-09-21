@@ -8,10 +8,19 @@ use App\Events\InvoiceReopened;
 use App\Models\Contract;
 use App\Traits\LogActivity;
 use Carbon\Carbon;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Middleware\RateLimited;
 
-class UpdateContractStatusOnInvoiceReopened
+class UpdateContractStatusOnInvoiceReopened implements ShouldQueue
 {
     use LogActivity;
+    use Queueable;
+
+    public function __construct()
+    {
+        $this->onQueue('contracts');
+    }
 
     /**
      * Handle the InvoiceReopened event.
@@ -58,5 +67,31 @@ class UpdateContractStatusOnInvoiceReopened
                 $contract->update(['paid_in_full_at' => null]);
             }
         }
+    }
+
+    /**
+     * Provide Horizon tags for this queued listener.
+     *
+     * @return array<int, string>
+     */
+    public function tags(InvoiceReopened $event): array
+    {
+        $invoiceId  = (string) ($event->invoice->getAttribute('id') ?? '');
+        $contractId = (string) ($event->invoice->getAttribute('contract_id') ?? '');
+
+        return ['contracts', 'listener:invoice_reopened', 'invoice:' . $invoiceId, 'contract:' . $contractId];
+    }
+
+    /**
+     * Queue middleware for rate limiting.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [
+            new RateLimited('listener:invoice-reopened'),
+            new RateLimited('listener:invoice-contract'),
+        ];
     }
 }
