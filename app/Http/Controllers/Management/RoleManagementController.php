@@ -71,6 +71,7 @@ class RoleManagementController extends Controller
         return Inertia::render('management/role/index', [
             'roles'       => $rolesPayload,
             'permissions' => $permissions,
+            'guards'      => array_keys((array) config('auth.guards', [])) ?: ['web', 'api'],
             'query'       => [
                 'page'     => $rolesPayload['current_page'],
                 'per_page' => $rolesPayload['per_page'],

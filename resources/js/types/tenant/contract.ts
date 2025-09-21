@@ -7,6 +7,8 @@ export interface TenantContractItem {
     rent_cents: number;
     status: string;
     auto_renew: boolean;
+    needs_ack_checkin?: boolean;
+    needs_ack_checkout?: boolean;
 }
 
 export type TenantHandover = {
@@ -27,4 +29,6 @@ export type TenantHandover = {
 
 export type ColumnFactoryOptions = {
     onStopAutoRenew?: (row: TenantContractItem) => void;
+    onViewCheckin?: (row: TenantContractItem) => void;
+    onViewCheckout?: (row: TenantContractItem) => void;
 };

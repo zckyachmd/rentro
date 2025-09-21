@@ -1,20 +1,10 @@
 import { Form, Link } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import GuestLayout from '@/layouts/guest-layout';
 
-export default function VerifyEmail({ status }: { status?: string }) {
-    useEffect(() => {
-        if (status === 'verification-link-sent') {
-            toast.success(
-                'A new verification link has been sent to the email address you provided during registration.',
-            );
-        }
-    }, [status]);
-
+export default function VerifyEmail() {
     return (
         <GuestLayout
             title="Verify email"
@@ -23,7 +13,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
                 <Form
                     method="post"
                     action={route('verification.send')}
-                    className="space-y-6 text-center"
+                    className="space-y-4 text-center"
                 >
                     {({ processing }) => (
                         <>

@@ -206,10 +206,10 @@ class ContractManagementController extends Controller
         $threshold = now()->copy()->addDays(max(1, $leadDays))->startOfDay()->toDateString();
 
         $vacantRooms = Room::query()
-            ->select('id', 'number', 'name', 'price_cents', 'billing_period', 'room_type_id', 'building_id', 'floor_id', 'status')
+            ->select('id', 'number', 'name', 'price_overrides', 'deposit_overrides', 'room_type_id', 'building_id', 'floor_id', 'status')
             ->where('status', RoomStatus::VACANT->value)
             ->with([
-                'type:id,deposit_cents,price_cents',
+                'type:id,prices,deposits',
                 'building:id,name,code',
                 'floor:id,level,building_id',
             ])
@@ -217,7 +217,7 @@ class ContractManagementController extends Controller
             ->get();
 
         $prebookRooms = Room::query()
-            ->select('id', 'number', 'name', 'price_cents', 'billing_period', 'room_type_id', 'building_id', 'floor_id', 'status')
+            ->select('id', 'number', 'name', 'price_overrides', 'deposit_overrides', 'room_type_id', 'building_id', 'floor_id', 'status')
             ->whereHas('contracts', function ($q) use ($today, $threshold) {
                 $q->where('status', ContractStatus::ACTIVE->value)
                     ->whereNotNull('end_date')
@@ -235,7 +235,7 @@ class ContractManagementController extends Controller
                 ])->whereDate('start_date', '>', $today);
             })
             ->with([
-                'type:id,deposit_cents,price_cents',
+                'type:id,prices,deposits',
                 'building:id,name,code',
                 'floor:id,level,building_id',
             ])
@@ -247,14 +247,12 @@ class ContractManagementController extends Controller
             ->values()
             ->map(function (Room $r) {
                 return [
-                    'id'               => (string) $r->id,
-                    'number'           => $r->number,
-                    'name'             => $r->name,
-                    'price_cents'      => $r->price_cents,
-                    'billing_period'   => $r->billing_period->value,
-                    'deposit_cents'    => $r->type?->deposit_cents,
-                    'type_price_cents' => $r->type?->price_cents,
-                    'building'         => $r->building ? [
+                    'id'       => (string) $r->id,
+                    'number'   => $r->number,
+                    'name'     => $r->name,
+                    'prices'   => $r->effectivePrices(),
+                    'deposits' => $r->effectiveDeposits(),
+                    'building' => $r->building ? [
                         'id'   => $r->building->id,
                         'name' => $r->building->name,
                         'code' => $r->building->code,
@@ -319,8 +317,8 @@ class ContractManagementController extends Controller
     {
         $contract->load([
             'tenant:id,name,email,phone',
-            'room:id,number,name,billing_period,price_cents,room_type_id,building_id,floor_id',
-            'room.type:id,name,deposit_cents,price_cents',
+            'room:id,number,name,price_overrides,deposit_overrides,room_type_id,building_id,floor_id',
+            'room.type:id,name,prices,deposits',
             'room.building:id,name,code',
             'room.floor:id,level,building_id',
         ]);
@@ -355,16 +353,16 @@ class ContractManagementController extends Controller
         ] : null;
 
         $roomDTO = $room ? [
-            'id'             => (string) $room->id,
-            'number'         => $room->number,
-            'name'           => $room->name,
-            'billing_period' => $room->billing_period->value,
-            'price_cents'    => $room->price_cents,
-            'type'           => $room->type ? [
+            'id'            => (string) $room->id,
+            'number'        => $room->number,
+            'name'          => $room->name,
+            'price_cents'   => $room->effectivePriceCents(BillingPeriod::MONTHLY->value),
+            'deposit_cents' => $room->effectiveDepositCents(BillingPeriod::MONTHLY->value),
+            'type'          => $room->type ? [
                 'id'            => (string) $room->type->id,
                 'name'          => $room->type->name,
-                'deposit_cents' => $room->type->deposit_cents,
-                'price_cents'   => $room->type->price_cents,
+                'deposit_cents' => (int) (($room->type->deposits['monthly'] ?? 0)),
+                'price_cents'   => (int) (($room->type->prices['monthly'] ?? 0)),
             ] : null,
             'building' => $room->building ? [
                 'id'   => (string) $room->building->id,
@@ -398,6 +396,13 @@ class ContractManagementController extends Controller
             ];
         });
 
+        $handoverSettings = [
+            'min_photos_checkin'              => (int) AppSetting::config('handover.min_photos_checkin', 0),
+            'min_photos_checkout'             => (int) AppSetting::config('handover.min_photos_checkout', 0),
+            'require_tenant_ack_for_complete' => (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false),
+            'require_checkin_for_activate'    => (bool) AppSetting::config('handover.require_checkin_for_activate', true),
+        ];
+
         return Inertia::render('management/contract/detail', [
             'contract' => $contractDTO,
             'tenant'   => $tenantDTO,
@@ -408,6 +413,7 @@ class ContractManagementController extends Controller
                 'per_page'     => $invoices->perPage(),
                 'total'        => $invoices->total(),
             ],
+            'handover' => $handoverSettings,
         ]);
     }
 
@@ -480,10 +486,10 @@ class ContractManagementController extends Controller
     {
         $contract->load([
             'tenant:id,name,email,phone',
-            'room:id,number,name,billing_period,price_cents,building_id,floor_id,room_type_id',
+            'room:id,number,name,price_overrides,building_id,floor_id,room_type_id',
             'room.building:id,name,code',
             'room.floor:id,level',
-            'room.type:id,name,price_cents',
+            'room.type:id,name,prices',
         ]);
 
         $tenant = $contract->tenant;

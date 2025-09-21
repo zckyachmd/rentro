@@ -29,8 +29,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
+import { getJson } from '@/lib/api';
+import type { TenantHandover } from '@/types/tenant';
 import type {
     TenantContractsPageProps as ContractsPageProps,
     TenantContractQueryInit as QueryInit,
@@ -132,6 +135,37 @@ export default function TenantContractIndex(props: ContractsPageProps) {
     const [stopTarget, setStopTarget] =
         React.useState<TenantContractItem | null>(null);
     const [ack, setAck] = React.useState(false);
+
+    const [handoverDialog, setHandoverDialog] = React.useState<{
+        open: boolean;
+        data: TenantHandover | null;
+    }>({ open: false, data: null });
+
+    const openLatestHandover = React.useCallback(
+        async (contractId: string, type: 'checkin' | 'checkout') => {
+            try {
+                const j = await getJson<{ handovers?: TenantHandover[] }>(
+                    route('tenant.contracts.handovers.index', {
+                        contract: contractId,
+                    }),
+                );
+                const list = (j.handovers ?? []).filter(Boolean);
+                const latest = list.find((h) => h.type === type) || null;
+                if (!latest) {
+                    window.alert(
+                        type === 'checkin'
+                            ? 'Belum ada data check‑in.'
+                            : 'Belum ada data check‑out.',
+                    );
+                    return;
+                }
+                setHandoverDialog({ open: true, data: latest });
+            } catch {
+                // ignore
+            }
+        },
+        [],
+    );
 
     const daysUntil = (end?: string | null): number | null => {
         if (!end) return null;
@@ -239,6 +273,10 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                         <DataTableServer<TenantContractItem, unknown>
                             columns={createColumns({
                                 onStopAutoRenew: (row) => setStopTarget(row),
+                                onViewCheckin: (row) =>
+                                    openLatestHandover(row.id, 'checkin'),
+                                onViewCheckout: (row) =>
+                                    openLatestHandover(row.id, 'checkout'),
                             })}
                             rows={contracts}
                             paginator={paginator ?? null}
@@ -405,6 +443,14 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+
+                <TenantHandoverDetailDialog
+                    open={handoverDialog.open}
+                    onOpenChange={(o) =>
+                        setHandoverDialog((s) => ({ ...s, open: o }))
+                    }
+                    handover={handoverDialog.data}
+                />
             </div>
         </AuthLayout>
     );

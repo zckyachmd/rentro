@@ -16,6 +16,9 @@ export type PaymentIndexPageProps = {
         methods: { value: string; label: string }[];
         statuses: string[];
     };
+    paymentsExtra?: {
+        manual_banks?: { bank: string; holder: string; account: string }[];
+    };
     query?: { status?: string | null; search?: string } & Record<
         string,
         unknown
@@ -58,6 +61,7 @@ export type ManualPaymentDialogProps = {
         amount_cents: number;
         outstanding: number;
     }>;
+    manualBanks?: { bank: string; holder: string; account: string }[];
 };
 
 export type PaymentDetailTarget = { id: string } | null;
@@ -75,7 +79,11 @@ export type ManagementPaymentDetailDTO = {
         attachment?: string | null;
         attachment_name?: string | null;
         attachment_uploaded_at?: string | null;
+        attachments?: string[];
         pre_outstanding_cents?: number | null;
+        receiver_bank?: string | null;
+        receiver_account?: string | null;
+        receiver_holder?: string | null;
     };
     invoice: {
         id: string;
@@ -103,6 +111,10 @@ export type ManagementPaymentShowDTO = {
         paid_at?: string | null;
         note?: string | null;
         attachment?: string | null;
+        attachments?: string[];
+        receiver_bank?: string | null;
+        receiver_account?: string | null;
+        receiver_holder?: string | null;
     };
     invoice?: { number: string } | null;
     tenant?: { name: string } | null;

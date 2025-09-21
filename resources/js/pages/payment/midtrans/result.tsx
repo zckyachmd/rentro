@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import {
     AlertTriangle,
     CheckCircle2,
@@ -5,7 +6,6 @@ import {
     XCircle,
 } from 'lucide-react';
 import React from 'react';
-import { Link } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

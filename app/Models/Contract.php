@@ -63,6 +63,13 @@ class Contract extends Model
         'deposit_refunded_at'  => 'datetime',
     ];
 
+    public static function monthlyEndDate(Carbon $start, int $months, bool $prorata): string
+    {
+        // End date inclusive for monthly: start + months - 1 day
+        // Keep signature compatible; prorata affects invoicing, not contract end date span.
+        return $start->copy()->addMonthsNoOverflow(max(1, $months))->subDay()->toDateString();
+    }
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -88,14 +95,5 @@ class Contract extends Model
             'id',          // Local key on contracts
             'id',           // Local key on invoices
         );
-    }
-
-    public static function monthlyEndDate(Carbon $start, int $months, bool $prorata): string
-    {
-        if ($prorata && $start->day !== 1 && $months >= 2) {
-            return $start->copy()->endOfMonth()->addMonthsNoOverflow($months)->toDateString();
-        }
-
-        return $start->copy()->addMonthsNoOverflow($months)->toDateString();
     }
 }

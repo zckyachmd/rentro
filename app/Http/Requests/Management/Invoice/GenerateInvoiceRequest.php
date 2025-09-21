@@ -17,7 +17,7 @@ class GenerateInvoiceRequest extends FormRequest
         return [
             'contract_id'  => ['required', 'integer', 'exists:contracts,id'],
             'mode'         => ['required', 'in:per_month,full'],
-            'reason'       => ['required', new Reason()],
+            'reason'       => ['required', new Reason(20, 200)],
             'period_month' => ['nullable', 'date_format:Y-m'],
             'range'        => ['nullable', 'array'],
             'range.from'   => ['nullable', 'date_format:Y-m-d'],

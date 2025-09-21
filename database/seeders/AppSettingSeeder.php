@@ -31,7 +31,7 @@ class AppSettingSeeder extends Seeder
             ['key' => 'billing.release_day_of_month', 'value' => 1, 'type' => 'int', 'description' => 'Tanggal acuan siklus tagihan bulanan (DOM)'],
             ['key' => 'billing.due_day_of_month', 'value' => 7, 'type' => 'int', 'description' => 'Tanggal jatuh tempo default untuk tagihan bulanan'],
             ['key' => 'billing.deposit_renewal_rollover', 'value' => true, 'type' => 'bool', 'description' => 'Deposit diperhitungkan/bergulir saat perpanjangan'],
-            ['key' => 'billing.use_latest_room_price', 'value' => true, 'type' => 'bool', 'description' => 'Gunakan harga kamar terbaru saat membuat invoice'],
+            // Removed: harga invoice selalu mengikuti nilai kontrak
 
             // Scheduler / automation
             ['key' => 'contract.auto_renew_lead_days', 'value' => 7, 'type' => 'int', 'description' => 'Hari sebelum akhir kontrak untuk memproses auto‑renew'],
@@ -65,6 +65,9 @@ class AppSettingSeeder extends Seeder
                 'type' => 'array',
                 'description' => 'Daftar rekening tujuan untuk transfer manual (bank, nama pemegang, nomor rekening).',
             ],
+
+            // Profile
+            ['key' => 'profile.emergency_contacts_max', 'value' => 3, 'type' => 'int', 'description' => 'Batas maksimal jumlah kontak darurat per pengguna'],
         ];
 
         foreach ($settings as $row) {

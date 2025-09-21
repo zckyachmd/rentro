@@ -8,6 +8,7 @@ use App\Enum\InvoiceStatus;
 use App\Enum\PaymentMethod;
 use App\Enum\PaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tenant\PayVaRequest;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -17,7 +18,6 @@ use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class MidtransController extends Controller
 {
@@ -40,18 +40,11 @@ class MidtransController extends Controller
 
     // computeOutstanding removed; inline in payVa for simplicity
 
-    public function payVa(Request $request, Invoice $invoice): JsonResponse
+    public function payVa(PayVaRequest $request, Invoice $invoice): JsonResponse
     {
         $user = $request->user();
-
-        $validated = $request->validate([
-            'bank' => [
-                'required',
-                'string',
-                Rule::in(array_map('strval', (array) config('midtrans.va_banks', ['bca', 'bni', 'bri', 'permata', 'cimb']))),
-            ],
-        ]);
-        $bank = (string) $validated['bank'];
+        $data = $request->validated();
+        $bank = (string) $data['bank'];
 
         $this->assertOwnership($invoice, $request);
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Management\User;
 
 use App\Enum\RoleName;
+use App\Rules\Reason;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ResetPasswordRequest extends FormRequest
@@ -25,6 +26,7 @@ class ResetPasswordRequest extends FormRequest
         return [
             'mode'       => ['required', 'in:send,generate'],
             'send_email' => ['sometimes', 'boolean'],
+            'reason'     => ['required', new Reason(20)],
         ];
     }
 

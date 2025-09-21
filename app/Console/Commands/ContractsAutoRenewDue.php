@@ -47,7 +47,7 @@ class ContractsAutoRenewDue extends Command
                 /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Contract> $batch */
                 $batch = Contract::query()
                     ->whereIn('id', $ids)
-                    ->with(['room:id,price_cents,billing_period', 'tenant:id'])
+                    ->with(['room:id,room_type_id,price_overrides', 'room.type:id,prices', 'tenant:id'])
                     ->get();
 
                 foreach ($batch as $old) {
@@ -70,9 +70,8 @@ class ContractsAutoRenewDue extends Command
 
                     [$period, $duration] = $this->computeTerm($old);
 
-                    $deposit          = $rollover ? 0 : (int) ($old->deposit_cents ?? 0);
-                    $currentRoomPrice = (int) ($old->room->price_cents ?? 0);
-                    $rentCents        = $currentRoomPrice > 0 ? $currentRoomPrice : (int) $old->rent_cents;
+                    $deposit   = $rollover ? 0 : (int) ($old->deposit_cents ?? 0);
+                    $rentCents = (int) $old->rent_cents;
 
                     $payload = [
                         'user_id'        => $old->user_id,

@@ -19,6 +19,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import CreateUserDialog from '@/features/user/dialogs/create-user-dialog';
+import ForceLogoutDialog from '@/features/user/dialogs/force-logout-dialog';
+import ResetPasswordDialog from '@/features/user/dialogs/reset-password-dialog';
+import { RoleDialog } from '@/features/user/dialogs/role-dialog';
+import { TwoFADialog } from '@/features/user/dialogs/two-factor-dialog';
+import { createColumns } from '@/features/user/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import type {
@@ -28,13 +34,6 @@ import type {
     Role,
     UserItem,
 } from '@/types/management';
-
-import { createColumns } from './columns';
-import CreateUserDialog from './dialogs/create-user';
-import ForceLogoutDialog from './dialogs/force-logout';
-import ResetPasswordDialog from './dialogs/reset-password';
-import { RoleDialog } from './dialogs/role';
-import { TwoFADialog } from './dialogs/two-factor';
 
 // types moved to pages/types
 
@@ -137,7 +136,7 @@ export default function UsersIndex() {
                                     onValueChange={(v) =>
                                         onQueryChange({
                                             page: 1,
-                                            roleId:
+                                            role_id:
                                                 v === 'all' ? null : Number(v),
                                         })
                                     }

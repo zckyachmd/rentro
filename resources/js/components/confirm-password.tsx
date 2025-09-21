@@ -45,7 +45,11 @@ export function ConfirmPasswordDialog({
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="space-y-3">
+                <form
+                    onSubmit={onSubmit}
+                    className="space-y-3"
+                    autoComplete="on"
+                >
                     <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
                         <div className="relative">
@@ -62,7 +66,10 @@ export function ConfirmPasswordDialog({
                                         e.target.value,
                                     )
                                 }
+                                placeholder="Masukkan password Anda"
                                 autoComplete="current-password"
+                                autoFocus
+                                spellCheck={false}
                             />
                             <Button
                                 type="button"

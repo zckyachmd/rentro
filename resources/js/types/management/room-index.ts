@@ -44,6 +44,7 @@ export type QueryInit = Partial<{
     type_id: string | number | null;
     status: string | null;
     gender_policy: string | null;
+    price_period: 'daily' | 'weekly' | 'monthly' | null;
 }>;
 
 export type SafePayload = Partial<{
@@ -59,4 +60,5 @@ export type SafePayload = Partial<{
     type_id?: string | number | null;
     status?: string | null;
     gender_policy?: string | null;
+    price_period?: 'daily' | 'weekly' | 'monthly' | null;
 }>;

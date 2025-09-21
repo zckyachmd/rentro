@@ -1,7 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { KeyRound, MailCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,11 +62,7 @@ export default function SecurityIndex() {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    toast.success('Email verifikasi telah dikirim.');
                     setVerifyOpen(false);
-                },
-                onError: () => {
-                    toast.error('Gagal mengirim email verifikasi. Coba lagi.');
                 },
                 onFinish: () => setSending(false),
             },

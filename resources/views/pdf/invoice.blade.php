@@ -363,6 +363,10 @@
                         <div class="small-muted">{{ 'Total ' . $totalDays . ' hari; gratis ' . min($freeDays,
                             $totalDays) . ' hari; ditagih ' . $qty . ' hari.' }}</div>
                         @endif
+                        @php($unitStr = is_string(($meta['unit'] ?? null)) ? (string) $meta['unit'] : '')
+                        @if(!$isProrata && !empty($unitStr) && $qty && $unitPrice)
+                        <div class="small-muted">{{ $fmt($unitPrice) . ' × ' . $qty . ' ' . $unitStr }}</div>
+                        @endif
                     </td>
                     <td class="right mono">{{ $qty }}</td>
                     <td class="right mono">{{ $fmt($unitPrice) }}</td>

@@ -1,15 +1,13 @@
 import { Form } from '@inertiajs/react';
-import { Eye, EyeOff, Loader2, Lock } from 'lucide-react';
-import { useState } from 'react';
+import { Loader2, Lock } from 'lucide-react';
 
+import PasswordInput from '@/components/form/password-input';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import GuestLayout from '@/layouts/guest-layout';
 
 export default function ConfirmPassword() {
-    const [showPassword, setShowPassword] = useState(false);
-
     return (
         <GuestLayout
             title="Confirm your password"
@@ -21,51 +19,21 @@ export default function ConfirmPassword() {
                     resetOnSuccess={['password']}
                 >
                     {({ processing, errors }) => (
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="password">Password</Label>
-                                <div className="relative flex items-center">
-                                    <span className="absolute left-3 text-muted-foreground">
-                                        <Lock className="h-4 w-4" />
-                                    </span>
-                                    <Input
-                                        id="password"
-                                        type={
-                                            showPassword ? 'text' : 'password'
-                                        }
-                                        name="password"
-                                        placeholder="Password"
-                                        autoComplete="current-password"
-                                        autoFocus
-                                        className="pl-9 pr-10"
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        type="button"
-                                        onClick={() =>
-                                            setShowPassword(!showPassword)
-                                        }
-                                        className="absolute right-0 h-full px-2 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
-                                        tabIndex={-1}
-                                        aria-label={
-                                            showPassword
-                                                ? 'Hide password'
-                                                : 'Show password'
-                                        }
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="h-4 w-4" />
-                                        ) : (
-                                            <Eye className="h-4 w-4" />
-                                        )}
-                                    </Button>
-                                </div>
-                                {errors.password && (
-                                    <p className="px-1 text-xs text-red-600 dark:text-red-400">
-                                        {errors.password}
-                                    </p>
-                                )}
+                                <PasswordInput
+                                    id="password"
+                                    name="password"
+                                    placeholder="Password"
+                                    autoComplete="current-password"
+                                    autoFocus
+                                    className="pl-9"
+                                    leftAdornment={
+                                        <Lock className="h-4 w-4 text-muted-foreground" />
+                                    }
+                                />
+                                <InputError message={errors.password} />
                             </div>
 
                             <div className="flex items-center">

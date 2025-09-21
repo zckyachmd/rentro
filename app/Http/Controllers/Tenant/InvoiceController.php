@@ -119,15 +119,29 @@ class InvoiceController extends Controller
                 ->get(['id', 'method', 'status', 'amount_cents', 'paid_at', 'reference', 'provider']);
 
             $payments = $paymentCollection->map(function ($p): array {
-                /* @var \App\Models\Payment $p */
+                $meta         = (array) ($p->meta ?? []);
+                $reviewMeta   = (array) ($meta['review'] ?? []);
+                $rejectReason = (string) ($reviewMeta['reason'] ?? '');
+                $note         = (string) ($p->note ?? '');
+                $reviewBy     = (string) ($reviewMeta['confirmed_by'] ?? ($reviewMeta['rejected_by'] ?? ''));
+                $reviewAt     = (string) ($reviewMeta['confirmed_at'] ?? ($reviewMeta['rejected_at'] ?? ''));
+                $receiver     = (array) ($meta['receiver'] ?? []);
+
                 return [
-                    'id'           => (string) $p->id,
-                    'method'       => (string) $p->method->value,
-                    'status'       => (string) $p->status->value,
-                    'amount_cents' => (int) $p->amount_cents,
-                    'paid_at'      => $p->paid_at ? $p->paid_at->toDateTimeString() : null,
-                    'reference'    => $p->reference,
-                    'provider'     => $p->provider,
+                    'id'               => (string) $p->id,
+                    'method'           => (string) $p->method->value,
+                    'status'           => (string) $p->status->value,
+                    'amount_cents'     => (int) $p->amount_cents,
+                    'paid_at'          => $p->paid_at ? $p->paid_at->toDateTimeString() : null,
+                    'reference'        => $p->reference,
+                    'provider'         => $p->provider,
+                    'note'             => $note !== '' ? $note : null,
+                    'reject_reason'    => $rejectReason !== '' ? $rejectReason : null,
+                    'review_by'        => $reviewBy !== '' ? $reviewBy : null,
+                    'review_at'        => $reviewAt !== '' ? $reviewAt : null,
+                    'receiver_bank'    => isset($receiver['bank']) ? (string) $receiver['bank'] : null,
+                    'receiver_account' => isset($receiver['account']) ? (string) $receiver['account'] : null,
+                    'receiver_holder'  => isset($receiver['holder']) ? (string) $receiver['holder'] : null,
                 ];
             });
 

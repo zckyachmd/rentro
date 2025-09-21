@@ -12,6 +12,8 @@ import {
     DataTableServer,
     type QueryBag,
 } from '@/components/ui/data-table-server';
+import AuditDetailDialog from '@/features/audit/dialogs/detail-dialog';
+import { createColumns } from '@/features/audit/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import type {
@@ -20,9 +22,6 @@ import type {
     AuditPageProps as PageProps,
     AuditSafePayload as SafePayload,
 } from '@/types/management';
-
-import { createColumns } from './columns';
-import DetailDialog from './dialogs/detail';
 
 function useDebounced<P extends unknown[]>(
     fn: (...args: P) => void,
@@ -160,7 +159,7 @@ export default function AuditLogIndex() {
                 </Card>
             </div>
 
-            <DetailDialog
+            <AuditDetailDialog
                 open={detail.open}
                 item={detail.item}
                 onOpenChange={(o) => setDetail((s) => ({ ...s, open: o }))}

@@ -36,33 +36,88 @@ export type FlashToasterProps = {
      * Apakah menampilkan toast hanya saat value flash berubah (mencegah double-fire)? default: true
      */
     dedupe?: boolean;
+    /**
+     * Durasi toast (ms). Dipakai juga sebagai fallback cleanup dedupe.
+     * default: 4000
+     */
+    toastDuration?: number;
 };
 
 export default function FlashToaster({
     priority = ['success', 'error', 'warning', 'info', 'message'],
     dedupe = true,
+    toastDuration = 4000,
 }: FlashToasterProps) {
     const { props } = usePage<PageShared>();
 
-    const keyRef = React.useRef<string>('');
+    const activeRef = React.useRef<Set<string>>(new Set());
 
     React.useEffect(() => {
         const f = props.flash || {};
         const c = props.cb || {};
 
-        // gabungkan yang relevan jadi satu signature untuk dedupe
-        const signature = JSON.stringify({
-            s: f.success ?? c.success,
-            e: f.error ?? c.error,
-            w: f.warning,
-            i: f.info,
-            m: f.message,
-        });
+        const show = (type: ToastKey, message: string) => {
+            const sig = `${type}|${message}`;
+            if (dedupe && activeRef.current.has(sig)) return;
+            activeRef.current.add(sig);
 
-        if (dedupe && signature === keyRef.current) return;
-        keyRef.current = signature;
+            const fallback = window.setTimeout(() => {
+                activeRef.current.delete(sig);
+            }, toastDuration + 300);
 
-        // pilih pesan sesuai prioritas
+            const common: { duration: number; onDismiss: () => void } = {
+                duration: toastDuration,
+                onDismiss: () => {
+                    activeRef.current.delete(sig);
+                    window.clearTimeout(fallback);
+                },
+            };
+
+            switch (type) {
+                case 'success':
+                    toast.success(message, common);
+                    break;
+                case 'error':
+                    toast.error(message, common);
+                    break;
+                case 'warning': {
+                    const t = (
+                        toast as {
+                            warning?: (
+                                msg: string,
+                                opts?: {
+                                    duration?: number;
+                                    onDismiss?: () => void;
+                                },
+                            ) => void;
+                        }
+                    ).warning;
+                    if (t) t(message, common);
+                    else toast(message, common);
+                    break;
+                }
+                case 'info': {
+                    const t = (
+                        toast as {
+                            info?: (
+                                msg: string,
+                                opts?: {
+                                    duration?: number;
+                                    onDismiss?: () => void;
+                                },
+                            ) => void;
+                        }
+                    ).info;
+                    if (t) t(message, common);
+                    else toast(message, common);
+                    break;
+                }
+                case 'message':
+                    toast(message, common);
+                    break;
+            }
+        };
+
         for (const k of priority) {
             const val: string | undefined =
                 (f[k as ToastKey] as string | undefined) ??
@@ -74,41 +129,23 @@ export default function FlashToaster({
             if (!val) continue;
             switch (k) {
                 case 'success':
-                    toast.success(String(val));
+                    show('success', String(val));
                     return;
                 case 'error':
-                    toast.error(String(val));
+                    show('error', String(val));
                     return;
                 case 'warning':
-                    if (
-                        typeof (toast as { warning?: (msg: string) => void })
-                            .warning === 'function'
-                    ) {
-                        (toast as { warning?: (msg: string) => void }).warning!(
-                            String(val),
-                        );
-                    } else {
-                        toast(String(val));
-                    }
+                    show('warning', String(val));
                     return;
                 case 'info':
-                    if (
-                        typeof (toast as { info?: (msg: string) => void })
-                            .info === 'function'
-                    ) {
-                        (toast as { info?: (msg: string) => void }).info!(
-                            String(val),
-                        );
-                    } else {
-                        toast(String(val));
-                    }
+                    show('info', String(val));
                     return;
                 case 'message':
-                    toast(String(val));
+                    show('message', String(val));
                     return;
             }
         }
-    }, [props.flash, props.cb, dedupe, priority]);
+    }, [props.flash, props.cb, dedupe, priority, toastDuration]);
 
     return null;
 }

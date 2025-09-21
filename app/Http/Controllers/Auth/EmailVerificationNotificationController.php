@@ -23,6 +23,6 @@ class EmailVerificationNotificationController extends Controller
         $request->user()->sendEmailVerificationNotification();
         $this->logAuth('email_verification_link_sent', $request->user());
 
-        return back()->with('status', 'verification-link-sent');
+        return back()->with('success', 'Tautan verifikasi telah dikirim ke email Anda.');
     }
 }

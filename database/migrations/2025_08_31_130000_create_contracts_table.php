@@ -14,7 +14,8 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->primary();
             $table->string('number', 64)->unique();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // tenant
-            $table->foreignId('room_id')->constrained()->cascadeOnDelete();
+            // Do not cascade delete contracts when a room is deleted
+            $table->foreignId('room_id')->constrained()->restrictOnDelete();
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->unsignedBigInteger('rent_cents');

@@ -1,7 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { Eye, EyeOff } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +11,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 
 export default function PasswordTab() {
@@ -41,10 +41,7 @@ export default function PasswordTab() {
                     'password',
                     'password_confirmation',
                 );
-                toast.success('Password berhasil diperbarui.');
             },
-            onError: () =>
-                toast.error('Gagal memperbarui password. Periksa input Anda.'),
         });
     };
 
@@ -102,11 +99,9 @@ export default function PasswordTab() {
                                     )}
                                 </Button>
                             </div>
-                            {passwordForm.errors.current_password && (
-                                <p className="text-sm text-destructive">
-                                    {passwordForm.errors.current_password}
-                                </p>
-                            )}
+                            <InputError
+                                message={passwordForm.errors.current_password}
+                            />
                         </div>
 
                         <div className="space-y-2">
@@ -147,13 +142,10 @@ export default function PasswordTab() {
                                     )}
                                 </Button>
                             </div>
-                            {passwordForm.errors.password && (
-                                <p className="text-sm text-destructive">
-                                    {passwordForm.errors.password}
-                                </p>
-                            )}
+                            <InputError
+                                message={passwordForm.errors.password}
+                            />
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="password_confirmation">
                                 Konfirmasi Password Baru
@@ -199,6 +191,11 @@ export default function PasswordTab() {
                                     )}
                                 </Button>
                             </div>
+                            <InputError
+                                message={
+                                    passwordForm.errors.password_confirmation
+                                }
+                            />
                         </div>
                     </div>
 

@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Enum\ContractStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Tenant\Contract\StopAutoRenewRequest;
+use App\Http\Requests\Tenant\StopAutoRenewRequest;
 use App\Models\AppSetting;
 use App\Models\Contract;
+use App\Models\RoomHandover;
 use App\Traits\DataTable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -45,18 +46,34 @@ class ContractController extends Controller
         /** @var \Illuminate\Pagination\LengthAwarePaginator<Contract> $page */
         $page = $this->applyTable($query, $request, $options);
 
-        $mapped = $page->getCollection()->map(function (Contract $c): array {
+        $ids               = $page->getCollection()->pluck('id');
+        $pendingCheckinIds = RoomHandover::query()
+            ->whereIn('contract_id', $ids)
+            ->where('type', 'checkin')
+            ->where('status', 'Pending')
+            ->pluck('contract_id')
+            ->unique();
+        $pendingCheckoutIds = RoomHandover::query()
+            ->whereIn('contract_id', $ids)
+            ->where('type', 'checkout')
+            ->where('status', 'Pending')
+            ->pluck('contract_id')
+            ->unique();
+
+        $mapped = $page->getCollection()->map(function (Contract $c) use ($pendingCheckinIds, $pendingCheckoutIds): array {
             $room = $c->room;
 
             return [
-                'id'         => (string) $c->id,
-                'number'     => (string) ($c->number ?? ''),
-                'room'       => $room ? ['id' => (string) $room->id, 'number' => (string) $room->number] : null,
-                'start_date' => $c->start_date ? $c->start_date->toDateString() : null,
-                'end_date'   => $c->end_date ? $c->end_date->toDateString() : null,
-                'rent_cents' => (int) $c->rent_cents,
-                'status'     => (string) $c->status->value,
-                'auto_renew' => (bool) $c->auto_renew,
+                'id'                 => (string) $c->id,
+                'number'             => (string) ($c->number ?? ''),
+                'room'               => $room ? ['id' => (string) $room->id, 'number' => (string) $room->number] : null,
+                'start_date'         => $c->start_date ? $c->start_date->toDateString() : null,
+                'end_date'           => $c->end_date ? $c->end_date->toDateString() : null,
+                'rent_cents'         => (int) $c->rent_cents,
+                'status'             => (string) $c->status->value,
+                'auto_renew'         => (bool) $c->auto_renew,
+                'needs_ack_checkin'  => $pendingCheckinIds->contains($c->id),
+                'needs_ack_checkout' => $pendingCheckoutIds->contains($c->id),
             ];
         });
         $page->setCollection($mapped);
@@ -88,10 +105,10 @@ class ContractController extends Controller
         }
 
         $contract->load([
-            'room:id,number,name,building_id,floor_id,room_type_id,price_cents,billing_period',
+            'room:id,number,name,building_id,floor_id,room_type_id,price_overrides',
             'room.building:id,name,code',
             'room.floor:id,level',
-            'room.type:id,name,price_cents',
+            'room.type:id,name,prices',
         ]);
 
         // Invoices for this contract (tenant POV)
@@ -124,12 +141,11 @@ class ContractController extends Controller
                 'number'     => (string) ($contract->number ?? ''),
                 'updated_at' => $contract->updated_at?->toDateTimeString(),
                 'room'       => $r ? [
-                    'id'             => (string) $r->id,
-                    'number'         => (string) $r->number,
-                    'name'           => (string) ($r->name ?? ''),
-                    'price_cents'    => (int) ($r->price_cents ?? 0),
-                    'billing_period' => (string) ($r->billing_period ? $r->billing_period->value : ''),
-                    'building'       => $r->building ? [
+                    'id'          => (string) $r->id,
+                    'number'      => (string) $r->number,
+                    'name'        => (string) ($r->name ?? ''),
+                    'price_cents' => (int) ($r->effectivePriceCents('Monthly') ?? 0),
+                    'building'    => $r->building ? [
                         'id'   => (string) $r->building->id,
                         'name' => (string) ($r->building->name ?? ''),
                         'code' => (string) ($r->building->code ?? ''),
@@ -141,7 +157,7 @@ class ContractController extends Controller
                     'type' => $r->type ? [
                         'id'          => (string) $r->type->id,
                         'name'        => (string) ($r->type->name ?? ''),
-                        'price_cents' => (int) ($r->type->price_cents ?? 0),
+                        'price_cents' => (int) (($r->type->prices['monthly'] ?? 0)),
                     ] : null,
                 ] : null,
                 'start_date'     => $contract->start_date ? $contract->start_date->toDateString() : null,
@@ -170,10 +186,10 @@ class ContractController extends Controller
         }
 
         $contract->load([
-            'room:id,number,name,building_id,floor_id,room_type_id,price_cents,billing_period',
+            'room:id,number,name,building_id,floor_id,room_type_id,price_overrides',
             'room.building:id,name,code',
             'room.floor:id,level',
-            'room.type:id,name,price_cents',
+            'room.type:id,name,prices',
         ]);
 
         $r        = $contract->room;
@@ -231,7 +247,7 @@ class ContractController extends Controller
     public function stopAutoRenew(StopAutoRenewRequest $request, Contract $contract)
     {
         if (!$contract->auto_renew) {
-            return back()->with('info', 'Perpanjangan otomatis sudah nonaktif.');
+            return back()->with('success', 'Perpanjangan otomatis sudah nonaktif.');
         }
 
         if ($contract->status !== ContractStatus::ACTIVE) {
@@ -248,7 +264,7 @@ class ContractController extends Controller
         $contract->forceFill(['auto_renew' => false, 'renewal_cancelled_at' => now()])->save();
 
         if ($daysLeft !== null && $daysLeft < $forfeitDays) {
-            return back()->with('warning', "Perpanjangan otomatis dihentikan. Sesuai kebijakan, deposit akan hangus karena kurang dari {$forfeitDays} hari dari tanggal berakhir.");
+            return back()->with('success', "Perpanjangan otomatis dihentikan. Sesuai kebijakan, deposit akan hangus karena kurang dari {$forfeitDays} hari dari tanggal berakhir.");
         }
 
         return back()->with('success', 'Perpanjangan otomatis telah dihentikan.');

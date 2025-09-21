@@ -68,7 +68,7 @@ class PaymentService implements PaymentServiceInterface
      */
     public function createPayment(Invoice $invoice, array $data, ?User $user = null, ?UploadedFile $attachment = null): Payment
     {
-        return DB::transaction(function () use ($invoice, $data, $user): Payment {
+        return DB::transaction(function () use ($invoice, $data, $user, $attachment): Payment {
             $method   = (string) $data['method'];
             $provider = $data['provider'] ?? null;
 
@@ -130,7 +130,14 @@ class PaymentService implements PaymentServiceInterface
                 }
             }
 
-            // Attachment handling removed per latest requirements.
+            // Store attachment evidence if provided (private bucket, single file)
+            try {
+                if ($attachment) {
+                    $payment->storeAttachmentFiles([$attachment], 'private', 1);
+                }
+            } catch (\Throwable $e) {
+                // Ignore attachment failures; admin can re-upload
+            }
 
             $this->recalculateInvoice($invoice);
 

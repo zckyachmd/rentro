@@ -25,6 +25,8 @@ export function variantForPaymentStatus(status: string): BadgeVariant {
             return 'secondary';
         case 'Failed':
             return 'destructive';
+        case 'Rejected':
+            return 'destructive';
         case 'Cancelled':
             return 'outline';
         default:

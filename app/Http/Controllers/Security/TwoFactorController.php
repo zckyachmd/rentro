@@ -27,7 +27,7 @@ class TwoFactorController extends Controller
 
         $this->logEvent(event: 'security.2fa_enabled', subject: $user, logName: 'security');
 
-        return back()->with('status', '2fa-setup-started');
+        return back()->with('success', 'Persiapan 2FA dimulai. Scan QR & konfirmasi OTP.');
     }
 
     public function qr(Request $request, TFA $tfa): HttpResponse
@@ -51,12 +51,16 @@ class TwoFactorController extends Controller
     {
         $user = $request->user();
         if (empty($user->two_factor_secret)) {
-            return back()->withErrors(['code' => '2FA belum diinisiasi.']);
+            return back()
+                ->withErrors(['code' => '2FA belum diinisiasi.'])
+                ->with('error', '2FA belum diinisiasi.');
         }
 
         $code = $request->validated()['code'];
         if (!$tfa->verify($user->two_factor_secret, $code)) {
-            return back()->withErrors(['code' => 'Kode OTP tidak valid atau kedaluwarsa.']);
+            return back()
+                ->withErrors(['code' => 'Kode OTP tidak valid atau kedaluwarsa.'])
+                ->with('error', 'Kode OTP tidak valid atau kedaluwarsa.');
         }
 
         $user->two_factor_confirmed_at = now();
@@ -64,7 +68,7 @@ class TwoFactorController extends Controller
 
         $this->logEvent(event: 'security.2fa_confirmed', subject: $user, logName: 'security');
 
-        return back()->with('status', '2fa-confirmed');
+        return back()->with('success', '2FA berhasil dikonfirmasi.');
     }
 
     public function cancel(Request $request): RedirectResponse
@@ -72,7 +76,9 @@ class TwoFactorController extends Controller
         $user = $request->user();
 
         if (empty($user->two_factor_secret) || !empty($user->two_factor_confirmed_at)) {
-            return back()->withErrors(['status' => 'Tidak ada proses 2FA yang perlu dibatalkan.']);
+            return back()
+                ->withErrors(['status' => 'Tidak ada proses 2FA yang perlu dibatalkan.'])
+                ->with('error', 'Tidak ada proses 2FA yang perlu dibatalkan.');
         }
 
         $user->forceFill([
@@ -83,7 +89,7 @@ class TwoFactorController extends Controller
 
         $this->logEvent(event: 'security.2fa_cancelled', subject: $user, logName: 'security');
 
-        return back()->with('status', '2fa-cancelled');
+        return back()->with('success', 'Proses 2FA dibatalkan.');
     }
 
     public function disable(Request $request): RedirectResponse
@@ -97,7 +103,7 @@ class TwoFactorController extends Controller
 
         $this->logEvent(event: 'security.2fa_disabled', subject: $user, logName: 'security');
 
-        return back()->with('status', '2fa-disabled');
+        return back()->with('success', '2FA dinonaktifkan.');
     }
 
     public function recoveryCode(Request $request, TFA $tfa): HttpResponse
@@ -118,7 +124,9 @@ class TwoFactorController extends Controller
     {
         $user = $request->user();
         if (empty($user->two_factor_secret) || empty($user->two_factor_confirmed_at)) {
-            return back()->withErrors(['status' => 'Aktifkan & konfirmasi 2FA terlebih dahulu.']);
+            return back()
+                ->withErrors(['status' => 'Aktifkan & konfirmasi 2FA terlebih dahulu.'])
+                ->with('error', 'Aktifkan & konfirmasi 2FA terlebih dahulu.');
         }
 
         $user->two_factor_recovery_codes = $tfa->generateRecoveryCodes();
@@ -126,6 +134,6 @@ class TwoFactorController extends Controller
 
         $this->logEvent(event: 'security.2fa_recovery_regenerated', subject: $user, logName: 'security');
 
-        return back()->with('status', '2fa-recovery-regenerated');
+        return back()->with('success', 'Recovery codes diperbarui.');
     }
 }

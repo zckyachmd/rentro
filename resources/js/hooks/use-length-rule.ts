@@ -38,5 +38,8 @@ export function useLengthRule(
         overMax,
         valid,
         limit,
+        min: typeof min === 'number' ? min : null,
+        max: typeof max === 'number' ? max : null,
+        required,
     } as const;
 }

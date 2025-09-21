@@ -1,7 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { GripVertical, Image as ImageIcon, Trash2 } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Select,
@@ -24,46 +24,20 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { readXsrfCookie } from '@/hooks/use-confirm-password';
+import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
+import { createAbort, postJson } from '@/lib/api';
 import { formatIDR } from '@/lib/format';
 import type {
     AmenityOption,
     FloorOption,
     GenderPolicyOption,
-    PeriodOption,
     RoomForm,
     RoomPhotoView,
     RoomTypeOption,
     RoomUpsertOptions,
     StringKeys,
 } from '@/types/management';
-
-const DEFAULT_GENDER_POLICIES: Readonly<GenderPolicyOption[]> = Object.freeze([
-    { value: 'any', label: 'Bebas' },
-    { value: 'male', label: 'Pria' },
-    { value: 'female', label: 'Wanita' },
-]);
-
-const DEFAULT_BILLING_PERIODS: Readonly<PeriodOption[]> = Object.freeze([
-    { value: 'monthly', label: 'Bulanan' },
-    { value: 'weekly', label: 'Mingguan' },
-    { value: 'daily', label: 'Harian' },
-]);
-
-// FormData moved to pages/types
-
-// StringKeys moved to pages/types
-
-const getXsrfToken = () => {
-    const cookieVal =
-        (typeof readXsrfCookie === 'function' ? readXsrfCookie() : '') || '';
-    if (cookieVal) return cookieVal;
-    const el = document.querySelector(
-        'meta[name="csrf-token"]',
-    ) as HTMLMetaElement | null;
-    return el?.content || '';
-};
 
 export default function RoomUpsertForm({
     mode,
@@ -82,13 +56,14 @@ export default function RoomUpsertForm({
         () => (options?.floors ?? []) as FloorOption[],
         [options?.floors],
     );
-    const types = (options?.types ?? []) as RoomTypeOption[];
+    const types = React.useMemo(
+        () => (options?.types ?? []) as RoomTypeOption[],
+        [options?.types],
+    );
     const statuses = options?.statuses ?? [];
     const amenities = (options?.amenities ?? []) as AmenityOption[];
     const genderPolicies = (options?.gender_policies ??
-        DEFAULT_GENDER_POLICIES) as GenderPolicyOption[];
-    const billingPeriods = (options?.billing_periods ??
-        DEFAULT_BILLING_PERIODS) as PeriodOption[];
+        []) as GenderPolicyOption[];
 
     // =========================
     // 2) Util kecil untuk default selection
@@ -147,18 +122,42 @@ export default function RoomUpsertForm({
         status: room?.status ?? '',
         max_occupancy: room?.max_occupancy ? String(room.max_occupancy) : '1',
         price_rupiah: room?.price_rupiah ? String(room.price_rupiah) : '',
+        price_weekly_rupiah: room?.price_weekly_rupiah
+            ? String(room.price_weekly_rupiah)
+            : '',
+        price_daily_rupiah: room?.price_daily_rupiah
+            ? String(room.price_daily_rupiah)
+            : '',
         deposit_rupiah: room?.deposit_rupiah ? String(room.deposit_rupiah) : '',
+        deposit_weekly_rupiah: room?.deposit_weekly_rupiah
+            ? String(room.deposit_weekly_rupiah)
+            : '',
+        deposit_daily_rupiah: room?.deposit_daily_rupiah
+            ? String(room.deposit_daily_rupiah)
+            : '',
         size_m2: room?.size_m2 ? String(room.size_m2) : '',
         notes: room?.notes ?? '',
         photos: [] as File[],
         amenities: (room?.amenities ?? []).map((id) => String(id)),
-        gender_policy: room?.gender_policy ?? genderPolicies[0]?.value ?? 'any',
-        billing_period:
-            room?.billing_period ?? billingPeriods[0]?.value ?? 'monthly',
+        gender_policy: room?.gender_policy ?? genderPolicies[0]?.value ?? '',
     });
 
-    // Autofill harga/deposit/luas dari tipe pada initial render bila sudah terpilih
+    // =========================
+    // 5) Tipe terpilih untuk placeholder "Mengikuti tipe"
+    // =========================
+    const selectedType = React.useMemo(
+        () => types.find((tt) => String(tt.id) === data.room_type_id),
+        [types, data.room_type_id],
+    );
+    const typeMonthly = selectedType?.prices?.monthly ?? null;
+    const typeWeekly = selectedType?.prices?.weekly ?? null;
+    const typeDaily = selectedType?.prices?.daily ?? null;
+    const typeDepMonthly = selectedType?.deposits?.monthly ?? null;
+    const typeDepWeekly = selectedType?.deposits?.weekly ?? null;
+    const typeDepDaily = selectedType?.deposits?.daily ?? null;
+
     const didInitDefaults = React.useRef(false);
+
     React.useEffect(() => {
         if (didInitDefaults.current) return;
         if (!data.room_type_id) {
@@ -167,20 +166,44 @@ export default function RoomUpsertForm({
         }
         const t = types.find((tt) => String(tt.id) === data.room_type_id);
         if (t) {
+            const monthly = t.prices?.monthly ?? null;
+            const weekly = t.prices?.weekly ?? null;
+            const daily = t.prices?.daily ?? null;
+            const depMonthly = t.deposits?.monthly ?? null;
+            const depWeekly = t.deposits?.weekly ?? null;
+            const depDaily = t.deposits?.daily ?? null;
             const price =
-                t.price_cents != null
-                    ? String(Math.round((t.price_cents as number) / 100))
+                monthly != null
+                    ? String(Math.round((monthly as number) / 100))
+                    : '';
+            const priceW =
+                weekly != null
+                    ? String(Math.round((weekly as number) / 100))
+                    : '';
+            const priceD =
+                daily != null
+                    ? String(Math.round((daily as number) / 100))
                     : '';
             const deposit =
-                t.deposit_cents != null
-                    ? String(Math.round((t.deposit_cents as number) / 100))
+                depMonthly != null
+                    ? String(Math.round((depMonthly as number) / 100))
                     : '';
-            const size = t.size_m2 != null ? String(t.size_m2) : '';
+            const depositW =
+                depWeekly != null
+                    ? String(Math.round((depWeekly as number) / 100))
+                    : '';
+            const depositD =
+                depDaily != null
+                    ? String(Math.round((depDaily as number) / 100))
+                    : '';
             setData((prev) => ({
                 ...prev,
                 price_rupiah: prev.price_rupiah || price,
+                price_weekly_rupiah: prev.price_weekly_rupiah || priceW,
+                price_daily_rupiah: prev.price_daily_rupiah || priceD,
                 deposit_rupiah: prev.deposit_rupiah || deposit,
-                size_m2: prev.size_m2 || size,
+                deposit_weekly_rupiah: prev.deposit_weekly_rupiah || depositW,
+                deposit_daily_rupiah: prev.deposit_daily_rupiah || depositD,
             }));
         }
         didInitDefaults.current = true;
@@ -298,25 +321,16 @@ export default function RoomUpsertForm({
             const ordered_ids = photos.map((p) => p.id);
             const cover_id = photos.find((p) => p.is_cover)?.id ?? null;
 
-            const res = await fetch(
+            const ctrl = createAbort();
+            await postJson(
                 route('management.rooms.photos.batch', room.id),
                 {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-XSRF-TOKEN': getXsrfToken(),
-                    },
-                    credentials: 'same-origin',
-                    cache: 'no-store',
-                    body: JSON.stringify({
-                        deleted_ids,
-                        ordered_ids,
-                        cover_id,
-                    }),
+                    deleted_ids,
+                    ordered_ids,
+                    cover_id,
                 },
+                { signal: ctrl.signal },
             );
-            if (!res.ok) throw new Error('failed');
             initialPhotosRef.current = photos;
             return true;
         } catch {
@@ -334,10 +348,11 @@ export default function RoomUpsertForm({
         if (mode === 'edit') {
             const hasNewFiles = (data.photos?.length ?? 0) > 0;
             if (!isDirty && !photosDirty && !hasNewFiles) {
-                toast.info('Tidak ada perubahan untuk disimpan.');
                 return;
             }
         }
+
+        const token = await ensureXsrfToken();
 
         if (mode === 'create') {
             beginSkip();
@@ -345,30 +360,15 @@ export default function RoomUpsertForm({
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     Accept: 'application/json',
-                    'X-XSRF-TOKEN': getXsrfToken(),
+                    'X-XSRF-TOKEN': token || '',
                 },
                 forceFormData: true,
                 preserveScroll: true,
                 onSuccess: () => {
-                    toast.success('Kamar berhasil dibuat. Lanjut kelola foto.');
                     reset();
                 },
                 onFinish: () => {
                     endSkip();
-                },
-                onError: (errs: Record<string, unknown>) => {
-                    const keys = Object.keys(errs || {});
-                    const photoKey = keys.find(
-                        (k) => k === 'photos' || k.startsWith('photos.'),
-                    );
-                    if (!photoKey) return;
-                    const val = errs[photoKey];
-                    const msg = Array.isArray(val)
-                        ? (val[0] as string)
-                        : typeof val === 'string'
-                          ? val
-                          : undefined;
-                    toast.error(msg || 'Gagal mengunggah foto.');
                 },
             });
         } else if (mode === 'edit' && room?.id) {
@@ -377,14 +377,13 @@ export default function RoomUpsertForm({
                 if (!ok) return;
             }
 
-            // Set transform to add _method: 'put'
             transform((current) => ({ ...current, _method: 'put' as const }));
             beginSkip();
             post(route('management.rooms.update', room.id), {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     Accept: 'application/json',
-                    'X-XSRF-TOKEN': getXsrfToken(),
+                    'X-XSRF-TOKEN': token || '',
                 },
                 forceFormData: true,
                 preserveScroll: true,
@@ -394,22 +393,8 @@ export default function RoomUpsertForm({
                 onFinish: () => {
                     endSkip();
                 },
-                onError: (errs: Record<string, unknown>) => {
-                    const keys = Object.keys(errs || {});
-                    const photoKey = keys.find(
-                        (k) => k === 'photos' || k.startsWith('photos.'),
-                    );
-                    if (!photoKey) return;
-                    const val = errs[photoKey];
-                    const msg = Array.isArray(val)
-                        ? (val[0] as string)
-                        : typeof val === 'string'
-                          ? val
-                          : undefined;
-                    toast.error(msg || 'Gagal mengunggah foto.');
-                },
             });
-            // Reset transform ke identitas setelah post
+
             transform(
                 (current) =>
                     ({
@@ -426,45 +411,73 @@ export default function RoomUpsertForm({
         <>
             <form className="grid gap-6" onSubmit={onSubmit}>
                 {/* Identitas Kamar */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <div className="text-sm font-medium text-foreground">
                         Identitas Kamar
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="grid gap-2">
-                            <Label>Nomor</Label>
+                    <p className="text-xs text-muted-foreground">
+                        Nomor dan nama untuk identifikasi kamar.
+                    </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                        <div className="grid gap-1.5">
+                            <Label>
+                                Nomor Kamar{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
                             <Input
                                 value={data.number}
                                 onChange={onChange('number')}
-                                placeholder="cth: 201"
+                                placeholder="Masukkan nomor kamar (contoh: 201)"
                                 disabled={processing}
-                                className="h-9"
+                                className="h-10 text-sm"
                             />
-                            <InputError message={errors.number} />
+
+                            {!errors.number ? (
+                                <p className="text-xs text-muted-foreground">
+                                    Gunakan format sederhana seperti 201, A-12,
+                                    atau B2-03.
+                                </p>
+                            ) : (
+                                <InputError message={errors.number} />
+                            )}
                         </div>
-                        <div className="grid gap-2">
-                            <Label>Nama</Label>
+                        <div className="grid gap-1.5">
+                            <Label>Nama Kamar</Label>
                             <Input
                                 value={data.name}
                                 onChange={onChange('name')}
-                                placeholder="cth: Kamar 201"
+                                placeholder="Masukkan nama kamar (opsional)"
                                 disabled={processing}
-                                className="h-9"
+                                className="h-10 text-sm"
                             />
-                            <InputError message={errors.name} />
+
+                            {!errors.name ? (
+                                <p className="text-xs text-muted-foreground">
+                                    Nama tambahan untuk memudahkan identifikasi
+                                    (opsional).
+                                </p>
+                            ) : (
+                                <InputError message={errors.name} />
+                            )}
                         </div>
                     </div>
                     <Separator className="my-3" />
                 </div>
 
                 {/* Lokasi & Klasifikasi */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <div className="text-sm font-medium text-foreground">
                         Lokasi & Klasifikasi
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="grid gap-2">
-                            <Label>Gedung</Label>
+                    <p className="text-xs text-muted-foreground">
+                        Pilih gedung, lantai, tipe, dan status kamar.
+                    </p>
+                    <div className="grid gap-2 md:grid-cols-2">
+                        <div className="grid gap-1">
+                            <Label>
+                                Gedung{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
                             <Select
                                 value={data.building_id}
                                 onValueChange={(v) => {
@@ -481,8 +494,8 @@ export default function RoomUpsertForm({
                                 }}
                                 disabled={processing}
                             >
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Pilih gedung" />
+                                <SelectTrigger className="h-10 text-sm">
+                                    <SelectValue placeholder="Pilih gedung tempat kamar berada" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -500,15 +513,18 @@ export default function RoomUpsertForm({
                             <InputError message={errors.building_id} />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label>Lantai</Label>
+                        <div className="grid gap-1">
+                            <Label>
+                                Lantai{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
                             <Select
                                 value={data.floor_id}
                                 onValueChange={(v) => setData('floor_id', v)}
                                 disabled={processing}
                             >
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Pilih lantai" />
+                                <SelectTrigger className="h-10 text-sm">
+                                    <SelectValue placeholder="Pilih lantai sesuai gedung" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -526,8 +542,11 @@ export default function RoomUpsertForm({
                             <InputError message={errors.floor_id} />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label>Tipe Kamar</Label>
+                        <div className="grid gap-1">
+                            <Label>
+                                Tipe Kamar{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
                             <Select
                                 value={data.room_type_id}
                                 onValueChange={(v) => {
@@ -535,41 +554,79 @@ export default function RoomUpsertForm({
                                     const t = types.find(
                                         (tt) => String(tt.id) === v,
                                     );
+                                    const monthly = t?.prices?.monthly ?? null;
+                                    const weekly = t?.prices?.weekly ?? null;
+                                    const daily = t?.prices?.daily ?? null;
+                                    const depMonthly =
+                                        t?.deposits?.monthly ?? null;
+                                    const depWeekly =
+                                        t?.deposits?.weekly ?? null;
+                                    const depDaily = t?.deposits?.daily ?? null;
                                     const price =
-                                        t?.price_cents != null
+                                        monthly != null
                                             ? String(
                                                   Math.round(
-                                                      (t!
-                                                          .price_cents as number) /
-                                                          100,
+                                                      (monthly as number) / 100,
+                                                  ),
+                                              )
+                                            : '';
+                                    const priceW =
+                                        weekly != null
+                                            ? String(
+                                                  Math.round(
+                                                      (weekly as number) / 100,
+                                                  ),
+                                              )
+                                            : '';
+                                    const priceD =
+                                        daily != null
+                                            ? String(
+                                                  Math.round(
+                                                      (daily as number) / 100,
                                                   ),
                                               )
                                             : '';
                                     const deposit =
-                                        t?.deposit_cents != null
+                                        depMonthly != null
                                             ? String(
                                                   Math.round(
-                                                      (t!
-                                                          .deposit_cents as number) /
+                                                      (depMonthly as number) /
                                                           100,
                                                   ),
                                               )
                                             : '';
-                                    const size =
-                                        t?.size_m2 != null
-                                            ? String(t!.size_m2)
+                                    const depositW =
+                                        depWeekly != null
+                                            ? String(
+                                                  Math.round(
+                                                      (depWeekly as number) /
+                                                          100,
+                                                  ),
+                                              )
+                                            : '';
+                                    const depositD =
+                                        depDaily != null
+                                            ? String(
+                                                  Math.round(
+                                                      (depDaily as number) /
+                                                          100,
+                                                  ),
+                                              )
                                             : '';
                                     setData((prev) => ({
                                         ...prev,
                                         price_rupiah: price,
+                                        price_weekly_rupiah: priceW,
+                                        price_daily_rupiah: priceD,
                                         deposit_rupiah: deposit,
-                                        size_m2: size,
+                                        deposit_weekly_rupiah: depositW,
+                                        deposit_daily_rupiah: depositD,
                                     }));
                                 }}
                                 disabled={processing}
                             >
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Pilih tipe" />
+                                <SelectTrigger className="h-10 text-sm">
+                                    <SelectValue placeholder="Pilih tipe kamar" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -587,15 +644,18 @@ export default function RoomUpsertForm({
                             <InputError message={errors.room_type_id} />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label>Status</Label>
+                        <div className="grid gap-1">
+                            <Label>
+                                Status{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
                             <Select
                                 value={data.status}
                                 onValueChange={(v) => setData('status', v)}
                                 disabled={processing}
                             >
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Pilih status" />
+                                <SelectTrigger className="h-10 text-sm">
+                                    <SelectValue placeholder="Pilih status kamar" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -613,218 +673,372 @@ export default function RoomUpsertForm({
                             <InputError message={errors.status} />
                         </div>
                     </div>
-                    <Separator className="my-3" />
-                </div>
-
-                {/* Kebijakan & Penagihan */}
-                <div className="space-y-3">
-                    <div className="text-sm font-medium text-foreground">
-                        Kebijakan & Penagihan
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="grid gap-2">
-                            <Label>Kebijakan Gender</Label>
-                            <Select
-                                value={data.gender_policy}
-                                onValueChange={(v) =>
-                                    setData('gender_policy', v)
-                                }
-                                disabled={processing}
-                            >
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Pilih kebijakan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {genderPolicies.map((g) => (
-                                            <SelectItem
-                                                key={g.value}
-                                                value={g.value}
-                                            >
-                                                {g.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors.gender_policy} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label>Periode Penagihan</Label>
-                            <Select
-                                value={data.billing_period}
-                                onValueChange={(v) =>
-                                    setData('billing_period', v)
-                                }
-                                disabled={processing}
-                            >
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Pilih periode" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {billingPeriods.map((p) => (
-                                            <SelectItem
-                                                key={p.value}
-                                                value={p.value}
-                                            >
-                                                {p.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors.billing_period} />
-                        </div>
-                    </div>
-                    <Separator className="my-3" />
+                    {/* Separator dipindah ke akhir seluruh blok harga/dep mingguan-harian */}
                 </div>
 
                 {/* Kapasitas, Harga, Deposit, Luas */}
-                <div className="grid gap-4 md:grid-cols-12">
-                    <div className="col-span-12 grid gap-2 md:col-span-3">
-                        <Label>Kapasitas (orang)</Label>
-                        <Input
-                            type="number"
-                            min={1}
-                            placeholder="cth: 1"
-                            value={data.max_occupancy}
-                            onChange={onChange('max_occupancy')}
-                            className="h-9"
-                            disabled={processing}
-                        />
-                        <div className="min-h-[20px] text-xs text-muted-foreground" />
-                        <div className="min-h-[20px]">
-                            <InputError message={errors.max_occupancy} />
-                        </div>
-                    </div>
-
-                    <div className="col-span-12 grid gap-2 sm:col-span-6 md:col-span-3">
-                        <Label>Harga (Rp/bulan)</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            placeholder="Otomatis setelah pilih tipe"
-                            value={data.price_rupiah}
-                            onChange={onChange('price_rupiah')}
-                            className="h-9"
-                            disabled={processing || !data.room_type_id}
-                        />
-                        <div className="min-h-[20px] text-xs text-muted-foreground">
-                            {formatIDR(data.price_rupiah) ? (
-                                <span>
-                                    Pratinjau:{' '}
-                                    <span className="font-medium">
-                                        Rp {formatIDR(data.price_rupiah)}
-                                    </span>{' '}
-                                    / bulan
-                                </span>
-                            ) : null}
-                        </div>
-                        <div className="min-h-[20px]">
-                            <InputError message={errors.price_rupiah} />
-                        </div>
-                    </div>
-
-                    <div className="col-span-12 grid gap-2 sm:col-span-6 md:col-span-3">
-                        <Label>Deposit (Rp)</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            placeholder="Otomatis setelah pilih tipe"
-                            value={data.deposit_rupiah}
-                            onChange={(e) =>
-                                setData('deposit_rupiah', e.target.value)
-                            }
-                            className="h-9"
-                            disabled={processing || !data.room_type_id}
-                        />
-                        <div className="min-h-[20px] text-xs text-muted-foreground">
-                            {formatIDR(data.deposit_rupiah) ? (
-                                <span>
-                                    Pratinjau:{' '}
-                                    <span className="font-medium">
-                                        Rp {formatIDR(data.deposit_rupiah)}
-                                    </span>
-                                </span>
-                            ) : null}
-                        </div>
-                        <div className="min-h-[20px]">
-                            <InputError
-                                message={
-                                    (
-                                        errors as unknown as Record<
-                                            string,
-                                            string
-                                        >
-                                    ).deposit_rupiah
-                                }
-                            />
-                        </div>
-                    </div>
-
-                    <div className="col-span-12 grid gap-2 md:col-span-3">
-                        <Label>Luas (m²)</Label>
-                        <Input
-                            type="number"
-                            min={0}
-                            step="0.1"
-                            placeholder="Otomatis setelah pilih tipe"
-                            value={data.size_m2}
-                            onChange={(e) => setData('size_m2', e.target.value)}
-                            className="h-9"
-                            disabled={processing || !data.room_type_id}
-                        />
-                        <div className="min-h-[20px] text-xs text-muted-foreground" />
-                        <div className="min-h-[20px]">
-                            <InputError
-                                message={
-                                    (
-                                        errors as unknown as Record<
-                                            string,
-                                            string
-                                        >
-                                    ).size_m2
-                                }
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Ringkasan angka harga, deposit, luas */}
-                <p className="-mt-12 text-xs text-muted-foreground">
-                    Catatan: Harga, Deposit dan Luas kamar terisi otomatis dari{' '}
-                    <span className="font-medium">Tipe Kamar</span>. Anda tetap
-                    bisa mengubahnya (override) jika diperlukan.
-                </p>
-
                 <div className="space-y-2">
                     <div className="text-sm font-medium text-foreground">
-                        Catatan
+                        Kapasitas & Harga Bulanan
                     </div>
-                    <Textarea
-                        value={data.notes}
-                        onChange={(e) => setData('notes', e.target.value)}
-                        placeholder="Informasi tambahan terkait kamar (opsional)"
-                        disabled={processing}
-                    />
-                    <InputError message={errors.notes} />
-                    <Separator className="my-3" />
+                    <p className="text-xs text-muted-foreground">
+                        Atur kapasitas penghuni, harga & deposit bulanan, serta
+                        luas kamar.
+                    </p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {/* Kiri: Kapasitas + Harga */}
+                        <div className="grid gap-2">
+                            <Label>
+                                Kapasitas (orang){' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                type="number"
+                                min={1}
+                                placeholder="Masukkan jumlah orang"
+                                value={data.max_occupancy}
+                                onChange={onChange('max_occupancy')}
+                                className="h-10 text-sm"
+                                disabled={processing}
+                            />
+                            {errors.max_occupancy ? (
+                                <InputError message={errors.max_occupancy} />
+                            ) : (
+                                <p className="text-xs text-muted-foreground">
+                                    Jumlah maksimal penghuni.
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Harga Bulanan (Rp)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                placeholder="Masukkan harga bulanan atau kosongkan untuk mengikuti tipe"
+                                value={data.price_rupiah}
+                                onChange={onChange('price_rupiah')}
+                                className="h-10 text-sm"
+                                disabled={processing || !data.room_type_id}
+                            />
+                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                                {formatIDR(data.price_rupiah) && (
+                                    <span>
+                                        Pratinjau:{' '}
+                                        <span className="font-medium">
+                                            {formatIDR(data.price_rupiah)}
+                                        </span>{' '}
+                                        / bulan
+                                    </span>
+                                )}
+                                {!data.price_rupiah &&
+                                data.room_type_id &&
+                                typeMonthly != null ? (
+                                    <span className="rounded border px-1.5 py-0.5 text-[10px]">
+                                        Mengikuti tipe
+                                    </span>
+                                ) : null}
+                            </div>
+                            {errors.price_rupiah && (
+                                <InputError message={errors.price_rupiah} />
+                            )}
+                        </div>
+
+                        {/* Kanan: Luas + Deposit */}
+                        <div className="grid gap-2">
+                            <Label>Luas (m²)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                placeholder="Masukkan luas kamar (opsional)"
+                                value={data.size_m2}
+                                onChange={(e) =>
+                                    setData('size_m2', e.target.value)
+                                }
+                                className="h-10 text-sm"
+                                disabled={processing || !data.room_type_id}
+                            />
+                            {(errors as unknown as Record<string, string>)
+                                .size_m2 ? (
+                                <InputError
+                                    message={
+                                        (
+                                            errors as unknown as Record<
+                                                string,
+                                                string
+                                            >
+                                        ).size_m2
+                                    }
+                                />
+                            ) : (
+                                <p className="text-xs text-muted-foreground">
+                                    Luas lantai dalam meter persegi.
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Deposit Bulanan (Rp)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                placeholder="Masukkan deposit bulanan atau kosongkan untuk mengikuti tipe"
+                                value={data.deposit_rupiah}
+                                onChange={(e) =>
+                                    setData('deposit_rupiah', e.target.value)
+                                }
+                                className="h-10 text-sm"
+                                disabled={processing || !data.room_type_id}
+                            />
+                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                                {formatIDR(data.deposit_rupiah) ? (
+                                    <span>
+                                        Pratinjau:{' '}
+                                        <span className="font-medium">
+                                            {formatIDR(data.deposit_rupiah)}
+                                        </span>
+                                    </span>
+                                ) : null}
+                                {!data.deposit_rupiah &&
+                                data.room_type_id &&
+                                typeDepMonthly != null ? (
+                                    <span className="rounded border px-1.5 py-0.5 text-[10px]">
+                                        Mengikuti tipe
+                                    </span>
+                                ) : null}
+                            </div>
+                            {(errors as unknown as Record<string, string>)
+                                .deposit_rupiah && (
+                                <InputError
+                                    message={
+                                        (
+                                            errors as unknown as Record<
+                                                string,
+                                                string
+                                            >
+                                        ).deposit_rupiah
+                                    }
+                                />
+                            )}
+                        </div>
+                    </div>
                 </div>
+                <Separator className="my-3" />
+
+                {/* Harga & Deposit (Mingguan/Harian) */}
+                <div className="space-y-2">
+                    <div className="text-sm font-medium text-foreground">
+                        Harga & Deposit (Mingguan/Harian)
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-2">
+                            <Label>Harga Mingguan (Rp)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                placeholder="Masukkan harga mingguan atau kosongkan untuk mengikuti tipe"
+                                value={data.price_weekly_rupiah}
+                                onChange={onChange('price_weekly_rupiah')}
+                                className="h-10 text-sm"
+                                disabled={processing || !data.room_type_id}
+                            />
+                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                                {formatIDR(data.price_weekly_rupiah) ? (
+                                    <span>
+                                        Pratinjau:{' '}
+                                        <span className="font-medium">
+                                            {formatIDR(
+                                                data.price_weekly_rupiah,
+                                            )}
+                                        </span>{' '}
+                                        / minggu
+                                    </span>
+                                ) : null}
+                                {!data.price_weekly_rupiah &&
+                                data.room_type_id &&
+                                typeWeekly != null ? (
+                                    <span className="rounded border px-1.5 py-0.5 text-[10px]">
+                                        Mengikuti tipe
+                                    </span>
+                                ) : null}
+                            </div>
+                            {(errors as unknown as Record<string, string>)
+                                .price_weekly_rupiah ? (
+                                <InputError
+                                    message={
+                                        (
+                                            errors as unknown as Record<
+                                                string,
+                                                string
+                                            >
+                                        ).price_weekly_rupiah
+                                    }
+                                />
+                            ) : null}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Harga Harian (Rp)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                placeholder="Masukkan harga harian atau kosongkan untuk mengikuti tipe"
+                                value={data.price_daily_rupiah}
+                                onChange={onChange('price_daily_rupiah')}
+                                className="h-10 text-sm"
+                                disabled={processing || !data.room_type_id}
+                            />
+                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                                {formatIDR(data.price_daily_rupiah) ? (
+                                    <span>
+                                        Pratinjau:{' '}
+                                        <span className="font-medium">
+                                            {formatIDR(data.price_daily_rupiah)}
+                                        </span>{' '}
+                                        / hari
+                                    </span>
+                                ) : null}
+                                {!data.price_daily_rupiah &&
+                                data.room_type_id &&
+                                typeDaily != null ? (
+                                    <span className="rounded border px-1.5 py-0.5 text-[10px]">
+                                        Mengikuti tipe
+                                    </span>
+                                ) : null}
+                            </div>
+                            {(errors as unknown as Record<string, string>)
+                                .price_daily_rupiah ? (
+                                <InputError
+                                    message={
+                                        (
+                                            errors as unknown as Record<
+                                                string,
+                                                string
+                                            >
+                                        ).price_daily_rupiah
+                                    }
+                                />
+                            ) : null}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Deposit Mingguan (Rp)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                placeholder="Masukkan deposit mingguan atau kosongkan untuk mengikuti tipe"
+                                value={data.deposit_weekly_rupiah}
+                                onChange={(e) =>
+                                    setData(
+                                        'deposit_weekly_rupiah',
+                                        e.target.value,
+                                    )
+                                }
+                                className="h-10 text-sm"
+                                disabled={processing || !data.room_type_id}
+                            />
+                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                                {formatIDR(data.deposit_weekly_rupiah) ? (
+                                    <span>
+                                        Pratinjau:{' '}
+                                        <span className="font-medium">
+                                            {formatIDR(
+                                                data.deposit_weekly_rupiah,
+                                            )}
+                                        </span>
+                                    </span>
+                                ) : null}
+                                {!data.deposit_weekly_rupiah &&
+                                data.room_type_id &&
+                                typeDepWeekly != null ? (
+                                    <span className="rounded border px-1.5 py-0.5 text-[10px]">
+                                        Mengikuti tipe
+                                    </span>
+                                ) : null}
+                            </div>
+                            {(errors as unknown as Record<string, string>)
+                                .deposit_weekly_rupiah ? (
+                                <InputError
+                                    message={
+                                        (
+                                            errors as unknown as Record<
+                                                string,
+                                                string
+                                            >
+                                        ).deposit_weekly_rupiah
+                                    }
+                                />
+                            ) : null}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Deposit Harian (Rp)</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                placeholder="Masukkan deposit harian atau kosongkan untuk mengikuti tipe"
+                                value={data.deposit_daily_rupiah}
+                                onChange={(e) =>
+                                    setData(
+                                        'deposit_daily_rupiah',
+                                        e.target.value,
+                                    )
+                                }
+                                className="h-10 text-sm"
+                                disabled={processing || !data.room_type_id}
+                            />
+                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                                {formatIDR(data.deposit_daily_rupiah) ? (
+                                    <span>
+                                        Pratinjau:{' '}
+                                        <span className="font-medium">
+                                            {formatIDR(
+                                                data.deposit_daily_rupiah,
+                                            )}
+                                        </span>
+                                    </span>
+                                ) : null}
+                                {!data.deposit_daily_rupiah &&
+                                data.room_type_id &&
+                                typeDepDaily != null ? (
+                                    <span className="rounded border px-1.5 py-0.5 text-[10px]">
+                                        Mengikuti tipe
+                                    </span>
+                                ) : null}
+                            </div>
+                            {(errors as unknown as Record<string, string>)
+                                .deposit_daily_rupiah ? (
+                                <InputError
+                                    message={
+                                        (
+                                            errors as unknown as Record<
+                                                string,
+                                                string
+                                            >
+                                        ).deposit_daily_rupiah
+                                    }
+                                />
+                            ) : null}
+                        </div>
+                    </div>
+                </div>
+                <Separator className="my-3" />
 
                 {/* Fasilitas */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <div className="text-sm font-medium text-foreground">
-                        Fasilitas Kamar
+                        Fasilitas Kamar (centang yang tersedia)
                     </div>
                     {amenities.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            Belum ada data fasilitas. Tambahkan terlebih dahulu
-                            di manajemen fasilitas.
+                            Belum ada fasilitas tersedia. Tambahkan data
+                            fasilitas terlebih dahulu di menu manajemen
+                            fasilitas.
                         </p>
                     ) : (
-                        <ScrollArea className="max-h-[60vh] rounded-md border md:h-40 lg:h-28">
-                            <div className="grid gap-2 p-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        <ScrollArea className="h-40 rounded-md border sm:h-48 lg:h-56">
+                            <div className="grid gap-1.5 p-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                 {amenities.map((a) => {
                                     const sid = String(a.id);
                                     const checked = (
@@ -857,141 +1071,204 @@ export default function RoomUpsertForm({
                         </ScrollArea>
                     )}
                     <InputError message={errors.amenities} />
+                </div>
+
+                {/* Foto Kamar */}
+                <div className="space-y-2">
+                    <div className="text-sm font-medium text-foreground">
+                        Foto Kamar
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        Unggah foto kamar agar mudah dikenali (minimal 1 foto).
+                    </p>
+                    {/* Foto Saat Ini (mode edit) */}
+                    {mode === 'edit' && (photos?.length ?? 0) > 0 ? (
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm font-medium text-foreground">
+                                    Foto Saat Ini
+                                </div>
+                                {photosDirty ? (
+                                    <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                                        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+                                        <span>Perubahan belum disimpan</span>
+                                    </div>
+                                ) : null}
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                                {(photos ?? []).map((p, idx) => (
+                                    <div
+                                        key={p.id}
+                                        className={`group relative overflow-hidden rounded-md border bg-card shadow-sm ${overIndex === idx ? 'ring-2 ring-primary' : ''}`}
+                                        draggable
+                                        onDragStart={() => setDragIndex(idx)}
+                                        onDragEnter={() => setOverIndex(idx)}
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDragEnd={() => {
+                                            setDragIndex(null);
+                                            setOverIndex(null);
+                                        }}
+                                        onDrop={(e) => {
+                                            e.preventDefault();
+                                            if (
+                                                dragIndex === null ||
+                                                dragIndex === idx
+                                            ) {
+                                                setDragIndex(null);
+                                                setOverIndex(null);
+                                                return;
+                                            }
+                                            const next = [...photos];
+                                            const [moved] = next.splice(
+                                                dragIndex,
+                                                1,
+                                            );
+                                            next.splice(idx, 0, moved);
+                                            setDragIndex(null);
+                                            setOverIndex(null);
+                                            setPhotos(next);
+                                        }}
+                                    >
+                                        <div className="relative aspect-square">
+                                            <img
+                                                src={p.url}
+                                                alt="foto kamar"
+                                                className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                onClick={() => {
+                                                    setPreviewIdx(idx);
+                                                    setPreviewOpen(true);
+                                                }}
+                                            />
+                                            {p.is_cover ? (
+                                                <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                                                    Cover
+                                                </span>
+                                            ) : null}
+                                            <div className="pointer-events-none absolute inset-x-1 top-1 flex items-center justify-end gap-1">
+                                                <div className="pointer-events-auto flex gap-1">
+                                                    <Button
+                                                        type="button"
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        className="h-7 w-7"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setAsCover(p.id);
+                                                        }}
+                                                        title="Jadikan cover"
+                                                    >
+                                                        <ImageIcon className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        className="h-7 w-7"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            deletePhoto(p.id);
+                                                        }}
+                                                        title="Hapus foto"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
+                                                <GripVertical className="h-3.5 w-3.5" />
+                                                <span>Seret untuk urutan</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <ImageSpotlight
+                                open={previewOpen}
+                                onOpenChange={setPreviewOpen}
+                                items={previewItems}
+                                index={previewIdx}
+                                onIndexChange={setPreviewIdx}
+                            />
+                        </div>
+                    ) : null}
+
+                    {/* Upload Foto Baru */}
+                    <div className="space-y-2">
+                        <ImageDropzone
+                            files={data.photos}
+                            onFilesChange={(files) => setData('photos', files)}
+                            disabled={processing}
+                            reorderable
+                            enableCover={mode === 'create'}
+                        />
+                        <InputError message={errors.photos} />
+                    </div>
+
+                    {/* Catatan */}
+                    <div className="space-y-2">
+                        <div className="text-sm font-medium text-foreground">
+                            Catatan
+                        </div>
+                        <Textarea
+                            value={data.notes}
+                            onChange={(e) => setData('notes', e.target.value)}
+                            placeholder="Tulis catatan tambahan tentang kamar (opsional)"
+                            disabled={processing}
+                        />
+                        <InputError message={errors.notes} />
+                        {/* Separator removed for Catatan section */}
+                    </div>
+
                     <Separator className="my-3" />
                 </div>
 
-                {/* Foto Saat Ini (mode edit) */}
-                {mode === 'edit' && (photos?.length ?? 0) > 0 ? (
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <div className="text-sm font-medium text-foreground">
-                                Foto Saat Ini
-                            </div>
-                            {photosDirty ? (
-                                <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-                                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-                                    <span>Perubahan belum disimpan</span>
-                                </div>
-                            ) : null}
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                            {(photos ?? []).map((p, idx) => (
-                                <div
-                                    key={p.id}
-                                    className={`group relative overflow-hidden rounded-md border bg-card shadow-sm ${overIndex === idx ? 'ring-2 ring-primary' : ''}`}
-                                    draggable
-                                    onDragStart={() => setDragIndex(idx)}
-                                    onDragEnter={() => setOverIndex(idx)}
-                                    onDragOver={(e) => e.preventDefault()}
-                                    onDragEnd={() => {
-                                        setDragIndex(null);
-                                        setOverIndex(null);
-                                    }}
-                                    onDrop={(e) => {
-                                        e.preventDefault();
-                                        if (
-                                            dragIndex === null ||
-                                            dragIndex === idx
-                                        ) {
-                                            setDragIndex(null);
-                                            setOverIndex(null);
-                                            return;
-                                        }
-                                        const next = [...photos];
-                                        const [moved] = next.splice(
-                                            dragIndex,
-                                            1,
-                                        );
-                                        next.splice(idx, 0, moved);
-                                        setDragIndex(null);
-                                        setOverIndex(null);
-                                        setPhotos(next);
-                                    }}
-                                >
-                                    <div className="relative aspect-square">
-                                        <img
-                                            src={p.url}
-                                            alt="foto kamar"
-                                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                            onClick={() => {
-                                                setPreviewIdx(idx);
-                                                setPreviewOpen(true);
-                                            }}
-                                        />
-                                        {p.is_cover ? (
-                                            <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                                                Cover
-                                            </span>
-                                        ) : null}
-                                        <div className="pointer-events-none absolute inset-x-1 top-1 flex items-center justify-end gap-1">
-                                            <div className="pointer-events-auto flex gap-1">
-                                                <Button
-                                                    type="button"
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    className="h-7 w-7"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setAsCover(p.id);
-                                                    }}
-                                                    title="Jadikan cover"
-                                                >
-                                                    <ImageIcon className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    className="h-7 w-7"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        deletePhoto(p.id);
-                                                    }}
-                                                    title="Hapus foto"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
-                                            <GripVertical className="h-3.5 w-3.5" />
-                                            <span>Seret untuk urutan</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <ImageSpotlight
-                            open={previewOpen}
-                            onOpenChange={setPreviewOpen}
-                            items={previewItems}
-                            index={previewIdx}
-                            onIndexChange={setPreviewIdx}
-                        />
-                    </div>
-                ) : null}
-
-                {/* Upload Foto Baru */}
+                {/* Kebijakan Penghuni */}
                 <div className="space-y-2">
                     <div className="text-sm font-medium text-foreground">
-                        Tambah Foto
+                        Kebijakan Penghuni
                     </div>
-                    <ImageDropzone
-                        files={data.photos}
-                        onFilesChange={(files) => setData('photos', files)}
-                        disabled={processing}
-                        reorderable
-                        enableCover={mode === 'create'}
-                    />
                     <p className="text-xs text-muted-foreground">
-                        Foto baru akan diunggah setelah simpan.
+                        Atur kebijakan penghuni yang diperbolehkan.
                     </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                        <div className="grid gap-1.5">
+                            <Label>
+                                Kebijakan Gender{' '}
+                                <span className="text-destructive">*</span>
+                            </Label>
+                            <RadioGroup
+                                value={data.gender_policy}
+                                onValueChange={(v) =>
+                                    setData('gender_policy', v)
+                                }
+                                className="flex flex-col gap-2"
+                                disabled={processing}
+                            >
+                                {genderPolicies.map((g) => (
+                                    <div
+                                        key={g.value}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <RadioGroupItem
+                                            id={`gender-${g.value}`}
+                                            value={g.value}
+                                        />
+                                        <Label htmlFor={`gender-${g.value}`}>
+                                            {g.label}
+                                        </Label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
+                            <InputError message={errors.gender_policy} />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2">
                     <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         onClick={() => {
                             if (mode === 'create') {
                                 reset();
@@ -1006,7 +1283,7 @@ export default function RoomUpsertForm({
                     >
                         Reset
                     </Button>
-                    <Button type="submit" disabled={processing}>
+                    <Button type="submit" size="sm" disabled={processing}>
                         {mode === 'create' ? 'Simpan' : 'Simpan Perubahan'}
                     </Button>
                 </div>

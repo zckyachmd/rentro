@@ -27,6 +27,7 @@ export type RolePageProps = {
     [key: string]: unknown;
     roles: RolePaginator;
     permissions?: { id: number; name: string; guard_name: string }[];
+    guards?: string[];
     query?: { guard?: string | null } & QueryBag;
 };
 

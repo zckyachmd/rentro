@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Enum\ContractStatus;
 use App\Enum\RoomStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tenant\HandoverDisputeRequest;
 use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\RoomHandover;
@@ -125,7 +126,7 @@ class HandoverController extends Controller
         return back()->with('success', 'Terima kasih, Anda telah mengonfirmasi handover ini.');
     }
 
-    public function dispute(Request $request, RoomHandover $handover)
+    public function dispute(HandoverDisputeRequest $request, RoomHandover $handover)
     {
         $c = $handover->contract;
         abort_unless((string) ($c?->user_id) === (string) $request->user()->id, 404);
@@ -141,7 +142,7 @@ class HandoverController extends Controller
             return back()->with('error', $msg);
         }
 
-        $validated                      = $request->validate(['note' => ['required', 'string', 'min:5']]);
+        $validated                      = $request->validated();
         $meta                           = (array) ($handover->meta ?? []);
         $meta['disputed_by_tenant']     = true;
         $meta['disputed_at']            = now()->toDateTimeString();

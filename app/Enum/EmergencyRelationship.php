@@ -13,7 +13,6 @@ enum EmergencyRelationship: string
     case ROOMMATE  = 'Teman Sekamar';
     case COLLEAGUE = 'Rekan Kerja';
     case NEIGHBOR  = 'Tetangga';
-    case OTHER     = 'Lainnya';
 
     public static function values(): array
     {

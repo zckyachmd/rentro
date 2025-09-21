@@ -32,7 +32,7 @@ class ContractFactory extends Factory
             'user_id'        => User::factory(),
             'room_id'        => Room::factory(),
             'start_date'     => $start->format('Y-m-d'),
-            'end_date'       => (clone $start)->modify('+1 month')->format('Y-m-d'),
+            'end_date'       => (clone $start)->modify('+1 month -1 day')->format('Y-m-d'),
             'rent_cents'     => $rent,
             'deposit_cents'  => (int) round($rent * 0.5),
             'billing_period' => BillingPeriod::MONTHLY->value,

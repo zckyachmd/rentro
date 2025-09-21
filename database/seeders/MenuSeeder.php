@@ -115,7 +115,7 @@ class MenuSeeder extends Seeder
                 'id' => 'akun',
                 'label' => 'Akun',
                 'items' => [
-                    ['label' => 'Profil', 'href' => route('profile.show'), 'icon' => 'User'],
+                    ['label' => 'Profil', 'href' => route('profile.index'), 'icon' => 'User'],
                     [
                         'label' => 'Pengaturan',
                         'icon' => 'Settings',

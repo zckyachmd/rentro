@@ -29,7 +29,6 @@ export type DocumentDTO = {
     type?: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | '' | null;
     number?: string | null;
     status?: 'pending' | 'approved' | 'rejected' | null;
-    file_path?: string | null;
     has_file?: boolean | null;
     issued_at?: string | null;
     expires_at?: string | null;

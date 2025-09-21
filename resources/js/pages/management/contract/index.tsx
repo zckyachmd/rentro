@@ -3,7 +3,6 @@ import { Filter, Plus, Search } from 'lucide-react';
 import React from 'react';
 
 import { Can } from '@/components/acl';
-/* inline AlertDialogs moved to dedicated components */
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -20,13 +19,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import CancelContractDialog from '@/features/contract/dialogs/cancel-contract-dialog';
+import ContractsActionGuideDialog from '@/features/contract/dialogs/contracts-action-guide-dialog';
+import HandoverCreate from '@/features/contract/dialogs/handover-create-dialog';
+import ToggleAutoRenewDialog from '@/features/contract/dialogs/toggle-autorenew-dialog';
+import { createColumns } from '@/features/contract/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
-import { createColumns } from '@/pages/management/contract/columns';
-import CancelContractDialog from '@/pages/management/contract/dialogs/cancel-contract';
-import ContractsGuideDialog from '@/pages/management/contract/dialogs/contracts-guide';
-import HandoverCreate from '@/pages/management/contract/dialogs/handover-create';
-import ToggleAutoRenewDialog from '@/pages/management/contract/dialogs/toggle-autorenew';
 import type {
     ContractItem,
     ContractsPageProps,
@@ -34,8 +33,6 @@ import type {
     ContractSafePayload as SafePayload,
     ContractServerQuery as ServerQuery,
 } from '@/types/management';
-
-// types moved to pages/types
 
 export default function ContractIndex(props: ContractsPageProps) {
     const {
@@ -196,7 +193,7 @@ export default function ContractIndex(props: ContractsPageProps) {
             actions={headerActions}
         >
             <div className="space-y-6">
-                <ContractsGuideDialog
+                <ContractsActionGuideDialog
                     open={openGuide}
                     onOpenChange={setOpenGuide}
                 />
@@ -297,7 +294,6 @@ export default function ContractIndex(props: ContractsPageProps) {
                 </Card>
             </div>
 
-            {/* Cancel Contract Dialog */}
             <CancelContractDialog
                 target={cancelTarget}
                 onOpenChange={(o) => {
@@ -329,8 +325,10 @@ export default function ContractIndex(props: ContractsPageProps) {
                     mode="checkin"
                     minPhotosCheckin={handoverSettings.min_photos_checkin}
                     minPhotosCheckout={handoverSettings.min_photos_checkout}
+                    redo={String(
+                        checkinTarget?.latest_checkin_status || '',
+                    ).toLowerCase() === 'disputed'}
                     onSaved={() => {
-                        // Refresh contracts table only
                         router.reload({ only: ['contracts'] });
                     }}
                 />
@@ -343,12 +341,15 @@ export default function ContractIndex(props: ContractsPageProps) {
                     mode="checkout"
                     minPhotosCheckin={handoverSettings.min_photos_checkin}
                     minPhotosCheckout={handoverSettings.min_photos_checkout}
+                    redo={String(
+                        checkoutTarget?.latest_checkout_status || '',
+                    ).toLowerCase() === 'disputed'}
                     onSaved={() => {
                         router.reload({ only: ['contracts'] });
                     }}
                 />
             </Can>
-            {/* Toggle Auto‑renew Dialog */}
+
             <ToggleAutoRenewDialog
                 target={toggleTarget}
                 onOpenChange={(o) => {
@@ -375,6 +376,3 @@ export default function ContractIndex(props: ContractsPageProps) {
         </AuthLayout>
     );
 }
-
-// Panduan dialog
-// ContractsGuideDialog moved to dialogs/contracts-guide.tsx

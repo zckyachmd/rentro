@@ -61,7 +61,7 @@ class NewPasswordController extends Controller
 
             $this->logAuth('password_reset', $loggedUser);
 
-            return redirect()->route('login')->with('status', __($status));
+            return redirect()->route('login')->with('success', __($status));
         }
 
         throw ValidationException::withMessages([

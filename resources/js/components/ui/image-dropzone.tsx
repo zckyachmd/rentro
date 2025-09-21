@@ -3,6 +3,7 @@ import React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import InputError from '@/components/ui/input-error'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 export type ImageDropzoneProps = {
@@ -15,6 +16,8 @@ export type ImageDropzoneProps = {
   dedupe?: boolean
   reorderable?: boolean
   enableCover?: boolean
+  errorName?: string
+  errorMessage?: string | string[]
 }
 
 export function ImageDropzone({
@@ -27,6 +30,8 @@ export function ImageDropzone({
   dedupe = true,
   reorderable = true,
   enableCover = false,
+  errorName,
+  errorMessage,
 }: ImageDropzoneProps) {
   const inputRef = React.useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = React.useState(false)
@@ -219,6 +224,7 @@ export function ImageDropzone({
           </div>
         ) : null}
       </div>
+      <InputError name={errorName} message={errorMessage} />
     </div>
   )
 }

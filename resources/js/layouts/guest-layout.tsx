@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { ReactNode } from 'react';
 
+import FlashToaster from '@/components/flash-toaster';
 import { ModeToggle } from '@/components/mode-toggle';
 import { ThemeProvider } from '@/components/theme-provider';
 import {
@@ -40,54 +41,65 @@ export default function GuestLayout({
         <div className="min-h-screen bg-background text-foreground">
             <Head title={title ?? 'Auth'} />
 
-            <div className="container mx-auto flex min-h-screen items-center justify-center px-4">
-                <ThemeProvider>
-                    <div className="w-full max-w-md">
-                        <div className="mb-6 flex items-center justify-between">
-                            <a
-                                href="/"
-                                className="inline-flex items-center gap-2 font-semibold"
-                            >
-                                <span className="text-xl">{brandLabel}</span>
-                            </a>
-                            <div className="flex items-center gap-2">
-                                {rightSlot}
-                            </div>
+            <ThemeProvider>
+                <div
+                    className={[
+                        'container mx-auto flex min-h-screen flex-col items-center px-4',
+                        fullWidthFooter ? 'pb-14 md:pb-0' : '',
+                    ].join(' ')}
+                >
+                    <header className="mb-4 flex w-full max-w-md items-center justify-between pt-6">
+                        <a
+                            href="/"
+                            className="inline-flex items-center gap-2 font-semibold"
+                        >
+                            <span className="text-xl">{brandLabel}</span>
+                        </a>
+                        <div className="flex items-center gap-2">
+                            {rightSlot}
                         </div>
+                    </header>
 
-                        <Card className="border shadow-sm">
-                            {(title || description) && (
-                                <CardHeader>
-                                    {title && <CardTitle>{title}</CardTitle>}
-                                    {description && (
-                                        <CardDescription>
-                                            {description}
-                                        </CardDescription>
-                                    )}
-                                </CardHeader>
-                            )}
-                            <CardContent>{content}</CardContent>
-                            {contentFooter && (
-                                <CardFooter>{contentFooter}</CardFooter>
-                            )}
-                        </Card>
+                    <main
+                        role="main"
+                        className="flex w-full flex-1 items-start justify-center py-4"
+                    >
+                        <div className="mx-auto w-full max-w-md">
+                            <Card className="border shadow-sm">
+                                {(title || description) && (
+                                    <CardHeader>
+                                        {title && (
+                                            <CardTitle>{title}</CardTitle>
+                                        )}
+                                        {description && (
+                                            <CardDescription>
+                                                {description}
+                                            </CardDescription>
+                                        )}
+                                    </CardHeader>
+                                )}
+                                <CardContent>{content}</CardContent>
+                                {contentFooter && (
+                                    <CardFooter>{contentFooter}</CardFooter>
+                                )}
+                            </Card>
+                        </div>
+                    </main>
 
-                        <Footer
-                            brandLabel={brandLabel}
-                            extraLeft={extraFooter}
-                            rightSlot={
-                                fullWidthFooter ? <ModeToggle /> : undefined
-                            }
-                            fullWidth={fullWidthFooter}
-                            variant="between"
-                            heightClass="h-14"
-                            withContainer
-                        />
-                    </div>
-                </ThemeProvider>
+                    <Footer
+                        brandLabel={brandLabel}
+                        extraLeft={extraFooter}
+                        rightSlot={fullWidthFooter ? <ModeToggle /> : undefined}
+                        fullWidth={fullWidthFooter}
+                        variant="between"
+                        heightClass="h-14"
+                        withContainer
+                    />
+                </div>
+            </ThemeProvider>
 
-                <Toaster />
-            </div>
+            <Toaster />
+            <FlashToaster />
         </div>
     );
 }

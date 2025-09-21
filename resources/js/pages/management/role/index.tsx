@@ -21,6 +21,9 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
+import PermissionsDialog from '@/features/role/dialogs/permissions-dialog';
+import RoleUpsertDialog from '@/features/role/dialogs/roles-dialog';
+import { createColumns } from '@/features/role/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import type {
@@ -30,13 +33,9 @@ import type {
     RoleItem,
 } from '@/types/management';
 
-import { createColumns } from './columns';
-import PermissionsDialog from './dialogs/permissions';
-import RoleUpsertDialog from './dialogs/roles';
-
 export default function RolesIndex() {
     const { props } = usePage<PageProps>();
-    const { roles, permissions = [], query } = props;
+    const { roles, permissions = [], guards = [], query } = props;
 
     const currentPath = React.useMemo(
         () => (typeof window !== 'undefined' ? window.location.pathname : '/'),
@@ -150,6 +149,7 @@ export default function RolesIndex() {
             <RoleUpsertDialog
                 open={dialog.edit.open}
                 role={dialog.edit.role}
+                guards={guards}
                 onOpenChange={(open: boolean) => {
                     if (!open) {
                         setDialog((s) => ({

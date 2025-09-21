@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Management;
 use App\Enum\PaymentMethod;
 use App\Enum\PaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Management\Payment\AckRequest as PaymentAckRequest;
 use App\Http\Requests\Management\Payment\StorePaymentRequest;
+use App\Http\Requests\Management\Payment\VoidRequest as PaymentVoidRequest;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Contracts\InvoiceServiceInterface;
@@ -82,6 +84,9 @@ class PaymentManagementController extends Controller
         $page->setCollection($mapped);
         $payload = $this->tablePaginate($page);
 
+        // Load manual bank accounts for admin manual transfer input
+        $manualBanks = \App\Models\AppSetting::config('payments.manual_bank_accounts', []);
+
         $invoiceCandidates = \App\Models\Invoice::query()
             ->with(['contract:id,user_id,room_id', 'contract.tenant:id,name', 'contract.room:id,number'])
             ->whereIn('status', [\App\Enum\InvoiceStatus::PENDING->value, \App\Enum\InvoiceStatus::OVERDUE->value])
@@ -122,7 +127,10 @@ class PaymentManagementController extends Controller
                 'statuses' => array_map(fn ($c) => $c->value, PaymentStatus::cases()),
             ],
             'invoiceCandidates' => $invoiceCandidates,
-            'query'             => [
+            'paymentsExtra'     => [
+                'manual_banks' => is_array($manualBanks) ? array_values($manualBanks) : [],
+            ],
+            'query' => [
                 'page'    => $payload['current_page'],
                 'perPage' => $payload['per_page'],
                 'sort'    => $request->query('sort'),
@@ -174,13 +182,11 @@ class PaymentManagementController extends Controller
         return back()->with('success', 'Pembayaran berhasil dicatat.');
     }
 
-    public function void(\Illuminate\Http\Request $request, Payment $payment)
+    public function void(PaymentVoidRequest $request, Payment $payment)
     {
-        $request->validate([
-            'reason' => ['nullable', new \App\Rules\Reason(0, 200)],
-        ]);
+        $request->validated();
         if ($payment->status === PaymentStatus::CANCELLED) {
-            return back()->with('info', 'Pembayaran sudah dibatalkan sebelumnya.');
+            return back()->with('success', 'Pembayaran sudah dibatalkan sebelumnya.');
         }
 
         $this->payments->voidPayment($payment, (string) $request->string('reason'), $request->user());
@@ -232,6 +238,9 @@ class PaymentManagementController extends Controller
                     'attachment_name'        => $firstAttachment ? basename($firstAttachment) : '',
                     'attachment_uploaded_at' => null,
                     'attachments'            => $attachments,
+                    'receiver_bank'          => (string) ($payment->meta['receiver']['bank'] ?? ''),
+                    'receiver_account'       => (string) ($payment->meta['receiver']['account'] ?? ''),
+                    'receiver_holder'        => (string) ($payment->meta['receiver']['holder'] ?? ''),
                     'pre_outstanding_cents'  => (int) ($payment->pre_outstanding_cents ?? 0),
                 ],
                 'invoice' => $inv ? [
@@ -369,12 +378,19 @@ class PaymentManagementController extends Controller
         return response($html);
     }
 
-    public function attachment(Payment $payment)
+    public function attachment(Request $request, Payment $payment)
     {
         // Resolve from trait first
         $bucket = 'private';
         $paths  = $payment->getAttachments($bucket);
-        $path   = !empty($paths) ? (string) $paths[0] : (string) ($payment->meta['evidence_path'] ?? '');
+        $index  = (int) $request->query('i', 0);
+        $path   = '';
+        if (!empty($paths)) {
+            $idx  = max(0, min(count($paths) - 1, $index));
+            $path = (string) $paths[$idx];
+        } else {
+            $path = (string) ($payment->meta['evidence_path'] ?? '');
+        }
         if (!$path) {
             abort(404);
         }
@@ -400,14 +416,9 @@ class PaymentManagementController extends Controller
         }
     }
 
-    public function ack(Request $request, Payment $payment)
+    public function ack(PaymentAckRequest $request, Payment $payment)
     {
-        $request->validate([
-            'ack'     => ['nullable', 'accepted'],
-            'reason'  => ['required_without:ack', 'string', 'max:200'],
-            'note'    => ['nullable', 'string'],
-            'paid_at' => ['nullable', 'date'],
-        ]);
+        $request->validated();
 
         if (
             !in_array($payment->status->value, [PaymentStatus::REVIEW->value, PaymentStatus::PENDING->value], true)
@@ -450,17 +461,14 @@ class PaymentManagementController extends Controller
         }
 
         // Reject path requires reason
-        $reason = (string) $request->string('reason');
-        if ($reason === '') {
-            return back()->with('error', 'Alasan wajib diisi untuk menolak pembayaran.');
-        }
+        $reason         = (string) $request->string('reason');
         $meta['review'] = array_merge((array) ($meta['review'] ?? []), [
             'rejected_at' => now()->toDateTimeString(),
             'rejected_by' => $request->user()?->name,
             'reason'      => $reason,
         ]);
         $payment->update([
-            'status' => PaymentStatus::FAILED->value,
+            'status' => PaymentStatus::REJECTED->value,
             'meta'   => $meta,
         ]);
 

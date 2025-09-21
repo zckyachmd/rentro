@@ -42,8 +42,8 @@ class Room extends Model
         'number',
         'name',
         'size_m2',
-        'price_cents',
-        'billing_period',
+        'price_overrides',
+        'deposit_overrides',
         'max_occupancy',
         'status',
         'gender_policy',
@@ -51,23 +51,85 @@ class Room extends Model
     ];
 
     protected $casts = [
-        'size_m2'        => 'decimal:2',
-        'price_cents'    => 'integer',
-        'max_occupancy'  => 'integer',
-        'status'         => RoomStatus::class,
-        'gender_policy'  => GenderPolicy::class,
-        'billing_period' => BillingPeriod::class,
+        'size_m2'           => 'decimal:2',
+        'price_overrides'   => 'array',
+        'deposit_overrides' => 'array',
+        'max_occupancy'     => 'integer',
+        'status'            => RoomStatus::class,
+        'gender_policy'     => GenderPolicy::class,
     ];
 
     public function getPriceRupiahAttribute(): ?string
     {
-        if ($this->price_cents === null) {
+        $cents = $this->effectivePriceCents(BillingPeriod::MONTHLY->value);
+        if ($cents === null) {
             return null;
         }
-
-        $amount = (int) round(((int) $this->price_cents) / 100);
+        $amount = (int) round(((int) $cents) / 100);
 
         return 'Rp ' . number_format($amount, 0, ',', '.');
+    }
+
+    public function effectivePrices(): array
+    {
+        $typePrices = (array) ($this->relationLoaded('type') && $this->type ? ($this->type->prices ?? []) : (\App\Models\RoomType::query()->where('id', $this->room_type_id)->value('prices') ?? []));
+
+        $roomOverrides = (array) ($this->price_overrides ?? []);
+
+        $get = function (string $k) use ($roomOverrides, $typePrices): ?int {
+            $v = $roomOverrides[$k] ?? $typePrices[$k] ?? null;
+
+            return $v === null ? null : (int) $v;
+        };
+
+        return [
+            'daily'   => $get('daily'),
+            'weekly'  => $get('weekly'),
+            'monthly' => $get('monthly'),
+        ];
+    }
+
+    public function effectiveDeposits(): array
+    {
+        $typeDeps = (array) ($this->relationLoaded('type') && $this->type ? ($this->type->deposits ?? []) : (\App\Models\RoomType::query()->where('id', $this->room_type_id)->value('deposits') ?? []));
+
+        $roomOverrides = (array) ($this->deposit_overrides ?? []);
+
+        $get = function (string $k) use ($roomOverrides, $typeDeps): ?int {
+            $v = $roomOverrides[$k] ?? $typeDeps[$k] ?? null;
+
+            return $v === null ? null : (int) $v;
+        };
+
+        return [
+            'daily'   => $get('daily'),
+            'weekly'  => $get('weekly'),
+            'monthly' => $get('monthly'),
+        ];
+    }
+
+    public function effectivePriceCents(string $period): ?int
+    {
+        $key = match (strtolower($period)) {
+            'daily'  => 'daily',
+            'weekly' => 'weekly',
+            default  => 'monthly',
+        };
+        $all = $this->effectivePrices();
+
+        return $all[$key] ?? null;
+    }
+
+    public function effectiveDepositCents(string $period): ?int
+    {
+        $key = match (strtolower($period)) {
+            'daily'  => 'daily',
+            'weekly' => 'weekly',
+            default  => 'monthly',
+        };
+        $all = $this->effectiveDeposits();
+
+        return $all[$key] ?? null;
     }
 
     public function building(): BelongsTo

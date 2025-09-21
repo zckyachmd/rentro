@@ -1,11 +1,11 @@
 import { router, useForm } from '@inertiajs/react';
 import { Copy, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 import ConfirmPasswordDialog, {
     useConfirmPasswordModal,
 } from '@/components/confirm-password';
+import OtpInput from '@/components/form/otp-input';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -14,9 +14,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { CopyInline } from '@/components/ui/copy-inline';
+import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { createAbort, getJson } from '@/lib/api';
 import type { RecoveryResponse, TwoFactorTabProps } from '@/types/security';
 
 export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
@@ -50,38 +52,37 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
         forms.enable.post(route('security.2fa.start'), {
             preserveScroll: true,
             onSuccess: async () => {
+                const ctrl = createAbort();
                 try {
-                    const res = await fetch(route('security.2fa.qr'));
-                    if (res.ok) {
-                        const data = await res.json();
-                        setState((s) => ({ ...s, qrSvg: data?.svg ?? null }));
-                        setState((s) => ({
-                            ...s,
-                            manualSecret:
-                                typeof data?.secret === 'string'
-                                    ? data.secret
-                                    : null,
-                        }));
-                    }
+                    const data = await getJson<{
+                        svg?: string;
+                        secret?: string;
+                    }>(route('security.2fa.qr'), { signal: ctrl.signal });
+                    setState((s) => ({ ...s, qrSvg: data?.svg ?? null }));
+                    setState((s) => ({
+                        ...s,
+                        manualSecret:
+                            typeof data?.secret === 'string'
+                                ? data.secret
+                                : null,
+                    }));
                 } catch {
                     // ignore fetch error (QR code fetch failure)
                 }
-                toast.success(
-                    'Persiapan 2FA dimulai. Scan QR & konfirmasi OTP.',
-                );
             },
             onError: () => {
                 setState((s) => ({ ...s, enrolling: false }));
-                toast.error('Gagal memulai 2FA.');
             },
         });
     };
 
     const fetchRecovery = async () => {
+        const ctrl = createAbort();
         try {
-            const res = await fetch(route('security.2fa.recovery.index'));
-            if (!res.ok) return;
-            const data: RecoveryResponse = await res.json();
+            const data = await getJson<RecoveryResponse>(
+                route('security.2fa.recovery.index'),
+                { signal: ctrl.signal },
+            );
 
             const first = Array.isArray(data.codes) ? data.codes[0] : '[]';
 
@@ -113,11 +114,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
 
                 await fetchRecovery();
                 setState((s) => ({ ...s, showRecovery: true }));
-
-                toast.success('2FA berhasil dikonfirmasi.');
             },
-            onError: () =>
-                toast.error('Kode OTP tidak valid atau kedaluwarsa.'),
         });
     };
 
@@ -132,9 +129,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                     showRecovery: false,
                     manualSecret: null,
                 });
-                toast.success('2FA dinonaktifkan.');
             },
-            onError: () => toast.error('Gagal menonaktifkan 2FA.'),
         });
     };
 
@@ -147,9 +142,7 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                 onSuccess: async () => {
                     await fetchRecovery();
                     setState((s) => ({ ...s, showRecovery: true }));
-                    toast.success('Recovery codes diperbarui.');
                 },
-                onError: () => toast.error('Gagal memperbarui recovery codes.'),
             },
         );
     };
@@ -168,23 +161,9 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                         manualSecret: null,
                     }));
                     forms.confirm.reset('code');
-                    toast.success('Proses 2FA dibatalkan.');
                 },
-                onError: () => toast.error('Gagal membatalkan proses 2FA.'),
             },
         );
-    };
-
-    const onCopyRecovery = async () => {
-        if (Array.isArray(state.recoveryCodes) && state.recoveryCodes.length) {
-            const text = state.recoveryCodes.join('\n');
-            try {
-                await navigator.clipboard.writeText(text);
-                toast.success('Recovery codes disalin ke clipboard.');
-            } catch {
-                toast.error('Gagal menyalin recovery codes.');
-            }
-        }
     };
 
     return (
@@ -312,29 +291,22 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                             <Label htmlFor="otp">
                                                 Kode OTP
                                             </Label>
-                                            <Input
+                                            <OtpInput
                                                 id="otp"
-                                                type="text"
-                                                inputMode="numeric"
-                                                pattern="[0-9]*"
-                                                autoComplete="one-time-code"
                                                 value={forms.confirm.data.code}
-                                                onChange={(e) =>
+                                                onChange={(v) =>
                                                     forms.confirm.setData(
                                                         'code',
-                                                        e.target.value
-                                                            .replace(/\D+/g, '')
-                                                            .slice(0, 6),
+                                                        v,
                                                     )
                                                 }
                                                 placeholder="Masukkan 6 digit kode"
-                                                maxLength={6}
                                             />
-                                            {forms.confirm.errors.code && (
-                                                <p className="text-sm text-destructive">
-                                                    {forms.confirm.errors.code}
-                                                </p>
-                                            )}
+                                            <InputError
+                                                message={
+                                                    forms.confirm.errors.code
+                                                }
+                                            />
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2">
                                             <Button
@@ -369,13 +341,13 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                             {state.showRecovery &&
                                 Array.isArray(state.recoveryCodes) && (
                                     <div className="rounded-md border p-3">
-                                        <div className="mb-2 flex items-center justify-between">
+                                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <p className="text-sm text-muted-foreground">
                                                 Simpan kode berikut di tempat
                                                 aman. Setiap kode hanya dapat
                                                 digunakan sekali.
                                             </p>
-                                            <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
                                                 <Button
                                                     type="button"
                                                     size="sm"
@@ -385,19 +357,44 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                                             onRegenRecovery,
                                                         )
                                                     }
+                                                    className="w-full sm:w-auto"
                                                 >
                                                     <RefreshCw className="mr-2 h-4 w-4" />{' '}
                                                     Regenerate Codes
                                                 </Button>
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={onCopyRecovery}
+                                                <CopyInline
+                                                    as="button"
+                                                    value={
+                                                        Array.isArray(
+                                                            state.recoveryCodes,
+                                                        )
+                                                            ? state.recoveryCodes.join(
+                                                                  '\n',
+                                                              )
+                                                            : ''
+                                                    }
+                                                    successMessage="Recovery codes disalin"
+                                                    aria-disabled={
+                                                        !Array.isArray(
+                                                            state.recoveryCodes,
+                                                        ) ||
+                                                        state.recoveryCodes
+                                                            .length === 0
+                                                    }
+                                                    className={
+                                                        `inline-flex w-full items-center justify-center gap-2 rounded-md border bg-background px-3 py-2 text-sm shadow-sm hover:bg-accent hover:text-accent-foreground sm:w-auto ` +
+                                                        (!Array.isArray(
+                                                            state.recoveryCodes,
+                                                        ) ||
+                                                        state.recoveryCodes
+                                                            .length === 0
+                                                            ? 'pointer-events-none opacity-50'
+                                                            : '')
+                                                    }
                                                 >
                                                     <Copy className="mr-2 h-4 w-4" />{' '}
-                                                    Copy Codes
-                                                </Button>
+                                                    Copy Recovery Codes
+                                                </CopyInline>
                                             </div>
                                         </div>
                                         <div className="grid gap-2 md:grid-cols-2">

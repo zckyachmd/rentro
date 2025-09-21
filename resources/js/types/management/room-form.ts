@@ -7,9 +7,8 @@ export type RoomPhotoView = {
 
 export type Option = { id: number | string; name: string };
 export type RoomTypeOption = Option & {
-    price_cents?: number | null;
-    deposit_cents?: number | null;
-    size_m2?: number | null;
+    prices?: Partial<Record<'daily' | 'weekly' | 'monthly', number | null>>;
+    deposits?: Partial<Record<'daily' | 'weekly' | 'monthly', number | null>>;
 };
 export type FloorOption = {
     id: number;
@@ -41,13 +40,16 @@ export type RoomUpsert = {
     status?: string;
     max_occupancy?: number | string;
     price_rupiah?: number | string | null;
+    price_weekly_rupiah?: number | string | null;
+    price_daily_rupiah?: number | string | null;
     deposit_rupiah?: number | string | null;
+    deposit_weekly_rupiah?: number | string | null;
+    deposit_daily_rupiah?: number | string | null;
     size_m2?: number | string | null;
     notes?: string | null;
     photos?: RoomPhotoView[];
     amenities?: number[];
     gender_policy?: string | null;
-    billing_period?: string | null;
 };
 
 export type RoomEditPageProps = {
@@ -72,11 +74,14 @@ export type RoomForm = {
     status: string;
     max_occupancy: string;
     price_rupiah: string;
+    price_weekly_rupiah: string;
+    price_daily_rupiah: string;
     deposit_rupiah: string;
+    deposit_weekly_rupiah: string;
+    deposit_daily_rupiah: string;
     size_m2: string;
     notes: string;
     photos: File[];
     amenities: string[];
     gender_policy: string;
-    billing_period: string;
 };

@@ -1,6 +1,5 @@
 import { useForm } from '@inertiajs/react';
 import * as React from 'react';
-import { toast } from 'sonner';
 
 export function readXsrfCookie(): string | null {
     const raw = document.cookie
@@ -78,8 +77,9 @@ export function useConfirmPasswordDialog(
 
             const token = await ensureXsrfToken();
             if (!token) {
-                toast.error(
-                    'Gagal mendapatkan CSRF token. Coba muat ulang halaman.',
+                confirmForm.setError(
+                    'password',
+                    'Gagal mendapatkan CSRF token. Muat ulang halaman.',
                 );
                 return;
             }
@@ -125,13 +125,13 @@ export function useConfirmPasswordDialog(
                         /* ignore */
                     }
                     confirmForm.setError('password', message);
-                    toast.error(message);
                     return;
                 }
 
                 if (res.status === 419) {
-                    toast.error(
-                        'Sesi kedaluwarsa. Silakan muat ulang halaman.',
+                    confirmForm.setError(
+                        'password',
+                        'Sesi kedaluwarsa. Muat ulang halaman.',
                     );
                     return;
                 }
@@ -144,7 +144,8 @@ export function useConfirmPasswordDialog(
                           'name' in err &&
                           (err as { name?: unknown }).name === 'AbortError';
                 if (!isAbort) {
-                    toast.error(
+                    confirmForm.setError(
+                        'password',
                         'Gagal mengkonfirmasi password. Periksa koneksi Anda.',
                     );
                 }

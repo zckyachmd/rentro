@@ -17,6 +17,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import TenantInvoiceDetailDialog from '@/features/tenant/invoice/dialogs/detail-dialog';
+import TenantInvoicePayDialog from '@/features/tenant/invoice/dialogs/pay-dialog';
+import { createColumns } from '@/features/tenant/invoice/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import type {
@@ -26,10 +29,6 @@ import type {
     TenantInvoiceServerQuery as ServerQuery,
     TenantInvoiceItem,
 } from '@/types/tenant';
-
-import { createColumns } from './columns';
-import TenantInvoiceDetailDialog from './dialogs/detail';
-import TenantInvoicePayDialog from './dialogs/pay';
 
 // InvoicesPaginator, PageProps moved to pages/types
 
@@ -128,13 +127,10 @@ export default function TenantInvoiceIndex(props: PageProps) {
     const columns = React.useMemo(
         () =>
             createColumns({
-                onPay: (row) => setPay({ id: row.id, number: row.number }),
-                onView: (row) => setDetail({ id: row.id, number: row.number }),
-                onPrint: (row) =>
-                    window.open(
-                        route('tenant.invoices.print', { invoice: row.id }),
-                        '_blank',
-                    ),
+                onPay: (row: TenantInvoiceItem) =>
+                    setPay({ id: row.id, number: row.number }),
+                onShowDetail: (row: TenantInvoiceItem) =>
+                    setDetail({ id: row.id, number: row.number }),
             }),
         [],
     );
@@ -254,6 +250,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
                 <TenantInvoiceDetailDialog
                     target={detail}
                     onClose={() => setDetail(null)}
+                    onPay={(id, number) => setPay({ id, number: number || '' })}
                 />
                 <TenantInvoicePayDialog
                     target={pay}

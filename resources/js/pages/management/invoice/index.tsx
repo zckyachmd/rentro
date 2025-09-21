@@ -13,20 +13,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import CancelInvoiceDialog from '@/features/invoice/dialogs/cancel-dialog';
+import InvoiceDetailDialog from '@/features/invoice/dialogs/detail-dialog';
+import ExtendDueDialog from '@/features/invoice/dialogs/extend-due-dialog';
+import GenerateInvoiceDialog from '@/features/invoice/dialogs/generate-dialog';
+import { createColumns } from '@/features/invoice/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
-import CancelInvoiceDialog from '@/pages/management/invoice/dialogs/cancel';
-import ExtendDueDialog from '@/pages/management/invoice/dialogs/extend-due';
 import type {
     ManagementCancelState as CancelState,
     ManagementExtendState as ExtendState,
     InvoiceRow,
     ManagementInvoicePageProps as PageProps,
 } from '@/types/management';
-
-import { createColumns } from './columns';
-import InvoiceDetailDialog from './dialogs/detail';
-import GenerateInvoiceDialog from './dialogs/generate';
 
 export default function InvoiceIndex() {
     const { props } = usePage<PageProps>();
@@ -99,6 +98,12 @@ export default function InvoiceIndex() {
                         dueDate: defaultTomorrow,
                         reason: '',
                     }),
+                onPrint: (inv) => {
+                    const url = route('management.invoices.print', inv.id);
+                    if (typeof window !== 'undefined') {
+                        window.open(url, '_blank');
+                    }
+                },
             }),
         [defaultTomorrow],
     );

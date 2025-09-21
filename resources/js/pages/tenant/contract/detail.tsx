@@ -25,14 +25,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useLengthRule } from '@/hooks/use-length-rule';
 import AuthLayout from '@/layouts/auth-layout';
+import { createAbort, getJson } from '@/lib/api';
 import { formatDate, formatIDR } from '@/lib/format';
 import {
     variantForContractStatus,
     variantForInvoiceStatus,
 } from '@/lib/status';
-import TenantHandoverDetailDialog from '@/pages/tenant/contract/dialogs/handover-detail';
 import type {
     TenantHandover as DialogHandover,
     TenantContractDetailPageProps as PageProps,
@@ -88,22 +89,20 @@ export default function TenantContractDetail(props: PageProps) {
     );
 
     const loadHandovers = React.useCallback(async () => {
+        const ctrl = createAbort();
         try {
             setLoadingHandover(true);
-            const res = await fetch(
+            const j = await getJson<{ handovers?: TenantHandover[] }>(
                 route('tenant.contracts.handovers.index', {
                     contract: contract.id,
                 }),
-                { headers: { Accept: 'application/json' } },
+                { signal: ctrl.signal },
             );
-            if (res.ok) {
-                const j = (await res.json()) as {
-                    handovers?: TenantHandover[];
-                };
-                setHandovers(normalizeHandovers(j.handovers));
-            }
+            setHandovers(normalizeHandovers(j.handovers));
+        } catch {
+            // ignore
         } finally {
-            setLoadingHandover(false);
+            if (!ctrl.signal.aborted) setLoadingHandover(false);
         }
     }, [contract.id, normalizeHandovers]);
 
@@ -597,7 +596,7 @@ export default function TenantContractDetail(props: PageProps) {
                                 karakter).
                             </span>
                             {disputeRule.length < 5 ? (
-                                <span>{disputeRule.length}/5</span>
+                                <span>{disputeRule.length}/5*</span>
                             ) : null}
                         </div>
                     </div>

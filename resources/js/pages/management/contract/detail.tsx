@@ -1,33 +1,19 @@
 'use client';
-
-import { router } from '@inertiajs/react';
 import {
     Building2,
     Calendar,
-    ClipboardCopy,
     DoorOpen,
     Info,
     Layers3,
-    MoreHorizontal,
     Repeat,
     User,
     Wallet,
 } from 'lucide-react';
-import React from 'react';
 
-import { Can } from '@/components/acl';
 import { Crumb } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { CopyInline } from '@/components/ui/copy-inline';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Table,
@@ -37,14 +23,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import HandoverRoomSection from '@/features/contract/components/handover-room';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
-import HandoverCreate from '@/pages/management/contract/dialogs/handover-create';
-import HandoverDetail from '@/pages/management/contract/dialogs/handover-detail';
 import type {
     ContractDTO,
-    HandoverSummary,
+    HandoverOptions,
     ContractInvoiceItem as InvoiceItem,
     ManagementPaginator as Paginator,
     RoomDTO,
@@ -63,59 +48,9 @@ export default function ContractDetailPage(props: {
     tenant: TenantDTO;
     room: RoomDTO;
     invoices: Paginator<InvoiceItem>;
+    handover?: HandoverOptions;
 }) {
-    const { contract, tenant, room, invoices } = props;
-    const [handoverList, setHandoverList] = React.useState<HandoverSummary[]>(
-        [],
-    );
-    const [checkoutOpen, setCheckoutOpen] = React.useState(false);
-    const [checkinOpen, setCheckinOpen] = React.useState(false);
-    const [loadingHandover, setLoadingHandover] = React.useState(false);
-
-    const [handoverDialog, setHandoverDialog] = React.useState<{
-        open: boolean;
-        data: HandoverSummary | null;
-    }>({ open: false, data: null });
-
-    const currentHandover = handoverDialog.data;
-
-    const openHandover = (handover: HandoverSummary) =>
-        setHandoverDialog({ open: true, data: handover });
-
-    const normalizeHandovers = React.useCallback(
-        (items?: HandoverSummary[]) =>
-            (items ?? []).map((item) => ({
-                ...item,
-                attachments: Array.isArray(item.attachments)
-                    ? item.attachments
-                    : [],
-            })),
-        [],
-    );
-
-    const reloadHandovers = React.useCallback(async () => {
-        try {
-            setLoadingHandover(true);
-            const res = await fetch(
-                route('management.contracts.handovers.index', {
-                    contract: contract.id,
-                }),
-                { headers: { Accept: 'application/json' } },
-            );
-            if (res.ok) {
-                const json = (await res.json()) as {
-                    handovers?: HandoverSummary[];
-                };
-                setHandoverList(normalizeHandovers(json.handovers));
-            }
-        } finally {
-            setLoadingHandover(false);
-        }
-    }, [contract.id, normalizeHandovers]);
-
-    React.useEffect(() => {
-        void reloadHandovers();
-    }, [reloadHandovers]);
+    const { contract, tenant, room, invoices, handover } = props;
 
     return (
         <AuthLayout
@@ -169,12 +104,16 @@ export default function ContractDetailPage(props: {
                                             {contract.billing_period}
                                         </Badge>
                                     </div>
-                                    <div className="text-muted-foreground">
-                                        Tanggal Penagihan
-                                    </div>
-                                    <div className="text-right">
-                                        {contract.billing_day ?? '-'}
-                                    </div>
+                                    {contract.auto_renew ? (
+                                        <>
+                                            <div className="text-muted-foreground">
+                                                Tanggal Penagihan
+                                            </div>
+                                            <div className="text-right">
+                                                {contract.billing_day ?? '-'}
+                                            </div>
+                                        </>
+                                    ) : null}
                                 </div>
                             </div>
 
@@ -281,17 +220,14 @@ export default function ContractDetailPage(props: {
                                     </div>
                                     <div className="text-right">
                                         {tenant?.email ? (
-                                            <span
-                                                role="button"
-                                                tabIndex={0}
-                                                className="js-copy cursor-pointer break-words hover:underline"
-                                                data-clipboard-text={
-                                                    tenant.email
-                                                }
-                                                title="Klik untuk salin email"
+                                            <CopyInline
+                                                value={tenant.email}
+                                                variant="link"
+                                                className="break-words"
+                                                successMessage="Email disalin"
                                             >
                                                 {tenant.email}
-                                            </span>
+                                            </CopyInline>
                                         ) : (
                                             <span>-</span>
                                         )}
@@ -301,17 +237,14 @@ export default function ContractDetailPage(props: {
                                     </div>
                                     <div className="text-right">
                                         {tenant?.phone ? (
-                                            <span
-                                                role="button"
-                                                tabIndex={0}
-                                                className="js-copy cursor-pointer break-words hover:underline"
-                                                data-clipboard-text={
-                                                    tenant.phone
-                                                }
-                                                title="Klik untuk salin nomor telepon"
+                                            <CopyInline
+                                                value={tenant.phone}
+                                                variant="link"
+                                                className="break-words"
+                                                successMessage="Nomor telepon disalin"
                                             >
                                                 {tenant.phone}
-                                            </span>
+                                            </CopyInline>
                                         ) : (
                                             <span>-</span>
                                         )}
@@ -399,18 +332,13 @@ export default function ContractDetailPage(props: {
                                                         >
                                                             {inv.number}
                                                         </a>
-                                                        <Button
-                                                            type="button"
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            className="js-copy h-7 w-7"
-                                                            data-clipboard-text={
-                                                                inv.number
-                                                            }
+                                                        <CopyInline
+                                                            value={inv.number}
+                                                            variant="icon"
+                                                            size="sm"
+                                                            title="Salin nomor invoice"
                                                             aria-label="Salin nomor invoice"
-                                                        >
-                                                            <ClipboardCopy className="h-4 w-4" />
-                                                        </Button>
+                                                        />
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -458,226 +386,7 @@ export default function ContractDetailPage(props: {
                 </CardContent>
             </Card>
 
-            {/* Serah Terima */}
-            <Card className="mt-6">
-                <CardHeader className="pb-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <CardTitle>Serah Terima</CardTitle>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                            Pembuatan Check‑in/Check‑out tersedia dari halaman
-                            Kontrak (index) melalui menu Aksi.
-                        </div>
-                    </div>
-
-                    {(() => {
-                        const latestCheckin = handoverList.find(
-                            (h) => h.type === 'checkin',
-                        );
-                        const latestCheckout = handoverList.find(
-                            (h) => h.type === 'checkout',
-                        );
-                        const lastIn = String(
-                            latestCheckin?.status || '',
-                        ).toLowerCase();
-                        const lastOut = String(
-                            latestCheckout?.status || '',
-                        ).toLowerCase();
-                        const statusNow = String(
-                            contract.status || '',
-                        ).toLowerCase();
-
-                        // Check‑in tersedia jika belum pernah confirmed dan kontrak belum selesai/dibatalkan
-                        const canCheckin =
-                            lastIn !== 'confirmed' &&
-                            !['completed', 'cancelled', 'canceled'].includes(
-                                statusNow,
-                            );
-
-                        // Checkout mengikuti aturan eksisting
-                        const canCheckout =
-                            (statusNow === 'active' ||
-                                (statusNow === 'completed' &&
-                                    lastOut === 'disputed')) &&
-                            lastIn === 'confirmed' &&
-                            lastOut !== 'pending' &&
-                            lastOut !== 'confirmed';
-
-                        if (!canCheckin && !canCheckout) return null;
-                        return (
-                            <Can any={['handover.create']}>
-                                <div className="flex items-center gap-2">
-                                    {canCheckin ? (
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            onClick={() => setCheckinOpen(true)}
-                                        >
-                                            Check‑in
-                                        </Button>
-                                    ) : null}
-                                    {canCheckout ? (
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            onClick={() =>
-                                                setCheckoutOpen(true)
-                                            }
-                                        >
-                                            Check‑out
-                                        </Button>
-                                    ) : null}
-                                </div>
-                            </Can>
-                        );
-                    })()}
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="overflow-x-auto rounded-md border">
-                        <Table>
-                            <TableHeader className="sticky top-0 z-10 bg-background">
-                                <TableRow className="align-middle">
-                                    <TableHead className="min-w-[120px] px-4 py-3 text-left align-middle">
-                                        Jenis
-                                    </TableHead>
-                                    <TableHead className="min-w-[180px] px-4 py-3 text-left align-middle">
-                                        Waktu
-                                    </TableHead>
-                                    <TableHead className="min-w-[140px] px-4 py-3 text-left align-middle">
-                                        Status
-                                    </TableHead>
-                                    <TableHead className="min-w-[140px] px-4 py-3 text-right align-middle">
-                                        Aksi
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loadingHandover ? (
-                                    <>
-                                        {[0, 1, 2].map((i) => (
-                                            <TableRow key={`sk-${i}`}>
-                                                <TableCell>
-                                                    <div className="h-4 w-16 animate-pulse rounded bg-muted" />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="h-4 w-40 animate-pulse rounded bg-muted" />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="h-5 w-16 animate-pulse rounded bg-muted" />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="h-7 w-24 animate-pulse rounded bg-muted" />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </>
-                                ) : handoverList.length ? (
-                                    handoverList.map((h) => {
-                                        return (
-                                            <TableRow
-                                                key={h.id}
-                                                className="align-middle"
-                                            >
-                                                <TableCell className="px-4 py-3 align-middle capitalize">
-                                                    {h.type}
-                                                </TableCell>
-                                                <TableCell className="px-4 py-3 align-middle">
-                                                    {formatDate(
-                                                        h.recorded_at,
-                                                        true,
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="px-4 py-3 align-middle">
-                                                    <Badge variant="outline">
-                                                        {h.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="px-4 py-3 text-right align-middle">
-                                                    <div className="flex items-center justify-end">
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger
-                                                                asChild
-                                                            >
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-8 w-8"
-                                                                    aria-label="Aksi Serah Terima"
-                                                                >
-                                                                    <MoreHorizontal className="h-4 w-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent
-                                                                align="end"
-                                                                className="w-56"
-                                                            >
-                                                                <DropdownMenuLabel>
-                                                                    Aksi
-                                                                </DropdownMenuLabel>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem
-                                                                    onClick={() =>
-                                                                        openHandover(
-                                                                            h,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Lihat detail
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                ) : (
-                                    <TableRow className="align-middle">
-                                        <TableCell
-                                            colSpan={4}
-                                            className="px-4 py-8 text-center align-middle text-sm text-muted-foreground"
-                                        >
-                                            Belum ada riwayat serah terima.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
-            <HandoverCreate
-                open={checkoutOpen}
-                onOpenChange={setCheckoutOpen}
-                contractId={contract.id}
-                mode="checkout"
-                onSaved={async () => {
-                    router.reload({ only: ['contract'] });
-                    await reloadHandovers();
-                }}
-            />
-            <HandoverCreate
-                open={checkinOpen}
-                onOpenChange={setCheckinOpen}
-                contractId={contract.id}
-                mode="checkin"
-                onSaved={async () => {
-                    router.reload({ only: ['contract'] });
-                    await reloadHandovers();
-                }}
-            />
-            <HandoverDetail
-                open={handoverDialog.open}
-                onOpenChange={(o) =>
-                    setHandoverDialog((s) => ({ ...s, open: o }))
-                }
-                handover={currentHandover}
-                onRedo={(mode) => {
-                    setHandoverDialog((s) => ({ ...s, open: false }));
-                    if (mode === 'checkin') setCheckinOpen(true);
-                    else setCheckoutOpen(true);
-                }}
-            />
+            <HandoverRoomSection contract={contract} handover={handover} />
         </AuthLayout>
     );
 }

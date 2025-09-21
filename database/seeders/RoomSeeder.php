@@ -8,6 +8,7 @@ use App\Models\Floor;
 use App\Models\Room;
 use App\Models\RoomPhoto;
 use App\Models\RoomType;
+use Database\Seeders\RoomTypeSeeder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
@@ -28,7 +29,11 @@ class RoomSeeder extends Seeder
             )
             ->create();
 
-        $types = RoomType::factory()->count(2)->create();
+        // Ensure we have 3 standard types (Standard/Deluxe/Suite)
+        if (RoomType::count() < 3) {
+            (new RoomTypeSeeder())->run();
+        }
+        $types = RoomType::all(['id']);
 
         if (Amenity::count() < 8) {
             Amenity::factory()->count(8)->create();

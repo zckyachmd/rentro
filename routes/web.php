@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function (): void {
 
     // Profile
     Route::prefix('profile')->name('profile.')->group(function (): void {
-        Route::get('/', [ProfileController::class, 'show'])->name('show');
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
         // Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
@@ -56,38 +56,38 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/', [SecurityController::class, 'index'])->name('index');
 
         Route::patch('/password', [SecurityController::class, 'updatePassword'])
-            ->middleware('password.confirm')
+            ->middleware('throttle:6,1')
             ->name('password.update');
 
         Route::prefix('sessions')->name('sessions.')->group(function (): void {
             Route::post('/revoke-others', [SecurityController::class, 'revokeOthers'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('revokeOthers');
 
             Route::delete('/{id}', [SecurityController::class, 'destroySession'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('destroy');
         });
 
         Route::prefix('2fa')->name('2fa.')->group(function (): void {
             Route::post('/start', [TwoFactorController::class, 'start'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('start');
             Route::get('/qr', [TwoFactorController::class, 'qr'])->name('qr');
             Route::post('/cancel', [TwoFactorController::class, 'cancel'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('cancel');
             Route::post('/confirm', [TwoFactorController::class, 'confirm'])
                 ->middleware(['password.confirm', 'throttle:6,1'])
                 ->name('confirm');
             Route::delete('/disable', [TwoFactorController::class, 'disable'])
-                ->middleware('password.confirm')
+                ->middleware(['password.confirm', 'throttle:secure-sensitive'])
                 ->name('disable');
 
             Route::prefix('recovery-codes')->name('recovery.')->group(function (): void {
                 Route::get('/', [TwoFactorController::class, 'recoveryCode'])->name('index');
                 Route::post('/regenerate', [TwoFactorController::class, 'recoveryRegenerate'])
-                    ->middleware('password.confirm')
+                    ->middleware(['password.confirm', 'throttle:secure-2fa-recovery'])
                     ->name('regenerate');
             });
         });
@@ -133,18 +133,26 @@ Route::middleware('auth')->group(function (): void {
                 ->name('print');
             Route::get('/{invoice}/pay/status', [TenantMidtransController::class, 'status'])
                 ->whereNumber('invoice')
+                ->middleware('throttle:secure-tenant-status')
                 ->name('pay.status');
             Route::post('/{invoice}/pay/cancel', [TenantMidtransController::class, 'cancelPending'])
                 ->whereNumber('invoice')
+                ->middleware('throttle:secure-tenant-pay')
                 ->name('pay.cancel');
             Route::post('/{invoice}/pay/midtrans/va', [TenantMidtransController::class, 'payVa'])
                 ->whereNumber('invoice')
-                ->middleware('throttle:6,1')
+                ->middleware('throttle:secure-tenant-pay')
                 ->name('pay.midtrans.va');
             Route::post('/{invoice}/pay/manual', [TenantPaymentController::class, 'payManual'])
                 ->whereNumber('invoice')
-                ->middleware('throttle:6,1')
+                ->middleware('throttle:secure-tenant-pay')
                 ->name('pay.manual');
+            Route::get('/payments/{payment}', [TenantPaymentController::class, 'show'])
+                ->whereNumber('payment')
+                ->name('payments.show');
+            Route::get('/payments/{payment}/attachment', [TenantPaymentController::class, 'attachment'])
+                ->whereNumber('payment')
+                ->name('payments.attachment');
         });
     });
 
@@ -262,18 +270,18 @@ Route::middleware('auth')->group(function (): void {
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
                 ->name('lookup');
             Route::post('/generate', [InvoiceManagementController::class, 'generate'])
-                ->middleware('can:' . PermissionName::INVOICE_CREATE->value)
+                ->middleware(['can:' . PermissionName::INVOICE_CREATE->value, 'throttle:secure-sensitive'])
                 ->name('generate');
             Route::get('/{invoice}/print', [InvoiceManagementController::class, 'print'])
                 ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
                 ->whereNumber('invoice')
                 ->name('print');
             Route::post('/{invoice}/extend-due', [InvoiceManagementController::class, 'extendDue'])
-                ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->middleware(['can:' . PermissionName::INVOICE_UPDATE->value, 'throttle:secure-sensitive'])
                 ->whereNumber('invoice')
                 ->name('extendDue');
             Route::post('/{invoice}/cancel', [InvoiceManagementController::class, 'cancel'])
-                ->middleware('can:' . PermissionName::INVOICE_UPDATE->value)
+                ->middleware(['can:' . PermissionName::INVOICE_UPDATE->value, 'throttle:secure-sensitive'])
                 ->whereNumber('invoice')
                 ->name('cancel');
         });
@@ -287,7 +295,7 @@ Route::middleware('auth')->group(function (): void {
                 ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
                 ->name('show');
             Route::post('/', [PaymentManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::PAYMENT_CREATE->value)
+                ->middleware(['can:' . PermissionName::PAYMENT_CREATE->value, 'throttle:secure-sensitive'])
                 ->name('store');
             Route::get('/{payment}/attachment', [PaymentManagementController::class, 'attachment'])
                 ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
@@ -296,10 +304,10 @@ Route::middleware('auth')->group(function (): void {
                 ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
                 ->name('print');
             Route::post('/{payment}/void', [PaymentManagementController::class, 'void'])
-                ->middleware('can:' . PermissionName::PAYMENT_UPDATE->value)
+                ->middleware(['can:' . PermissionName::PAYMENT_UPDATE->value, 'throttle:secure-sensitive'])
                 ->name('void');
             Route::post('/{payment}/ack', [PaymentManagementController::class, 'ack'])
-                ->middleware('can:' . PermissionName::PAYMENT_UPDATE->value)
+                ->middleware(['can:' . PermissionName::PAYMENT_UPDATE->value, 'throttle:secure-sensitive'])
                 ->name('ack');
         });
 

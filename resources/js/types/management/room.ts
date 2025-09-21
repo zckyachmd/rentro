@@ -20,7 +20,9 @@ export interface RoomItem {
     name?: string | null;
     status: 'vacant' | 'reserved' | 'occupied' | 'maintenance' | 'inactive';
     max_occupancy: number;
-    price_rupiah?: string;
+    price_daily_rupiah?: string | null;
+    price_weekly_rupiah?: string | null;
+    price_monthly_rupiah?: string | null;
     building?: Building | null;
     floor?: Floor | null;
     type?: RoomType | null;
@@ -31,6 +33,7 @@ export type ColumnFactoryOptions = {
     onDetail?: (room: RoomItem) => void;
     onEdit?: (room: RoomItem) => void;
     onDelete?: (room: RoomItem) => void;
+    displayPeriod?: 'daily' | 'weekly' | 'monthly';
 };
 
 export type RoomDetail = {
@@ -39,11 +42,15 @@ export type RoomDetail = {
     name?: string | null;
     status: string;
     max_occupancy: number;
-    price_rupiah?: string | null;
-    deposit_rupiah?: string | null;
+    price_daily_rupiah?: string | null;
+    price_weekly_rupiah?: string | null;
+    price_monthly_rupiah?: string | null;
+    deposit_daily_rupiah?: string | null;
+    deposit_weekly_rupiah?: string | null;
+    deposit_monthly_rupiah?: string | null;
     area_sqm?: number | null;
     gender_policy?: string | null;
-    billing_period?: string | null;
+    // billing_period removed from room
     notes?: string | null;
     building?: { id: number; name: string } | null;
     floor?: { id: number; level: number | string; building_id: number } | null;

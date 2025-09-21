@@ -87,6 +87,13 @@ export type TenantInvoiceDetailDTO = {
         paid_at?: string | null;
         reference?: string | null;
         provider?: string | null;
+        note?: string | null;
+        reject_reason?: string | null;
+        review_by?: string | null;
+        review_at?: string | null;
+        receiver_bank?: string | null;
+        receiver_account?: string | null;
+        receiver_holder?: string | null;
     }[];
     payment_summary?: {
         total_invoice: number;

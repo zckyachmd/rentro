@@ -3,23 +3,9 @@ import { ArrowLeft, CheckCircle2, Info, XCircle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { CopyInline } from '@/components/ui/copy-inline';
 import AuthLayout from '@/layouts/auth-layout';
 import type { PaymentResultPageProps as PageProps } from '@/types/payment';
-
-function useCopy(url?: string) {
-    const [copied, setCopied] = React.useState(false);
-    const copy = React.useCallback(async () => {
-        if (!url) return;
-        try {
-            await navigator.clipboard.writeText(url);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1200);
-        } catch {
-            // ignore
-        }
-    }, [url]);
-    return { copied, copy } as const;
-}
 
 export default function PaymentResult(props: PageProps) {
     const variant = (props.variant || 'finish') as
@@ -57,8 +43,6 @@ export default function PaymentResult(props: PageProps) {
         }
     }, [variant]);
 
-    const { copied, copy } = useCopy(backUrl);
-
     return (
         <AuthLayout
             pageTitle={meta.title}
@@ -84,14 +68,14 @@ export default function PaymentResult(props: PageProps) {
                             <ArrowLeft className="mr-2 h-4 w-4" /> {meta.action}
                         </Link>
                     </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={copy}
-                        title="Salin tautan"
+                    <CopyInline
+                        value={backUrl}
+                        as="span"
+                        className="cursor-pointer underline"
+                        successMessage="Tautan disalin"
                     >
-                        {copied ? 'Disalin' : 'Salin Tautan'}
-                    </Button>
+                        Salin Tautan
+                    </CopyInline>
                 </div>
             </div>
         </AuthLayout>

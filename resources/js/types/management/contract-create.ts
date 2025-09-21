@@ -28,10 +28,9 @@ export type RoomOption = {
     id: string;
     number: string;
     name?: string | null;
-    price_cents?: number | null;
-    deposit_cents?: number | null;
+    prices?: Partial<Record<'daily' | 'weekly' | 'monthly', number | null>>;
+    deposits?: Partial<Record<'daily' | 'weekly' | 'monthly', number | null>>;
     billing_period?: string | null;
-    type_price_cents?: number | null;
     building_name?: string | null;
     floor_level?: number | null;
     building?: { id: number | string; name?: string | null } | null;

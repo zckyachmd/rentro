@@ -31,7 +31,19 @@ class HandoverService
         $allowedStatuses           = $requireCheckinForActivate
             ? [ContractStatus::BOOKED->value]
             : [ContractStatus::BOOKED->value, ContractStatus::ACTIVE->value];
-        if (!in_array($contract->status->value, $allowedStatuses, true)) {
+
+        $allowActiveDisputedRedo = false;
+        if ($contract->status->value === ContractStatus::ACTIVE->value) {
+            $lastCheckin = $contract
+                ->hasMany(RoomHandover::class, 'contract_id')
+                ->where('type', 'checkin')
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->first();
+            $allowActiveDisputedRedo = $lastCheckin && (string) $lastCheckin->status === 'Disputed';
+        }
+
+        if (!in_array($contract->status->value, $allowedStatuses, true) && !$allowActiveDisputedRedo) {
             throw new \RuntimeException('Kontrak tidak valid untuk check-in.');
         }
         if ($contract->status->value === ContractStatus::BOOKED->value) {

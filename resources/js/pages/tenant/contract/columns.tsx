@@ -208,6 +208,22 @@ export const createColumns = (
                             >
                                 <Eye className="mr-2 h-4 w-4" /> Lihat detail
                             </DropdownMenuItem>
+                            {r.needs_ack_checkin ? (
+                                <DropdownMenuItem
+                                    onClick={() => opts?.onViewCheckin?.(r)}
+                                >
+                                    <Eye className="mr-2 h-4 w-4" /> Lihat
+                                    Check‑in
+                                </DropdownMenuItem>
+                            ) : null}
+                            {r.needs_ack_checkout ? (
+                                <DropdownMenuItem
+                                    onClick={() => opts?.onViewCheckout?.(r)}
+                                >
+                                    <Eye className="mr-2 h-4 w-4" /> Lihat
+                                    Check‑out
+                                </DropdownMenuItem>
+                            ) : null}
                             <DropdownMenuItem
                                 onClick={() => {
                                     const url = route('tenant.invoices.index');

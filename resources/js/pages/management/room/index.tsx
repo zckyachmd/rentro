@@ -28,10 +28,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import RoomDetailDialog from '@/features/room/dialogs/detail-dialog';
+import { createColumns } from '@/features/room/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
-import { createColumns } from '@/pages/management/room/columns';
-import RoomDetailDialog from '@/pages/management/room/dialogs/detail';
 import type {
     RoomFilters as Filters,
     RoomQueryInit as QueryInit,
@@ -39,8 +39,6 @@ import type {
     RoomsPageProps,
     RoomSafePayload as SafePayload,
 } from '@/types/management';
-
-// types moved to pages/types
 
 export default function RoomIndex(props: RoomsPageProps) {
     const { rooms: paginator, query = {}, options: opt = {} } = props;
@@ -81,8 +79,6 @@ export default function RoomIndex(props: RoomsPageProps) {
         [floors, filters.building_id],
     );
 
-    // QueryInit moved to pages/types
-
     const qinit = (query as QueryInit) || {};
     const initial: QueryBag | undefined = Object.keys(qinit).length
         ? {
@@ -121,7 +117,123 @@ export default function RoomIndex(props: RoomsPageProps) {
         onFinish: () => setProcessing(false),
     });
 
-    // SafePayload moved to pages/types
+    const [pricePeriod, setPricePeriod] = React.useState<
+        'daily' | 'weekly' | 'monthly'
+    >((qinit.price_period ?? 'monthly') as 'daily' | 'weekly' | 'monthly');
+
+    React.useEffect(() => {
+        try {
+            const saved = localStorage.getItem('rentro:rooms:price_period');
+            if (
+                saved &&
+                (saved === 'daily' || saved === 'weekly' || saved === 'monthly')
+            ) {
+                if (saved !== pricePeriod) {
+                    setPricePeriod(saved as 'daily' | 'weekly' | 'monthly');
+                    const dir: 'asc' | 'desc' =
+                        q.dir === 'desc' ? 'desc' : 'asc';
+                    safeOnQueryChange({
+                        price_period: saved as 'daily' | 'weekly' | 'monthly',
+                        sort: 'price',
+                        dir,
+                        page: 1,
+                    });
+                }
+            }
+        } catch {
+            /* noop */
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    React.useEffect(() => {
+        try {
+            localStorage.setItem('rentro:rooms:price_period', pricePeriod);
+        } catch {
+            /* noop */
+        }
+    }, [pricePeriod]);
+
+    // Hydrate sort/dir from localStorage once
+    React.useEffect(() => {
+        try {
+            const raw = localStorage.getItem('rentro:rooms:sort');
+            if (raw) {
+                const saved = JSON.parse(raw) as Partial<{
+                    sort: string | null;
+                    dir: 'asc' | 'desc' | null;
+                }>;
+                const sort = saved.sort ?? null;
+                const dir = saved.dir ?? null;
+                if (sort || dir) {
+                    safeOnQueryChange({
+                        sort: sort ?? undefined,
+                        dir: dir ?? undefined,
+                        page: 1,
+                    });
+                }
+            }
+        } catch {
+            /* noop */
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Persist sort/dir to localStorage whenever it changes
+    React.useEffect(() => {
+        try {
+            localStorage.setItem(
+                'rentro:rooms:sort',
+                JSON.stringify({
+                    sort: q.sort ?? null,
+                    dir: (q.dir as 'asc' | 'desc' | null) ?? null,
+                }),
+            );
+        } catch {
+            /* noop */
+        }
+    }, [q.sort, q.dir]);
+
+    React.useEffect(() => {
+        try {
+            const raw = localStorage.getItem('rentro:rooms:filters');
+            if (raw) {
+                const saved = JSON.parse(raw) as Partial<Filters>;
+                const hasAny = Object.values(saved || {}).some(Boolean);
+                if (hasAny) {
+                    setFilters((f) => ({
+                        ...f,
+                        ...saved,
+                        building_id: String(
+                            saved.building_id ?? f.building_id ?? '',
+                        ),
+                        floor_id: String(saved.floor_id ?? f.floor_id ?? ''),
+                        type_id: String(saved.type_id ?? f.type_id ?? ''),
+                        status: String(saved.status ?? f.status ?? ''),
+                        gender_policy: String(
+                            saved.gender_policy ?? f.gender_policy ?? '',
+                        ),
+                        q: String(saved.q ?? f.q ?? ''),
+                    }));
+                    safeOnQueryChange({ ...saved, page: 1 });
+                }
+            }
+        } catch {
+            /* noop */
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    React.useEffect(() => {
+        try {
+            localStorage.setItem(
+                'rentro:rooms:filters',
+                JSON.stringify(filters),
+            );
+        } catch {
+            /* noop */
+        }
+    }, [filters]);
 
     const safeOnQueryChange = React.useCallback(
         (payload: SafePayload) => {
@@ -131,6 +243,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                 type_id: filters.type_id || undefined,
                 status: filters.status || undefined,
                 gender_policy: filters.gender_policy || undefined,
+                price_period: pricePeriod,
                 ...(payload as Record<string, unknown>),
             };
             if ('search' in merged)
@@ -142,7 +255,7 @@ export default function RoomIndex(props: RoomsPageProps) {
             });
             onQueryChange(merged);
         },
-        [onQueryChange, filters],
+        [onQueryChange, filters, pricePeriod],
     );
 
     const resetFilter = React.useCallback(() => {
@@ -180,8 +293,9 @@ export default function RoomIndex(props: RoomsPageProps) {
                 onDelete: (room) => {
                     setDeletingRoom(room);
                 },
+                displayPeriod: pricePeriod,
             }),
-        [],
+        [pricePeriod],
     );
 
     const applyFilters = () => {
@@ -207,6 +321,7 @@ export default function RoomIndex(props: RoomsPageProps) {
             type_id: filters.type_id || undefined,
             status: filters.status || undefined,
             gender_policy: filters.gender_policy || undefined,
+            price_period: pricePeriod,
             sort: q.sort ?? undefined,
             dir: q.dir ?? undefined,
         };
@@ -227,6 +342,7 @@ export default function RoomIndex(props: RoomsPageProps) {
             >
                 <Plus className="mr-2 h-4 w-4" /> Tambah Kamar
             </Button>
+            {/* Periode Sewa dipindah ke area Filter */}
         </div>
     );
 
@@ -247,7 +363,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-3 md:grid-cols-12">
-                            <div className="md:col-span-3">
+                            <div className="md:col-span-4">
                                 <Label htmlFor="room-search">Cari</Label>
                                 <Input
                                     id="room-search"
@@ -265,7 +381,46 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     placeholder="Cari nomor/nama kamar"
                                 />
                             </div>
-                            <div className="md:col-span-3">
+                            <div className="md:col-span-4">
+                                <Label>Periode Sewa</Label>
+                                <Select
+                                    value={pricePeriod}
+                                    onValueChange={(v) => {
+                                        const period = v as
+                                            | 'daily'
+                                            | 'weekly'
+                                            | 'monthly';
+                                        setPricePeriod(period);
+                                        safeOnQueryChange({
+                                            page: 1,
+                                            price_period: period,
+                                            sort: 'price',
+                                            dir:
+                                                q.dir === 'desc'
+                                                    ? 'desc'
+                                                    : 'asc',
+                                        });
+                                    }}
+                                >
+                                    <SelectTrigger className="h-9">
+                                        <SelectValue placeholder="Bulanan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="daily">
+                                                Harian
+                                            </SelectItem>
+                                            <SelectItem value="weekly">
+                                                Mingguan
+                                            </SelectItem>
+                                            <SelectItem value="monthly">
+                                                Bulanan
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="md:col-span-4">
                                 <Label>Gedung</Label>
                                 <Select
                                     value={filters.building_id}
@@ -299,7 +454,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="md:col-span-2">
+                            <div className="md:col-span-4">
                                 <Label>Lantai</Label>
                                 <Select
                                     value={filters.floor_id}
@@ -331,7 +486,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="md:col-span-2">
+                            <div className="md:col-span-4">
                                 <Label>Tipe</Label>
                                 <Select
                                     value={filters.type_id}
@@ -363,7 +518,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="md:col-span-2">
+                            <div className="md:col-span-4">
                                 <Label>Status</Label>
                                 <Select
                                     value={filters.status}
@@ -438,8 +593,14 @@ export default function RoomIndex(props: RoomsPageProps) {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Hapus Kamar</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Apakah Anda yakin ingin menghapus kamar "
-                                {deletingRoom?.name || `#${deletingRoom?.id}`}"
+                                Apakah Anda yakin ingin menghapus kamar{' '}
+                                <strong>
+                                    {deletingRoom
+                                        ? deletingRoom.name
+                                            ? `${deletingRoom.number} — ${deletingRoom.name}`
+                                            : String(deletingRoom.number)
+                                        : ''}
+                                </strong>{' '}
                                 beserta semua fotonya? Tindakan ini tidak dapat
                                 dibatalkan.
                             </AlertDialogDescription>

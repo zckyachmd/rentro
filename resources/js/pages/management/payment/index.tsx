@@ -15,19 +15,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import PaymentDetailDialog from '@/features/payment/dialogs/detail-dialog';
+import ManualPaymentDialog from '@/features/payment/dialogs/manual-dialog';
+import PaymentReviewDialog from '@/features/payment/dialogs/review-dialog';
+import VoidPaymentDialog from '@/features/payment/dialogs/void-dialog';
+import { createColumns } from '@/features/payment/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { formatIDR } from '@/lib/format';
-import VoidPaymentDialog from '@/pages/management/payment/dialogs/void';
 import type {
     PaymentIndexPageProps as PageProps,
     PaymentRow,
 } from '@/types/management';
-
-import { createColumns } from './columns';
-import PaymentDetailDialog from './dialogs/detail';
-import ManualPaymentDialog from './dialogs/manual';
-import PaymentReviewDialog from './dialogs/review';
 
 const currency = (amount: number): string => formatIDR(amount);
 
@@ -85,6 +84,10 @@ export default function PaymentIndex() {
     const invoiceCandidates = React.useMemo(
         () => props.invoiceCandidates ?? [],
         [props.invoiceCandidates],
+    );
+    const manualBanks = React.useMemo(
+        () => props.paymentsExtra?.manual_banks ?? [],
+        [props.paymentsExtra?.manual_banks],
     );
 
     return (
@@ -189,6 +192,7 @@ export default function PaymentIndex() {
                 methods={methods}
                 initialInvoiceNumber={initialInvoiceNumber}
                 invoiceCandidates={invoiceCandidates}
+                manualBanks={manualBanks}
             />
 
             <PaymentDetailDialog

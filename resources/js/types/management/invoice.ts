@@ -4,6 +4,7 @@ export type BaseInvoiceRow = {
     due_date: string;
     amount_cents: number;
     outstanding?: number;
+    ticket_url?: string | null;
     status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
     tenant?: string | null;
     room_number?: string | null;
@@ -13,6 +14,7 @@ export type CreateColumnsOpts<T extends BaseInvoiceRow> = {
     onCancel?: (inv: T) => void;
     onShowDetail?: (inv: T) => void;
     onExtendDue?: (inv: T) => void;
+    onPrint?: (inv: T) => void;
 };
 
 export type InvoiceRow = BaseInvoiceRow;
@@ -62,6 +64,7 @@ export type ManagementInvoiceDetailDTO = {
     contract?: {
         id: string;
         number?: string | null;
+        billing_period?: string | null;
         start_date?: string | null;
         end_date?: string | null;
     } | null;

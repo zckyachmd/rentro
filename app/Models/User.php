@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enum\Gender;
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasAvatar;
-use App\Models\Concerns\HasDocument;
 use App\Models\Concerns\HasRoles;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,7 +34,6 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasAudit;
     use HasRoles;
     use HasAvatar;
-    use HasDocument;
 
     /**
      * The attributes that are mass assignable.
@@ -88,6 +86,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sessions(): HasMany
     {
         return $this->hasMany(Session::class);
+    }
+
+    public function document(): HasOne
+    {
+        return $this->hasOne(UserDocument::class);
     }
 
     public function latestSession(): HasOne
