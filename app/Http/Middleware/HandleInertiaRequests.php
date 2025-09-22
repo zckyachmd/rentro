@@ -75,8 +75,6 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy())->toArray(),
                 'location' => $request->url(),
             ],
-
-            // Flash & callback helpers (success/error/data) for easy consumption on the frontend
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
@@ -85,12 +83,29 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('message'),
                 'data'    => fn () => $request->session()->get('data'),
             ],
-
-            // Aliases specifically for callback-like usage (optional, mirrors flash keys)
             'cb' => [
                 'success' => fn () => $request->session()->get('success') ?? $request->session()->get('cb_success'),
                 'error'   => fn () => $request->session()->get('error') ?? $request->session()->get('cb_error'),
                 'data'    => fn () => $request->session()->get('data') ?? $request->session()->get('cb_data'),
+            ],
+            'appearance' => [
+                'theme' => function () use ($request) {
+                    $user          = $request->user();
+                    $themeFromUser = null;
+                    if ($user) {
+                        try {
+                            $prefs     = (array) ($user->preferences ?? []);
+                            $candidate = $prefs['theme'] ?? null;
+                            if (in_array($candidate, ['light', 'dark', 'system'], true)) {
+                                $themeFromUser = $candidate;
+                            }
+                        } catch (\Throwable) {
+                            // ignore
+                        }
+                    }
+
+                    return $request->cookie('theme', $themeFromUser ?? 'system');
+                },
             ],
         ];
     }

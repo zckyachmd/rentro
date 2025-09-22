@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme-storage-key="rentro-theme">
 
 <head>
     <meta charset="utf-8">
@@ -17,12 +17,24 @@
     <script>
         (function () {
             try {
-                var KEY = 'vite-ui-theme';
+                var root = document.documentElement;
+                var KEY = root && root.dataset ? (root.dataset.themeStorageKey || 'rentro-theme') : 'rentro-theme';
                 var theme = localStorage.getItem(KEY) || 'system';
+
+                if (!localStorage.getItem(KEY)) {
+                    var m = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
+                    if (m && (m[1] === 'dark' || m[1] === 'light' || m[1] === 'system')) {
+                        theme = m[1];
+                        try { localStorage.setItem(KEY, theme); } catch (e) {}
+                    }
+                }
+
                 var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
-                var root = document.documentElement;
-                if (isDark) root.classList.add('dark'); else root.classList.remove('dark');
+
+                root.dataset.theme = theme;
+                root.dataset.themeResolved = isDark ? 'dark' : 'light';
+                root.classList.toggle('dark', isDark);
                 root.style.colorScheme = isDark ? 'dark' : 'light';
             } catch (e) {
                 // ignore

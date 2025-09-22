@@ -13,5 +13,8 @@ export type PageProps<
     auth: {
         user: User;
     };
+    appearance?: {
+        theme: 'light' | 'dark' | 'system';
+    };
     ziggy: Config & { location: string };
 };

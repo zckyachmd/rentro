@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Events\InvoicePaid;
 use App\Events\InvoiceReopened;
+use App\Listeners\QueueThemeCookieOnLogin;
 use App\Listeners\UpdateContractStatusOnInvoicePaid;
 use App\Listeners\UpdateContractStatusOnInvoiceReopened;
 use App\Services\Contracts\ContractServiceInterface;
@@ -18,6 +19,7 @@ use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use App\Services\Midtrans\MidtransService;
 use App\Services\PaymentService;
 use App\Services\TwoFactorService;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -47,5 +49,8 @@ class AppServiceProvider extends ServiceProvider
         // Domain events registration
         Event::listen(InvoicePaid::class, UpdateContractStatusOnInvoicePaid::class);
         Event::listen(InvoiceReopened::class, UpdateContractStatusOnInvoiceReopened::class);
+
+        // Auth events
+        Event::listen(Login::class, QueueThemeCookieOnLogin::class);
     }
 }

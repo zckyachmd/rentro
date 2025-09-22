@@ -31,7 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        // Exclude visual preferences cookies from encryption so they are readable by JS
+        $middleware->encryptCookies(except: ['appearance', 'sidebar_state', 'theme']);
     })
     ->withProviders([
         RateLimitServiceProvider::class,

@@ -1,5 +1,6 @@
 'use client';
 
+import { router } from '@inertiajs/react';
 import { Moon, Sun } from 'lucide-react';
 import * as React from 'react';
 
@@ -14,8 +15,15 @@ export function ModeToggle() {
     };
 
     const handleToggle = React.useCallback(() => {
-        if (resolvedTheme === 'dark') setTheme('light');
-        else setTheme('dark');
+        const next = resolvedTheme === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+        try {
+            router.post(
+                route('appearance.update'),
+                { theme: next },
+                { preserveScroll: true, preserveState: true, replace: true },
+            );
+        } catch {}
     }, [resolvedTheme, setTheme]);
 
     const isDark = resolvedTheme === 'dark';

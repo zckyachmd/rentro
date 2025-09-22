@@ -20,6 +20,7 @@ use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
+use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;
@@ -32,6 +33,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
+
+Route::post('/appearance/theme', [AppearanceController::class, 'update'])
+    ->middleware('throttle:ui-preferences')
+    ->name('appearance.update');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', fn () => Inertia::render('dashboard'))
