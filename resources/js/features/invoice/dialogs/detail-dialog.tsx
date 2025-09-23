@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
@@ -13,13 +14,12 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { createAbort, getJson } from '@/lib/api';
+import i18n from '@/lib/i18n';
 import { formatDate, formatIDR } from '@/lib/format';
 import type {
     ManagementInvoiceDetailDTO as InvoiceDetailDTO,
     ManagementInvoiceDetailTarget as InvoiceDetailTarget,
 } from '@/types/management';
-
-// types moved to pages/types/management/invoice
 
 function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
     const [loading, setLoading] = React.useState(false);
@@ -42,8 +42,8 @@ function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
             } catch (e) {
                 setError(
                     e instanceof Error
-                        ? e.message || 'Gagal memuat invoice'
-                        : 'Gagal memuat invoice',
+                        ? e.message || i18n.t('invoice.detail_error')
+                        : i18n.t('invoice.detail_error'),
                 );
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
@@ -64,23 +64,24 @@ export default function InvoiceDetailDialog({
 }) {
     const open = !!target;
     const { loading, data, error } = useInvoiceDetailLoader(target);
+    const { t } = useTranslation();
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        Invoice {target?.number ?? ''}
+                        {t('invoice.title')} {target?.number ?? ''}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Ringkasan tagihan & item.
+                        {t('invoice.detail.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     {loading ? (
                         <div className="h-48 animate-pulse rounded-md border" />
                     ) : error ? (
-                        <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                        <div className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">
                             {error}
                         </div>
                     ) : data ? (
@@ -91,7 +92,7 @@ export default function InvoiceDetailDialog({
                 </div>
                 <DialogFooter>
                     <Button type="button" variant="outline" onClick={onClose}>
-                        Tutup
+                        {t('common.close')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -103,26 +104,27 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
     const inv = data.invoice;
     const c = data.contract;
     const summary = data.payment_summary;
+    const { t } = useTranslation();
     return (
         <div className="space-y-3 text-sm">
             <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border p-3">
-                    <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Info Invoice
+                    <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                        {t('invoice.detail.info')}
                     </div>
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                        <Label>Nomor</Label>
+                        <Label>{t('common.number')}</Label>
                         <div className="inline-flex items-center gap-1 font-mono">
                             <span>{inv.number}</span>
                             <CopyInline
                                 value={inv.number}
                                 variant="icon"
                                 size="xs"
-                                title="Salin nomor invoice"
-                                aria-label="Salin nomor invoice"
+                                title={t('invoice.copy_number')}
+                                aria-label={t('invoice.copy_number')}
                             />
                         </div>
-                        <Label>No. Kontrak</Label>
+                        <Label>{t('invoice.contract_no')}</Label>
                         {(() => {
                             const display =
                                 c?.number && c.number.trim() !== ''
@@ -144,51 +146,55 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                                             value={copyVal}
                                             variant="icon"
                                             size="xs"
-                                            title="Salin nomor kontrak"
-                                            aria-label="Salin nomor kontrak"
+                                            title={t('contract.copy_number')}
+                                            aria-label={t('contract.copy_number')}
                                         />
                                     ) : null}
                                 </div>
                             );
                         })()}
-                        <Label>Periode</Label>
+                        <Label>{t('common.period')}</Label>
                         <div>
                             {(formatDate(inv.period_start) ?? '-') +
-                                ' s/d ' +
+                                t('common.period_sep') +
                                 (formatDate(inv.period_end) ?? '-')}
                         </div>
-                        <Label>Jatuh Tempo</Label>
+                        <Label>{t('common.due_date')}</Label>
                         <div>{formatDate(inv.due_date)}</div>
-                        <Label>Status</Label>
+                        <Label>{t('common.status')}</Label>
                         <div>{inv.status}</div>
                         {typeof inv.release_day === 'number' &&
                             (c?.billing_period || '').toLowerCase() ===
                                 'monthly' && (
                                 <>
-                                    <Label>Rilis Tagihan</Label>
-                                    <div>{`Setiap tanggal ${inv.release_day}`}</div>
+                                    <Label>{t('invoice.release_day')}</Label>
+                                    <div>
+                                        {t('invoice.release_day_value', {
+                                            day: inv.release_day,
+                                        })}
+                                    </div>
                                 </>
                             )}
                     </div>
                 </div>
                 <div className="rounded-lg border p-3">
-                    <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Nilai & Pembayaran
+                    <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                        {t('invoice.amounts')}
                     </div>
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                        <Label>Total</Label>
+                        <Label>{t('common.total')}</Label>
                         <div>{formatIDR(inv.amount_cents)}</div>
-                        <Label>Terbayar</Label>
+                        <Label>{t('invoice.paid')}</Label>
                         <div>{formatIDR(summary?.total_paid ?? 0)}</div>
-                        <Label>Sisa</Label>
+                        <Label>{t('invoice.outstanding')}</Label>
                         <div>{formatIDR(summary?.outstanding ?? 0)}</div>
                     </div>
                 </div>
             </div>
             <Separator />
             <div className="rounded-lg border p-3">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Item
+                <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                    {t('invoice.items')}
                 </div>
                 <div className="space-y-2">
                     {inv.items.map((it, idx) => {
@@ -208,11 +214,11 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                                     <div className="font-medium">
                                         {it.label}
                                     </div>
-                                    <div className="text-xs text-muted-foreground">
+                                    <div className="text-muted-foreground text-xs">
                                         {it.code}
                                     </div>
                                     {hasBreakdown && (
-                                        <div className="text-xs text-muted-foreground">
+                                        <div className="text-muted-foreground text-xs">
                                             {`${formatIDR(unitPriceCents)} × ${qty} ${unit}`}
                                         </div>
                                     )}

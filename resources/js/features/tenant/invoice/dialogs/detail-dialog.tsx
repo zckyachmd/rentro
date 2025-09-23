@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import TenantPaymentDetailDialog from '@/features/tenant/invoice/dialogs/payment-detail-dialog';
-// icons removed for simpler UI
 import { createAbort, getJson } from '@/lib/api';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForInvoiceStatus, variantForPaymentStatus } from '@/lib/status';
@@ -59,14 +59,17 @@ export default function TenantInvoiceDetailDialog({
     const [paymentDetail, setPaymentDetail] = React.useState<{
         id: string;
     } | null>(null);
+    const { t } = useTranslation();
     return (
         <>
             <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Detail Invoice</DialogTitle>
+                        <DialogTitle>
+                            {t('tenant.invoice.detail.title')}
+                        </DialogTitle>
                         <DialogDescription className="text-xs">
-                            Ringkasan tagihan
+                            {t('tenant.invoice.detail.subtitle')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
@@ -76,21 +79,23 @@ export default function TenantInvoiceDetailDialog({
                             <div className="space-y-3 text-sm">
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="rounded-lg border p-3">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                            Info Invoice
+                                        <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                            {t('tenant.invoice.detail.info')}
                                         </div>
                                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                                            <Label>Nomor</Label>
+                                            <Label>{t('common.number')}</Label>
                                             <div className="font-mono">
                                                 {data.invoice.number}
                                             </div>
-                                            <Label>Jatuh Tempo</Label>
+                                            <Label>
+                                                {t('common.due_date')}
+                                            </Label>
                                             <div>
                                                 {formatDate(
                                                     data.invoice.due_date,
                                                 )}
                                             </div>
-                                            <Label>Status</Label>
+                                            <Label>{t('common.status')}</Label>
                                             <div>
                                                 <Badge
                                                     variant={variantForInvoiceStatus(
@@ -103,27 +108,30 @@ export default function TenantInvoiceDetailDialog({
                                             {String(
                                                 data.invoice.status || '',
                                             ).toLowerCase() === 'cancelled' ? (
-                                                <div className="col-span-2 mt-1 text-[11px] text-muted-foreground">
-                                                    Tagihan dibatalkan.
-                                                    Pembayaran baru tidak
-                                                    tersedia, riwayat pembayaran
-                                                    tetap tercatat.
+                                                <div className="text-muted-foreground col-span-2 mt-1 text-[11px]">
+                                                    {t(
+                                                        'tenant.invoice.detail.cancelled_note',
+                                                    )}
                                                 </div>
                                             ) : null}
                                         </div>
                                     </div>
                                     <div className="rounded-lg border p-3">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                            Nilai
+                                        <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                            {t('tenant.invoice.amounts')}
                                         </div>
                                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                                            <Label>Total</Label>
+                                            <Label>{t('common.total')}</Label>
                                             <div>
                                                 {formatIDR(
                                                     data.invoice.amount_cents,
                                                 )}
                                             </div>
-                                            <Label>Sisa</Label>
+                                            <Label>
+                                                {t(
+                                                    'tenant.invoice.outstanding',
+                                                )}
+                                            </Label>
                                             <div>
                                                 {formatIDR(
                                                     data.payment_summary
@@ -136,8 +144,10 @@ export default function TenantInvoiceDetailDialog({
                                     {Array.isArray(data.invoice.items) &&
                                     data.invoice.items.length > 0 ? (
                                         <div className="rounded-lg border p-3 sm:col-span-2">
-                                            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                Rincian Item
+                                            <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                                {t(
+                                                    'tenant.invoice.detail.items',
+                                                )}
                                             </div>
                                             <div className="space-y-1">
                                                 {data.invoice.items.map(
@@ -165,10 +175,12 @@ export default function TenantInvoiceDetailDialog({
                                     {Array.isArray(data.payments) &&
                                     data.payments.length > 0 ? (
                                         <div className="rounded-lg border p-3 sm:col-span-2">
-                                            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                Riwayat Pembayaran
+                                            <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                                {t(
+                                                    'tenant.invoice.detail.payment_history',
+                                                )}
                                             </div>
-                                            <ScrollArea className="max-h-[280px] rounded-md border border-dashed bg-background/40">
+                                            <ScrollArea className="bg-background/40 max-h-[280px] rounded-md border border-dashed">
                                                 <div className="space-y-2 p-2 sm:p-3">
                                                     {(
                                                         data.payments as NonNullable<
@@ -179,28 +191,43 @@ export default function TenantInvoiceDetailDialog({
                                                             key={pmt.id}
                                                             type="button"
                                                             onClick={() =>
-                                                                setPaymentDetail({
-                                                                    id: pmt.id,
-                                                                })
+                                                                setPaymentDetail(
+                                                                    {
+                                                                        id: pmt.id,
+                                                                    },
+                                                                )
                                                             }
-                                                            className="flex w-full items-start justify-between gap-3 text-left hover:bg-muted/30"
+                                                            className="hover:bg-muted/30 flex w-full items-start justify-between gap-3 text-left"
                                                         >
                                                             <div className="min-w-0">
-                                                                <div className="text-xs text-muted-foreground">
-                                                                    {pmt.method} •{' '}
+                                                                <div className="text-muted-foreground text-xs">
+                                                                    {pmt.method}{' '}
+                                                                    •{' '}
                                                                     {formatDate(
                                                                         pmt.paid_at,
                                                                         true,
                                                                     )}
                                                                 </div>
                                                                 {pmt.reference ? (
-                                                                    <div className="mt-0.5 text-[11px] text-muted-foreground">
-                                                                        Referensi: {pmt.reference}
+                                                                    <div className="text-muted-foreground mt-0.5 text-[11px]">
+                                                                        {t(
+                                                                            'tenant.invoice.detail.reference',
+                                                                        )}
+                                                                        :{' '}
+                                                                        {
+                                                                            pmt.reference
+                                                                        }
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.receiver_bank ? (
-                                                                    <div className="mt-0.5 text-[11px] text-muted-foreground">
-                                                                        Rek. Penerima: {pmt.receiver_bank}
+                                                                    <div className="text-muted-foreground mt-0.5 text-[11px]">
+                                                                        {t(
+                                                                            'tenant.invoice.detail.receiver_bank',
+                                                                        )}
+                                                                        :{' '}
+                                                                        {
+                                                                            pmt.receiver_bank
+                                                                        }
                                                                         {pmt.receiver_account
                                                                             ? ` — ${pmt.receiver_account}`
                                                                             : ''}
@@ -210,22 +237,31 @@ export default function TenantInvoiceDetailDialog({
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.reject_reason ? (
-                                                                    <div className="mt-0.5 text-[11px] text-destructive">
-                                                                        Ditolak: {pmt.reject_reason}
+                                                                    <div className="text-destructive mt-0.5 text-[11px]">
+                                                                        {t(
+                                                                            'tenant.invoice.detail.rejected',
+                                                                        )}
+                                                                        :{' '}
+                                                                        {
+                                                                            pmt.reject_reason
+                                                                        }
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.note ? (
-                                                                    <div className="mt-0.5 whitespace-pre-wrap break-words text-[11px] text-muted-foreground">
+                                                                    <div className="text-muted-foreground mt-0.5 text-[11px] break-words whitespace-pre-wrap">
                                                                         {pmt.review_by
-                                                                            ? 'Catatan Admin:'
-                                                                            : 'Catatan:'}{' '}
-                                                                        {pmt.note}
+                                                                            ? `${t('tenant.invoice.detail.admin_note')}:`
+                                                                            : `${t('tenant.invoice.detail.note')}:`}{' '}
+                                                                        {
+                                                                            pmt.note
+                                                                        }
                                                                     </div>
                                                                 ) : null}
-                                                                {pmt.review_by || pmt.review_at ? (
-                                                                    <div className="mt-0.5 text-[11px] text-muted-foreground">
+                                                                {pmt.review_by ||
+                                                                pmt.review_at ? (
+                                                                    <div className="text-muted-foreground mt-0.5 text-[11px]">
                                                                         {pmt.review_by
-                                                                            ? `Diproses oleh ${pmt.review_by}`
+                                                                            ? `${t('tenant.invoice.detail.reviewed_by')} ${pmt.review_by}`
                                                                             : ''}
                                                                         {pmt.review_at
                                                                             ? `${pmt.review_by ? ' • ' : ''}${formatDate(pmt.review_at, true)}`
@@ -277,13 +313,13 @@ export default function TenantInvoiceDetailDialog({
                                 {(() => {
                                     const last = (data.payments || [])[0];
                                     return last && last.status === 'Rejected'
-                                        ? 'Bayar Ulang'
-                                        : 'Bayar';
+                                        ? t('tenant.invoice.pay_again')
+                                        : t('common.pay');
                                 })()}
                             </Button>
                         ) : null}
                         <Button variant="outline" onClick={onClose}>
-                            Tutup
+                            {t('common.close')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

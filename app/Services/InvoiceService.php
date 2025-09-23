@@ -153,7 +153,8 @@ class InvoiceService implements InvoiceServiceInterface
                     ? Carbon::parse($latest->period_end)->addDay()->startOfMonth()
                     : $contractStart->copy()->startOfMonth();
                 if (!$start->isSameDay($expectedStart)) {
-                    $hint = $expectedStart->locale(app()->getLocale() ?: 'id')->translatedFormat('F Y');
+                    $hint = $expectedStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
+                        ->translatedFormat('F Y');
                     throw new \InvalidArgumentException('Tagihan bulanan harus berurutan. Bulan berikutnya yang valid adalah ' . $hint . '.');
                 }
             }
@@ -266,7 +267,8 @@ class InvoiceService implements InvoiceServiceInterface
                     ? Carbon::parse($latest->period_end)->addDay()->startOfMonth()
                     : $contractStart->copy()->startOfMonth();
                 if (!$monthStart->isSameDay($expectedStart)) {
-                    $hint = $expectedStart->locale(app()->getLocale() ?: 'id')->translatedFormat('F Y');
+                    $hint = $expectedStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
+                        ->translatedFormat('F Y');
                     throw new \InvalidArgumentException('Tagihan bulanan harus berurutan. Bulan berikutnya yang valid adalah ' . $hint . '.');
                 }
 
@@ -446,8 +448,9 @@ class InvoiceService implements InvoiceServiceInterface
                     : $start->copy();
                 for ($i = 0; $i < max(1, (int) $duration); $i++) {
                     $monthStart = $baseMonthStart->copy()->addMonthsNoOverflow($i);
-                    $labelBulan = $monthStart->locale(app()->getLocale() ?: 'id')->translatedFormat('F Y');
-                    $items[]    = Invoice::makeItem(
+                    $labelBulan = $monthStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
+                        ->translatedFormat('F Y');
+                    $items[] = Invoice::makeItem(
                         'RENT',
                         'Sewa - ' . $labelBulan,
                         $rent,
@@ -498,8 +501,9 @@ class InvoiceService implements InvoiceServiceInterface
                 $monthStart = $needsProrata
                     ? $this->nextReleaseDate($start, $releaseDom)
                     : $start->copy();
-                $labelBulan = $monthStart->locale(app()->getLocale() ?: 'id')->translatedFormat('F Y');
-                $items[]    = Invoice::makeItem(
+                $labelBulan = $monthStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
+                    ->translatedFormat('F Y');
+                $items[] = Invoice::makeItem(
                     'RENT',
                     'Sewa - ' . $labelBulan,
                     $rent,

@@ -44,7 +44,7 @@ export default function PasswordInput({
                 size="icon"
                 onClick={() => setShow((s) => !s)}
                 className={[
-                    'absolute right-0 top-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0',
+                    'absolute top-0 right-0 h-full border-0 px-3 hover:border-0 hover:bg-transparent focus-visible:ring-0 focus-visible:outline-none',
                     rightButtonClassName,
                 ]
                     .filter(Boolean)

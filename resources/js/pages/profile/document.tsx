@@ -1,4 +1,6 @@
+import type { TFunction } from 'i18next';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { DatePickerInput } from '@/components/date-picker';
 import {
@@ -26,33 +28,30 @@ import type { DocumentFormValue, DocumentSectionProps } from '@/types/profile';
 function getAlertText(
     value: DocumentFormValue,
     messages: DocumentSectionProps['messages'] = {},
+    t: TFunction,
 ) {
-    const title = messages.infoTitle || 'Informasi Dokumen';
+    const title = messages.infoTitle || t('profile.document.alert.info_title');
     const lines: string[] = [];
 
     if (value.file) {
         lines.push(
-            messages.filePicked ||
-                'Anda memilih file dokumen baru. Dokumen akan ditinjau (ulang) oleh admin.',
+            messages.filePicked || t('profile.document.alert.file_picked'),
         );
     } else {
         switch (value.status) {
             case 'pending':
                 lines.push(
-                    messages.pending ||
-                        'Status dokumen saat ini adalah pending. Dokumen Anda sedang menunggu verifikasi admin.',
+                    messages.pending || t('profile.document.alert.pending'),
                 );
                 break;
             case 'approved':
                 lines.push(
-                    messages.approved ||
-                        'Dokumen Anda sudah disetujui. Jika mengunggah ulang, dokumen akan kembali ditinjau oleh admin.',
+                    messages.approved || t('profile.document.alert.approved'),
                 );
                 break;
             case 'rejected':
                 lines.push(
-                    messages.rejected ||
-                        'Dokumen Anda ditolak. Anda harus mengunggah ulang dokumen untuk ditinjau kembali oleh admin.',
+                    messages.rejected || t('profile.document.alert.rejected'),
                 );
                 break;
         }
@@ -60,7 +59,7 @@ function getAlertText(
 
     if (value.notes) {
         lines.push(
-            `\n${messages.notesTitle || 'Catatan Admin'}:\n${value.notes}`,
+            `\n${messages.notesTitle || t('profile.document.alert.notes_title')}:\n${value.notes}`,
         );
     }
 
@@ -72,10 +71,11 @@ export default function DocumentSection({
     onChange,
     errors = {},
     defaultOpen = true,
-    title = 'Dokumen Identitas',
+    title,
     messages = {},
     documentTypes = [],
 }: DocumentSectionProps) {
+    const { t } = useTranslation();
     const setField = React.useCallback(
         <K extends keyof DocumentFormValue>(
             key: K,
@@ -103,7 +103,7 @@ export default function DocumentSection({
         >
             <AccordionItem value="document">
                 <AccordionTrigger className="text-base font-semibold">
-                    {title}
+                    {title ?? t('profile.document.title')}
                 </AccordionTrigger>
                 <AccordionContent>
                     <div className="space-y-4">
@@ -111,7 +111,7 @@ export default function DocumentSection({
                             {/* Jenis Dokumen */}
                             <div className="space-y-2">
                                 <Label htmlFor="doc_type">
-                                    Jenis Dokumen{' '}
+                                    {t('profile.document.type')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Select
@@ -124,7 +124,11 @@ export default function DocumentSection({
                                     }
                                 >
                                     <SelectTrigger id="doc_type">
-                                        <SelectValue placeholder="Pilih jenis" />
+                                        <SelectValue
+                                            placeholder={t(
+                                                'form.placeholder.pick_type',
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {documentTypes.map((type) => (
@@ -140,7 +144,7 @@ export default function DocumentSection({
                             {/* Nomor Dokumen */}
                             <div className="space-y-2">
                                 <Label htmlFor="doc_number">
-                                    Nomor Dokumen{' '}
+                                    {t('profile.document.number')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
@@ -150,7 +154,7 @@ export default function DocumentSection({
                                     onChange={(e) =>
                                         setField('number', e.target.value)
                                     }
-                                    placeholder="Masukkan nomor"
+                                    placeholder={t('form.placeholder.number')}
                                 />
                                 <InputError
                                     message={errors['document.number']}
@@ -160,7 +164,7 @@ export default function DocumentSection({
                             {/* Tanggal Terbit */}
                             <div className="space-y-2">
                                 <Label htmlFor="issued_at">
-                                    Tanggal Terbit{' '}
+                                    {t('profile.document.issued_at')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <DatePickerInput
@@ -170,7 +174,9 @@ export default function DocumentSection({
                                     onChange={(v) =>
                                         setField('issued_at', v ?? '')
                                     }
-                                    placeholder="Pilih tanggal"
+                                    placeholder={t(
+                                        'form.placeholder.pick_date',
+                                    )}
                                     max={todayISO()}
                                 />
                                 <InputError
@@ -181,7 +187,7 @@ export default function DocumentSection({
                             {/* Berlaku Hingga */}
                             <div className="space-y-2">
                                 <Label htmlFor="expires_at">
-                                    Berlaku Hingga
+                                    {t('profile.document.expires_at')}
                                 </Label>
                                 <DatePickerInput
                                     id="expires_at"
@@ -190,7 +196,9 @@ export default function DocumentSection({
                                     onChange={(v) =>
                                         setField('expires_at', v ?? '')
                                     }
-                                    placeholder="Pilih tanggal"
+                                    placeholder={t(
+                                        'form.placeholder.pick_date',
+                                    )}
                                     min={tomorrowISO()}
                                 />
                                 <InputError
@@ -200,7 +208,7 @@ export default function DocumentSection({
 
                             <div className="space-y-2 md:col-span-4">
                                 <Label className="mb-1 block">
-                                    File Dokumen{' '}
+                                    {t('profile.document.file')}{' '}
                                     <span className="text-destructive">
                                         {!value.has_file ||
                                         value.status === 'rejected'
@@ -227,7 +235,7 @@ export default function DocumentSection({
                             {value.status && (
                                 <div className="md:col-span-4">
                                     <Label className="mr-2">
-                                        Status Verifikasi
+                                        {t('profile.document.verify_status')}
                                     </Label>
                                     <span>
                                         <DocumentStatusBadge
@@ -240,7 +248,7 @@ export default function DocumentSection({
                         {shouldShowAlert &&
                             (() => {
                                 const { title: alertTitle, text } =
-                                    getAlertText(value, messages);
+                                    getAlertText(value, messages, t);
                                 return (
                                     <Alert>
                                         <AlertTitle>{alertTitle}</AlertTitle>

@@ -310,7 +310,7 @@ class ContractManagementController extends Controller
             ],
         );
 
-        return redirect()->route('management.contracts.index')->with('success', 'Kontrak berhasil dibuat.');
+        return redirect()->route('management.contracts.index')->with('success', __('management/contracts.created'));
     }
 
     public function show(Contract $contract)
@@ -420,7 +420,7 @@ class ContractManagementController extends Controller
     public function cancel(ReasonRequest $request, Contract $contract)
     {
         if (!in_array($contract->status, [ContractStatus::PENDING_PAYMENT, ContractStatus::BOOKED], true)) {
-            return back()->with('error', 'Kontrak tidak dapat dibatalkan. Hanya kontrak Pending Payment atau Booked yang dapat dibatalkan.');
+            return back()->with('error', __('management/contracts.cancel.not_allowed'));
         }
 
         $hasPaidInvoice = $contract->invoices()
@@ -434,7 +434,7 @@ class ContractManagementController extends Controller
             ->exists();
 
         if ($hasPaidInvoice || $hasCompletedPayment) {
-            return back()->with('error', 'Kontrak tidak dapat dibatalkan karena terdapat pembayaran yang sudah selesai atau invoice yang sudah lunas.');
+            return back()->with('error', __('management/contracts.cancel.not_allowed_due_payments'));
         }
 
         $data   = $request->validated();
@@ -453,10 +453,10 @@ class ContractManagementController extends Controller
                 ],
             );
 
-            return back()->with('success', 'Kontrak dibatalkan.');
+            return back()->with('success', __('management/contracts.cancelled'));
         }
 
-        return back()->with('error', 'Kontrak tidak dapat dibatalkan.');
+        return back()->with('error', __('management/contracts.cancel.failed'));
     }
 
     public function setAutoRenew(SetAutoRenewRequest $request, Contract $contract)
@@ -465,7 +465,7 @@ class ContractManagementController extends Controller
         $enabled = (bool) $data['auto_renew'];
 
         if (!$enabled && $contract->status !== ContractStatus::ACTIVE) {
-            return back()->with('error', 'Hanya kontrak berstatus Active yang dapat menghentikan perpanjangan otomatis.');
+            return back()->with('error', __('management/contracts.autorenew.only_active'));
         }
 
         $this->contracts->setAutoRenew($contract, $enabled);
@@ -479,7 +479,7 @@ class ContractManagementController extends Controller
             ],
         );
 
-        return back()->with('success', $enabled ? 'Auto‑renew dinyalakan.' : 'Auto‑renew dihentikan.');
+        return back()->with('success', $enabled ? __('management/contracts.autorenew.enabled') : __('management/contracts.autorenew.disabled'));
     }
 
     public function print(Contract $contract)

@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { Eye, EyeOff } from 'lucide-react';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +16,7 @@ import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 
 export default function PasswordTab() {
+    const { t } = useTranslation();
     const [show, setShow] = useState<{
         current: boolean;
         new: boolean;
@@ -48,9 +50,9 @@ export default function PasswordTab() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Ubah Password</CardTitle>
+                <CardTitle>{t('security.password.change_title')}</CardTitle>
                 <CardDescription>
-                    Pastikan password kuat dan unik.
+                    {t('security.password.change_desc')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -58,13 +60,15 @@ export default function PasswordTab() {
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="current_password">
-                                Password Saat Ini
+                                {t('security.password.current')}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="current_password"
                                     type={show.current ? 'text' : 'password'}
-                                    placeholder="Masukan password saat ini"
+                                    placeholder={t(
+                                        'security.password.current_placeholder',
+                                    )}
                                     value={passwordForm.data.current_password}
                                     className="pr-10"
                                     onChange={(e) =>
@@ -84,12 +88,12 @@ export default function PasswordTab() {
                                             current: !s.current,
                                         }))
                                     }
-                                    className="absolute right-0 top-0 h-full border-0 px-3 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                    className="absolute top-0 right-0 h-full border-0 px-3 hover:bg-transparent focus-visible:ring-0 focus-visible:outline-none"
                                     tabIndex={-1}
                                     aria-label={
                                         show.current
-                                            ? 'Hide password'
-                                            : 'Show password'
+                                            ? t('common.hide_password')
+                                            : t('common.show_password')
                                     }
                                 >
                                     {show.current ? (
@@ -105,12 +109,16 @@ export default function PasswordTab() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password Baru</Label>
+                            <Label htmlFor="password">
+                                {t('security.password.new')}
+                            </Label>
                             <div className="relative">
                                 <Input
                                     id="password"
                                     type={show.new ? 'text' : 'password'}
-                                    placeholder="Masukan password baru"
+                                    placeholder={t(
+                                        'security.password.new_placeholder',
+                                    )}
                                     value={passwordForm.data.password}
                                     className="pr-10"
                                     onChange={(e) =>
@@ -127,12 +135,12 @@ export default function PasswordTab() {
                                     onClick={() =>
                                         setShow((s) => ({ ...s, new: !s.new }))
                                     }
-                                    className="absolute right-0 top-0 h-full border-0 px-3 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                    className="absolute top-0 right-0 h-full border-0 px-3 hover:bg-transparent focus-visible:ring-0 focus-visible:outline-none"
                                     tabIndex={-1}
                                     aria-label={
                                         show.new
-                                            ? 'Hide password'
-                                            : 'Show password'
+                                            ? t('common.hide_password')
+                                            : t('common.show_password')
                                     }
                                 >
                                     {show.new ? (
@@ -148,13 +156,15 @@ export default function PasswordTab() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password_confirmation">
-                                Konfirmasi Password Baru
+                                {t('security.password.confirm')}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="password_confirmation"
                                     type={show.confirm ? 'text' : 'password'}
-                                    placeholder="Konfirmasi password baru"
+                                    placeholder={t(
+                                        'security.password.confirm_placeholder',
+                                    )}
                                     value={
                                         passwordForm.data.password_confirmation
                                     }
@@ -176,12 +186,12 @@ export default function PasswordTab() {
                                             confirm: !s.confirm,
                                         }))
                                     }
-                                    className="absolute right-0 top-0 h-full border-0 px-3 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                    className="absolute top-0 right-0 h-full border-0 px-3 hover:bg-transparent focus-visible:ring-0 focus-visible:outline-none"
                                     tabIndex={-1}
                                     aria-label={
                                         show.confirm
-                                            ? 'Hide password'
-                                            : 'Show password'
+                                            ? t('common.hide_password')
+                                            : t('common.show_password')
                                     }
                                 >
                                     {show.confirm ? (
@@ -204,14 +214,14 @@ export default function PasswordTab() {
                             type="submit"
                             disabled={passwordForm.processing}
                         >
-                            Simpan
+                            {t('common.save')}
                         </Button>
                         <Button
                             type="button"
                             variant="secondary"
                             onClick={() => passwordForm.reset()}
                         >
-                            Reset
+                            {t('common.reset')}
                         </Button>
                     </div>
                 </form>

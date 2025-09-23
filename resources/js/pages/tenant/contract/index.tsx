@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { AlertTriangle, Search } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     AlertDialog,
@@ -33,20 +34,20 @@ import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/hando
 import { useServerTable } from '@/hooks/use-datatable';
 import AuthLayout from '@/layouts/auth-layout';
 import { getJson } from '@/lib/api';
-import type { TenantHandover } from '@/types/tenant';
 import type {
     TenantContractsPageProps as ContractsPageProps,
     TenantContractQueryInit as QueryInit,
     TenantContractSafePayload as SafePayload,
     TenantContractServerQuery as ServerQuery,
     TenantContractItem,
+    TenantHandover,
 } from '@/types/tenant';
 
 import { createColumns } from './columns';
 
-// types moved to pages/types
-
 export default function TenantContractIndex(props: ContractsPageProps) {
+    const { t } = useTranslation();
+    const { t: tTenant } = useTranslation('tenant/contract');
     const { contracts: paginator, query = {}, options = {} } = props;
     const contracts: TenantContractItem[] = (paginator?.data ??
         []) as TenantContractItem[];
@@ -154,8 +155,8 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                 if (!latest) {
                     window.alert(
                         type === 'checkin'
-                            ? 'Belum ada data check‑in.'
-                            : 'Belum ada data check‑out.',
+                            ? tTenant('no_checkin')
+                            : tTenant('no_checkout'),
                     );
                     return;
                 }
@@ -164,7 +165,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                 // ignore
             }
         },
-        [],
+        [t],
     );
 
     const daysUntil = (end?: string | null): number | null => {
@@ -187,23 +188,23 @@ export default function TenantContractIndex(props: ContractsPageProps) {
 
     return (
         <AuthLayout
-            pageTitle="Kontrak Saya"
-            pageDescription="Daftar kontrak kamar Anda."
+            pageTitle={tTenant('title')}
+            pageDescription={tTenant('desc')}
         >
             <div className="space-y-6">
                 {/* Filter */}
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                            Filter
+                            {tTenant('filter')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="grid items-end gap-3 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="contract-search">Cari</Label>
+                                <Label htmlFor="contract-search">{t('datatable.search')}</Label>
                                 <div className="relative">
-                                    <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                                     <Input
                                         id="contract-search"
                                         className="h-9 pl-8"
@@ -217,13 +218,15 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder="Cari nomor kontrak/kamar…"
-                                        aria-label="Cari nomor kontrak atau kamar"
+                                        placeholder={t('datatable.search_placeholder')}
+                                        aria-label={tTenant('search.aria')}
                                     />
                                 </div>
                             </div>
                             <div>
-                                <Label htmlFor="status">Status</Label>
+                                <Label htmlFor="status">
+                                    {t('common.status')}
+                                </Label>
                                 <Select
                                     value={status}
                                     onValueChange={(v) => {
@@ -235,18 +238,35 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger id="status" className="h-9">
-                                        <SelectValue placeholder="Semua" />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {statuses.map((s) => (
-                                                <SelectItem
-                                                    key={s.value}
-                                                    value={s.value}
-                                                >
-                                                    {s.label}
-                                                </SelectItem>
-                                            ))}
+                                            {statuses.map((s) => {
+                                                const slug = String(s.value)
+                                                    .trim()
+                                                    .toLowerCase()
+                                                    .replace(/\s+/g, '_');
+                                                return (
+                                                    <SelectItem
+                                                        key={s.value}
+                                                        value={s.value}
+                                                    >
+                                                        {t(
+                                                            `contract.status.${slug}`,
+                                                            {
+                                                                defaultValue:
+                                                                    s.label ??
+                                                                    String(
+                                                                        s.value,
+                                                                    ),
+                                                            },
+                                                        )}
+                                                    </SelectItem>
+                                                );
+                                            })}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -254,14 +274,14 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                         </div>
                         <div className="flex gap-2 pt-2 md:col-span-12">
                             <Button type="button" onClick={applyFilters}>
-                                Terapkan
+                                {t('common.apply')}
                             </Button>
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={resetFilter}
                             >
-                                Reset
+                                {t('common.reset')}
                             </Button>
                         </div>
                     </CardContent>
@@ -285,7 +305,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada kontrak."
+                            emptyText={tTenant('empty')}
                             showColumn={false}
                         />
                     </CardContent>
@@ -303,24 +323,21 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>
-                                Nonaktifkan Perpanjangan Otomatis
+                                {tTenant('stop.title')}
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                                Apakah Anda yakin ingin menonaktifkan
-                                perpanjangan otomatis kontrak ini? Jika
-                                dinonaktifkan, kontrak tidak akan diperpanjang
-                                secara otomatis setelah berakhir. Untuk
-                                mengaktifkan kembali perpanjangan otomatis,
-                                silakan hubungi admin.
+                                {tTenant('stop.desc')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
 
                         {/* Ringkasan singkat */}
-                        <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                        <div className="bg-muted/40 rounded-md border p-3 text-sm">
                             <div className="grid gap-3 sm:grid-cols-3">
                                 <div className="min-w-0">
-                                    <div className="text-xs text-muted-foreground">
-                                        Tanggal berakhir
+                                    <div className="text-muted-foreground text-xs">
+                                        {t(
+                                            tTenant('stop.summary.end_date'),
+                                        )}
                                     </div>
                                     <div className="font-medium">
                                         {stopTarget?.end_date
@@ -331,8 +348,10 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                     </div>
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-xs text-muted-foreground">
-                                        Sisa hari
+                                    <div className="text-muted-foreground text-xs">
+                                        {t(
+                                            tTenant('stop.summary.days_left'),
+                                        )}
                                     </div>
                                     <div className="font-mono tabular-nums">
                                         {(() => {
@@ -344,11 +363,15 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                     </div>
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-xs text-muted-foreground">
-                                        Batas penalti deposit
+                                    <div className="text-muted-foreground text-xs">
+                                        {t(
+                                            tTenant('stop.summary.forfeit_limit'),
+                                        )}
                                     </div>
                                     <div className="font-mono tabular-nums">
-                                        {forfeitDays} hari
+                                        {t('common.days', {
+                                            count: forfeitDays,
+                                        })}
                                     </div>
                                 </div>
                             </div>
@@ -359,12 +382,15 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">
                                 <div className="flex items-center gap-2 font-medium">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <span>Hal yang perlu diperhatikan:</span>
+                                    <span>
+                                        {tTenant('stop.notice.title')}
+                                    </span>
                                 </div>
                                 <ul className="mt-2 list-disc space-y-1.5 pl-5">
                                     <li>
-                                        Tidak ada jaminan perpanjangan jika
-                                        kamar sudah dibooking penyewa lain.
+                                        {t(
+                                            tTenant('stop.notice.no_guarantee'),
+                                        )}
                                     </li>
                                     {(() => {
                                         const d = daysUntil(
@@ -373,25 +399,19 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                         if (d != null && d < forfeitDays) {
                                             return (
                                                 <li>
-                                                    Karena kurang dari{' '}
-                                                    {forfeitDays} hari sebelum
-                                                    tanggal berakhir,{' '}
-                                                    <span className="font-semibold">
-                                                        deposit Anda akan hangus
-                                                    </span>{' '}
-                                                    sesuai kebijakan.
+                                                    {t(
+                                                    tTenant('stop.notice.forfeit_now'),
+                                                        { days: forfeitDays },
+                                                    )}
                                                 </li>
                                             );
                                         }
                                         return (
                                             <li>
-                                                Jika penghentian dilakukan
-                                                kurang dari {forfeitDays} hari
-                                                sebelum tanggal berakhir,{' '}
-                                                <span className="font-semibold">
-                                                    deposit akan hangus
-                                                </span>{' '}
-                                                sesuai kebijakan.
+                                                {t(
+                                                    tTenant('stop.notice.forfeit_cond'),
+                                                    { days: forfeitDays },
+                                                )}
                                             </li>
                                         );
                                     })()}
@@ -408,13 +428,14 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                     htmlFor="ack-stop-auto-renew"
                                     className="cursor-pointer leading-snug"
                                 >
-                                    Saya telah membaca dan memahami informasi di
-                                    atas.
+                                    {tTenant('stop.confirm_ack')}
                                 </Label>
                             </div>
                         </div>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogCancel>
+                                {t('common.cancel')}
+                            </AlertDialogCancel>
                             <AlertDialogAction
                                 disabled={!ack}
                                 onClick={() => {
@@ -438,7 +459,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                     );
                                 }}
                             >
-                                Nonaktifkan
+                                {tTenant('stop.disable_button')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

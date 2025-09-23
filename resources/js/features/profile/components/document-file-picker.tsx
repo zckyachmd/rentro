@@ -32,7 +32,7 @@ export default function DocumentFilePicker({
                 </button>
                 {fileName ? (
                     <span
-                        className="truncate text-sm text-muted-foreground"
+                        className="text-muted-foreground truncate text-sm"
                         title={fileName}
                     >
                         {fileName}

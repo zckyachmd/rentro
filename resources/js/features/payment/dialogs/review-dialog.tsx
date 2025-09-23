@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,7 @@ export default function PaymentReviewDialog({
 }) {
     const open = !!target;
     const { loading, data } = usePayment(target);
+    const { t } = useTranslation();
     const [ack, setAck] = React.useState(false);
     const [note, setNote] = React.useState('');
     const [decision, setDecision] = React.useState<'approve' | 'reject' | null>(
@@ -129,7 +131,7 @@ export default function PaymentReviewDialog({
     ]);
 
     const decisionError = !decision
-        ? 'Pilih keputusan: Terima atau Tolak.'
+        ? t('payment.review.decision_required')
         : '';
 
     const p = data?.payment;
@@ -140,10 +142,9 @@ export default function PaymentReviewDialog({
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
-                    <DialogTitle>Review Pembayaran Transfer</DialogTitle>
+                    <DialogTitle>{t('payment.review.title')}</DialogTitle>
                     <DialogDescription className="text-xs">
-                        Pilih hasil review dan pastikan kebenaran data sebelum
-                        submit.
+                        {t('payment.review.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 {loading || !p ? (
@@ -153,43 +154,31 @@ export default function PaymentReviewDialog({
                         <div className="rounded-lg border p-3">
                             <div className="mb-3 flex items-start justify-between gap-2">
                                 <div>
-                                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                        Ringkasan
+                                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                        {t('common.summary')}
                                     </div>
-                                    <div className="mt-0.5 text-[11px] text-muted-foreground">
-                                        Periksa data sebelum konfirmasi/tolak.
+                                    <div className="text-muted-foreground mt-0.5 text-[11px]">
+                                        {t('payment.review.check_hint')}
                                     </div>
                                 </div>
-                                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-foreground/80">
+                                <span className="bg-muted text-foreground/80 rounded-full px-2 py-0.5 text-[11px]">
                                     {p.status}
                                 </span>
                             </div>
                             <div className="grid grid-cols-1 gap-y-1 sm:grid-cols-2">
-                                <div className="text-muted-foreground">
-                                    Invoice
-                                </div>
+                                <div className="text-muted-foreground">{t('invoice.title')}</div>
                                 <div className="font-mono">
                                     {inv?.number ?? '-'}
                                 </div>
-                                <div className="text-muted-foreground">
-                                    Penyewa
-                                </div>
+                                <div className="text-muted-foreground">{t('common.tenant')}</div>
                                 <div>{tenant?.name ?? '-'}</div>
-                                <div className="text-muted-foreground">
-                                    Nominal
-                                </div>
+                                <div className="text-muted-foreground">{t('common.amount')}</div>
                                 <div>{formatIDR(p.amount_cents)}</div>
-                                <div className="text-muted-foreground">
-                                    Metode
-                                </div>
+                                <div className="text-muted-foreground">{t('payment.form.method')}</div>
                                 <div>{p.method}</div>
-                                <div className="text-muted-foreground">
-                                    Tanggal Transfer
-                                </div>
+                                <div className="text-muted-foreground">{t('payment.form.paid_at')}</div>
                                 <div>{formatDate(p.paid_at, true)}</div>
-                                <div className="text-muted-foreground">
-                                    Rekening Penerima
-                                </div>
+                                <div className="text-muted-foreground">{t('payment.form.receiver_bank')}</div>
                                 <div>
                                     {p.receiver_bank
                                         ? `${p.receiver_bank} — ${p.receiver_account || ''} ${p.receiver_holder ? `(${p.receiver_holder})` : ''}`
@@ -199,31 +188,29 @@ export default function PaymentReviewDialog({
                         </div>
 
                         <div className="rounded-lg border p-3">
-                            <div className="mb-3 flex items-center justify-between text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                <span>Tinjau</span>
+                            <div className="text-muted-foreground mb-3 flex items-center justify-between text-xs font-medium tracking-wide uppercase">
+                                <span>{t('common.review')}</span>
                                 {attachmentUrls.length > 0 ? (
                                     <button
                                         type="button"
                                         className="text-primary underline"
                                         onClick={() => setPreviewOpen(true)}
                                     >
-                                        Lihat Bukti
+                                        {t('payment.review.view_proof')}
                                     </button>
                                 ) : null}
                             </div>
                             <div className="space-y-3">
                                 {p.note ? (
-                                    <div className="rounded-md border bg-muted/30 p-2 text-xs">
-                                        <div className="mb-1 font-medium text-foreground">
-                                            Catatan Pengirim
-                                        </div>
-                                        <div className="whitespace-pre-wrap break-words text-muted-foreground">
+                                    <div className="bg-muted/30 rounded-md border p-2 text-xs">
+                                        <div className="text-foreground mb-1 font-medium">{t('payment.review.sender_note')}</div>
+                                        <div className="text-muted-foreground break-words whitespace-pre-wrap">
                                             {p.note}
                                         </div>
                                     </div>
                                 ) : null}
                                 <div className="space-y-1">
-                                    <Label>Keputusan</Label>
+                                    <Label>{t('payment.review.decision')}</Label>
                                     <div className="flex items-center gap-3 text-sm">
                                         <label className="inline-flex cursor-pointer items-center gap-2">
                                             <input
@@ -236,7 +223,7 @@ export default function PaymentReviewDialog({
                                                     setDecision('approve')
                                                 }
                                             />
-                                            <span>Terima</span>
+                                            <span>{t('payment.review.approve')}</span>
                                         </label>
                                         <label className="inline-flex cursor-pointer items-center gap-2">
                                             <input
@@ -249,7 +236,7 @@ export default function PaymentReviewDialog({
                                                     setDecision('reject')
                                                 }
                                             />
-                                            <span>Tolak</span>
+                                            <span>{t('payment.review.reject')}</span>
                                         </label>
                                     </div>
                                     <InputError message={decisionError} />
@@ -257,11 +244,11 @@ export default function PaymentReviewDialog({
 
                                 <div className="space-y-1">
                                     <Label>
-                                        Catatan
-                                        <span className="ml-1 text-muted-foreground">
+                                        {t('common.note')}
+                                        <span className="text-muted-foreground ml-1">
                                             {decision === 'reject'
-                                                ? '(wajib saat menolak)'
-                                                : '(opsional)'}
+                                                ? t('payment.review.note_required_hint')
+                                                : t('common.optional')}
                                         </span>
                                     </Label>
                                     <Textarea
@@ -272,11 +259,11 @@ export default function PaymentReviewDialog({
                                         rows={3}
                                         placeholder={
                                             decision === 'reject'
-                                                ? 'Wajib diisi — jelaskan alasan penolakan.'
-                                                : 'Opsional'
+                                                ? t('payment.review.note_placeholder_required')
+                                                : t('payment.form.note_placeholder')
                                         }
                                     />
-                                    <div className="flex items-center justify-end text-[11px] text-muted-foreground">
+                                    <div className="text-muted-foreground flex items-center justify-end text-[11px]">
                                         <span>
                                             {showCounter
                                                 ? `${noteRule.length}/${MIN_NOTE}${decision === 'reject' && noteRule.length < MIN_NOTE ? '*' : ''}`
@@ -298,8 +285,7 @@ export default function PaymentReviewDialog({
                                             htmlFor="ack"
                                             className="cursor-pointer"
                                         >
-                                            Saya menyatakan data pembayaran
-                                            sudah benar.
+                                            {t('payment.review.ack')}
                                         </label>
                                     </div>
                                 </div>
@@ -315,15 +301,15 @@ export default function PaymentReviewDialog({
                                 urls={attachmentUrls}
                                 open={previewOpen}
                                 onOpenChange={setPreviewOpen}
-                                title="Lampiran Pembayaran"
-                                description="Pratinjau bukti pembayaran."
+                                title={t('payment.attachments_title')}
+                                description={t('payment.attachments_desc')}
                             />
                         ) : null}
                     </div>
                 )}
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>
-                        Tutup
+                        {t('common.close')}
                     </Button>
                     <Button
                         onClick={submit}
@@ -336,7 +322,7 @@ export default function PaymentReviewDialog({
                                         !noteRule.meetsMin)))
                         }
                     >
-                        Submit
+                        {t('common.submit')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

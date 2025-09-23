@@ -3,6 +3,7 @@
 import { router } from '@inertiajs/react';
 import { Copy, KeyRound, Link2, Mail } from 'lucide-react';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ export function ResetPasswordDialog({
     onOpenChange,
     user,
 }: ResetDialogProps) {
+    const { t } = useTranslation();
     const [state, setState] = React.useReducer(
         (s: ResetState, a: Partial<ResetState>) => ({ ...s, ...a }),
         {
@@ -96,10 +98,11 @@ export function ResetPasswordDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <KeyRound className="h-5 w-5" /> Reset Password
+                        <KeyRound className="h-5 w-5" />{' '}
+                        {t('user.reset_password.title')}
                     </DialogTitle>
                     <DialogDescription>
-                        Kirim atau buat tautan reset password
+                        {t('user.reset_password.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
@@ -118,30 +121,29 @@ export function ResetPasswordDialog({
                             <div className="truncate font-medium">
                                 {user.name}
                             </div>
-                            <div className="truncate text-xs text-muted-foreground">
+                            <div className="text-muted-foreground truncate text-xs">
                                 {user.email}
                             </div>
                         </div>
                     </div>
                     {generatedUrl ? (
                         <div className="grid gap-3">
-                            <p className="text-sm text-muted-foreground">
-                                Tautan reset berhasil dibuat. Salin tautan di
-                                bawah ini dan kirimkan ke pengguna dengan cara
-                                yang aman.
+                            <p className="text-muted-foreground text-sm">
+                                {t('user.reset_password.generated_desc')}
                             </p>
                             <div className="grid grid-cols-[1fr_auto] gap-2">
                                 <input
                                     readOnly
                                     value={generatedUrl}
-                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none"
+                                    className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:outline-none"
                                 />
                                 <CopyInline
                                     value={generatedUrl}
                                     as="button"
-                                    className="inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                                    className="hover:bg-accent hover:text-accent-foreground inline-flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm"
                                 >
-                                    <Copy className="h-4 w-4" /> Salin
+                                    <Copy className="h-4 w-4" />{' '}
+                                    {t('common.copy_link')}
                                 </CopyInline>
                             </div>
                         </div>
@@ -149,15 +151,15 @@ export function ResetPasswordDialog({
                         <>
                             <Separator className="my-3" />
                             <div className="grid gap-2">
-                                <Label>Alasan</Label>
+                                <Label>{t('invoice.reason')}</Label>
                                 <Textarea
                                     rows={3}
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
-                                    placeholder="Contoh: Pengguna lupa password dan membutuhkan akses segera"
+                                    placeholder={t('user.reset_password.reason_placeholder')}
                                     maxLength={200}
                                 />
-                                <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
+                                <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
                                     <span>
                                         {rule.length}/
                                         {rule.length < 20 ? 20 : 200}
@@ -171,8 +173,8 @@ export function ResetPasswordDialog({
                                     onClick={handleSendEmail}
                                     disabled={isBusy || !rule.valid}
                                 >
-                                    <Mail className="mr-2 h-4 w-4" /> Kirim
-                                    Email
+                                    <Mail className="mr-2 h-4 w-4" />{' '}
+                                    {t('user.reset_password.send')}
                                 </Button>
 
                                 <Button
@@ -181,8 +183,8 @@ export function ResetPasswordDialog({
                                     onClick={handleGenerate}
                                     disabled={isBusy || !rule.valid}
                                 >
-                                    <Link2 className="mr-2 h-4 w-4" /> Generate
-                                    Reset Tautan
+                                    <Link2 className="mr-2 h-4 w-4" />{' '}
+                                    {t('user.reset_password.generate')}
                                 </Button>
                             </div>
                         </>

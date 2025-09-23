@@ -1,16 +1,24 @@
 import { Head } from '@inertiajs/react';
 import { Wrench } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import AuthLayoutLayout from '@/layouts/auth-layout';
 
 export default function Dashboard() {
+    const { t } = useTranslation();
     return (
         <AuthLayoutLayout
-            pageTitle="Dashboard"
-            pageDescription="Ringkasan aktivitas harian, status hunian, dan metrik penting di kost Anda."
+            pageTitle={t('dashboard.title')}
+            pageDescription={t('dashboard.desc')}
         >
-            <Head title="Dashboard" />
+            <Head title={t('dashboard.title')} />
 
             {/*
              * Konten dashboard sebelumnya dinonaktifkan sementara selama pengembangan.
@@ -55,24 +63,24 @@ export default function Dashboard() {
             <div className="py-8">
                 <Card className="mx-auto max-w-2xl">
                     <CardHeader className="flex flex-row items-start gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-                            <Wrench className="h-5 w-5 text-muted-foreground" />
+                        <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-md">
+                            <Wrench className="text-muted-foreground h-5 w-5" />
                         </div>
                         <div className="space-y-1">
-                            <CardTitle>Dashboard sedang dalam pengembangan</CardTitle>
+                            <CardTitle>{t('dashboard.wip.title')}</CardTitle>
                             <CardDescription>
-                                Kami sedang merapikan ringkasan data, grafik, dan insight agar lebih informatif.
+                                {t('dashboard.wip.desc')}
                             </CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <p className="text-sm text-muted-foreground">
-                            Sementara itu, Anda tetap bisa mengelola data melalui menu yang tersedia di navigasi.
+                        <p className="text-muted-foreground text-sm">
+                            {t('dashboard.wip.hint')}
                         </p>
-                        <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                            <li>Manajemen Kamar</li>
-                            <li>Penyewa & Kontrak</li>
-                            <li>Tagihan & Pembayaran</li>
+                        <ul className="text-muted-foreground list-disc space-y-1 pl-5 text-sm">
+                            <li>{t('dashboard.wip.room')}</li>
+                            <li>{t('dashboard.wip.contract')}</li>
+                            <li>{t('dashboard.wip.billing')}</li>
                         </ul>
                     </CardContent>
                 </Card>

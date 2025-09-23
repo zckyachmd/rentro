@@ -1,5 +1,7 @@
 import { usePage } from '@inertiajs/react';
 
+import type { PageProps } from '@/types';
+
 export type InputErrorProps = {
   /**
    * Error message (string or array). If omitted, component will try to read
@@ -43,7 +45,7 @@ function readError(errors: unknown, path?: string): string {
 }
 
 export default function InputError({ message, name, className = '', reserveSpace = true }: InputErrorProps) {
-  const { props } = usePage<{ errors?: Record<string, unknown> }>();
+  const { props } = usePage<PageProps<{ errors?: Record<string, unknown> }>>();
   const resolved = message ?? (name ? readError(props?.errors, name) : '');
   const text = Array.isArray(resolved) ? (resolved[0] ?? '') : (resolved ?? '');
   const content = text === '' && reserveSpace ? '\u00A0' : text;

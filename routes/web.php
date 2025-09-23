@@ -16,11 +16,11 @@ use App\Http\Controllers\Management\RoomPhotoManagementController;
 use App\Http\Controllers\Management\RoomTypeManagementController;
 use App\Http\Controllers\Management\UserManagementController;
 use App\Http\Controllers\PaymentRedirectController;
+use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
-use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;
@@ -34,9 +34,13 @@ use Inertia\Inertia;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 
-Route::post('/appearance/theme', [AppearanceController::class, 'update'])
+// Preferences (visual + language)
+Route::post('/preferences/theme', [PreferencesController::class, 'updateTheme'])
     ->middleware('throttle:ui-preferences')
-    ->name('appearance.update');
+    ->name('preferences.theme');
+Route::post('/preferences/locale', [PreferencesController::class, 'updateLocale'])
+    ->middleware('throttle:ui-preferences')
+    ->name('preferences.locale');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', fn () => Inertia::render('dashboard'))

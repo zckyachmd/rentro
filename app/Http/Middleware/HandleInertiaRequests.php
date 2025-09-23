@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enum\Locale as AppLocale;
 use App\Services\Contracts\MenuServiceInterface;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -40,8 +41,16 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $supportedLocales = array_map(fn (AppLocale $c) => $c->value, AppLocale::cases());
+        $fallbackLocale   = (string) config('app.fallback_locale', 'en');
+
         return [
             ...parent::share($request),
+            'i18n' => [
+                'supported' => $supportedLocales,
+                'fallback'  => $fallbackLocale,
+            ],
+            // No legacy top-level 'locale' prop; use 'preferences.locale'
             'auth' => (function () use ($request) {
                 $user = $request->user();
 
@@ -88,7 +97,7 @@ class HandleInertiaRequests extends Middleware
                 'error'   => fn () => $request->session()->get('error') ?? $request->session()->get('cb_error'),
                 'data'    => fn () => $request->session()->get('data') ?? $request->session()->get('cb_data'),
             ],
-            'appearance' => [
+            'preferences' => [
                 'theme' => function () use ($request) {
                     $user          = $request->user();
                     $themeFromUser = null;
@@ -105,6 +114,26 @@ class HandleInertiaRequests extends Middleware
                     }
 
                     return $request->cookie('theme', $themeFromUser ?? 'system');
+                },
+                'locale' => function () use ($request, $supportedLocales) {
+                    $supported = $supportedLocales;
+                    $user      = $request->user();
+                    $fromUser  = null;
+                    if ($user) {
+                        try {
+                            $prefs = (array) ($user->preferences ?? []);
+                            $cand  = $prefs['locale'] ?? null;
+                            if (is_string($cand) && in_array($cand, $supported, true)) {
+                                $fromUser = $cand;
+                            }
+                        } catch (\Throwable) {
+                            // ignore
+                        }
+                    }
+                    $fromCookie = (string) $request->cookie('locale', '');
+                    $locale     = $fromUser ?? (in_array($fromCookie, $supported, true) ? $fromCookie : null);
+
+                    return $locale ?? app()->getLocale();
                 },
             ],
         ];

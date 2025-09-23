@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Shield } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     Accordion,
@@ -31,6 +32,7 @@ export default function PermissionsDialog({
     onSuccess,
     preselected = [],
 }: PermissionsDialogProps & { onOpenChange: (open: boolean) => void }) {
+    const { t } = useTranslation();
     const [search, setSearch] = React.useState('');
     const [saving, setSaving] = React.useState(false);
     const [selected, setSelected] = React.useState<Set<number>>(new Set());
@@ -131,38 +133,39 @@ export default function PermissionsDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <div className="flex items-center justify-between">
-                        <DialogTitle>Atur Permissions</DialogTitle>
+                        <DialogTitle>
+                            {t('role.permissions.title')}
+                        </DialogTitle>
                     </div>
                     <DialogDescription>
-                        Pilih permissions yang akan dimiliki oleh role ini.
-                        Centang pada grup untuk memilih semua di dalamnya.
+                        {t('role.permissions.desc')}
                     </DialogDescription>
                 </DialogHeader>
 
                 {role && (
-                    <div className="mb-1 rounded-lg border bg-card px-4 py-3 shadow-sm">
+                    <div className="bg-card mb-1 rounded-lg border px-4 py-3 shadow-sm">
                         <div className="grid gap-6 sm:grid-cols-2">
                             {/* Role */}
                             <div className="flex flex-col">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Shield className="h-4 w-4 text-primary" />
-                                    <span className="text-[12px] font-medium uppercase tracking-wide">
-                                        Role
+                                <div className="text-muted-foreground flex items-center gap-2">
+                                    <Shield className="text-primary h-4 w-4" />
+                                    <span className="text-[12px] font-medium tracking-wide uppercase">
+                                        {t('role.label')}
                                     </span>
                                 </div>
-                                <span className="mt-1 break-words text-base font-semibold text-foreground">
+                                <span className="text-foreground mt-1 text-base font-semibold break-words">
                                     {role.name}
                                 </span>
                             </div>
 
                             {/* Guard */}
                             <div className="flex flex-col sm:items-end">
-                                <span className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                                <span className="text-muted-foreground text-[12px] font-medium tracking-wide uppercase">
                                     Guard
                                 </span>
                                 <Badge
                                     variant="secondary"
-                                    className="mt-1 w-fit uppercase tracking-wide"
+                                    className="mt-1 w-fit tracking-wide uppercase"
                                 >
                                     {role.guard_name}
                                 </Badge>
@@ -176,7 +179,7 @@ export default function PermissionsDialog({
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Cari permission…"
+                            placeholder={t('role.permissions.search_placeholder')}
                             className="h-9"
                         />
                         <Button
@@ -186,14 +189,14 @@ export default function PermissionsDialog({
                             className="h-8"
                             onClick={handleToggleAll}
                         >
-                            Pilih semua
+                            {t('role.permissions.select_all')}
                         </Button>
                     </div>
                     <ScrollArea className="h-[30vh] rounded-md border">
                         <div className="divide-y">
                             {grouped.length === 0 ? (
-                                <div className="p-4 text-center text-sm text-muted-foreground">
-                                    Tidak ada permission
+                                <div className="text-muted-foreground p-4 text-center text-sm">
+                                    {t('role.permissions.empty')}
                                 </div>
                             ) : (
                                 grouped.map(([group, items]) => (
@@ -236,7 +239,12 @@ export default function PermissionsDialog({
                                                                             items,
                                                                         )
                                                                     }
-                                                                    aria-label={`Pilih semua ${group}`}
+                                                                    aria-label={t(
+                                                                        'role.permissions.select_group',
+                                                                        {
+                                                                            group,
+                                                                        },
+                                                                    )}
                                                                     onClick={(
                                                                         e,
                                                                     ) =>
@@ -273,7 +281,12 @@ export default function PermissionsDialog({
                                                                                 p.id,
                                                                             )
                                                                         }
-                                                                        aria-label={`Pilih permission ${p.name}`}
+                                                                        aria-label={t(
+                                                                            'role.permissions.select_permission',
+                                                                            {
+                                                                                name: p.name,
+                                                                            },
+                                                                        )}
                                                                     />
                                                                     <span className="text-sm">
                                                                         {p.name}
@@ -296,10 +309,10 @@ export default function PermissionsDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Tutup
+                        {t('common.close')}
                     </Button>
                     <Button onClick={submit} disabled={saving}>
-                        Simpan
+                        {t('common.save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

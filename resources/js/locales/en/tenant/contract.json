@@ -1,0 +1,60 @@
+{
+  "title": "My Contracts",
+  "title_with_number": "Contract #{{number}}",
+  "desc": "List of your room contracts.",
+  "detail_desc": "Details of your contract.",
+  "filter": "Filter",
+  "search": {
+    "aria": "Search contract or room number",
+    "placeholder": "Search contract/room number…"
+  },
+  "empty": "No contracts.",
+  "expired": "Expired",
+  "days_left": "Days Left",
+  "period": "Period",
+  "rent": "Rent",
+  "deposit": "Deposit",
+  "auto_renew": "Auto-Renew",
+  "billing_period": "Billing Period",
+  "billing_day": "Billing Day",
+  "room_info": { "title": "Room Information", "room_price": "Room Price" },
+  "info": { "title": "Contract Information" },
+  "no_checkin": "No check-in data yet.",
+  "no_checkout": "No check-out data yet.",
+  "breadcrumb": { "contracts": "Contracts", "detail": "Contract Detail" },
+  "actions_for": "Contract actions {{id}}",
+  "view_checkin": "View Check-in",
+  "view_checkout": "View Check-out",
+  "handover": {
+    "confirm_button": "Confirm",
+    "title": "Handovers",
+    "actions_aria": "Handover actions",
+    "confirm_title": "Confirm Handover",
+    "confirm_desc": "Make sure you have reviewed notes & attachments. This action marks the handover as confirmed by you.",
+    "confirm_note_prefix": "After confirmation, you can still file a dispute via admin if needed, but the initial status will be",
+    "confirmed": "Confirmed",
+    "dispute_title": "Dispute Handover",
+    "dispute_desc": "Explain the reason for your dispute.",
+    "dispute_placeholder": "Example: there is damage that has not been recorded",
+    "dispute_hint": "Write the reason briefly and clearly (min. 5 characters).",
+    "dispute_submit": "Submit Dispute",
+    "empty": "No handover history yet."
+  },
+  "stop": {
+    "title": "Disable Auto-Renew",
+    "desc": "Are you sure you want to disable auto-renew for this contract? If disabled, it will not be automatically renewed after it ends. To re-enable auto-renew, please contact the admin.",
+    "disable_button": "Disable",
+    "confirm_ack": "I have read and understand the information above.",
+    "summary": {
+      "end_date": "End date",
+      "days_left": "Days left",
+      "forfeit_limit": "Deposit penalty threshold"
+    },
+    "notice": {
+      "title": "Things to note:",
+      "no_guarantee": "No guarantee of renewal if the room has been booked by another tenant.",
+      "forfeit_now": "Since it is less than {{days}} days before the end date, your deposit will be forfeited as per policy.",
+      "forfeit_cond": "If stopping less than {{days}} days before the end date, the deposit will be forfeited as per policy."
+    }
+  }
+}

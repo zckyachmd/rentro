@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Button } from '@/components/ui/button';
@@ -58,16 +59,17 @@ export default function PaymentDetailDialog({
     const open = !!target;
     const { loading, data } = usePaymentDetailLoader(target);
     const [previewOpen, setPreviewOpen] = React.useState(false);
+    const { t } = useTranslation();
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        Detail Pembayaran
+                        {t('management.payment.title')}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Ringkasan pembayaran & faktur
+                        {t('management.payment.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -82,18 +84,15 @@ export default function PaymentDetailDialog({
                     )}
                 </div>
                 <DialogFooter>
-                    {((Array.isArray(data?.payment?.attachments) &&
+                    {(Array.isArray(data?.payment?.attachments) &&
                         (data?.payment?.attachments?.length ?? 0) > 0) ||
-                        data?.payment?.attachment) ? (
-                        <Button
-                            type="button"
-                            onClick={() => setPreviewOpen(true)}
-                        >
-                            Lihat Lampiran
+                    data?.payment?.attachment ? (
+                        <Button type="button" onClick={() => setPreviewOpen(true)}>
+                            {t('payment.review.view_proof')}
                         </Button>
                     ) : null}
                     <Button type="button" variant="outline" onClick={onClose}>
-                        Tutup
+                        {t('common.close')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -136,71 +135,70 @@ function PaymentDetailBody({
         <div className="space-y-3 text-sm">
             <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border p-3">
-                    <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Info Pembayaran
+                    <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                        {t('payment.detail.info')}
                     </div>
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                        <Label>Metode</Label>
+                        <Label>{t('payment.form.method')}</Label>
                         <div>{p.method}</div>
-                        <Label>Status</Label>
+                        <Label>{t('common.status')}</Label>
                         <div>{p.status}</div>
-                        <Label>Jumlah</Label>
+                        <Label>{t('common.amount')}</Label>
                         <div>{formatIDR(p.amount_cents)}</div>
-                        <Label>Dibayar Pada</Label>
+                        <Label>{t('payment.form.paid_at')}</Label>
                         <div>{formatDate(p.paid_at, true)}</div>
-                        <Label>Rekening Penerima</Label>
+                        <Label>{t('payment.form.receiver_bank')}</Label>
                         <div className="text-right">
                             {p.receiver_bank
                                 ? `${p.receiver_bank} — ${p.receiver_account || ''} ${p.receiver_holder ? `(${p.receiver_holder})` : ''}`
                                 : '-'}
                         </div>
-                        <Label>Referensi</Label>
+                        <Label>{t('common.reference')}</Label>
                         <div>{p.reference ?? '-'}</div>
-                        <Label>Pencatat</Label>
+                        <Label>{t('common.recorded_by')}</Label>
                         <div>{p.recorded_by ?? '-'}</div>
                     </div>
                 </div>
                 <div className="rounded-lg border p-3">
-                    <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Invoice
+                    <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                        {t('invoice.title')}
                     </div>
                     {inv ? (
                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                            <Label>Nomor</Label>
+                            <Label>{t('invoice.number_label')}</Label>
                             <div className="font-mono">{inv.number}</div>
-                            <Label>Atas Nama</Label>
+                            <Label>{t('common.billed_to')}</Label>
                             <div>{tenant?.name ?? '-'}</div>
-                            <Label>Kamar</Label>
+                            <Label>{t('common.room')}</Label>
                             <div>
                                 {room ? (
                                     <span>
-                                        {room.number || '-'}{' '}
-                                        {room.name ? `— ${room.name}` : ''}
+                                        {room.number || '-'} {room.name ? `— ${room.name}` : ''}
                                     </span>
                                 ) : (
                                     '-'
                                 )}
                             </div>
-                            <Label>Jatuh Tempo</Label>
+                            <Label>{t('common.due_date')}</Label>
                             <div>{formatDate(inv.due_date)}</div>
-                            <Label>Status</Label>
+                            <Label>{t('common.status')}</Label>
                             <div>{inv.status}</div>
-                            <Label>Nilai</Label>
+                            <Label>{t('common.amount')}</Label>
                             <div>{formatIDR(inv.amount_cents)}</div>
                         </div>
                     ) : (
                         <div className="text-muted-foreground">
-                            Tidak terkait invoice
+                            {t('payment.no_invoice')}
                         </div>
                     )}
                 </div>
             </div>
             {p.note ? (
                 <div className="rounded-lg border p-3">
-                    <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Catatan
+                    <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                        {t('common.note')}
                     </div>
-                    <div className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm break-words whitespace-pre-wrap">
                         {p.note}
                     </div>
                 </div>
@@ -211,15 +209,12 @@ function PaymentDetailBody({
                 urls={attachmentUrls}
                 open={previewOpen}
                 onOpenChange={setPreviewOpen}
-                title="Lampiran Pembayaran"
-                description="Pratinjau bukti pembayaran."
+                title={t('payment.attachments_title')}
+                description={t('payment.attachments_desc')}
                 details={[
-                    {
-                        label: 'Nominal Pembayaran',
-                        value: formatIDR(p.amount_cents),
-                    },
-                    { label: 'Nama Penyewa', value: tenant?.name || '-' },
-                    { label: 'Nomor Invoice', value: inv?.number || '-' },
+                    { label: t('common.amount'), value: formatIDR(p.amount_cents) },
+                    { label: t('common.tenant'), value: tenant?.name || '-' },
+                    { label: t('invoice.number_label'), value: inv?.number || '-' },
                 ]}
             />
         </div>

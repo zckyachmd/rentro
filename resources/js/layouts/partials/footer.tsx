@@ -24,7 +24,7 @@ export default function Footer({
     return (
         <footer
             className={[
-                'z-40 border-t bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60',
+                'bg-background/80 supports-backdrop-filter:bg-background/60 z-40 border-t backdrop-blur',
                 heightClass,
                 fullWidth ? 'fixed inset-x-0 bottom-0' : 'sticky bottom-0',
                 className,
@@ -38,7 +38,7 @@ export default function Footer({
             >
                 <div
                     className={[
-                        'flex w-full items-center text-xs text-muted-foreground',
+                        'text-muted-foreground flex w-full items-center text-xs',
                         variant === 'between'
                             ? 'justify-between'
                             : 'justify-center',

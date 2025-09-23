@@ -14,6 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import i18n from '@/lib/i18n';
 import type {
     RoomColumnOptions as ColumnFactoryOptions,
     RoomItem,
@@ -48,21 +49,21 @@ export const createColumns = (
     makeColumn<RoomItem>({
         id: 'number',
         accessorKey: 'number',
-        title: 'Nomor',
+        title: i18n.t('common.number'),
         className: COL.number,
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.number + ' flex flex-col'}>
                 <button
                     type="button"
-                    className="w-fit font-medium text-primary underline-offset-2 hover:underline focus:underline"
+                    className="text-primary w-fit font-medium underline-offset-2 hover:underline focus:underline"
                     onClick={() => opts?.onDetail?.(row.original)}
-                    aria-label={`Lihat detail kamar ${row.original.number}`}
+                    aria-label={`${i18n.t('management.room.view_detail_aria')} ${row.original.number}`}
                 >
                     {row.original.number}
                 </button>
                 {row.original.name && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                         {row.original.name}
                     </span>
                 )}
@@ -71,7 +72,7 @@ export const createColumns = (
     }),
     makeColumn<RoomItem>({
         id: 'building',
-        title: 'Gedung',
+        title: i18n.t('common.building'),
         className: COL.building,
         cell: ({ row }) => (
             <div className={COL.building}>
@@ -81,18 +82,19 @@ export const createColumns = (
     }),
     makeColumn<RoomItem>({
         id: 'floor',
-        title: 'Lantai',
+        title: i18n.t('common.floor'),
         className: COL.floor,
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.floor}>
-                Lt {row.original.floor?.level ?? '-'}
+                {i18n.t('management.room.floor_prefix')}{' '}
+                {row.original.floor?.level ?? '-'}
             </div>
         ),
     }),
     makeColumn<RoomItem>({
         id: 'type',
-        title: 'Tipe',
+        title: i18n.t('common.type'),
         className: COL.type,
         cell: ({ row }) => (
             <div className={COL.type}>{row.original.type?.name ?? '-'}</div>
@@ -101,24 +103,28 @@ export const createColumns = (
     makeColumn<RoomItem>({
         id: 'status',
         accessorKey: 'status',
-        title: 'Status',
+        title: i18n.t('common.status'),
         className: COL.status,
         sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge
-                    variant={statusColor[row.original.status] ?? 'outline'}
-                    className="capitalize"
-                >
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const t = i18n;
+            const st = (row.original.status || '').toLowerCase();
+            return (
+                <div className={COL.status}>
+                    <Badge
+                        variant={statusColor[st] ?? 'outline'}
+                        className="capitalize"
+                    >
+                        {t.t(`room.status.${st}`, { defaultValue: row.original.status })}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<RoomItem>({
         id: 'max_occupancy',
         accessorKey: 'max_occupancy',
-        title: 'Max',
+        title: i18n.t('room.max_occupancy'),
         className: COL.max,
         sortable: true,
         cell: ({ getValue }) => (
@@ -128,13 +134,14 @@ export const createColumns = (
     makeColumn<RoomItem>({
         id: 'price',
         title: (() => {
-            const label =
+            const t = i18n;
+            const period =
                 opts?.displayPeriod === 'daily'
-                    ? 'Harian'
+                    ? t.t('common.daily')
                     : opts?.displayPeriod === 'weekly'
-                      ? 'Mingguan'
-                      : 'Bulanan';
-            return `Harga  ${label}`;
+                      ? t.t('common.weekly')
+                      : t.t('common.monthly');
+            return `${t.t('common.price')} (${period})`;
         })(),
         className: COL.price,
         sortable: true,
@@ -147,7 +154,8 @@ export const createColumns = (
             if (opts?.displayPeriod === 'daily') show = pDaily;
             else if (opts?.displayPeriod === 'weekly') show = pWeekly;
 
-            const title = `Harian: ${pDaily}\nMingguan: ${pWeekly}\nBulanan: ${pMonthly}`;
+            const t = i18n;
+            const title = `${t.t('common.daily')}: ${pDaily}\n${t.t('common.weekly')}: ${pWeekly}\n${t.t('common.monthly')}: ${pMonthly}`;
             return (
                 <div className={COL.price} title={title}>
                     {show}
@@ -158,7 +166,7 @@ export const createColumns = (
     makeColumn<RoomItem>({
         id: 'amenities',
         accessorKey: 'amenities_count',
-        title: 'Fasilitas',
+        title: i18n.t('common.amenities'),
         className: COL.amenities,
         sortable: true,
         cell: ({ getValue }) => (
@@ -167,7 +175,7 @@ export const createColumns = (
     }),
     makeColumn<RoomItem>({
         id: 'actions',
-        title: 'Aksi',
+        title: i18n.t('common.actions'),
         className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => (
             <div className={COL.actions + ' flex items-center justify-end'}>
@@ -176,31 +184,35 @@ export const createColumns = (
                         <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Aksi untuk kamar ${row.original.number}`}
+                            aria-label={`${i18n.t('common.actions')} ${i18n.t('common.room')} ${row.original.number}`}
                         >
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                        <DropdownMenuLabel>
+                            {i18n.t('common.actions')}
+                        </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onClick={() => opts?.onDetail?.(row.original)}
                         >
-                            <Eye className="mr-2 h-4 w-4" /> Detail
+                            <Eye className="mr-2 h-4 w-4" />{' '}
+                            {i18n.t('common.view_detail')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => opts?.onEdit?.(row.original)}
                         >
-                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                            <Pencil className="mr-2 h-4 w-4" />{' '}
+                            {i18n.t('common.edit')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => opts?.onDelete?.(row.original)}
                         >
-                            <Trash2 className="mr-2 h-4 w-4 text-destructive" />{' '}
-                            Hapus
+                            <Trash2 className="text-destructive mr-2 h-4 w-4" />{' '}
+                            {i18n.t('common.delete')}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

@@ -81,12 +81,15 @@ export default function AttachmentPreviewDialog({
         return () => ctrl.abort();
     }, [open, sources]);
 
-    const isImage = React.useCallback((idx: number): boolean => {
-        const m = mimes[idx];
-        if (m && m.startsWith('image/')) return true;
-        const u = sources[idx] || '';
-        return /(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.bmp)$/i.test(u);
-    }, [mimes, sources]);
+    const isImage = React.useCallback(
+        (idx: number): boolean => {
+            const m = mimes[idx];
+            if (m && m.startsWith('image/')) return true;
+            const u = sources[idx] || '';
+            return /(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.bmp)$/i.test(u);
+        },
+        [mimes, sources],
+    );
     const fmtSize = (n?: number | null) => {
         if (!n || n <= 0) return '—';
         const units = ['B', 'KB', 'MB', 'GB'];
@@ -143,9 +146,9 @@ export default function AttachmentPreviewDialog({
                         </div>
                     ) : null}
                     {sources.length <= 1 ? (
-                        <div className="rounded-md border bg-background p-1">
+                        <div className="bg-background rounded-md border p-1">
                             {loading ? (
-                                <div className="p-4 text-sm text-muted-foreground">
+                                <div className="text-muted-foreground p-4 text-sm">
                                     Memuat pratinjau…
                                 </div>
                             ) : sources[0] && isImage(0) ? (
@@ -169,7 +172,7 @@ export default function AttachmentPreviewDialog({
                                     className="h-[65vh] w-full rounded"
                                 />
                             ) : null}
-                            <div className="px-1 pb-1 pt-2 text-[10px] text-muted-foreground">
+                            <div className="text-muted-foreground px-1 pt-2 pb-1 text-[10px]">
                                 Tipe file: {mimes[0] || 'tidak diketahui'} •
                                 Ukuran: {fmtSize(sizes[0])}
                             </div>
@@ -180,12 +183,12 @@ export default function AttachmentPreviewDialog({
                                 {sources.map((src, i) => (
                                     <div
                                         key={i}
-                                        className="group overflow-hidden rounded-md border bg-background"
+                                        className="group bg-background overflow-hidden rounded-md border"
                                     >
                                         {isImage(i) ? (
                                             <AspectRatio
                                                 ratio={4 / 3}
-                                                className="cursor-zoom-in bg-muted"
+                                                className="bg-muted cursor-zoom-in"
                                             >
                                                 <img
                                                     src={src}
@@ -203,10 +206,10 @@ export default function AttachmentPreviewDialog({
                                             </AspectRatio>
                                         ) : (
                                             <div className="p-2">
-                                                <div className="rounded bg-muted p-2 text-center text-xs text-muted-foreground">
+                                                <div className="bg-muted text-muted-foreground rounded p-2 text-center text-xs">
                                                     Pratinjau tidak tersedia
                                                 </div>
-                                                <div className="mt-2 truncate text-[11px] text-muted-foreground">
+                                                <div className="text-muted-foreground mt-2 truncate text-[11px]">
                                                     {mimes[i] || 'unknown'} •{' '}
                                                     {fmtSize(sizes[i])}
                                                 </div>
@@ -215,7 +218,7 @@ export default function AttachmentPreviewDialog({
                                                         href={src}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="text-xs text-primary underline"
+                                                        className="text-primary text-xs underline"
                                                     >
                                                         Buka
                                                     </a>

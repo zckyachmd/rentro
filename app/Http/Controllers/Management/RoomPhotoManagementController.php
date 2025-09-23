@@ -37,7 +37,7 @@ class RoomPhotoManagementController extends Controller
             $stored[] = $room->photos()->create(['path' => $path]);
         }
 
-        return back()->with('success', 'Foto berhasil ditambahkan.');
+        return back()->with('success', __('management.rooms.photos.added'));
     }
 
     public function destroy(Room $room, RoomPhoto $photo)
@@ -69,7 +69,7 @@ class RoomPhotoManagementController extends Controller
             }
         });
 
-        return back()->with('success', 'Foto berhasil dihapus.');
+        return back()->with('success', __('management.rooms.photos.deleted'));
     }
 
     public function batch(BatchRoomPhotoRequest $request, Room $room)
@@ -109,9 +109,9 @@ class RoomPhotoManagementController extends Controller
                 }
             });
 
-            return back()->with('success', 'Perubahan foto berhasil disimpan.');
+            return back()->with('success', __('management.rooms.photos.batch.saved'));
         } catch (\Throwable $e) {
-            return back()->with('error', 'Gagal menyimpan perubahan foto.');
+            return back()->with('error', __('management.rooms.photos.batch.failed'));
         }
     }
 }

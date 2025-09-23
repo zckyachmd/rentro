@@ -24,6 +24,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
+import i18n from '@/lib/i18n';
 import { variantForInvoiceStatus } from '@/lib/status';
 import type { BaseInvoiceRow, CreateColumnsOpts } from '@/types/management';
 
@@ -43,19 +44,20 @@ export const createColumns = <T extends BaseInvoiceRow>(
 ): ColumnDef<T>[] => [
     makeColumn<T>({
         id: 'number',
-        title: 'Nomor',
+        title: i18n.t('common.number'),
         className: COL.number,
         sortable: true,
         cell: ({ row }) => {
             const inv = row.original;
+            const t = i18n.t.bind(i18n);
             return (
                 <div className={`flex items-center gap-2 ${COL.number}`}>
                     <button
                         type="button"
                         className="text-left font-mono text-xs hover:underline"
                         onClick={() => opts?.onShowDetail?.(inv)}
-                        aria-label={`Lihat detail ${inv.number}`}
-                        title="Lihat detail"
+                        aria-label={t('common.view_detail') + ' ' + inv.number}
+                        title={t('common.view_detail')}
                     >
                         {inv.number}
                     </button>
@@ -63,8 +65,8 @@ export const createColumns = <T extends BaseInvoiceRow>(
                         value={inv.number}
                         variant="icon"
                         size="sm"
-                        title="Salin nomor invoice"
-                        aria-label="Salin nomor invoice"
+                        title={t('invoice.copy_number')}
+                        aria-label={t('invoice.copy_number')}
                     />
                 </div>
             );
@@ -72,7 +74,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'tenant',
-        title: 'Penyewa',
+        title: i18n.t('common.tenant'),
         className: COL.tenant,
         cell: ({ row }) => (
             <div className={`${COL.tenant} truncate`}>
@@ -82,7 +84,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'room',
-        title: 'Kamar',
+        title: i18n.t('common.room'),
         className: COL.room,
         cell: ({ row }) => (
             <div className={`${COL.room} truncate`}>
@@ -92,7 +94,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'due_date',
-        title: 'Jatuh Tempo',
+        title: i18n.t('common.due_date'),
         className: COL.due,
         sortable: true,
         cell: ({ row }) => (
@@ -101,7 +103,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'status',
-        title: 'Status',
+        title: i18n.t('common.status'),
         className: COL.status,
         cell: ({ row }) => (
             <div className={COL.status}>
@@ -113,7 +115,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'amount_cents',
-        title: 'Jumlah',
+        title: i18n.t('common.amount'),
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
@@ -124,7 +126,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'outstanding',
-        title: 'Sisa',
+        title: i18n.t('invoice.outstanding'),
         className: COL.outstanding,
         cell: ({ row }) => (
             <div className={COL.outstanding}>
@@ -134,10 +136,11 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'actions',
-        title: 'Aksi',
+        title: i18n.t('common.actions'),
         className: COL.actions,
         cell: ({ row }) => {
             const inv = row.original;
+            const t = i18n.t.bind(i18n);
             return (
                 <div className={`${COL.actions} flex items-center justify-end`}>
                     <DropdownMenu>
@@ -145,24 +148,29 @@ export const createColumns = <T extends BaseInvoiceRow>(
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`Aksi invoice ${inv.number}`}
+                                aria-label={t('invoice.actions_for', {
+                                    number: inv.number,
+                                })}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {t('common.actions')}
+                            </DropdownMenuLabel>
                             <DropdownMenuItem
                                 onClick={() => opts?.onShowDetail?.(inv)}
                             >
-                                <Eye className="mr-2 h-4 w-4" /> Lihat Detail
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {t('common.view_detail')}
                             </DropdownMenuItem>
                             {typeof inv.ticket_url === 'string' &&
                             inv.ticket_url ? (
                                 <DropdownMenuItem asChild>
                                     <Link href={inv.ticket_url} target="_blank">
                                         <Receipt className="mr-2 h-4 w-4" />
-                                        Lihat Tiket
+                                        {t('invoice.view_ticket')}
                                     </Link>
                                 </DropdownMenuItem>
                             ) : null}
@@ -172,13 +180,14 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                     onClick={() => opts?.onExtendDue?.(inv)}
                                 >
                                     <Clock3 className="mr-2 h-4 w-4" />{' '}
-                                    Perpanjang Jatuh Tempo
+                                    {t('invoice.extend_due.action')}
                                 </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuItem
                                 onClick={() => opts?.onPrint?.(inv)}
                             >
-                                <Printer className="mr-2 h-4 w-4" /> Cetak
+                                <Printer className="mr-2 h-4 w-4" />{' '}
+                                {t('common.print')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {inv.status !== 'Voided' ? (
@@ -187,7 +196,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                     className="text-destructive focus:text-destructive"
                                 >
                                     <XCircle className="mr-2 h-4 w-4" />{' '}
-                                    Batalkan
+                                    {t('common.cancel')}
                                 </DropdownMenuItem>
                             ) : null}
                         </DropdownMenuContent>

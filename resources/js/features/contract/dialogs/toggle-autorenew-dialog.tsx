@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     AlertDialog,
@@ -26,44 +27,42 @@ export default function ToggleAutoRenewDialog({
 }) {
     const open = !!target;
     const turningOff = Boolean(target?.auto_renew);
+    const { t } = useTranslation('management/contract');
     const [reason, setReason] = React.useState('');
+
     React.useEffect(() => {
         if (!open) setReason('');
     }, [open]);
+
     const rule = useLengthRule(reason, {
         min: 1,
         max: 200,
         required: turningOff,
     });
-    // no local error text — use asterisk and disable submit until meets min
 
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>
-                        {turningOff
-                            ? 'Hentikan Auto‑renew'
-                            : 'Nyalakan Auto‑renew'}
+                        {turningOff ? t('autorenew.stop_title') : t('autorenew.start_title')}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                        {turningOff
-                            ? 'Kontrak tidak akan diperpanjang otomatis di akhir periode.'
-                            : 'Kontrak akan diperpanjang otomatis di akhir periode.'}
+                        {turningOff ? t('autorenew.stop_desc') : t('autorenew.start_desc')}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {turningOff && (
                     <div className="space-y-2 py-2">
-                        <Label>Alasan penghentian</Label>
+                        <Label>{t('autorenew.reason_label')}</Label>
                         <Textarea
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
-                            placeholder="Contoh: permintaan tenant, penyesuaian kontrak, dll."
+                            placeholder={t('autorenew.reason_placeholder')}
                             required
                             rows={3}
                             maxLength={200}
                         />
-                        <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+                        <div className="text-muted-foreground mt-1 flex items-center justify-between text-[11px]">
                             <span>
                                 {rule.length}/{rule.length < 1 ? 1 : 200}
                                 {turningOff && rule.length < 1 ? '*' : ''}
@@ -72,12 +71,12 @@ export default function ToggleAutoRenewDialog({
                     </div>
                 )}
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                         disabled={turningOff && !rule.valid}
                         onClick={() => onConfirm(reason)}
                     >
-                        Konfirmasi
+                        {t('common.confirm')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

@@ -1,6 +1,6 @@
 @extends('pdf.layout')
 
-@section('title', 'Invoice ' . ($invoice['number'] ?? '-'))
+@section('title', __('Invoice') . ' ' . ($invoice['number'] ?? '-'))
 
 @push('pdf-styles')
 <style>
@@ -280,14 +280,14 @@
             </div>
             <div class="right">
                 <div class="meta-inline">
-                    <div class="item"><span class="label">Nomor</span> <span class="value">{{ $invoice['number'] ?? '-'
+                    <div class="item"><span class="label">{{ __('common.number') }}</span> <span class="value">{{ $invoice['number'] ?? '-'
                             }}</span></div>
-                    <div class="item"><span class="label">Rilis Tagihan</span> <span class="value">{{ $issuedAt ?: '—'
+                    <div class="item"><span class="label">{{ __('common.issue_date') }}</span> <span class="value">{{ $issuedAt ?: '—'
                             }}</span></div>
-                    <div class="item"><span class="label">Jatuh Tempo</span> <span class="value">{{ $dueAt ?: '—'
+                    <div class="item"><span class="label">{{ __('common.due_date') }}</span> <span class="value">{{ $dueAt ?: '—'
                             }}</span></div>
 
-                    <div class="item"><span class="label">Status</span> <span class="value">{{ ucfirst($status)
+                    <div class="item"><span class="label">{{ __('common.status') }}</span> <span class="value">{{ ucfirst($status)
                             }}</span></div>
                 </div>
             </div>
@@ -295,7 +295,7 @@
 
         <!-- Billed To -->
         <div style="margin-bottom: 8px;">
-            <div class="label">Ditagihkan kepada</div>
+            <div class="label">{{ __('common.billed_to') }}</div>
             <div class="billed-name">{{ $tenant['name'] ?? '—' }}</div>
             @if(!empty($tenant['email']))
             <div class="muted">{{ $tenant['email'] }}</div>
@@ -315,17 +315,17 @@
         <table class="table-items">
             <thead>
                 <tr>
-                    <th style="width:55%">Deskripsi</th>
-                    <th class="right" style="width:15%">Qty</th>
-                    <th class="right" style="width:15%">Harga Satuan</th>
-                    <th class="right" style="width:15%">Subtotal</th>
+                    <th style="width:55%">{{ __('common.description') }}</th>
+                    <th class="right" style="width:15%">{{ __('common.qty') }}</th>
+                    <th class="right" style="width:15%">{{ __('common.unit_price') }}</th>
+                    <th class="right" style="width:15%">{{ __('common.subtotal') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @php($items = (array) ($invoice['items'] ?? []))
                 @if(empty($items))
                 <tr>
-                    <td colspan="4" class="muted">Tidak ada item tagihan.</td>
+                    <td colspan="4" class="muted">{{ __('invoice.empty') }}</td>
                 </tr>
                 @else
                 @foreach($items as $item)
@@ -374,7 +374,7 @@
                 </tr>
                 @endforeach
                 <tr class="subtotal">
-                    <td class="right" colspan="3">Total</td>
+                    <td class="right" colspan="3">{{ __('common.total') }}</td>
                     <td class="right mono">{{ $fmt($grandTotal) }}</td>
                 </tr>
                 @endif
@@ -384,14 +384,14 @@
         <!-- Notes / Payment Info -->
         <div style="margin-top:12px;" class="note">
             @if($status === 'paid')
-            Dibayar pada {{ !empty($invoice['paid_at']) ? (string) $invoice['paid_at'] : '—' }}. Terima kasih.
+            {{ __('common.paid_on', ['date' => (!empty($invoice['paid_at']) ? (string) $invoice['paid_at'] : '—')]) }}
             @elseif($status === 'cancelled')
-            Invoice ini telah dibatalkan.
+            {{ __('common.cancelled_invoice') }}
             @else
-            Mohon selesaikan pembayaran sebelum tanggal jatuh tempo.
+            {{ __('common.please_pay_before_due') }}
             @endif
         </div>
 
-        <div class="footer">{{ $appName }} — {{ $appUrl }} • Dicetak pada {{ now()->format('Y-m-d H:i') }}</div>
+        <div class="footer">{{ $appName }} — {{ $appUrl }} • {{ __('common.printed_at', ['datetime' => now()->format('Y-m-d H:i')]) }}</div>
     </div>
 @endsection

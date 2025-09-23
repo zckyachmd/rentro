@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     AlertDialog,
@@ -30,36 +31,37 @@ export default function CancelInvoiceDialog({
         if (!open) setReason('');
     }, [open]);
     const rule = useLengthRule(reason, { min: 20, max: 200, required: true });
+    const { t } = useTranslation();
 
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Batalkan Invoice</AlertDialogTitle>
+                    <AlertDialogTitle>
+                        {t('invoice.cancel.title')}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                         {target ? (
                             <>
-                                Anda akan membatalkan invoice{' '}
-                                <span className="font-mono font-semibold">
-                                    {target.number}
-                                </span>
-                                . Tindakan ini tidak dapat dibatalkan.
+                                {t('invoice.cancel.desc', {
+                                    number: target.number,
+                                })}
                             </>
                         ) : null}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
-                    <Label>Alasan pembatalan</Label>
+                    <Label>{t('invoice.cancel.reason_label')}</Label>
                     <Textarea
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        placeholder="Contoh: duplikasi tagihan, salah nominal, dll."
+                        placeholder={t('invoice.cancel.reason_placeholder')}
                         required
                         rows={3}
                         autoFocus
                         maxLength={200}
                     />
-                    <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
+                    <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
                         <span>
                             {rule.length}/{rule.length < 20 ? 20 : 200}
                             {rule.length < 20 ? '*' : ''}
@@ -67,12 +69,12 @@ export default function CancelInvoiceDialog({
                     </div>
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                         disabled={!rule.valid}
                         onClick={() => onConfirm(reason)}
                     >
-                        Batalkan Sekarang
+                        {t('invoice.cancel_now')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

@@ -21,6 +21,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { variantForPaymentStatus } from '@/lib/status';
+import i18n from '@/lib/i18n';
 import type { PaymentRow } from '@/types/management';
 
 const COL = {
@@ -43,7 +44,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'paid_at',
         accessorKey: 'paid_at',
-        title: 'Tanggal',
+        title: i18n.t('payment.form.paid_at'),
         className: COL.date,
         sortable: true,
         cell: ({ row }) => {
@@ -56,8 +57,8 @@ export const createColumns = (opts?: {
                 <button
                     type="button"
                     onClick={() => opts?.onShowDetail?.(p)}
-                    className={`${COL.date} truncate text-left text-primary hover:underline`}
-                    title="Lihat detail pembayaran"
+                    className={`${COL.date} text-primary truncate text-left hover:underline`}
+                    title={i18n.t('common.view_detail')}
                 >
                     {p.paid_at}
                 </button>
@@ -67,7 +68,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'invoice',
         accessorKey: 'invoice',
-        title: 'Invoice',
+        title: i18n.t('invoice.title'),
         className: COL.invoice,
         cell: ({ row }) => (
             <div className={`${COL.invoice} truncate`}>
@@ -78,7 +79,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'tenant',
         accessorKey: 'tenant',
-        title: 'Penyewa',
+        title: i18n.t('common.tenant'),
         className: COL.tenant,
         cell: ({ row }) => (
             <div className={`${COL.tenant} truncate`}>
@@ -89,14 +90,14 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'method',
         accessorKey: 'method',
-        title: 'Metode',
+        title: i18n.t('payment.form.method'),
         className: COL.method,
         sortable: true,
     }),
     makeColumn<PaymentRow>({
         id: 'status',
         accessorKey: 'status',
-        title: 'Status',
+        title: i18n.t('common.status'),
         className: COL.status,
         sortable: true,
         cell: ({ row }) => (
@@ -110,7 +111,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'amount_cents',
         accessorKey: 'amount_cents',
-        title: 'Nominal',
+        title: i18n.t('common.amount'),
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
@@ -123,7 +124,7 @@ export const createColumns = (opts?: {
     }),
     makeColumn<PaymentRow>({
         id: 'actions',
-        title: 'Aksi',
+        title: i18n.t('common.actions'),
         className: COL.actions,
         cell: ({ row }) => {
             const p = row.original;
@@ -134,17 +135,17 @@ export const createColumns = (opts?: {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`Aksi pembayaran ${p.invoice ?? ''}`}
+                                aria-label={i18n.t('payment.actions_for', { invoice: p.invoice ?? '' })}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuLabel>{i18n.t('common.actions')}</DropdownMenuLabel>
                             <DropdownMenuItem
                                 onClick={() => opts?.onShowDetail?.(p)}
                             >
-                                <Eye className="mr-2 h-4 w-4" /> Lihat Detail
+                                <Eye className="mr-2 h-4 w-4" /> {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
                             {p.method === 'Transfer' &&
                             p.status === 'Review' ? (
@@ -156,8 +157,7 @@ export const createColumns = (opts?: {
                                                 : opts?.onShowDetail?.(p)
                                         }
                                     >
-                                        <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
-                                        Review
+                                        <CheckCircle2 className="mr-2 h-4 w-4" /> {i18n.t('payment.review.action')}
                                     </DropdownMenuItem>
                                 </>
                             ) : null}
@@ -166,16 +166,14 @@ export const createColumns = (opts?: {
                                     <DropdownMenuItem
                                         onClick={() => opts?.onPrint?.(p)}
                                     >
-                                        <Printer className="mr-2 h-4 w-4" />{' '}
-                                        Cetak Kwitansi
+                                        <Printer className="mr-2 h-4 w-4" /> {i18n.t('payment.print_receipt')}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         className="text-destructive focus:text-destructive"
                                         onClick={() => opts?.onVoid?.(p)}
                                     >
-                                        <XCircle className="mr-2 h-4 w-4" />{' '}
-                                        Batalkan
+                                        <XCircle className="mr-2 h-4 w-4" /> {i18n.t('payment.void.title')}
                                     </DropdownMenuItem>
                                 </>
                             ) : null}

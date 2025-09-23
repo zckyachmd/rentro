@@ -295,12 +295,12 @@ export function ManualPaymentDialog({
             >
                 <DialogHeader>
                     <DialogTitle>Pembayaran Manual</DialogTitle>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                         Input pembayaran manual dengan ringkas.
                     </p>
                 </DialogHeader>
                 {hasErrors ? (
-                    <div className="mb-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-[12px] text-destructive">
+                    <div className="border-destructive/30 bg-destructive/5 text-destructive mb-2 rounded-md border px-3 py-2 text-[12px]">
                         Periksa kembali input yang belum valid.
                     </div>
                 ) : null}

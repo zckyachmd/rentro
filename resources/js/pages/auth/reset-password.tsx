@@ -1,9 +1,10 @@
 import { Form } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
-import PasswordInput from '@/components/form/password-input';
 import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
+import PasswordInput from '@/components/ui/password-input';
 import GuestLayout from '@/layouts/guest-layout';
 
 export default function ResetPassword({
@@ -13,11 +14,12 @@ export default function ResetPassword({
     email: string;
     token: string;
 }) {
+    const { t } = useTranslation();
     return (
         <>
             <GuestLayout
-                title="Reset password"
-                description="Enter your new password below."
+                title={t('auth.reset.title')}
+                description={t('auth.reset.desc')}
                 content={
                     <Form
                         method="post"
@@ -34,7 +36,7 @@ export default function ResetPassword({
                                 <div className="space-y-2">
                                     <div className="grid gap-2">
                                         <Label htmlFor="password">
-                                            New password
+                                            {t('auth.reset.new_password_label')}
                                         </Label>
                                         <PasswordInput
                                             id="password"
@@ -51,7 +53,9 @@ export default function ResetPassword({
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="password_confirmation">
-                                            Confirm password
+                                            {t(
+                                                'auth.reset.confirm_password_label',
+                                            )}
                                         </Label>
                                         <PasswordInput
                                             id="password_confirmation"
@@ -77,8 +81,8 @@ export default function ResetPassword({
                                     disabled={processing}
                                 >
                                     {processing
-                                        ? 'Resetting...'
-                                        : 'Reset password'}
+                                        ? t('auth.reset.processing')
+                                        : t('auth.reset.submit')}
                                 </Button>
                             </div>
                         )}

@@ -128,7 +128,7 @@ export function DatePickerInput(props: DatePickerInputProps) {
                     <Button
                         id={id ? `${id}-picker` : 'date-picker'}
                         variant="ghost"
-                        className="absolute right-3 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
+                        className="absolute top-1/2 right-3 h-6 w-6 -translate-y-1/2 p-0"
                         tabIndex={-1}
                         disabled={disabled}
                     >
@@ -170,7 +170,7 @@ export function DatePickerInput(props: DatePickerInputProps) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full rounded-none border-t text-xs text-muted-foreground hover:text-foreground"
+                        className="text-muted-foreground hover:text-foreground w-full rounded-none border-t text-xs"
                         onClick={() => {
                             setOpen(false);
                             onChange?.(null);

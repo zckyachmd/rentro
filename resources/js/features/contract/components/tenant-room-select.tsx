@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import SearchSelect, { type SearchOption } from '@/components/ui/search-select';
@@ -19,30 +21,33 @@ export default function TenantRoomSelect({
     roomOptions: SearchOption[];
     errors?: Partial<Record<'user_id' | 'room_id', string>>;
 }) {
+    const { t } = useTranslation();
     return (
         <>
             <div className="space-y-2">
                 <Label>
-                    Penyewa <span className="text-destructive">*</span>
+                    {t('common.tenant')}{' '}
+                    <span className="text-destructive">*</span>
                 </Label>
                 <SearchSelect
                     value={userId}
                     onChange={onUserChange}
                     options={tenantOptions}
-                    placeholder="Cari penyewa…"
+                    placeholder={t('management.user.search_placeholder')}
                 />
                 <InputError message={errors.user_id} />
             </div>
 
             <div className="space-y-2">
                 <Label>
-                    Kamar <span className="text-destructive">*</span>
+                    {t('common.room')}{' '}
+                    <span className="text-destructive">*</span>
                 </Label>
                 <SearchSelect
                     value={roomId}
                     onChange={onRoomChange}
                     options={roomOptions}
-                    placeholder="Cari kamar…"
+                    placeholder={t('management.room.search_placeholder')}
                 />
                 <InputError message={errors.room_id} />
             </div>

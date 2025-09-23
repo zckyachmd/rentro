@@ -14,7 +14,7 @@ export default function Section({
             <div className="mb-2">
                 <div className="text-sm font-medium">{title}</div>
                 {subtitle ? (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                         {subtitle}
                     </div>
                 ) : null}

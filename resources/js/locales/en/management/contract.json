@@ -1,0 +1,231 @@
+{
+    "info_title": "Contract Information",
+    "settings": "Settings",
+    "auto_renew": "Auto‑Renew",
+    "paid_in_full": "Paid in Full",
+    "costs": "Costs",
+    "tenant_room_title": "Tenant & Room",
+    "billing_period": "Billing Period",
+    "billing_day": "Billing Day",
+    "select_period": "Select period",
+    "duration": {
+        "months_label": "Duration (months)",
+        "weeks_label": "Duration (weeks)",
+        "days_label": "Duration (days)"
+    },
+    "select_duration": "Select duration",
+    "month_count": "{{count}} months",
+    "week_count": "{{count}} weeks",
+    "day_count": "{{count}} days",
+    "start_date_label": "Start Date",
+    "start_date_placeholder": "Pick start date",
+    "payment_label": "Payment",
+    "pay_per_month": "Per month",
+    "pay_full": "Full (pay in advance)",
+    "auto_renew_contract": "Auto‑renew contract",
+    "user_not_found_hint_prefix": "Can't find the tenant? Please register the user first on",
+    "user_management_link": "User Management",
+    "leave": {
+        "desc": "You have unsaved changes on the contract form. Leaving will discard them."
+    },
+    "payment": { "full": "Paid in full" },
+    
+    "preview": {
+        "title": "Confirm Contract Data",
+        "description": "Review the data. Make sure all information is correct.",
+        "badges": { "tenant": "Tenant" },
+        "sections": { "details": "Contract Details", "notes": "Notes" },
+        "fields": {
+            "room": "Room",
+            "location": "Location",
+            "period": "Period",
+            "payment": "Payment",
+            "autoRenew": "Auto-renew",
+            "billingDay": "Billing Day",
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "deposit": "Deposit",
+            "rent": "Rent Fee"
+        },
+        "placeholders": { "tenantNotSelected": "Tenant is not selected" },
+        "confirmation": {
+            "label": "I have reviewed and confirm the above data is correct."
+        }
+    },
+    "handover": {
+        "title": "Handover",
+        "detail_title": "Handover Detail",
+        "detail_desc": "Handover entry summary.",
+        "summary": "Summary {{type}} — {{date}}",
+        "actions": "Handover actions",
+        "empty": "No handover history.",
+        "tenant_response_title": "Tenant Response Status",
+        "tenant_response_desc": "The last action recorded by the tenant.",
+        "disputed": "Disputed",
+        "confirmed": "Confirmed",
+        "no_tenant_confirmation": "No confirmation from tenant yet.",
+        "not_found": "Handover data not found.",
+        "photo_label": "Proof Photos",
+        "min_photos": "min {{count}}",
+        "photo_helper_min": "Upload brief proof. Min {{count}}, max 5 photos.",
+        "photo_helper": "Upload brief proof (max 5 photos).",
+        "notes_label": {
+            "checkin": "Check-in Notes",
+            "checkout": "Check-out Notes"
+        },
+        "notes_placeholder": {
+            "checkin": "Summarize room condition, electricity/water meters, lights, and keys handed over.",
+            "checkout": "Summarize that the return condition matches at move-in (keys, meters, lights, etc.)."
+        },
+        "notes_helper": {
+            "checkin": "Summarize initial condition, equipment, and meter readings.",
+            "checkout": "Summarize returned equipment and final condition."
+        },
+        "submit": {
+            "checkin": "Save Check-in",
+            "redo_checkin": "Save Redo Check-in",
+            "checkout": "Save Check-out",
+            "redo_checkout": "Save Redo Check-out"
+        },
+        "photos_counter": "{{current}}/{{min}} photos",
+        "menu": {
+            "checkin": "Check‑in",
+            "checkout": "Check‑out",
+            "redo_checkin": "Redo Check‑in",
+            "redo_checkout": "Redo Check‑out"
+        }
+    },
+    "cancel": {
+        "title": "Cancel Contract",
+        "desc": "Confirm to cancel this contract. Status becomes Cancelled and auto‑renew is turned off.",
+        "reason_label": "Cancellation reason",
+        "reason_placeholder": "Example: cancelled by tenant, wrong input, etc.",
+        "confirm": "Yes, Cancel"
+    },
+    "guide": {
+        "title": "Contract Action Guide",
+        "desc": "Summary of actions available for admin.",
+        "checkin": {
+            "title": "Check‑in",
+            "a1": "Available when contract is Active and not yet checked-in.",
+            "a2": "Fill notes min 100 characters.",
+            "a3": "Upload at least 1 proof photo (max 5 photos).",
+            "a4": "Action menu icon: LogIn."
+        },
+        "checkout": {
+            "title": "Check‑out",
+            "a1": "Available when contract is Active, already checked-in, and not yet checked-out.",
+            "a2": "Fill notes min 100 characters.",
+            "a3": "Photos optional (max 5 photos).",
+            "a4": "Action menu icon: LogOut."
+        }
+    },
+    "autorenew": {
+        "stop_title": "Turn Off Auto‑renew",
+        "start_title": "Turn On Auto‑renew",
+        "stop_desc": "Contract will not be auto‑renewed at period end.",
+        "start_desc": "Contract will be auto‑renewed at period end.",
+        "reason_label": "Reason",
+        "reason_placeholder": "e.g., tenant request, contract adjustment, etc.",
+        "stop_action": "Stop auto‑renew",
+        "start_action": "Start auto‑renew"
+    },
+    "table": {
+        "view_detail_title": "View contract {{number}}",
+        "actions_for": "Contract actions {{id}}",
+        "columns": {
+            "rent": "Rent",
+            "days_left": "Days Left",
+            "autorenew": "Auto‑renew"
+        },
+        "expired": "Expired"
+    },
+    "list": {
+        "guide": "Action Guide",
+        "create": "Create Contract",
+        "title": "Contracts",
+        "desc": "Manage tenant contracts and renewal status.",
+        "filter": "Filter"
+    },
+    "detail": {
+        "title": "Contract Detail",
+        "title_format": "Contract #{{number}}",
+        "costs": { "rent": "Rent", "deposit": "Deposit" }
+    },
+    "create": {
+        "title": "Create Contract",
+        "guide": {
+            "button": "Guide & Terms",
+            "title": "Contract Guide & Terms",
+            "desc": "Summary of important rules and input tips to keep contracts clean and minimize errors.",
+            "flow": {
+                "title": "Quick Flow",
+                "items": {
+                    "1": "Select tenant and room.",
+                    "2": "Set billing period, duration, and start date.",
+                    "3": "System auto-fills end date and billing day (locked).",
+                    "4": "Fill rent and deposit (check IDR preview).",
+                    "5": {
+                        "prefix": "Choose payment method:",
+                        "bulanan": "• Monthly: choose Per month or Full (paid in advance).",
+                        "lain": "• Weekly/Daily: Full (paid in advance)."
+                    },
+                    "6": "Optional: enable Auto‑renew for automatic renewals."
+                }
+            },
+            "deposit": {
+                "title": "Deposit",
+                "items": {
+                    "1": "Security fund, not rent payment.",
+                    "2": "Returned at end of contract per rules and condition.",
+                    "3": "Can cover damages/arrears per policy."
+                }
+            },
+            "payment": {
+                "title": "Payment",
+                "items": {
+                    "1": "Monthly: choose Per month or Full.",
+                    "2": "Weekly/Daily: must be Full (paid in advance).",
+                    "3": "This affects invoices: Per month ➜ monthly invoices; Full ➜ one invoice at start."
+                }
+            },
+            "autorenew": {
+                "title": "Auto‑renew",
+                "items": {
+                    "1": "Auto-extend at end of period.",
+                    "2": "Default on for Monthly; off for Weekly/Daily.",
+                    "3": "Can be changed anytime via checkbox."
+                }
+            },
+            "dates": {
+                "title": "Billing & End Dates",
+                "items": {
+                    "1": "Auto from start date + period.",
+                    "prorata": {
+                        "1": "Prorata on: end & billing dates adjust proportionally in the first period.",
+                        "2": "First invoice follows prorata; next periods follow normal cycle."
+                    },
+                    "no_prorata": "No prorata; billing day follows next cycle (≈ 30 days for monthly)."
+                }
+            },
+            "tips": {
+                "title": "Tips",
+                "items": {
+                    "1": "Room label shows number/name; location shown in description.",
+                    "2": "Use IDR preview to avoid big number typos.",
+                    "3": "Use contract notes for special rules (electricity/water, room condition, etc.)."
+                }
+            }
+        },
+        "notes": {
+            "title": "Contract Notes",
+            "placeholder": "Optional: add special rules, room conditions, electricity/water policy, etc."
+        },
+        "form": {
+            "suffix": { "daily": "per day", "weekly": "per week", "monthly": "per month" },
+            "fields": { "rent": "Rent Cost ({{suffix}})", "deposit": "Deposit" },
+            "placeholders": { "rent": "e.g. 1,200,000", "deposit": "e.g. 500,000 (optional)" }
+        },
+        "list": {}
+    }
+}

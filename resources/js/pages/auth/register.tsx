@@ -1,17 +1,19 @@
 import { Link, useForm } from '@inertiajs/react';
 import { AtSign, Loader2, Lock, User } from 'lucide-react';
 import { FormEventHandler } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import PasswordInput from '@/components/form/password-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
+import PasswordInput from '@/components/ui/password-input';
 import { Separator } from '@/components/ui/separator';
 import GuestLayout from '@/layouts/guest-layout';
 import type { RegisterForm } from '@/types/auth';
 
 export default function Register() {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm<RegisterForm>({
             name: '',
@@ -33,16 +35,18 @@ export default function Register() {
 
     return (
         <GuestLayout
-            title="Register"
-            description="Fill the fields below to get started."
+            title={t('auth.register.title')}
+            description={t('auth.register.desc')}
             content={
                 <form onSubmit={submit} className="space-y-4">
                     <div className="space-y-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Full name</Label>
+                            <Label htmlFor="name">
+                                {t('auth.register.name_label')}
+                            </Label>
                             <div className="relative">
                                 <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <User className="h-4 w-4 text-muted-foreground" />
+                                    <User className="text-muted-foreground h-4 w-4" />
                                 </span>
                                 <Input
                                     id="name"
@@ -50,7 +54,9 @@ export default function Register() {
                                     type="text"
                                     autoComplete="name"
                                     value={data.name}
-                                    placeholder="your full name"
+                                    placeholder={t(
+                                        'auth.register.name_placeholder',
+                                    )}
                                     aria-invalid={Boolean(errors.name)}
                                     className="pl-10"
                                     onChange={(e) =>
@@ -62,10 +68,12 @@ export default function Register() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="username">Username</Label>
+                            <Label htmlFor="username">
+                                {t('auth.register.username_label')}
+                            </Label>
                             <div className="relative">
                                 <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <User className="h-4 w-4 text-muted-foreground" />
+                                    <User className="text-muted-foreground h-4 w-4" />
                                 </span>
                                 <Input
                                     id="username"
@@ -73,7 +81,9 @@ export default function Register() {
                                     type="text"
                                     autoComplete="username"
                                     value={data.username}
-                                    placeholder="choose a username"
+                                    placeholder={t(
+                                        'auth.register.username_placeholder',
+                                    )}
                                     aria-invalid={Boolean(errors.username)}
                                     className="pl-10"
                                     onChange={(e) =>
@@ -85,10 +95,12 @@ export default function Register() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">
+                                {t('auth.register.email_label')}
+                            </Label>
                             <div className="relative">
                                 <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <AtSign className="h-4 w-4 text-muted-foreground" />
+                                    <AtSign className="text-muted-foreground h-4 w-4" />
                                 </span>
                                 <Input
                                     id="email"
@@ -96,7 +108,9 @@ export default function Register() {
                                     type="email"
                                     autoComplete="email"
                                     value={data.email}
-                                    placeholder="you@example.com"
+                                    placeholder={t(
+                                        'auth.register.email_placeholder',
+                                    )}
                                     aria-invalid={Boolean(errors.email)}
                                     className="pl-10"
                                     onChange={(e) =>
@@ -108,17 +122,19 @@ export default function Register() {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">
+                                {t('auth.password')}
+                            </Label>
                             <PasswordInput
                                 id="password"
                                 name="password"
                                 autoComplete="new-password"
                                 value={data.password}
-                                placeholder="password"
+                                placeholder={t('auth.password_placeholder')}
                                 aria-invalid={Boolean(errors.password)}
                                 className="pl-10"
                                 leftAdornment={
-                                    <Lock className="h-4 w-4 text-muted-foreground" />
+                                    <Lock className="text-muted-foreground h-4 w-4" />
                                 }
                                 onChange={(e) =>
                                     setData('password', e.target.value)
@@ -129,20 +145,22 @@ export default function Register() {
 
                         <div className="grid gap-2">
                             <Label htmlFor="password_confirmation">
-                                Confirm password
+                                {t('auth.register.confirm_label')}
                             </Label>
                             <PasswordInput
                                 id="password_confirmation"
                                 name="password_confirmation"
                                 autoComplete="new-password"
                                 value={data.password_confirmation}
-                                placeholder="confirm your password"
+                                placeholder={t(
+                                    'auth.register.confirm_placeholder',
+                                )}
                                 aria-invalid={Boolean(
                                     errors.password_confirmation,
                                 )}
                                 className="pl-10"
                                 leftAdornment={
-                                    <Lock className="h-4 w-4 text-muted-foreground" />
+                                    <Lock className="text-muted-foreground h-4 w-4" />
                                 }
                                 onChange={(e) =>
                                     setData(
@@ -165,22 +183,22 @@ export default function Register() {
                         {processing ? (
                             <span className="inline-flex items-center gap-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Creating account...
+                                {t('auth.register.processing')}
                             </span>
                         ) : (
-                            'Create account'
+                            t('auth.register.submit')
                         )}
                     </Button>
 
                     <div className="space-y-3">
                         <Separator />
-                        <p className="text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
+                        <p className="text-muted-foreground text-center text-sm">
+                            {t('auth.register.already_have')}{' '}
                             <Link
                                 href={route('login')}
-                                className="font-medium text-foreground underline underline-offset-4"
+                                className="text-foreground font-medium underline underline-offset-4"
                             >
-                                Sign in
+                                {t('auth.login.submit')}
                             </Link>
                         </p>
                     </div>

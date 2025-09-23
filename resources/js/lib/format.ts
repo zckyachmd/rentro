@@ -1,25 +1,46 @@
+function pickLocale(locale?: string): string {
+    if (locale) return locale;
+    try {
+        const docLang =
+            (typeof document !== 'undefined' &&
+                document.documentElement?.lang) ||
+            '';
+        if (docLang) return docLang;
+    } catch {
+        /* ignore */
+    }
+    try {
+        if (typeof navigator !== 'undefined' && navigator.language)
+            return navigator.language;
+    } catch {
+        /* ignore */
+    }
+    return 'en-US';
+}
+
 export function formatIDR(
     val?: number | string | null,
-    locale: string = 'id-ID',
+    locale?: string,
 ): string {
     if (val == null || val === '') return 'Rp -';
     const n = typeof val === 'string' ? Number(val) : val;
     if (Number.isNaN(n)) return 'Rp -';
     try {
-        return new Intl.NumberFormat(locale, {
+        return new Intl.NumberFormat(pickLocale(locale), {
             style: 'currency',
             currency: 'IDR',
             minimumFractionDigits: 0,
         }).format(n);
     } catch {
-        return `Rp ${n.toLocaleString(locale)}`;
+        const loc = pickLocale(locale);
+        return `Rp ${n.toLocaleString(loc)}`;
     }
 }
 
 export function formatDate(
     input?: string | Date | null,
     withTime: boolean = false,
-    locale: string = 'id-ID',
+    locale?: string,
 ): string {
     if (!input) return '-';
     const d = input instanceof Date ? input : new Date(input);
@@ -33,5 +54,5 @@ export function formatDate(
               minute: '2-digit',
           }
         : { year: 'numeric', month: 'short', day: '2-digit' };
-    return new Intl.DateTimeFormat(locale, opts).format(d);
+    return new Intl.DateTimeFormat(pickLocale(locale), opts).format(d);
 }

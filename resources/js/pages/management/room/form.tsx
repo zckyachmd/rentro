@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { GripVertical, Image as ImageIcon, Trash2 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -48,6 +49,7 @@ export default function RoomUpsertForm({
     options?: RoomUpsertOptions;
     room?: import('@/types/management').RoomUpsert;
 }) {
+    const { t } = useTranslation();
     // =========================
     // 1) Sumber data opsi (tanpa useMemo — ringan & jelas)
     // =========================
@@ -412,49 +414,53 @@ export default function RoomUpsertForm({
             <form className="grid gap-6" onSubmit={onSubmit}>
                 {/* Identitas Kamar */}
                 <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                        Identitas Kamar
+                    <div className="text-foreground text-sm font-medium">
+                        {t('management.room.form.identity.title')}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Nomor dan nama untuk identifikasi kamar.
+                    <p className="text-muted-foreground text-xs">
+                        {t('management.room.form.identity.desc')}
                     </p>
                     <div className="grid gap-3 md:grid-cols-2">
                         <div className="grid gap-1.5">
                             <Label>
-                                Nomor Kamar{' '}
+                                {t('management.room.form.number_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 value={data.number}
                                 onChange={onChange('number')}
-                                placeholder="Masukkan nomor kamar (contoh: 201)"
+                                placeholder={t(
+                                    'management.room.form.number_placeholder',
+                                )}
                                 disabled={processing}
                                 className="h-10 text-sm"
                             />
 
                             {!errors.number ? (
-                                <p className="text-xs text-muted-foreground">
-                                    Gunakan format sederhana seperti 201, A-12,
-                                    atau B2-03.
+                                <p className="text-muted-foreground text-xs">
+                                    {t('management.room.form.number_hint')}
                                 </p>
                             ) : (
                                 <InputError message={errors.number} />
                             )}
                         </div>
                         <div className="grid gap-1.5">
-                            <Label>Nama Kamar</Label>
+                            <Label>
+                                {t('management.room.form.name_label')}
+                            </Label>
                             <Input
                                 value={data.name}
                                 onChange={onChange('name')}
-                                placeholder="Masukkan nama kamar (opsional)"
+                                placeholder={t(
+                                    'management.room.form.name_placeholder',
+                                )}
                                 disabled={processing}
                                 className="h-10 text-sm"
                             />
 
                             {!errors.name ? (
-                                <p className="text-xs text-muted-foreground">
-                                    Nama tambahan untuk memudahkan identifikasi
-                                    (opsional).
+                                <p className="text-muted-foreground text-xs">
+                                    {t('management.room.form.name_hint')}
                                 </p>
                             ) : (
                                 <InputError message={errors.name} />
@@ -466,16 +472,16 @@ export default function RoomUpsertForm({
 
                 {/* Lokasi & Klasifikasi */}
                 <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                        Lokasi & Klasifikasi
+                    <div className="text-foreground text-sm font-medium">
+                        {t('management.room.form.location.title')}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Pilih gedung, lantai, tipe, dan status kamar.
+                    <p className="text-muted-foreground text-xs">
+                        {t('management.room.form.location.desc')}
                     </p>
                     <div className="grid gap-2 md:grid-cols-2">
                         <div className="grid gap-1">
                             <Label>
-                                Gedung{' '}
+                                {t('management.room.form.building_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -495,7 +501,11 @@ export default function RoomUpsertForm({
                                 disabled={processing}
                             >
                                 <SelectTrigger className="h-10 text-sm">
-                                    <SelectValue placeholder="Pilih gedung tempat kamar berada" />
+                                    <SelectValue
+                                        placeholder={t(
+                                            'management.room.form.building_placeholder',
+                                        )}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -515,7 +525,7 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-1">
                             <Label>
-                                Lantai{' '}
+                                {t('management.room.form.floor_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -524,7 +534,11 @@ export default function RoomUpsertForm({
                                 disabled={processing}
                             >
                                 <SelectTrigger className="h-10 text-sm">
-                                    <SelectValue placeholder="Pilih lantai sesuai gedung" />
+                                    <SelectValue
+                                        placeholder={t(
+                                            'management.room.form.floor_placeholder',
+                                        )}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -533,7 +547,10 @@ export default function RoomUpsertForm({
                                                 key={f.id}
                                                 value={String(f.id)}
                                             >
-                                                Lantai {f.level}
+                                                {t(
+                                                    'management.room.form.floor_option',
+                                                    { level: f.level },
+                                                )}
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
@@ -544,7 +561,7 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-1">
                             <Label>
-                                Tipe Kamar{' '}
+                                {t('management.room.form.type_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -626,7 +643,11 @@ export default function RoomUpsertForm({
                                 disabled={processing}
                             >
                                 <SelectTrigger className="h-10 text-sm">
-                                    <SelectValue placeholder="Pilih tipe kamar" />
+                                    <SelectValue
+                                        placeholder={t(
+                                            'management.room.form.type_placeholder',
+                                        )}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -646,7 +667,7 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-1">
                             <Label>
-                                Status{' '}
+                                {t('management.room.form.status_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -655,7 +676,11 @@ export default function RoomUpsertForm({
                                 disabled={processing}
                             >
                                 <SelectTrigger className="h-10 text-sm">
-                                    <SelectValue placeholder="Pilih status kamar" />
+                                    <SelectValue
+                                        placeholder={t(
+                                            'management.room.form.status_placeholder',
+                                        )}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -678,24 +703,25 @@ export default function RoomUpsertForm({
 
                 {/* Kapasitas, Harga, Deposit, Luas */}
                 <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                        Kapasitas & Harga Bulanan
+                    <div className="text-foreground text-sm font-medium">
+                        {t('management.room.form.capacity.title')}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Atur kapasitas penghuni, harga & deposit bulanan, serta
-                        luas kamar.
+                    <p className="text-muted-foreground text-xs">
+                        {t('management.room.form.capacity.desc')}
                     </p>
                     <div className="grid gap-4 md:grid-cols-2">
                         {/* Kiri: Kapasitas + Harga */}
                         <div className="grid gap-2">
                             <Label>
-                                Kapasitas (orang){' '}
+                                {t('management.room.form.capacity_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 type="number"
                                 min={1}
-                                placeholder="Masukkan jumlah orang"
+                                placeholder={t(
+                                    'management.room.form.capacity_placeholder',
+                                )}
                                 value={data.max_occupancy}
                                 onChange={onChange('max_occupancy')}
                                 className="h-10 text-sm"
@@ -704,38 +730,42 @@ export default function RoomUpsertForm({
                             {errors.max_occupancy ? (
                                 <InputError message={errors.max_occupancy} />
                             ) : (
-                                <p className="text-xs text-muted-foreground">
-                                    Jumlah maksimal penghuni.
+                                <p className="text-muted-foreground text-xs">
+                                    {t('management.room.form.capacity_hint')}
                                 </p>
                             )}
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Harga Bulanan (Rp)</Label>
+                            <Label>
+                                {t('management.room.form.price_month_label')}
+                            </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder="Masukkan harga bulanan atau kosongkan untuk mengikuti tipe"
+                                placeholder={t(
+                                    'management.room.form.price_month_placeholder',
+                                )}
                                 value={data.price_rupiah}
                                 onChange={onChange('price_rupiah')}
                                 className="h-10 text-sm"
                                 disabled={processing || !data.room_type_id}
                             />
-                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.price_rupiah) && (
                                     <span>
-                                        Pratinjau:{' '}
+                                        {t('management.room.form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(data.price_rupiah)}
                                         </span>{' '}
-                                        / bulan
+                                        {t('management.room.form.per_month')}
                                     </span>
                                 )}
                                 {!data.price_rupiah &&
                                 data.room_type_id &&
                                 typeMonthly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        Mengikuti tipe
+                                        {t('management.room.form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -746,12 +776,16 @@ export default function RoomUpsertForm({
 
                         {/* Kanan: Luas + Deposit */}
                         <div className="grid gap-2">
-                            <Label>Luas (m²)</Label>
+                            <Label>
+                                {t('management.room.form.size_label')}
+                            </Label>
                             <Input
                                 type="number"
                                 min={0}
                                 step="0.01"
-                                placeholder="Masukkan luas kamar (opsional)"
+                                placeholder={t(
+                                    'management.room.form.size_placeholder',
+                                )}
                                 value={data.size_m2}
                                 onChange={(e) =>
                                     setData('size_m2', e.target.value)
@@ -772,18 +806,22 @@ export default function RoomUpsertForm({
                                     }
                                 />
                             ) : (
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-muted-foreground text-xs">
                                     Luas lantai dalam meter persegi.
                                 </p>
                             )}
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Deposit Bulanan (Rp)</Label>
+                            <Label>
+                                {t('management.room.form.deposit_month_label')}
+                            </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder="Masukkan deposit bulanan atau kosongkan untuk mengikuti tipe"
+                                placeholder={t(
+                                    'management.room.form.deposit_month_placeholder',
+                                )}
                                 value={data.deposit_rupiah}
                                 onChange={(e) =>
                                     setData('deposit_rupiah', e.target.value)
@@ -791,10 +829,10 @@ export default function RoomUpsertForm({
                                 className="h-10 text-sm"
                                 disabled={processing || !data.room_type_id}
                             />
-                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.deposit_rupiah) ? (
                                     <span>
-                                        Pratinjau:{' '}
+                                        {t('management.room.form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(data.deposit_rupiah)}
                                         </span>
@@ -804,7 +842,7 @@ export default function RoomUpsertForm({
                                 data.room_type_id &&
                                 typeDepMonthly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        Mengikuti tipe
+                                        {t('management.room.form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -828,38 +866,42 @@ export default function RoomUpsertForm({
 
                 {/* Harga & Deposit (Mingguan/Harian) */}
                 <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                        Harga & Deposit (Mingguan/Harian)
+                    <div className="text-foreground text-sm font-medium">
+                        {t('management.room.form.weekday.title')}
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="grid gap-2">
-                            <Label>Harga Mingguan (Rp)</Label>
+                            <Label>
+                                {t('management.room.form.price_week_label')}
+                            </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder="Masukkan harga mingguan atau kosongkan untuk mengikuti tipe"
+                                placeholder={t(
+                                    'management.room.form.price_week_placeholder',
+                                )}
                                 value={data.price_weekly_rupiah}
                                 onChange={onChange('price_weekly_rupiah')}
                                 className="h-10 text-sm"
                                 disabled={processing || !data.room_type_id}
                             />
-                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.price_weekly_rupiah) ? (
                                     <span>
-                                        Pratinjau:{' '}
+                                        {t('management.room.form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(
                                                 data.price_weekly_rupiah,
                                             )}
                                         </span>{' '}
-                                        / minggu
+                                        {t('management.room.form.per_week')}
                                     </span>
                                 ) : null}
                                 {!data.price_weekly_rupiah &&
                                 data.room_type_id &&
                                 typeWeekly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        Mengikuti tipe
+                                        {t('management.room.form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -879,31 +921,35 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Harga Harian (Rp)</Label>
+                            <Label>
+                                {t('management.room.form.price_day_label')}
+                            </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder="Masukkan harga harian atau kosongkan untuk mengikuti tipe"
+                                placeholder={t(
+                                    'management.room.form.price_day_placeholder',
+                                )}
                                 value={data.price_daily_rupiah}
                                 onChange={onChange('price_daily_rupiah')}
                                 className="h-10 text-sm"
                                 disabled={processing || !data.room_type_id}
                             />
-                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.price_daily_rupiah) ? (
                                     <span>
-                                        Pratinjau:{' '}
+                                        {t('management.room.form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(data.price_daily_rupiah)}
                                         </span>{' '}
-                                        / hari
+                                        {t('management.room.form.per_day')}
                                     </span>
                                 ) : null}
                                 {!data.price_daily_rupiah &&
                                 data.room_type_id &&
                                 typeDaily != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        Mengikuti tipe
+                                        {t('management.room.form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -923,11 +969,15 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Deposit Mingguan (Rp)</Label>
+                            <Label>
+                                {t('management.room.form.deposit_week_label')}
+                            </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder="Masukkan deposit mingguan atau kosongkan untuk mengikuti tipe"
+                                placeholder={t(
+                                    'management.room.form.deposit_week_placeholder',
+                                )}
                                 value={data.deposit_weekly_rupiah}
                                 onChange={(e) =>
                                     setData(
@@ -938,10 +988,13 @@ export default function RoomUpsertForm({
                                 className="h-10 text-sm"
                                 disabled={processing || !data.room_type_id}
                             />
-                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.deposit_weekly_rupiah) ? (
                                     <span>
-                                        Pratinjau:{' '}
+                                        {t(
+                                            'management.room.form.preview',
+                                            'Preview:',
+                                        )}{' '}
                                         <span className="font-medium">
                                             {formatIDR(
                                                 data.deposit_weekly_rupiah,
@@ -953,7 +1006,10 @@ export default function RoomUpsertForm({
                                 data.room_type_id &&
                                 typeDepWeekly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        Mengikuti tipe
+                                        {t(
+                                            'management.room.form.follow_type',
+                                            'Follow type',
+                                        )}
                                     </span>
                                 ) : null}
                             </div>
@@ -973,11 +1029,15 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>Deposit Harian (Rp)</Label>
+                            <Label>
+                                {t('management.room.form.deposit_day_label')}
+                            </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder="Masukkan deposit harian atau kosongkan untuk mengikuti tipe"
+                                placeholder={t(
+                                    'management.room.form.deposit_day_placeholder',
+                                )}
                                 value={data.deposit_daily_rupiah}
                                 onChange={(e) =>
                                     setData(
@@ -988,10 +1048,13 @@ export default function RoomUpsertForm({
                                 className="h-10 text-sm"
                                 disabled={processing || !data.room_type_id}
                             />
-                            <div className="flex min-h-[18px] items-center gap-2 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.deposit_daily_rupiah) ? (
                                     <span>
-                                        Pratinjau:{' '}
+                                        {t(
+                                            'management.room.form.preview',
+                                            'Preview:',
+                                        )}{' '}
                                         <span className="font-medium">
                                             {formatIDR(
                                                 data.deposit_daily_rupiah,
@@ -1003,7 +1066,10 @@ export default function RoomUpsertForm({
                                 data.room_type_id &&
                                 typeDepDaily != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        Mengikuti tipe
+                                        {t(
+                                            'management.room.form.follow_type',
+                                            'Follow type',
+                                        )}
                                     </span>
                                 ) : null}
                             </div>
@@ -1027,14 +1093,20 @@ export default function RoomUpsertForm({
 
                 {/* Fasilitas */}
                 <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                        Fasilitas Kamar (centang yang tersedia)
+                    <div className="text-foreground text-sm font-medium">
+                        {t('common.amenities', 'Amenities')} (
+                        {t(
+                            'management.room.form.notes.placeholder',
+                            'check available',
+                        )}
+                        )
                     </div>
                     {amenities.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            Belum ada fasilitas tersedia. Tambahkan data
-                            fasilitas terlebih dahulu di menu manajemen
-                            fasilitas.
+                        <p className="text-muted-foreground text-sm">
+                            {t(
+                                'management.room.form.amenities_empty',
+                                'No amenities available yet. Add amenities master data first.',
+                            )}
                         </p>
                     ) : (
                         <ScrollArea className="h-40 rounded-md border sm:h-48 lg:h-56">
@@ -1048,7 +1120,7 @@ export default function RoomUpsertForm({
                                     return (
                                         <div
                                             key={a.id}
-                                            className={`flex items-center gap-2 rounded-md border p-2 text-sm transition hover:bg-muted ${checked ? 'border-primary' : 'border-input'}`}
+                                            className={`hover:bg-muted flex items-center gap-2 rounded-md border p-2 text-sm transition ${checked ? 'border-primary' : 'border-input'}`}
                                         >
                                             <Checkbox
                                                 id={inputId}
@@ -1075,23 +1147,34 @@ export default function RoomUpsertForm({
 
                 {/* Foto Kamar */}
                 <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                        Foto Kamar
+                    <div className="text-foreground text-sm font-medium">
+                        {t('common.photos') || 'Foto Kamar'}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Unggah foto kamar agar mudah dikenali (minimal 1 foto).
+                    <p className="text-muted-foreground text-xs">
+                        {t(
+                            'common.photos_hint',
+                            'Unggah foto kamar agar mudah dikenali (minimal 1 foto).',
+                        )}
                     </p>
                     {/* Foto Saat Ini (mode edit) */}
                     {mode === 'edit' && (photos?.length ?? 0) > 0 ? (
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <div className="text-sm font-medium text-foreground">
-                                    Foto Saat Ini
+                                <div className="text-foreground text-sm font-medium">
+                                    {t(
+                                        'management.room.form.photos.current',
+                                        'Current Photos',
+                                    )}
                                 </div>
                                 {photosDirty ? (
                                     <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
                                         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-                                        <span>Perubahan belum disimpan</span>
+                                        <span>
+                                            {t(
+                                                'common.unsaved_changes',
+                                                'Perubahan belum disimpan',
+                                            )}
+                                        </span>
                                     </div>
                                 ) : null}
                             </div>
@@ -1099,7 +1182,7 @@ export default function RoomUpsertForm({
                                 {(photos ?? []).map((p, idx) => (
                                     <div
                                         key={p.id}
-                                        className={`group relative overflow-hidden rounded-md border bg-card shadow-sm ${overIndex === idx ? 'ring-2 ring-primary' : ''}`}
+                                        className={`group bg-card relative overflow-hidden rounded-md border shadow-sm ${overIndex === idx ? 'ring-primary ring-2' : ''}`}
                                         draggable
                                         onDragStart={() => setDragIndex(idx)}
                                         onDragEnter={() => setOverIndex(idx)}
@@ -1132,7 +1215,7 @@ export default function RoomUpsertForm({
                                         <div className="relative aspect-square">
                                             <img
                                                 src={p.url}
-                                                alt="foto kamar"
+                                                alt={`${t('common.room', 'Room')} photo`}
                                                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 onClick={() => {
                                                     setPreviewIdx(idx);
@@ -1140,8 +1223,11 @@ export default function RoomUpsertForm({
                                                 }}
                                             />
                                             {p.is_cover ? (
-                                                <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                                                    Cover
+                                                <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                                                    {t(
+                                                        'management.room.form.photos.cover',
+                                                        'Cover',
+                                                    )}
                                                 </span>
                                             ) : null}
                                             <div className="pointer-events-none absolute inset-x-1 top-1 flex items-center justify-end gap-1">
@@ -1155,7 +1241,9 @@ export default function RoomUpsertForm({
                                                             e.stopPropagation();
                                                             setAsCover(p.id);
                                                         }}
-                                                        title="Jadikan cover"
+                                                        title={t(
+                                                            'management.room.form.photos.make_cover',
+                                                        )}
                                                     >
                                                         <ImageIcon className="h-4 w-4" />
                                                     </Button>
@@ -1168,7 +1256,9 @@ export default function RoomUpsertForm({
                                                             e.stopPropagation();
                                                             deletePhoto(p.id);
                                                         }}
-                                                        title="Hapus foto"
+                                                        title={t(
+                                                            'management.room.form.photos.delete_photo',
+                                                        )}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -1176,7 +1266,11 @@ export default function RoomUpsertForm({
                                             </div>
                                             <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
                                                 <GripVertical className="h-3.5 w-3.5" />
-                                                <span>Seret untuk urutan</span>
+                                                <span>
+                                                    {t(
+                                                        'management.room.form.photos.drag_hint',
+                                                    )}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -1206,13 +1300,15 @@ export default function RoomUpsertForm({
 
                     {/* Catatan */}
                     <div className="space-y-2">
-                        <div className="text-sm font-medium text-foreground">
-                            Catatan
+                        <div className="text-foreground text-sm font-medium">
+                            {t('management.room.form.notes.title')}
                         </div>
                         <Textarea
                             value={data.notes}
                             onChange={(e) => setData('notes', e.target.value)}
-                            placeholder="Tulis catatan tambahan tentang kamar (opsional)"
+                            placeholder={t(
+                                'management.room.form.notes.placeholder',
+                            )}
                             disabled={processing}
                         />
                         <InputError message={errors.notes} />
@@ -1224,16 +1320,19 @@ export default function RoomUpsertForm({
 
                 {/* Kebijakan Penghuni */}
                 <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                        Kebijakan Penghuni
+                    <div className="text-foreground text-sm font-medium">
+                        {t('management.room.form.policy.title')}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Atur kebijakan penghuni yang diperbolehkan.
+                    <p className="text-muted-foreground text-xs">
+                        {t('management.room.form.policy.desc')}
                     </p>
                     <div className="grid gap-3 md:grid-cols-2">
                         <div className="grid gap-1.5">
                             <Label>
-                                Kebijakan Gender{' '}
+                                {t(
+                                    'management.room.form.gender_policy',
+                                    'Gender Policy',
+                                )}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <RadioGroup
@@ -1281,10 +1380,12 @@ export default function RoomUpsertForm({
                         }}
                         disabled={processing}
                     >
-                        Reset
+                        {t('management.room.form.reset')}
                     </Button>
                     <Button type="submit" size="sm" disabled={processing}>
-                        {mode === 'create' ? 'Simpan' : 'Simpan Perubahan'}
+                        {mode === 'create'
+                            ? t('management.room.form.save')
+                            : t('management.room.form.save_changes')}
                     </Button>
                 </div>
             </form>
@@ -1294,15 +1395,10 @@ export default function RoomUpsertForm({
                 onOpenChange={setLeaveOpen}
                 onConfirm={confirmLeave}
                 onCancel={cancelLeave}
-                title="Keluar tanpa menyimpan?"
-                description={
-                    <>
-                        Anda memiliki perubahan yang belum disimpan (form/foto).
-                        Jika keluar, perubahan akan hilang.
-                    </>
-                }
-                confirmText="Keluar Halaman"
-                cancelText="Batal"
+                title={t('management.room.form.leave.title')}
+                description={<>{t('management.room.form.leave.desc')}</>}
+                confirmText={t('management.room.form.leave.confirm')}
+                cancelText={t('common.cancel')}
             />
         </>
     );

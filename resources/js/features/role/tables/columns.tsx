@@ -14,6 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import i18n from '@/lib/i18n';
 import type {
     RoleColumnOptions as ColumnFactoryOptions,
     RoleItem,
@@ -33,13 +34,13 @@ export const createColumns = (
     makeColumn<RoleItem>({
         id: 'name',
         accessorKey: 'name',
-        title: 'Nama',
+        title: i18n.t('common.name'),
         className: COL.name,
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.name + ' flex flex-col'}>
                 <span className="font-medium">{row.original.name}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                     ID: {row.original.id}
                 </span>
             </div>
@@ -47,7 +48,7 @@ export const createColumns = (
     }),
     makeColumn<RoleItem>({
         id: 'guard_name',
-        title: 'Guard',
+        title: i18n.t('role.guard'),
         className: COL.guard,
         cell: ({ getValue }) => (
             <div className={COL.guard}>
@@ -60,20 +61,20 @@ export const createColumns = (
     makeColumn<RoleItem>({
         id: 'users',
         accessorKey: 'users_count',
-        title: 'Pengguna',
+        title: i18n.t('common.users'),
         className: COL.users,
         sortable: true,
     }),
     makeColumn<RoleItem>({
         id: 'permissions',
         accessorKey: 'permissions_count',
-        title: 'Permissions',
+        title: i18n.t('common.permissions'),
         className: COL.permissions,
         sortable: true,
     }),
     makeColumn<RoleItem>({
         id: 'actions',
-        title: 'Aksi',
+        title: i18n.t('common.actions'),
         className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => (
             <div className={COL.actions + ' flex items-center justify-end'}>
@@ -82,32 +83,35 @@ export const createColumns = (
                         <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Aksi untuk ${row.original.name}`}
+                            aria-label={`${i18n.t('common.actions')} ${row.original.name}`}
                         >
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
-                        <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                        <DropdownMenuLabel>
+                            {i18n.t('common.actions')}
+                        </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onClick={() => opts?.onEdit?.(row.original)}
                         >
-                            <Pencil className="mr-2 h-4 w-4" /> Edit role
+                            <Pencil className="mr-2 h-4 w-4" />{' '}
+                            {i18n.t('role.actions.edit_role')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => opts?.onPermissions?.(row.original)}
                         >
-                            <ShieldCheck className="mr-2 h-4 w-4" /> Kelola
-                            permissions
+                            <ShieldCheck className="mr-2 h-4 w-4" />{' '}
+                            {i18n.t('role.actions.manage_permissions')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => opts?.onDelete?.(row.original)}
                         >
-                            <Trash2 className="mr-2 h-4 w-4 text-destructive" />{' '}
-                            Hapus
+                            <Trash2 className="text-destructive mr-2 h-4 w-4" />{' '}
+                            {i18n.t('common.delete')}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

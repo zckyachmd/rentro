@@ -36,7 +36,7 @@ class QueueThemeCookieOnLogin
             secure: (bool) config('session.secure', false),
             httpOnly: false,
             raw: false,
-            sameSite: 'Lax',
+            sameSite: 'lax',
         );
 
         Cookie::queue($cookie);

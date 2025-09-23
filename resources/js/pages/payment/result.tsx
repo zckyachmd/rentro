@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle2, Info, XCircle } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
@@ -8,6 +9,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import type { PaymentResultPageProps as PageProps } from '@/types/payment';
 
 export default function PaymentResult(props: PageProps) {
+    const { t } = useTranslation();
     const variant = (props.variant || 'finish') as
         | 'finish'
         | 'unfinish'
@@ -21,44 +23,44 @@ export default function PaymentResult(props: PageProps) {
                     icon: (
                         <CheckCircle2 className="h-12 w-12 text-emerald-600" />
                     ),
-                    title: 'Pembayaran Berhasil',
-                    desc: 'Terima kasih. Pembayaran Anda telah diproses.',
-                    action: 'Kembali ke Pembayaran',
+                    title: t('payment.result.finish.title'),
+                    desc: t('payment.result.finish.desc'),
+                    action: t('payment.result.finish.action'),
                 } as const;
             case 'unfinish':
                 return {
                     icon: <Info className="h-12 w-12 text-amber-500" />,
-                    title: 'Pembayaran Belum Selesai',
-                    desc: 'Anda dapat melanjutkan proses pembayaran dari halaman pembayaran.',
-                    action: 'Kembali ke Pembayaran',
+                    title: t('payment.result.unfinish.title'),
+                    desc: t('payment.result.unfinish.desc'),
+                    action: t('payment.result.unfinish.action'),
                 } as const;
             case 'error':
             default:
                 return {
                     icon: <XCircle className="h-12 w-12 text-red-600" />,
-                    title: 'Terjadi Kesalahan',
-                    desc: 'Pembayaran gagal diproses. Silakan coba lagi dari halaman pembayaran.',
-                    action: 'Kembali ke Pembayaran',
+                    title: t('payment.result.error.title'),
+                    desc: t('payment.result.error.desc'),
+                    action: t('payment.result.error.action'),
                 } as const;
         }
-    }, [variant]);
+    }, [variant, t]);
 
     return (
         <AuthLayout
             pageTitle={meta.title}
-            pageDescription="Ringkasan redirect pembayaran"
+            pageDescription={t('payment.result.page_desc')}
         >
-            <div className="mx-auto mt-6 max-w-lg rounded-lg border bg-card p-6 text-center">
+            <div className="bg-card mx-auto mt-6 max-w-lg rounded-lg border p-6 text-center">
                 <div className="mb-3 flex items-center justify-center">
                     {meta.icon}
                 </div>
                 <h1 className="mb-1 text-xl font-semibold">{meta.title}</h1>
-                <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                <p className="text-muted-foreground mx-auto max-w-md text-sm">
                     {meta.desc}
                 </p>
                 {props.provider ? (
-                    <p className="mt-2 text-xs text-muted-foreground">
-                        Provider: {props.provider}
+                    <p className="text-muted-foreground mt-2 text-xs">
+                        {t('payment.result.provider_label')} {props.provider}
                     </p>
                 ) : null}
 
@@ -72,9 +74,9 @@ export default function PaymentResult(props: PageProps) {
                         value={backUrl}
                         as="span"
                         className="cursor-pointer underline"
-                        successMessage="Tautan disalin"
+                        successMessage={t('common.link_copied')}
                     >
-                        Salin Tautan
+                        {t('common.copy_link')}
                     </CopyInline>
                 </div>
             </div>

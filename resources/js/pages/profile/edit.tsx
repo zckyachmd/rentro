@@ -1,9 +1,10 @@
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Crumb } from '@/components/breadcrumbs';
 import { DatePickerInput } from '@/components/date-picker';
-import AvatarPicker from '@/components/form/avatar-picker';
+import AvatarPicker from '@/components/ui/avatar-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
@@ -22,17 +23,17 @@ import type { EditForm, EditPageProps } from '@/types/profile';
 import AddressSection from './address';
 import DocumentSection from './document';
 
-const BREADCRUMBS: Crumb[] = [
-    { label: 'Profil', href: route('profile.index') },
-    { label: 'Edit Profil' },
-];
-
 export default function Edit({
     user,
     address,
     document,
     options,
 }: EditPageProps) {
+    const { t } = useTranslation();
+    const BREADCRUMBS: Crumb[] = [
+        { label: t('profile.title'), href: route('profile.index') },
+        { label: t('profile.edit') },
+    ];
     const initialData: EditForm = {
         name: user.name ?? '',
         username: user.username ?? '',
@@ -92,14 +93,16 @@ export default function Edit({
     };
 
     return (
-        <AuthLayout pageTitle="Edit Profil" breadcrumbs={BREADCRUMBS}>
-            <Head title="Edit Profil" />
+        <AuthLayout pageTitle={t('profile.edit')} breadcrumbs={BREADCRUMBS}>
+            <Head title={t('profile.edit')} />
 
             <div className="mb-4 flex items-center justify-between">
                 <div>
-                    <h2 className="text-lg font-semibold">Informasi Akun</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Perbarui data akun dan alamat.
+                    <h2 className="text-lg font-semibold">
+                        {t('profile.account_info')}
+                    </h2>
+                    <p className="text-muted-foreground text-sm">
+                        {t('profile.update_hint')}
                     </p>
                 </div>
             </div>
@@ -110,7 +113,7 @@ export default function Edit({
                     <section className="space-y-4">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
                             <div className="space-y-3 md:col-span-1 lg:col-span-1 xl:col-span-1">
-                                <Label>Foto Profil</Label>
+                                <Label>{t('profile.photo')}</Label>
                                 <div className="flex flex-col items-center gap-1">
                                     <AvatarPicker
                                         src={avatarPreview ?? user.avatar_url}
@@ -123,9 +126,8 @@ export default function Edit({
                                             .toUpperCase()}
                                         onPick={onAvatarPicked}
                                     />
-                                    <p className="mt-2 text-center text-xs text-muted-foreground">
-                                        JPG/PNG, maks 2MB. Rasio square
-                                        disarankan.
+                                    <p className="text-muted-foreground mt-2 text-center text-xs">
+                                        {t('profile.photo_hint')}
                                     </p>
                                 </div>
                             </div>
@@ -146,7 +148,9 @@ export default function Edit({
                                             onChange={(e) =>
                                                 setData('name', e.target.value)
                                             }
-                                            placeholder="Masukkan nama lengkap"
+                                            placeholder={t(
+                                                'form.placeholder.fullname',
+                                            )}
                                         />
                                         <InputError message={errors.name} />
                                     </div>
@@ -167,7 +171,9 @@ export default function Edit({
                                                     e.target.value,
                                                 )
                                             }
-                                            placeholder="Masukkan username"
+                                            placeholder={t(
+                                                'form.placeholder.username',
+                                            )}
                                         />
                                         <InputError message={errors.username} />
                                     </div>
@@ -186,7 +192,9 @@ export default function Edit({
                                             onChange={(e) =>
                                                 setData('email', e.target.value)
                                             }
-                                            placeholder="Masukkan alamat email"
+                                            placeholder={t(
+                                                'form.placeholder.email',
+                                            )}
                                         />
                                         <InputError message={errors.email} />
                                     </div>
@@ -204,13 +212,15 @@ export default function Edit({
                                             onChange={(e) =>
                                                 setData('phone', e.target.value)
                                             }
-                                            placeholder="Masukkan nomor telepon"
+                                            placeholder={t(
+                                                'form.placeholder.phone',
+                                            )}
                                         />
                                         <InputError message={errors.phone} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="dob">
-                                            Tanggal Lahir
+                                            {t('profile.dob')}
                                         </Label>
                                         <DatePickerInput
                                             id="dob"
@@ -219,14 +229,16 @@ export default function Edit({
                                             onChange={(v) =>
                                                 setData('dob', v ?? '')
                                             }
-                                            placeholder="Pilih tanggal lahir"
+                                            placeholder={t(
+                                                'form.placeholder.pick_dob',
+                                            )}
                                             max={yesterdayISO()}
                                         />
                                         <InputError message={errors.dob} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>
-                                            Jenis Kelamin{' '}
+                                            {t('profile.gender')}{' '}
                                             <span className="text-destructive">
                                                 *
                                             </span>
@@ -241,7 +253,11 @@ export default function Edit({
                                             }
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Pilih gender" />
+                                                <SelectValue
+                                                    placeholder={t(
+                                                        'form.placeholder.pick_gender',
+                                                    )}
+                                                />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {options.genders.map((g) => (
@@ -286,21 +302,20 @@ export default function Edit({
                     />
                 </div>
 
-                <p className="mb-4 mt-2 text-xs text-muted-foreground">
-                    Tanda <span className="text-destructive">*</span> menandakan
-                    kolom wajib diisi.
+                <p className="text-muted-foreground mt-2 mb-4 text-xs">
+                    {t('form.required_hint')}
                 </p>
 
                 <div className="flex items-center gap-3">
                     <Button type="submit" disabled={processing}>
-                        Simpan
+                        {t('common.save')}
                     </Button>
                     <Button
                         type="button"
                         variant="outline"
                         onClick={() => reset()}
                     >
-                        Reset
+                        {t('common.reset')}
                     </Button>
                 </div>
             </form>

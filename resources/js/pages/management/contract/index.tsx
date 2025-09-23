@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Filter, Plus, Search } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,8 @@ import type {
 } from '@/types/management';
 
 export default function ContractIndex(props: ContractsPageProps) {
+    const { t } = useTranslation();
+    const { t: tContract } = useTranslation('management/contract');
     const {
         contracts: paginator,
         query = {},
@@ -172,7 +175,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                 variant="outline"
                 onClick={() => setOpenGuide(true)}
             >
-                Panduan Aksi
+                {tContract('list.guide')}
             </Button>
             <Button
                 type="button"
@@ -180,15 +183,16 @@ export default function ContractIndex(props: ContractsPageProps) {
                     router.visit(route('management.contracts.create'))
                 }
             >
-                <Plus className="mr-2 h-4 w-4" /> Buat Kontrak
+                <Plus className="mr-2 h-4 w-4" />{' '}
+                {tContract('list.create')}
             </Button>
         </div>
     );
 
     return (
         <AuthLayout
-            pageTitle="Kontrak"
-            pageDescription="Kelola kontrak penyewa dan status perpanjangan."
+            pageTitle={tContract('list.title')}
+            pageDescription={tContract('list.desc')}
             titleIcon="ScrollText"
             actions={headerActions}
         >
@@ -200,15 +204,16 @@ export default function ContractIndex(props: ContractsPageProps) {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                            <Filter className="h-4 w-4" /> Filter
+                            <Filter className="h-4 w-4" />{' '}
+                            {tContract('list.filter')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="grid items-end gap-3 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="contract-search">Cari</Label>
+                                <Label htmlFor="contract-search">{t('datatable.search')}</Label>
                                 <div className="relative">
-                                    <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                                     <Input
                                         id="contract-search"
                                         className="h-9 pl-8"
@@ -222,14 +227,16 @@ export default function ContractIndex(props: ContractsPageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder="Cari nomor kontrak/penyewa/kamar…"
-                                        aria-label="Cari nomor kontrak, penyewa, atau kamar"
+                                        placeholder={t('datatable.search_placeholder')}
+                                        aria-label={t('datatable.search_placeholder')}
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <Label htmlFor="status">Status</Label>
+                                <Label htmlFor="status">
+                                    {t('common.status')}
+                                </Label>
                                 <Select
                                     value={status}
                                     onValueChange={(v) => {
@@ -241,7 +248,9 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger id="status" className="h-9">
-                                        <SelectValue placeholder="Semua" />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -261,14 +270,14 @@ export default function ContractIndex(props: ContractsPageProps) {
 
                         <div className="flex gap-2 pt-2 md:col-span-12">
                             <Button type="button" onClick={applyFilters}>
-                                Terapkan
+                                {t('common.apply')}
                             </Button>
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={resetFilter}
                             >
-                                Reset
+                                {t('common.reset')}
                             </Button>
                         </div>
                     </CardContent>
@@ -285,7 +294,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada kontrak."
+                            emptyText={t('datatable.no_data')}
                             showColumn={false}
                             autoRefreshDefault="1m"
                             showRefresh={false}
@@ -325,9 +334,11 @@ export default function ContractIndex(props: ContractsPageProps) {
                     mode="checkin"
                     minPhotosCheckin={handoverSettings.min_photos_checkin}
                     minPhotosCheckout={handoverSettings.min_photos_checkout}
-                    redo={String(
-                        checkinTarget?.latest_checkin_status || '',
-                    ).toLowerCase() === 'disputed'}
+                    redo={
+                        String(
+                            checkinTarget?.latest_checkin_status || '',
+                        ).toLowerCase() === 'disputed'
+                    }
                     onSaved={() => {
                         router.reload({ only: ['contracts'] });
                     }}
@@ -341,9 +352,11 @@ export default function ContractIndex(props: ContractsPageProps) {
                     mode="checkout"
                     minPhotosCheckin={handoverSettings.min_photos_checkin}
                     minPhotosCheckout={handoverSettings.min_photos_checkout}
-                    redo={String(
-                        checkoutTarget?.latest_checkout_status || '',
-                    ).toLowerCase() === 'disputed'}
+                    redo={
+                        String(
+                            checkoutTarget?.latest_checkout_status || '',
+                        ).toLowerCase() === 'disputed'
+                    }
                     onSaved={() => {
                         router.reload({ only: ['contracts'] });
                     }}

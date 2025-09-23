@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Button } from '@/components/ui/button';
@@ -68,6 +69,7 @@ export default function TenantPaymentDetailDialog({
     const open = !!target;
     const { loading, data } = useTenantPayment(target);
     const [previewOpen, setPreviewOpen] = React.useState(false);
+    const { t } = useTranslation();
     const attachmentUrls = React.useMemo(() => {
         const count = Array.isArray(data?.payment?.attachments)
             ? data!.payment!.attachments!.length
@@ -87,9 +89,11 @@ export default function TenantPaymentDetailDialog({
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
-                    <DialogTitle>Detail Pembayaran</DialogTitle>
+                    <DialogTitle>
+                        {t('tenant.invoice.payment_detail.title')}
+                    </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Ringkasan pembayaran dan hasil review
+                        {t('tenant.invoice.payment_detail.subtitle')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
@@ -98,57 +102,89 @@ export default function TenantPaymentDetailDialog({
                     ) : (
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="rounded-lg border p-3">
-                                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                    Info Pembayaran
+                                <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                    {t('tenant.invoice.payment_detail.info')}
                                 </div>
                                 <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                                    <Label>Metode</Label>
+                                    <Label>{t('tenant.invoice.method')}</Label>
                                     <div>{data.payment.method}</div>
-                                    <Label>Status</Label>
+                                    <Label>{t('common.status')}</Label>
                                     <div>{data.payment.status}</div>
-                                    <Label>Jumlah</Label>
-                                    <div>{formatIDR(data.payment.amount_cents)}</div>
-                                    <Label>Dibayar Pada</Label>
-                                    <div>{formatDate(data.payment.paid_at, true)}</div>
-                                    <Label>Referensi</Label>
+                                    <Label>{t('common.amount')}</Label>
+                                    <div>
+                                        {formatIDR(data.payment.amount_cents)}
+                                    </div>
+                                    <Label>
+                                        {t('tenant.invoice.manual.paid_at')}
+                                    </Label>
+                                    <div>
+                                        {formatDate(data.payment.paid_at, true)}
+                                    </div>
+                                    <Label>
+                                        {t('tenant.invoice.detail.reference')}
+                                    </Label>
                                     <div>{data.payment.reference || '-'}</div>
                                 </div>
                             </div>
                             <div className="rounded-lg border p-3">
-                                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                    Rekening Penerima
+                                <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                    {t(
+                                        'tenant.invoice.payment_detail.receiver_section',
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                                    <Label>Bank</Label>
-                                    <div>{data.payment.receiver_bank || '-'}</div>
-                                    <Label>No. Rekening</Label>
+                                    <Label>
+                                        {t('tenant.invoice.manual.bank')}
+                                    </Label>
+                                    <div>
+                                        {data.payment.receiver_bank || '-'}
+                                    </div>
+                                    <Label>
+                                        {t('tenant.invoice.manual.account_no')}
+                                    </Label>
                                     <div className="font-mono">
                                         {data.payment.receiver_account || '-'}
                                     </div>
-                                    <Label>Nama</Label>
-                                    <div>{data.payment.receiver_holder || '-'}</div>
+                                    <Label>
+                                        {t('tenant.invoice.manual.name')}
+                                    </Label>
+                                    <div>
+                                        {data.payment.receiver_holder || '-'}
+                                    </div>
                                 </div>
                             </div>
-                            {(data.payment.reject_reason || data.payment.review_by || data.payment.note) && (
-                                <div className="sm:col-span-2 rounded-lg border p-3">
-                                    <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                        Hasil Review
+                            {(data.payment.reject_reason ||
+                                data.payment.review_by ||
+                                data.payment.note) && (
+                                <div className="rounded-lg border p-3 sm:col-span-2">
+                                    <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                        {t(
+                                            'tenant.invoice.payment_detail.review_title',
+                                        )}
                                     </div>
                                     <div className="space-y-1 text-sm">
                                         {data.payment.reject_reason ? (
                                             <div className="text-destructive">
-                                                Ditolak: {data.payment.reject_reason}
+                                                {t(
+                                                    'tenant.invoice.detail.rejected',
+                                                )}
+                                                : {data.payment.reject_reason}
                                             </div>
                                         ) : null}
                                         {data.payment.note ? (
-                                            <div className="whitespace-pre-wrap break-words text-muted-foreground">
-                                                {data.payment.review_by ? 'Catatan Admin:' : 'Catatan:'}{' '}
+                                            <div className="text-muted-foreground break-words whitespace-pre-wrap">
+                                                {data.payment.review_by
+                                                    ? `${t('tenant.invoice.detail.admin_note')}:`
+                                                    : `${t('tenant.invoice.detail.note')}:`}{' '}
                                                 {data.payment.note}
                                             </div>
                                         ) : null}
-                                        {data.payment.review_by || data.payment.review_at ? (
-                                            <div className="text-[12px] text-muted-foreground">
-                                                {data.payment.review_by ? `Diproses oleh ${data.payment.review_by}` : ''}
+                                        {data.payment.review_by ||
+                                        data.payment.review_at ? (
+                                            <div className="text-muted-foreground text-[12px]">
+                                                {data.payment.review_by
+                                                    ? `${t('tenant.invoice.detail.reviewed_by')} ${data.payment.review_by}`
+                                                    : ''}
                                                 {data.payment.review_at
                                                     ? `${data.payment.review_by ? ' • ' : ''}${formatDate(data.payment.review_at, true)}`
                                                     : ''}
@@ -162,12 +198,15 @@ export default function TenantPaymentDetailDialog({
                 </div>
                 <DialogFooter>
                     {attachmentUrls.length > 0 ? (
-                        <Button type="button" onClick={() => setPreviewOpen(true)}>
-                            Lihat Bukti
+                        <Button
+                            type="button"
+                            onClick={() => setPreviewOpen(true)}
+                        >
+                            {t('tenant.invoice.payment_detail.view_proof')}
                         </Button>
                     ) : null}
                     <Button variant="outline" onClick={onClose}>
-                        Tutup
+                        {t('common.close')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -176,8 +215,10 @@ export default function TenantPaymentDetailDialog({
                 urls={attachmentUrls}
                 open={previewOpen}
                 onOpenChange={setPreviewOpen}
-                title="Lampiran Pembayaran"
-                description="Pratinjau bukti pembayaran."
+                title={t('tenant.invoice.payment_detail.attachments_title')}
+                description={t(
+                    'tenant.invoice.payment_detail.attachments_desc',
+                )}
             />
         </Dialog>
     );

@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { LogOut, MonitorSmartphone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import ConfirmPasswordDialog, {
     useConfirmPasswordModal,
@@ -16,6 +17,7 @@ import {
 import type { SessionItem, SessionsTabProps } from '@/types/security';
 
 export function SessionsTab({ sessions }: SessionsTabProps) {
+    const { t } = useTranslation();
     const destroyForm = useForm({});
 
     const { open, setOpen, openConfirm, handleConfirmed } =
@@ -41,29 +43,29 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Sesi & Perangkat</CardTitle>
-                <CardDescription>
-                    Lihat sesi aktif dan cabut akses perangkat lain.
-                </CardDescription>
+                <CardTitle>{t('security.tabs.sessions')}</CardTitle>
+                <CardDescription>{t('security.sessions.desc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                        {sessions.length} sesi aktif terdaftar
+                    <div className="text-muted-foreground text-sm">
+                        {t('security.sessions.count', {
+                            count: sessions.length,
+                        })}
                     </div>
                     <Button
                         variant="secondary"
                         onClick={() => confirmGuard(onConfirmRevokeOthers)}
                         disabled={destroyForm.processing}
                     >
-                        Logout dari semua sesi lain
+                        {t('security.sessions.revoke_others')}
                     </Button>
                 </div>
 
                 <div className="space-y-2">
                     {sessions.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            Belum ada data sesi yang ditampilkan.
+                        <p className="text-muted-foreground text-sm">
+                            {t('security.sessions.empty')}
                         </p>
                     ) : (
                         <div className="divide-y rounded-md border">
@@ -78,18 +80,29 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
                                             <div className="font-medium">
                                                 {s.agent_label ??
                                                     s.agent ??
-                                                    'Perangkat'}
+                                                    t(
+                                                        'security.sessions.device',
+                                                    )}
                                             </div>
                                             <div className="text-muted-foreground">
-                                                IP {s.ip_address ?? '—'} • Aktif{' '}
-                                                {s.last_active ?? '—'}
+                                                {t(
+                                                    'security.sessions.ip_active',
+                                                    {
+                                                        ip: s.ip_address ?? '—',
+                                                        last_active:
+                                                            s.last_active ??
+                                                            '—',
+                                                    },
+                                                )}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center gap-2">
                                         {s.current ? (
-                                            <Badge>Aktif Saat Ini</Badge>
+                                            <Badge>
+                                                {t('security.sessions.current')}
+                                            </Badge>
                                         ) : (
                                             <Button
                                                 variant="destructive"
@@ -105,7 +118,7 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
                                                 className="flex items-center gap-1"
                                             >
                                                 <LogOut className="h-4 w-4" />
-                                                Logout
+                                                {t('nav.logout')}
                                             </Button>
                                         )}
                                     </div>

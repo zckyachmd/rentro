@@ -31,7 +31,7 @@ export default function AvatarPicker({
                 .join(' ')}
             onClick={onClick}
         >
-            <Avatar className="size-28 ring-2 ring-transparent transition group-hover:ring-primary md:size-32 lg:size-36">
+            <Avatar className="group-hover:ring-primary size-28 ring-2 ring-transparent transition md:size-32 lg:size-36">
                 <AvatarImage src={src ?? undefined} alt={alt} />
                 <AvatarFallback>{fallback}</AvatarFallback>
             </Avatar>

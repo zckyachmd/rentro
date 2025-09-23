@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     AlertDialog,
@@ -30,29 +31,29 @@ export default function CancelContractDialog({
         if (!open) setReason('');
     }, [open]);
     const rule = useLengthRule(reason, { min: 20, max: 200, required: true });
+    const { t } = useTranslation('management/contract');
 
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Batalkan Kontrak</AlertDialogTitle>
+                    <AlertDialogTitle>{t('cancel.title')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Konfirmasi untuk membatalkan kontrak ini. Status akan
-                        menjadi Cancelled dan auto‑renew dimatikan.
+                        {t('cancel.desc')}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
-                    <Label>Alasan pembatalan</Label>
+                    <Label>{t('cancel.reason_label')}</Label>
                     <Textarea
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        placeholder="Contoh: pembatalan oleh tenant, salah input, dll."
+                        placeholder={t('cancel.reason_placeholder')}
                         required
                         rows={3}
                         autoFocus
                         maxLength={200}
                     />
-                    <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
+                    <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
                         <span>
                             {rule.length}/{rule.length < 20 ? 20 : 200}
                             {rule.length < 20 ? '*' : ''}
@@ -60,12 +61,12 @@ export default function CancelContractDialog({
                     </div>
                 </div>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                         disabled={!rule.valid}
                         onClick={() => onConfirm(reason)}
                     >
-                        Ya, Batalkan
+                        {t('cancel.confirm')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

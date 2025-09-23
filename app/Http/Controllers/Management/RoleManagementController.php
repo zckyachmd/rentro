@@ -110,7 +110,7 @@ class RoleManagementController extends Controller
             ],
         );
 
-        return back()->with('success', 'Permissions role berhasil diperbarui.');
+        return back()->with('success', __('management.roles.permissions_updated'));
     }
 
     /**
@@ -128,7 +128,7 @@ class RoleManagementController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Nama role sudah dipakai pada guard yang sama.')->withInput();
+            return back()->with('error', __('management.roles.name_taken_same_guard'))->withInput();
         }
 
         $role = Role::create($data);
@@ -145,7 +145,7 @@ class RoleManagementController extends Controller
             ],
         );
 
-        return back()->with('success', 'Role berhasil dibuat.');
+        return back()->with('success', __('management.roles.created'));
     }
 
     /**
@@ -158,7 +158,7 @@ class RoleManagementController extends Controller
         $isSuperAdmin = strcasecmp($role->name, RoleName::SUPER_ADMIN->value) === 0;
 
         if ($isSuperAdmin && ($role->name !== $data['name'] || $role->guard_name !== $data['guard_name'])) {
-            return back()->with('error', 'Role super-admin tidak boleh diubah.');
+            return back()->with('error', __('management.roles.superadmin_cannot_edit'));
         }
 
         $original = $role->only(['name', 'guard_name']);
@@ -178,7 +178,7 @@ class RoleManagementController extends Controller
             properties: $changes,
         );
 
-        return back()->with('success', 'Role berhasil diperbarui.');
+        return back()->with('success', __('management.roles.updated'));
     }
 
     /**
@@ -187,12 +187,12 @@ class RoleManagementController extends Controller
     public function destroy(Role $role): RedirectResponse
     {
         if (strcasecmp($role->name, RoleName::SUPER_ADMIN->value) === 0) {
-            return back()->with('error', 'Role super-admin tidak boleh dihapus.');
+            return back()->with('error', __('management.roles.superadmin_cannot_delete'));
         }
 
         $assignedCount = $role->users()->count();
         if ($assignedCount > 0) {
-            return back()->with('error', "Role tidak bisa dihapus karena masih terkait dengan {$assignedCount} pengguna. Ganti role pengguna tersebut terlebih dahulu.");
+            return back()->with('error', __('management.roles.cannot_delete_assigned', ['count' => $assignedCount]));
         }
 
         $snapshot = $role->only(['id', 'name', 'guard_name']);
@@ -207,6 +207,6 @@ class RoleManagementController extends Controller
             properties: $snapshot,
         );
 
-        return back()->with('success', 'Role berhasil dihapus.');
+        return back()->with('success', __('management.roles.deleted'));
     }
 }

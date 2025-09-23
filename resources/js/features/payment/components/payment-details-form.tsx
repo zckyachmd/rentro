@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
@@ -52,6 +53,7 @@ export default function PaymentDetailsForm({
     onAttachment: (f: File | null) => void;
     onReceiverBank?: (v: string) => void;
 }) {
+    const { t } = useTranslation();
     const amountStr = typeof amount === 'number' ? String(amount) : '';
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +69,7 @@ export default function PaymentDetailsForm({
         <>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                    <Label>Metode</Label>
+                    <Label>{t('payment.form.method')}</Label>
                     <Select value={method} onValueChange={onMethod}>
                         <SelectTrigger>
                             <SelectValue />
@@ -84,7 +86,7 @@ export default function PaymentDetailsForm({
 
                     {isTransfer && manualBanks.length > 0 ? (
                         <div className="mt-2 space-y-1.5">
-                            <Label>Rekening Penerima</Label>
+                            <Label>{t('payment.form.receiver_bank')}</Label>
                             <Select
                                 value={(
                                     receiverBank ||
@@ -111,7 +113,7 @@ export default function PaymentDetailsForm({
                     ) : null}
                 </div>
                 <div className="space-y-1.5">
-                    <Label>Tanggal Bayar</Label>
+                    <Label>{t('payment.form.paid_at')}</Label>
                     <Input
                         type="datetime-local"
                         value={paidAt}
@@ -136,17 +138,17 @@ export default function PaymentDetailsForm({
                             );
                             if (!b) return null;
                             return (
-                                <div className="rounded-md border bg-muted/50 p-2 text-[12px]">
+                                <div className="bg-muted/50 rounded-md border p-2 text-[12px]">
                                     <div className="grid grid-cols-2 gap-1">
-                                        <div>Bank</div>
+                                        <div>{t('payment.form.bank')}</div>
                                         <div className="text-right">
                                             {b.bank}
                                         </div>
-                                        <div>Nama</div>
+                                        <div>{t('payment.form.name')}</div>
                                         <div className="text-right">
                                             {b.holder}
                                         </div>
-                                        <div>No. Rekening</div>
+                                        <div>{t('payment.form.account_no')}</div>
                                         <div className="text-right font-mono">
                                             {b.account}
                                         </div>
@@ -160,7 +162,7 @@ export default function PaymentDetailsForm({
 
             <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1 sm:col-span-2">
-                    <Label>Nilai Bayar</Label>
+                    <Label>{t('payment.form.amount')}</Label>
                     <div className="relative">
                         <Input
                             type="number"
@@ -172,10 +174,10 @@ export default function PaymentDetailsForm({
                         />
                         <InputError message={errors.amount_cents} />
                     </div>
-                    <div className="mt-0.5 flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="text-muted-foreground mt-0.5 flex items-center justify-between text-xs">
                         <span>
                             {typeof amount === 'number' && amount > 0
-                                ? `Preview: ${formatIDR(amount)}`
+                                ? `${t('payment.form.preview')} ${formatIDR(amount)}`
                                 : ''}
                         </span>
                         <button
@@ -183,27 +185,27 @@ export default function PaymentDetailsForm({
                             className="text-[12px] underline"
                             onClick={() => onAmount(maxOutstanding || 0)}
                             disabled={(maxOutstanding || 0) <= 0}
-                            title="Isi maksimal (Lunas)"
+                            title={t('payment.form.fill_max_title')}
                         >
-                            (Lunas)
+                            {t('payment.form.pay_full_short')}
                         </button>
                     </div>
                 </div>
             </div>
 
             <div className="mt-3 space-y-1">
-                <Label>Catatan</Label>
+                <Label>{t('common.note')}</Label>
                 <Textarea
                     rows={3}
                     value={note}
                     onChange={(e) => onNote(e.target.value)}
-                    placeholder="Opsional"
+                    placeholder={t('payment.form.note_placeholder')}
                 />
             </div>
 
             {isTransfer ? (
                 <div className="space-y-1">
-                    <Label>Lampiran (Bukti Transfer)</Label>
+                    <Label>{t('payment.form.attachment_label')}</Label>
                     <Input
                         type="file"
                         required

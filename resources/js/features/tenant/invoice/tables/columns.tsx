@@ -1,7 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Eye, CreditCard, MoreHorizontal, Printer } from 'lucide-react';
+import { CreditCard, Eye, MoreHorizontal, Printer } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
+import i18n from '@/lib/i18n';
 import { variantForInvoiceStatus } from '@/lib/status';
 import type { TenantInvoiceItem } from '@/types/tenant';
 
@@ -33,7 +34,7 @@ export const createColumns = (opts?: {
 }): ColumnDef<TenantInvoiceItem>[] => [
     makeColumn<TenantInvoiceItem>({
         id: 'number',
-        title: 'Nomor',
+        title: i18n.t('common.number'),
         className: COL.number,
         sortable: true,
         cell: ({ row }) => (
@@ -42,7 +43,7 @@ export const createColumns = (opts?: {
                     type="button"
                     className="text-left font-mono text-xs hover:underline"
                     onClick={() => opts?.onShowDetail?.(row.original)}
-                    aria-label={`Lihat detail ${row.original.number}`}
+                    aria-label={`${i18n.t('common.view_detail')} ${row.original.number}`}
                 >
                     {row.original.number}
                 </button>
@@ -51,7 +52,7 @@ export const createColumns = (opts?: {
     }),
     makeColumn<TenantInvoiceItem>({
         id: 'due_date',
-        title: 'Jatuh Tempo',
+        title: i18n.t('common.due_date'),
         className: COL.due,
         sortable: true,
         cell: ({ row }) => (
@@ -60,19 +61,26 @@ export const createColumns = (opts?: {
     }),
     makeColumn<TenantInvoiceItem>({
         id: 'status',
-        title: 'Status',
+        title: i18n.t('common.status'),
         className: COL.status,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge variant={variantForInvoiceStatus(row.original.status)}>
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const raw = row.original.status || '';
+            const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
+            const label = i18n.t(`invoice.status.${key}`, {
+                defaultValue: raw,
+            });
+            return (
+                <div className={COL.status}>
+                    <Badge variant={variantForInvoiceStatus(raw)}>
+                        {label}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<TenantInvoiceItem>({
         id: 'amount_cents',
-        title: 'Jumlah',
+        title: i18n.t('common.amount'),
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
@@ -83,7 +91,7 @@ export const createColumns = (opts?: {
     }),
     makeColumn<TenantInvoiceItem>({
         id: 'outstanding_cents',
-        title: 'Sisa',
+        title: i18n.t('tenant.invoice.outstanding'),
         className: COL.outstanding,
         sortable: true,
         cell: ({ row }) => (
@@ -94,23 +102,33 @@ export const createColumns = (opts?: {
     }),
     makeColumn<TenantInvoiceItem>({
         id: 'actions',
-        title: 'Aksi',
+        title: i18n.t('common.actions'),
         className: COL.actions,
         cell: ({ row }) => {
             const inv = row.original;
-            const canPay = (inv.outstanding_cents ?? 0) > 0 && inv.status !== 'Cancelled';
+            const canPay =
+                (inv.outstanding_cents ?? 0) > 0 && inv.status !== 'Cancelled';
             return (
                 <div className={`${COL.actions} flex items-center justify-end`}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" aria-label={`Aksi invoice ${inv.number}`}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={`${i18n.t('tenant.invoice.actions_for', { number: inv.number })}`}
+                            >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => opts?.onShowDetail?.(inv)}>
-                                <Eye className="mr-2 h-4 w-4" /> Lihat detail
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem
+                                onClick={() => opts?.onShowDetail?.(inv)}
+                            >
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() =>
@@ -120,13 +138,17 @@ export const createColumns = (opts?: {
                                     )
                                 }
                             >
-                                <Printer className="mr-2 h-4 w-4" /> Cetak
+                                <Printer className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.print')}
                             </DropdownMenuItem>
                             {canPay ? (
                                 <>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => opts?.onPay?.(inv)}>
-                                        <CreditCard className="mr-2 h-4 w-4" /> Bayar
+                                    <DropdownMenuItem
+                                        onClick={() => opts?.onPay?.(inv)}
+                                    >
+                                        <CreditCard className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t('common.pay')}
                                     </DropdownMenuItem>
                                 </>
                             ) : null}

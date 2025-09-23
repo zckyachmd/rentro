@@ -4,6 +4,8 @@ import { usePage } from '@inertiajs/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import type { PageProps } from '@/types';
+
 export type FlashBag = {
     success?: string;
     error?: string;
@@ -48,7 +50,7 @@ export default function FlashToaster({
     dedupe = true,
     toastDuration = 4000,
 }: FlashToasterProps) {
-    const { props } = usePage<PageShared>();
+    const { props } = usePage<PageProps<PageShared>>();
 
     const activeRef = React.useRef<Set<string>>(new Set());
 

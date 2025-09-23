@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Events\InvoicePaid;
 use App\Events\InvoiceReopened;
+use App\Listeners\ClearMenuCacheOnAuth;
+use App\Listeners\QueueLocaleCookieOnLogin;
 use App\Listeners\QueueThemeCookieOnLogin;
 use App\Listeners\UpdateContractStatusOnInvoicePaid;
 use App\Listeners\UpdateContractStatusOnInvoiceReopened;
@@ -52,5 +54,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Auth events
         Event::listen(Login::class, QueueThemeCookieOnLogin::class);
+        Event::listen(Login::class, QueueLocaleCookieOnLogin::class);
+        Event::subscribe(ClearMenuCacheOnAuth::class);
     }
 }

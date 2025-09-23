@@ -151,13 +151,13 @@ class PaymentManagementController extends Controller
         $outstanding = (int) $totals['outstanding'];
 
         if ($outstanding <= 0) {
-            return back()->with('error', 'Invoice sudah lunas.');
+            return back()->with('error', __('management.payments.invoice_already_paid'));
         }
         if ((int) $data['amount_cents'] <= 0) {
-            return back()->with('error', 'Nominal pembayaran harus lebih dari 0.');
+            return back()->with('error', __('management.payments.amount_positive'));
         }
         if ((int) $data['amount_cents'] > $outstanding) {
-            return back()->with('error', 'Nominal melebihi sisa tagihan.');
+            return back()->with('error', __('management.payments.amount_exceeds_outstanding'));
         }
 
         $payment = $this->payments->createPayment(
@@ -179,14 +179,14 @@ class PaymentManagementController extends Controller
             ],
         );
 
-        return back()->with('success', 'Pembayaran berhasil dicatat.');
+        return back()->with('success', __('management.payments.created'));
     }
 
     public function void(PaymentVoidRequest $request, Payment $payment)
     {
         $request->validated();
         if ($payment->status === PaymentStatus::CANCELLED) {
-            return back()->with('success', 'Pembayaran sudah dibatalkan sebelumnya.');
+            return back()->with('success', __('management.payments.void.already'));
         }
 
         $this->payments->voidPayment($payment, (string) $request->string('reason'), $request->user());
@@ -201,7 +201,7 @@ class PaymentManagementController extends Controller
             ],
         );
 
-        return back()->with('success', 'Pembayaran dibatalkan (void) dan sisa tagihan dipulihkan.');
+        return back()->with('success', __('management.payments.void.success'));
     }
 
     public function show(Request $request, Payment $payment)
@@ -424,7 +424,7 @@ class PaymentManagementController extends Controller
             !in_array($payment->status->value, [PaymentStatus::REVIEW->value, PaymentStatus::PENDING->value], true)
             || (string) $payment->method->value !== PaymentMethod::TRANSFER->value
         ) {
-            return back()->with('error', 'Hanya pembayaran transfer yang berstatus Review/Pending yang dapat diproses.');
+            return back()->with('error', __('management.payments.ack.invalid_state'));
         }
         // No admin attachments during review per latest requirements
 
@@ -457,7 +457,7 @@ class PaymentManagementController extends Controller
                 $this->payments->recalculateInvoice($inv);
             }
 
-            return back()->with('success', 'Pembayaran dikonfirmasi dan ditandai sebagai Lunas.');
+            return back()->with('success', __('management.payments.ack.confirmed'));
         }
 
         // Reject path requires reason
@@ -472,6 +472,6 @@ class PaymentManagementController extends Controller
             'meta'   => $meta,
         ]);
 
-        return back()->with('success', 'Pembayaran ditolak.');
+        return back()->with('success', __('management.payments.ack.rejected'));
     }
 }

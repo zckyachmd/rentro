@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme-storage-key="rentro-theme">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php($__supportedLocales = array_map(fn(\App\Enum\Locale $c) => $c->value, \App\Enum\Locale::cases()))
+    <meta name="i18n-supported" content="{{ implode(',', $__supportedLocales) }}">
+    <meta name="i18n-fallback" content="{{ config('app.fallback_locale', 'en') }}">
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
@@ -18,21 +21,40 @@
         (function () {
             try {
                 var root = document.documentElement;
-                var KEY = root && root.dataset ? (root.dataset.themeStorageKey || 'rentro-theme') : 'rentro-theme';
-                var theme = localStorage.getItem(KEY) || 'system';
+                var THEME = 'system';
+                var PREF_KEY = 'rentro:preferences';
+                try { localStorage.removeItem('rentro-theme'); } catch (e) {}
+                try {
+                    var raw = localStorage.getItem(PREF_KEY);
+                    if (raw) {
+                        if (raw === 'dark' || raw === 'light' || raw === 'system') {
+                            THEME = raw;
+                        } else {
+                            var obj = JSON.parse(raw);
+                            var t = obj && typeof obj === 'object' ? obj.theme : undefined;
+                            if (t === 'dark' || t === 'light' || t === 'system') THEME = t;
+                        }
+                    }
+                } catch (e) {}
 
-                if (!localStorage.getItem(KEY)) {
+                // 2) Cookie fallback
+                if (!THEME || THEME === 'system') {
                     var m = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
-                    if (m && (m[1] === 'dark' || m[1] === 'light' || m[1] === 'system')) {
-                        theme = m[1];
-                        try { localStorage.setItem(KEY, theme); } catch (e) {}
+                    var fromCookie = m && m[1];
+                    if (fromCookie === 'dark' || fromCookie === 'light' || fromCookie === 'system') {
+                        THEME = fromCookie;
+                        try {
+                            var base2 = localStorage.getItem(PREF_KEY);
+                            var baseObj2 = base2 && base2 !== 'dark' && base2 !== 'light' && base2 !== 'system' ? JSON.parse(base2) : {};
+                            localStorage.setItem(PREF_KEY, JSON.stringify({ ...(baseObj2 && typeof baseObj2 === 'object' ? baseObj2 : {}), theme: THEME }));
+                        } catch (e) {}
                     }
                 }
 
                 var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+                var isDark = THEME === 'dark' || (THEME === 'system' && prefersDark);
 
-                root.dataset.theme = theme;
+                root.dataset.theme = THEME;
                 root.dataset.themeResolved = isDark ? 'dark' : 'light';
                 root.classList.toggle('dark', isDark);
                 root.style.colorScheme = isDark ? 'dark' : 'light';

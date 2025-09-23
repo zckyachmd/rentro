@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { DatePickerInput } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ export default function ExtendDueDialog({
     onConfirm: (dueDate: string, reason: string) => void;
     processing?: boolean;
 }) {
+    const { t } = useTranslation();
     const [dueDate, setDueDate] = React.useState<string>('');
     const [reason, setReason] = React.useState<string>('');
 
@@ -46,21 +48,21 @@ export default function ExtendDueDialog({
         required: true,
         trim: true,
     });
-    const dueDateError = !dueDate ? 'Wajib diisi.' : '';
+    const dueDateError = !dueDate ? t('form.required') : '';
     const canSubmit = !processing && !dueDateError && reasonRule.valid;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>Perpanjang Jatuh Tempo</DialogTitle>
+                    <DialogTitle>{t('invoice.extend_due.title')}</DialogTitle>
                     <DialogDescription>
-                        Atur tanggal jatuh tempo baru dan alasannya.
+                        {t('invoice.extend_due.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                     <div className="space-y-2">
-                        <Label>Tanggal Jatuh Tempo Baru</Label>
+                        <Label>{t('invoice.extend_due.new_due_date')}</Label>
                         <DatePickerInput
                             id="extend-due-input"
                             value={dueDate}
@@ -69,15 +71,15 @@ export default function ExtendDueDialog({
                         <InputError message={dueDateError} />
                     </div>
                     <div className="space-y-2">
-                        <Label>Alasan</Label>
+                        <Label>{t('invoice.reason')}</Label>
                         <Textarea
                             rows={3}
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
-                            placeholder="Contoh: permintaan penyewa, kendala teknis, dll."
+                            placeholder={t('invoice.reason_placeholder')}
                             maxLength={200}
                         />
-                        <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
+                        <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
                             <span>
                                 {reasonRule.length}/
                                 {reasonRule.length < 20 ? 20 : 200}
@@ -91,13 +93,13 @@ export default function ExtendDueDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Batal
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         disabled={!canSubmit}
                         onClick={() => onConfirm(dueDate, reason)}
                     >
-                        Simpan
+                        {t('common.save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

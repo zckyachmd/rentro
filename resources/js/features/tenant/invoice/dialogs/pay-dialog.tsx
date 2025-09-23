@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,8 @@ import StepList from '@/features/tenant/invoice/components/step-list';
 import SummarySection from '@/features/tenant/invoice/components/summary-section';
 import { createAbort, getJson, postForm, postJson } from '@/lib/api';
 import { toLocalDateTimeMinutes } from '@/lib/date';
+import i18n from '@/lib/i18n';
+import type { PageProps } from '@/types';
 import type { PendingInfo, TenantInvoiceDTO } from '@/types/tenant';
 
 function useInvoiceLoader(target: { id: string } | null) {
@@ -123,12 +126,18 @@ export default function TenantInvoicePayDialog({
     const latestPendingRef = React.useRef<typeof pending>(null);
     const [autoTickSeed, setAutoTickSeed] = React.useState(0);
 
-    const { props } = usePage<{
-        payments?: {
-            manual_banks?: { bank: string; holder: string; account: string }[];
-        };
-        midtrans?: { banks?: string[] };
-    }>();
+    const { props } = usePage<
+        PageProps & {
+            payments?: {
+                manual_banks?: {
+                    bank: string;
+                    holder: string;
+                    account: string;
+                }[];
+            };
+            midtrans?: { banks?: string[] };
+        }
+    >();
     const manualBanks = React.useMemo(
         () => props?.payments?.manual_banks ?? [],
         [props?.payments?.manual_banks],
@@ -170,15 +179,15 @@ export default function TenantInvoicePayDialog({
     const methodLabel = React.useMemo(() => {
         const t = String(displayPending?.payment_type || '').toLowerCase();
         if (!t) return '-';
-        if (t === 'manual') return 'Manual';
+        if (t === 'manual') return i18n.t('tenant.invoice.method_manual');
         if (t === 'bank_transfer' || t === 'va')
             return displayPending?.bank
-                ? `${String(displayPending.bank).toUpperCase()} VA`
-                : 'Virtual Account';
+                ? `${String(displayPending.bank).toUpperCase()} ${i18n.t('tenant.invoice.va_label')}`
+                : i18n.t('tenant.invoice.virtual_account');
         if (t === 'cstore')
             return displayPending?.store
-                ? `Convenience Store (${displayPending.store})`
-                : 'Convenience Store';
+                ? `${i18n.t('tenant.invoice.cstore_label')} (${displayPending.store})`
+                : i18n.t('tenant.invoice.cstore_label');
         return displayPending?.payment_type || '-';
     }, [
         displayPending?.payment_type,
@@ -279,15 +288,16 @@ export default function TenantInvoicePayDialog({
         void checkNow();
     }, [autoTickSeed, open, canCheckNow, displayPending, checkNow]);
 
+    const { t } = useTranslation();
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        Bayar Invoice
+                        {t('tenant.invoice.pay.title')}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Pilih metode pembayaran dan ikuti petunjuk.
+                        {t('tenant.invoice.pay.subtitle')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
@@ -330,14 +340,14 @@ export default function TenantInvoicePayDialog({
                                 onClick={cancelPending}
                                 disabled={canceling}
                             >
-                                Batalkan
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 onClick={checkNow}
                                 disabled={!canCheckNow || checking}
                             >
-                                <CheckCircle2 className="mr-2 h-4 w-4" /> Cek
-                                Status
+                                <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
+                                {t('tenant.invoice.pay.check_status')}
                             </Button>
                         </>
                     ) : (
@@ -347,14 +357,14 @@ export default function TenantInvoicePayDialog({
                                     onClick={submitManual}
                                     disabled={submitting}
                                 >
-                                    Kirim Bukti
+                                    {t('tenant.invoice.pay.submit_proof')}
                                 </Button>
                             ) : (
                                 <Button
                                     onClick={createVA}
                                     disabled={vaGenerating}
                                 >
-                                    Buat VA
+                                    {t('tenant.invoice.pay.create_va')}
                                 </Button>
                             )}
                         </>

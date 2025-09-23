@@ -50,7 +50,7 @@ function Sidebar({
     return (
         <aside
             className={[
-                'sticky top-0 hidden h-screen shrink-0 border-r bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 md:block',
+                'bg-background/80 supports-backdrop-filter:bg-background/60 sticky top-0 hidden h-screen shrink-0 border-r backdrop-blur md:block',
                 'overflow-hidden',
                 hydrated
                     ? 'transition-[width] duration-300 ease-in-out'
@@ -65,14 +65,14 @@ function Sidebar({
                         className={`flex items-center ${collapsed ? 'w-full justify-center' : 'gap-2 md:gap-3'}`}
                     >
                         <div
-                            className="grid size-8 place-items-center rounded-md bg-primary text-sm font-semibold text-primary-foreground"
+                            className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-md text-sm font-semibold"
                             aria-hidden
                         >
                             {(brandLabel?.charAt(0) || 'R').toUpperCase()}
                         </div>
                         <span
                             className={[
-                                'overflow-hidden whitespace-nowrap font-semibold',
+                                'overflow-hidden font-semibold whitespace-nowrap',
                                 hydrated
                                     ? 'transition-[max-width,opacity] duration-300 ease-in-out'
                                     : 'transition-none',
@@ -134,11 +134,11 @@ function Sidebar({
                                 opacity: collapsed ? 0 : 1,
                             }}
                         >
-                            <p className="truncate text-sm font-medium leading-4">
+                            <p className="truncate text-sm leading-4 font-medium">
                                 {user.name}
                             </p>
                             {user.email && (
-                                <p className="truncate text-xs text-muted-foreground">
+                                <p className="text-muted-foreground truncate text-xs">
                                     {user.email}
                                 </p>
                             )}

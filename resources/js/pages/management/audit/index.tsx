@@ -1,5 +1,7 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { usePage } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     Card,
@@ -52,12 +54,9 @@ function useDebounced<P extends unknown[]>(
     return debounced as typeof fn;
 }
 
-// types moved to pages/types/management/audit
-
-// page types moved to pages/types
-
 export default function AuditLogIndex() {
-    const { props } = usePage<PageProps>();
+    const { t } = useTranslation();
+    const { props } = usePage<InertiaPageProps & PageProps>();
     const { logs, query } = props;
 
     const initial: QueryBag | undefined = query
@@ -118,17 +117,17 @@ export default function AuditLogIndex() {
 
     return (
         <AuthLayout
-            pageTitle="Audit Log"
-            pageDescription="Jejak aktivitas sistem: siapa melakukan apa dan kapan."
+            pageTitle={t('management.audit.title')}
+            pageDescription={t('management.audit.desc')}
         >
             <div className="space-y-3">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Daftar Audit Log</CardTitle>
+                        <CardTitle>
+                            {t('management.audit.list_title')}
+                        </CardTitle>
                         <CardDescription>
-                            Lacak aktivitas penting di sistem. Gunakan pencarian
-                            untuk memfilter berdasarkan deskripsi, log name,
-                            atau event.
+                            {t('management.audit.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -145,13 +144,15 @@ export default function AuditLogIndex() {
                             search={q.search}
                             onSearchChange={(v) => debouncedSearch(v)}
                             searchKey="description"
-                            searchPlaceholder="Cari deskripsi / log name / event…"
+                            searchPlaceholder={t(
+                                'management.audit.search_placeholder',
+                            )}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada log."
+                            emptyText={t('management.audit.empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
                         />

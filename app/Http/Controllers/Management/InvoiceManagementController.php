@@ -225,7 +225,7 @@ class InvoiceManagementController extends Controller
             ->first();
 
         if (!$invoice) {
-            return response()->json(['message' => 'Invoice tidak ditemukan'], 404);
+            return response()->json(['message' => __('management/invoices.not_found')], 404);
         }
 
         $totals      = $this->invoices->totals($invoice);
@@ -253,12 +253,12 @@ class InvoiceManagementController extends Controller
         $contract = Contract::findOrFail($data['contract_id']);
 
         if (in_array((string) $contract->status->value, [ContractStatus::CANCELLED->value, ContractStatus::COMPLETED->value], true)) {
-            return back()->with('error', 'Kontrak tidak valid untuk generate invoice.');
+            return back()->with('error', __('management/invoices.contract_invalid_for_generation'));
         }
 
         // Prevent generating for fully-paid contracts
         if (!empty($contract->paid_in_full_at)) {
-            return back()->with('error', 'Kontrak sudah lunas penuh.');
+            return back()->with('error', __('management/invoices.contract_already_paid_in_full'));
         }
 
         $period  = (string) $contract->billing_period->value;
@@ -291,7 +291,7 @@ class InvoiceManagementController extends Controller
             }
 
             if (count($missing) === 0) {
-                return redirect()->route('management.invoices.index')->with('success', 'Tidak ada bulan tertinggal untuk digenerate.');
+                return redirect()->route('management.invoices.index')->with('success', __('management/invoices.no_missing_months'));
             }
 
             $created = 0;
@@ -300,7 +300,6 @@ class InvoiceManagementController extends Controller
                     $this->invoices->generate($contract, ['month' => $ym, 'backfill' => true]);
                     $created++;
                 } catch (\Throwable $e) {
-                    // Skip months that fail due to race or overlap; continue others
                     continue;
                 }
             }
@@ -319,10 +318,10 @@ class InvoiceManagementController extends Controller
                     ],
                 );
 
-                return redirect()->route('management.invoices.index')->with('success', 'Berhasil generate ' . $created . ' bulan tertinggal.');
+                return redirect()->route('management.invoices.index')->with('success', __('management/invoices.generate_backfill_success', ['count' => $created]));
             }
 
-            return back()->with('error', 'Tidak dapat generate bulan tertinggal.');
+            return back()->with('error', __('management/invoices.generate_backfill_failed'));
         }
         $range = $data['range'] ?? null;
         if (is_array($range) && (!empty($range['from']) && !empty($range['to']))) {
@@ -333,19 +332,19 @@ class InvoiceManagementController extends Controller
         } elseif ($period === BillingPeriod::MONTHLY->value && $mode === 'per_month') {
             $periodMonth = (string) ($data['period_month'] ?? '');
             if ($periodMonth === '') {
-                return back()->with('error', 'Bulan periode wajib dipilih untuk mode Bulanan.');
+                return back()->with('error', __('management/invoices.period_month_required'));
             }
 
             try {
                 $monthStart = Carbon::createFromFormat('Y-m', $periodMonth)->startOfMonth();
             } catch (\Throwable $e) {
-                return back()->with('error', 'Format bulan periode tidak valid.');
+                return back()->with('error', __('management/invoices.period_month_invalid'));
             }
 
             $contractStart = Carbon::parse($contract->start_date)->startOfDay();
             $contractEnd   = Carbon::parse($contract->end_date)->startOfDay();
             if ($monthStart->greaterThan($contractEnd) || $monthStart->lessThan($contractStart->startOfMonth())) {
-                return back()->with('error', 'Bulan yang dipilih berada di luar masa kontrak.');
+                return back()->with('error', __('management/invoices.period_month_out_of_range'));
             }
             $options = ['month' => $periodMonth];
         } else {
@@ -355,7 +354,7 @@ class InvoiceManagementController extends Controller
         try {
             $invoice = $this->invoices->generate($contract, $options);
         } catch (\Throwable $e) {
-            return back()->with('error', $e->getMessage() ?: 'Gagal generate invoice.');
+            return back()->with('error', $e->getMessage() ?: __('management/invoices.generate_failed_generic'));
         }
 
         $this->logEvent(
@@ -370,7 +369,7 @@ class InvoiceManagementController extends Controller
             ],
         );
 
-        return redirect()->route('management.invoices.index')->with('success', 'Invoice berhasil dibuat.');
+        return redirect()->route('management.invoices.index')->with('success', __('management/invoices.created'));
     }
 
     public function print(Request $request, Invoice $invoice)
@@ -427,7 +426,7 @@ class InvoiceManagementController extends Controller
         $reason = (string) ($data['reason'] ?? '');
 
         if (!in_array((string) $invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true)) {
-            return back()->with('error', 'Hanya invoice Pending atau Overdue yang dapat diperpanjang.');
+            return back()->with('error', __('management/invoices.extend.only_pending_overdue'));
         }
 
         $prevDue = $invoice->due_date->toDateString();
@@ -435,22 +434,22 @@ class InvoiceManagementController extends Controller
         try {
             $newDue = Carbon::parse((string) $data['due_date'])->startOfDay();
         } catch (\Throwable $e) {
-            return back()->with('error', 'Format tanggal jatuh tempo tidak valid.');
+            return back()->with('error', __('management/invoices.extend.invalid_due_format'));
         }
 
         $currentDue = $invoice->due_date->copy()->startOfDay();
         if ($currentDue && $newDue->lessThanOrEqualTo($currentDue)) {
-            return back()->with('error', 'Tanggal jatuh tempo baru harus lebih besar dari tanggal sebelumnya (' . $currentDue->toDateString() . ').');
+            return back()->with('error', __('management/invoices.extend.due_must_be_greater', ['current' => $currentDue->toDateString()]));
         }
 
         try {
             $updated = $this->invoices->extendDue($invoice, $newDue->toDateString(), $reason);
         } catch (\Throwable $e) {
-            return back()->with('error', 'Gagal memperpanjang jatuh tempo.');
+            return back()->with('error', __('management/invoices.extend.failed'));
         }
 
         if (!$updated) {
-            return back()->with('error', 'Invoice tidak dapat diperpanjang.');
+            return back()->with('error', __('management/invoices.extend.not_extendable'));
         }
 
         $invoice->refresh();
@@ -469,7 +468,7 @@ class InvoiceManagementController extends Controller
             ],
         );
 
-        return back()->with('success', 'Masa tenggat invoice berhasil diperpanjang.');
+        return back()->with('success', __('management/invoices.extend.success'));
     }
 
     public function cancel(ReasonRequest $request, Invoice $invoice)
@@ -480,24 +479,24 @@ class InvoiceManagementController extends Controller
         $reason = (string) ($data['reason'] ?? '');
 
         if ($invoice->status === InvoiceStatus::PAID) {
-            return back()->with('error', 'Invoice sudah dibayar dan tidak dapat dibatalkan.');
+            return back()->with('error', __('management/invoices.cancel.already_paid'));
         }
 
         $hasCompletedPayment = $invoice->payments()
             ->where('status', PaymentStatus::COMPLETED->value)
             ->exists();
         if ($hasCompletedPayment) {
-            return back()->with('error', 'Invoice memiliki pembayaran yang sudah selesai dan tidak dapat dibatalkan.');
+            return back()->with('error', __('management/invoices.cancel.has_completed_payment'));
         }
 
         if ($invoice->status === InvoiceStatus::CANCELLED) {
-            return back()->with('success', 'Invoice sudah dalam status Cancelled.');
+            return back()->with('success', __('management/invoices.cancel.already_cancelled'));
         }
 
         try {
             $changed = $this->invoices->cancel($invoice, $reason);
         } catch (\Throwable $e) {
-            return back()->with('error', 'Gagal membatalkan invoice.');
+            return back()->with('error', __('management/invoices.cancel.failed'));
         }
 
         $invoice->refresh();
@@ -514,9 +513,9 @@ class InvoiceManagementController extends Controller
         );
 
         if ($changed) {
-            return back()->with('success', 'Invoice dibatalkan.');
+            return back()->with('success', __('management/invoices.cancel.success'));
         }
 
-        return back()->with('success', 'Invoice sudah dalam status Cancelled.');
+        return back()->with('success', __('management/invoices.cancel.already_cancelled'));
     }
 }

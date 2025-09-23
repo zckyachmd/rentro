@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
 import {
@@ -19,17 +21,22 @@ export default function ContactsTable({
     onEdit?: (c: ContactDTO) => void;
     onDelete?: (c: ContactDTO) => void;
 }) {
+    const { t } = useTranslation();
     return (
         <div className="rounded-md border">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Nama</TableHead>
-                        <TableHead>Hubungan</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Telepon</TableHead>
+                        <TableHead>{t('profile.contact.table.name')}</TableHead>
+                        <TableHead>
+                            {t('profile.contact.table.relationship')}
+                        </TableHead>
+                        <TableHead>{t('common.email')}</TableHead>
+                        <TableHead>{t('common.phone')}</TableHead>
                         {onEdit || onDelete ? (
-                            <TableHead className="text-right">Aksi</TableHead>
+                            <TableHead className="text-right">
+                                {t('common.actions')}
+                            </TableHead>
                         ) : null}
                     </TableRow>
                 </TableHeader>
@@ -46,7 +53,9 @@ export default function ContactsTable({
                                         value={c.email}
                                         variant="link"
                                         className="text-xs sm:text-sm"
-                                        successMessage="Email disalin"
+                                        successMessage={t(
+                                            'profile.email_copied',
+                                        )}
                                     >
                                         {c.email}
                                     </CopyInline>
@@ -60,7 +69,9 @@ export default function ContactsTable({
                                         value={c.phone}
                                         variant="link"
                                         className="font-mono text-xs sm:text-sm"
-                                        successMessage="Nomor disalin"
+                                        successMessage={t(
+                                            'profile.phone_copied',
+                                        )}
                                     >
                                         {c.phone}
                                     </CopyInline>
@@ -78,7 +89,7 @@ export default function ContactsTable({
                                                 variant="outline"
                                                 onClick={() => onEdit(c)}
                                             >
-                                                Edit
+                                                {t('profile.contact.edit')}
                                             </Button>
                                         ) : null}
                                         {onDelete ? (
@@ -88,7 +99,7 @@ export default function ContactsTable({
                                                 variant="destructive"
                                                 onClick={() => onDelete(c)}
                                             >
-                                                Hapus
+                                                {t('profile.contact.delete')}
                                             </Button>
                                         ) : null}
                                     </div>

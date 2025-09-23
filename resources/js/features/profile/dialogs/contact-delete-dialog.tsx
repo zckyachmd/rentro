@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,6 +22,7 @@ export default function ContactDeleteDialog({
     onCancel: () => void;
     onConfirm: () => void;
 }) {
+    const { t } = useTranslation();
     const [agree, setAgree] = React.useState(false);
 
     React.useEffect(() => {
@@ -33,16 +35,18 @@ export default function ContactDeleteDialog({
         <Dialog open={!!target} onOpenChange={(open) => !open && onCancel()}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Hapus Kontak Darurat</DialogTitle>
+                    <DialogTitle>
+                        {t('profile.contact.delete_title')}
+                    </DialogTitle>
                     <DialogDescription>
                         {target ? (
                             <>
-                                Anda akan menghapus kontak <b>{target.name}</b>{' '}
-                                ({target.relationship}). Tindakan ini tidak
-                                dapat dibatalkan.
+                                {t('profile.contact.delete_desc_prefix')}{' '}
+                                <b>{target.name}</b> ({target.relationship}).{' '}
+                                {t('profile.contact.delete_desc_suffix')}
                             </>
                         ) : (
-                            'Anda akan menghapus kontak ini. Tindakan ini tidak dapat dibatalkan.'
+                            t('profile.contact.delete_desc_fallback')
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -54,17 +58,14 @@ export default function ContactDeleteDialog({
                     />
                     <label
                         htmlFor="ack"
-                        className="text-sm leading-snug text-muted-foreground"
+                        className="text-muted-foreground text-sm leading-snug"
                     >
-                        Saya memahami bahwa jika tidak ada kontak referensi yang
-                        tersisa, pihak pengelola kost mungkin kesulitan
-                        menyampaikan informasi penting terkait saya kepada orang
-                        terdekat saya.
+                        {t('profile.contact.delete_ack')}
                     </label>
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={onCancel}>
-                        Batal
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         variant="destructive"
@@ -74,7 +75,7 @@ export default function ContactDeleteDialog({
                         }}
                         disabled={!agree}
                     >
-                        Hapus
+                        {t('common.delete')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

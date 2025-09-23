@@ -289,7 +289,7 @@ class RoomManagementController extends Controller
 
         return redirect()
             ->route('management.rooms.edit', $room)
-            ->with('success', 'Kamar berhasil dibuat.');
+            ->with('success', __('management.rooms.created'));
     }
 
     public function show(Room $room)
@@ -564,7 +564,7 @@ class RoomManagementController extends Controller
             }
         });
 
-        return back()->with('success', 'Kamar berhasil diperbarui.');
+        return back()->with('success', __('management.rooms.updated'));
     }
 
     public function destroy(Room $room)
@@ -579,6 +579,6 @@ class RoomManagementController extends Controller
             $room->delete();
         });
 
-        return back()->with('success', 'Kamar dan semua fotonya berhasil dihapus.');
+        return back()->with('success', __('management.rooms.deleted'));
     }
 }

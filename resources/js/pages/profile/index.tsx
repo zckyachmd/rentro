@@ -1,6 +1,8 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Link, router, usePage } from '@inertiajs/react';
 import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +27,8 @@ import ContactSection from './contact';
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : '-');
 
 export default function ShowProfile() {
-    const { props } = usePage<ShowPageProps>();
+    const { t } = useTranslation();
+    const { props } = usePage<InertiaPageProps & ShowPageProps>();
     const { user, addresses, document, contacts, mustVerifyEmail, options } =
         props;
 
@@ -69,8 +72,8 @@ export default function ShowProfile() {
 
     return (
         <AuthLayout
-            pageTitle="Profil"
-            pageDescription="Ringkasan data akun. Untuk mengubah, gunakan tombol Edit per bagian."
+            pageTitle={t('profile.title')}
+            pageDescription={t('profile.desc')}
         >
             <div className="space-y-8 md:space-y-8">
                 {/* Profile Header */}
@@ -92,10 +95,10 @@ export default function ShowProfile() {
                             </AvatarFallback>
                         </Avatar>
                         <div>
-                            <h1 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl md:text-4xl">
+                            <h1 className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl md:text-4xl">
                                 {user.name}
                             </h1>
-                            <p className="text-sm text-muted-foreground sm:text-base">
+                            <p className="text-muted-foreground text-sm sm:text-base">
                                 @{user.username || 'username'}
                             </p>
                         </div>
@@ -103,26 +106,30 @@ export default function ShowProfile() {
                     <div className="flex items-center gap-2 self-center sm:self-auto">
                         <Button asChild size="sm" variant="outline">
                             <Link href={route('profile.edit')}>
-                                Edit Profil
+                                {t('profile.edit')}
                             </Link>
                         </Button>
                     </div>
                 </div>
 
-                {/* Informasi Akun */}
+                {/* Account Information */}
                 <section>
-                    <h2 className="text-xl font-semibold">Informasi Akun</h2>
-                    <Separator className="mb-6 mt-2" />
-                    <dl className="divide-y divide-muted/20">
+                    <h2 className="text-xl font-semibold">
+                        {t('profile.account_info')}
+                    </h2>
+                    <Separator className="mt-2 mb-6" />
+                    <dl className="divide-muted/20 divide-y">
                         {/* Email */}
                         <div className={rowCls}>
-                            <dt className={dtCls}>Email</dt>
+                            <dt className={dtCls}>{t('common.email')}</dt>
                             <dd className="flex items-center gap-2 text-base">
                                 {user.email ? (
                                     <CopyInline
                                         value={user.email}
                                         variant="link"
-                                        successMessage="Email disalin"
+                                        successMessage={t(
+                                            'profile.email_copied',
+                                        )}
                                     >
                                         {user.email}
                                     </CopyInline>
@@ -136,7 +143,7 @@ export default function ShowProfile() {
                                             className="gap-1"
                                         >
                                             <CircleAlert className="h-3 w-3" />{' '}
-                                            Belum terverifikasi
+                                            {t('profile.unverified')}
                                         </Badge>
                                         <Dialog
                                             open={verifyOpen}
@@ -148,18 +155,20 @@ export default function ShowProfile() {
                                                     variant="outline"
                                                     className="h-7"
                                                 >
-                                                    Kirim Ulang
+                                                    {t('profile.resend')}
                                                 </Button>
                                             </DialogTrigger>
                                             <DialogContent className="animate-none">
                                                 <DialogHeader>
                                                     <DialogTitle>
-                                                        Kirim ulang email
-                                                        verifikasi?
+                                                        {t(
+                                                            'profile.verify_resend_title',
+                                                        )}
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        Kami akan mengirim email
-                                                        verifikasi ke{' '}
+                                                        {t(
+                                                            'profile.verify_resend_desc',
+                                                        )}{' '}
                                                         <span className="font-medium">
                                                             {user.email}
                                                         </span>
@@ -174,7 +183,7 @@ export default function ShowProfile() {
                                                         }
                                                         disabled={sending}
                                                     >
-                                                        Batal
+                                                        {t('common.cancel')}
                                                     </Button>
                                                     <Button
                                                         onClick={
@@ -183,8 +192,12 @@ export default function ShowProfile() {
                                                         disabled={sending}
                                                     >
                                                         {sending
-                                                            ? 'Mengirim…'
-                                                            : 'Kirim email verifikasi'}
+                                                            ? t(
+                                                                  'profile.verifying',
+                                                              )
+                                                            : t(
+                                                                  'profile.verify_send',
+                                                              )}
                                                     </Button>
                                                 </DialogFooter>
                                             </DialogContent>
@@ -193,22 +206,24 @@ export default function ShowProfile() {
                                 ) : (
                                     <Badge className="gap-1">
                                         <CheckCircle2 className="h-3 w-3" />{' '}
-                                        Terverifikasi
+                                        {t('profile.verified')}
                                     </Badge>
                                 )}
                             </dd>
                         </div>
 
-                        {/* Telepon */}
+                        {/* Phone */}
                         <div className={rowCls}>
-                            <dt className={dtCls}>Telepon</dt>
+                            <dt className={dtCls}>{t('profile.phone')}</dt>
                             <dd className="text-base">
                                 {user.phone ? (
                                     <CopyInline
                                         value={user.phone}
                                         variant="link"
                                         className="font-mono"
-                                        successMessage="Nomor disalin"
+                                        successMessage={t(
+                                            'profile.phone_copied',
+                                        )}
                                     >
                                         {user.phone}
                                     </CopyInline>
@@ -218,9 +233,9 @@ export default function ShowProfile() {
                             </dd>
                         </div>
 
-                        {/* Jenis Kelamin */}
+                        {/* Gender */}
                         <div className={rowCls}>
-                            <dt className={dtCls}>Jenis Kelamin</dt>
+                            <dt className={dtCls}>{t('profile.gender')}</dt>
                             <dd>
                                 {user.gender ? (
                                     <Badge
@@ -235,16 +250,16 @@ export default function ShowProfile() {
                             </dd>
                         </div>
 
-                        {/* Tanggal Lahir */}
+                        {/* Date of Birth */}
                         <div className={rowCls}>
-                            <dt className={dtCls}>Tanggal Lahir</dt>
+                            <dt className={dtCls}>{t('profile.dob')}</dt>
                             <dd className="text-base">{fmt(user.dob)}</dd>
                         </div>
 
-                        {/* Alamat */}
+                        {/* Address */}
                         <div className={rowCls}>
-                            <dt className={dtCls}>Alamat</dt>
-                            <dd className="text-base leading-relaxed text-muted-foreground">
+                            <dt className={dtCls}>{t('profile.address')}</dt>
+                            <dd className="text-muted-foreground text-base leading-relaxed">
                                 {primaryAddress ? (
                                     <ShowMore
                                         text={joinedAddress}
@@ -256,14 +271,14 @@ export default function ShowProfile() {
                             </dd>
                         </div>
 
-                        {/* Identitas (digabung & berdekatan) */}
+                        {/* Identity */}
                         <div className={rowCls}>
-                            <dt className={dtCls}>Identitas</dt>
+                            <dt className={dtCls}>{t('profile.identity')}</dt>
                             <dd className="text-base">
                                 <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-muted-foreground">
-                                            Jenis
+                                        <span className="text-muted-foreground text-xs">
+                                            {t('profile.identity_type')}
                                         </span>
                                         <span className="capitalize">
                                             {document
@@ -275,16 +290,16 @@ export default function ShowProfile() {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-muted-foreground">
-                                            Nomor
+                                        <span className="text-muted-foreground text-xs">
+                                            {t('profile.identity_number')}
                                         </span>
                                         <span className="font-mono text-xs">
                                             {document?.number || '-'}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-muted-foreground">
-                                            Status
+                                        <span className="text-muted-foreground text-xs">
+                                            {t('profile.identity_status')}
                                         </span>
                                         <span>
                                             {document ? (
@@ -292,16 +307,16 @@ export default function ShowProfile() {
                                                 'approved' ? (
                                                     <Badge className="gap-1">
                                                         <ShieldCheck className="h-3 w-3" />{' '}
-                                                        Disetujui
+                                                        {t('status.approved')}
                                                     </Badge>
                                                 ) : document.status ===
                                                   'pending' ? (
                                                     <Badge variant="secondary">
-                                                        Menunggu
+                                                        {t('status.pending')}
                                                     </Badge>
                                                 ) : (
                                                     <Badge variant="destructive">
-                                                        Ditolak
+                                                        {t('status.rejected')}
                                                     </Badge>
                                                 )
                                             ) : (

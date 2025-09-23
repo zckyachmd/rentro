@@ -2,6 +2,7 @@
 
 import type { ColumnDef, SortingState, OnChangeFn } from "@tanstack/react-table"
 import * as React from "react"
+import { useTranslation } from 'react-i18next'
 
 import { DataTable } from "@/components/ui/data-table"
 import { DataTablePagination } from "@/components/ui/data-table-pagination"
@@ -60,20 +61,21 @@ export function DataTableServer<TData, TValue>({
   search = "",
   onSearchChange,
   searchKey = "email",
-  searchPlaceholder = "Cari …",
+  searchPlaceholder,
   pageSizeOptions = [10, 20, 50, 100],
   onQueryChange,
   sort = null,
   dir = null,
   onSortChange,
   loading,
-  emptyText = "Tidak ada data.",
+  emptyText,
   rowSelection = false,
   showSubmitButton = true,
   showColumn = true,
   autoRefreshDefault = 'off',
   showRefresh = false,
 }: ServerDataTableProps<TData, TValue>) {
+  const { t } = useTranslation()
   const meta: PaginatorMeta = React.useMemo(() => (
     paginator ?? {
       total: 0,
@@ -203,13 +205,13 @@ export function DataTableServer<TData, TValue>({
       // selection & UX
       enableRowSelection={rowSelection}
       loading={loading}
-      emptyText={emptyText}
+      emptyText={emptyText ?? t('datatable.no_data')}
       // toolbar
       renderToolbar={(table) => (
         <DataTableToolbar
           table={table}
           filterKey={searchKey}
-          placeholder={searchPlaceholder}
+          placeholder={searchPlaceholder ?? t('datatable.search_placeholder')}
           value={search}
           onValueChange={onSearchChange ?? noop}
           showSubmitButton={showSubmitButton}

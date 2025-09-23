@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +52,7 @@ export default function ContactDialog({
     onCancel,
     onSubmit,
 }: ContactDialogProps) {
+    const { t } = useTranslation();
     const setField = <K extends keyof ContactValues>(
         key: K,
         v: ContactValues[K],
@@ -62,20 +64,19 @@ export default function ContactDialog({
                 <DialogHeader>
                     <DialogTitle>
                         {mode === 'create'
-                            ? 'Kontak Referensi Pengelola'
-                            : 'Edit Kontak Referensi Pengelola'}
+                            ? t('profile.contact.dialog.create_title')
+                            : t('profile.contact.dialog.edit_title')}
                     </DialogTitle>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                        Kami tidak akan membagikan informasi sensitif. Data ini
-                        hanya dipakai saat diperlukan untuk kenyamanan dan
-                        keamanan Anda.
+                    <p className="text-muted-foreground mt-2 text-sm">
+                        {t('profile.contact.dialog.desc')}
                     </p>
                 </DialogHeader>
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="space-y-1.5">
                             <Label htmlFor="c-name">
-                                Nama <span className="text-destructive">*</span>
+                                {t('profile.contact.fields.name_label')}{' '}
+                                <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="c-name"
@@ -84,7 +85,9 @@ export default function ContactDialog({
                                     setField('name', e.target.value)
                                 }
                                 required
-                                placeholder="Nama lengkap (mis. Siti)"
+                                placeholder={t(
+                                    'profile.contact.fields.name_placeholder',
+                                )}
                             />
 
                             {showErrors && !values.name ? (
@@ -92,20 +95,19 @@ export default function ContactDialog({
                                     name="name"
                                     message={
                                         showErrors && !values.name
-                                            ? 'Wajib diisi.'
+                                            ? t('form.required')
                                             : undefined
                                     }
                                 />
                             ) : (
-                                <p className="text-xs text-muted-foreground">
-                                    Orang yang bersedia dihubungi bila
-                                    diperlukan.
+                                <p className="text-muted-foreground text-xs">
+                                    {t('profile.contact.fields.name_hint')}
                                 </p>
                             )}
                         </div>
                         <div className="space-y-1.5">
                             <Label htmlFor="c-phone">
-                                No. HP/WhatsApp{' '}
+                                {t('profile.contact.fields.phone_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Input
@@ -116,18 +118,19 @@ export default function ContactDialog({
                                     setField('phone', e.target.value)
                                 }
                                 required
-                                placeholder="08xxxxxxxxxx"
+                                placeholder={t(
+                                    'profile.contact.fields.phone_placeholder',
+                                )}
                                 autoComplete="tel"
                             />
                             {showErrors && !values.phone ? (
                                 <InputError
                                     name="phone"
-                                    message="Wajib diisi."
+                                    message={t('form.required')}
                                 />
                             ) : (
-                                <p className="text-xs text-muted-foreground">
-                                    Gunakan nomor aktif. Nomor ini harus berbeda
-                                    dengan kontak referensi lainnya.
+                                <p className="text-muted-foreground text-xs">
+                                    {t('profile.contact.fields.phone_hint')}
                                 </p>
                             )}
                         </div>
@@ -136,7 +139,7 @@ export default function ContactDialog({
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="space-y-1.5">
                             <Label htmlFor="c-rel">
-                                Hubungan{' '}
+                                {t('profile.contact.fields.relationship_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -146,7 +149,11 @@ export default function ContactDialog({
                                 }
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Pilih hubungan" />
+                                    <SelectValue
+                                        placeholder={t(
+                                            'profile.contact.fields.pick_relationship',
+                                        )}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {relationshipOptions.map((r) => (
@@ -160,13 +167,13 @@ export default function ContactDialog({
                                 name="relationship"
                                 message={
                                     showErrors && !values.relationship
-                                        ? 'Wajib diisi.'
+                                        ? t('form.required')
                                         : undefined
                                 }
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="c-email">Email</Label>
+                            <Label htmlFor="c-email">{t('common.email')}</Label>
                             <Input
                                 id="c-email"
                                 type="email"
@@ -174,14 +181,18 @@ export default function ContactDialog({
                                 onChange={(e) =>
                                     setField('email', e.target.value)
                                 }
-                                placeholder="opsional@contoh.com"
+                                placeholder={t(
+                                    'profile.contact.fields.email_placeholder',
+                                )}
                             />
                             <InputError name="email" />
                         </div>
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="c-address">Alamat</Label>
+                        <Label htmlFor="c-address">
+                            {t('profile.address.label')}
+                        </Label>
                         <Textarea
                             id="c-address"
                             value={values.address_line || ''}
@@ -189,11 +200,12 @@ export default function ContactDialog({
                                 setField('address_line', e.target.value)
                             }
                             rows={3}
-                            placeholder="Nama jalan, RT/RW, kota (opsional)"
+                            placeholder={t(
+                                'profile.contact.fields.address_placeholder',
+                            )}
                         />
-                        <p className="text-xs text-muted-foreground">
-                            Opsional. Isi bila memudahkan kami mengidentifikasi
-                            alamat.
+                        <p className="text-muted-foreground text-xs">
+                            {t('profile.contact.fields.address_hint')}
                         </p>
                         <InputError name="address_line" />
                     </div>
@@ -204,10 +216,10 @@ export default function ContactDialog({
                             variant="outline"
                             onClick={onCancel}
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            {mode === 'create' ? 'Simpan' : 'Update'}
+                            {t('common.save')}
                         </Button>
                     </DialogFooter>
                 </form>

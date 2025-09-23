@@ -1,5 +1,8 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Link, usePage } from '@inertiajs/react';
+import type { TFunction } from 'i18next';
 import { Building2, ChevronDown, Layers, Tags, Wrench } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { Crumb } from '@/components/breadcrumbs';
 import { Button } from '@/components/ui/button';
@@ -14,16 +17,21 @@ import AuthLayout from '@/layouts/auth-layout';
 import RoomUpsertForm from '@/pages/management/room/form';
 import type { RoomEditPageProps as PageProps } from '@/types/management';
 
-// PageProps moved to pages/types
-
-const BREADCRUMBS: Crumb[] = [
-    { label: 'Kamar', href: '#' },
-    { label: 'Daftar Kamar', href: route('management.rooms.index') },
-    { label: 'Ubah Kamar', href: '#' },
+const makeBreadcrumbs = (t: TFunction): Crumb[] => [
+    { label: t('management.room.title', { defaultValue: 'Rooms' }), href: '#' },
+    {
+        label: t('management.room.title', { defaultValue: 'Rooms' }),
+        href: route('management.rooms.index'),
+    },
+    {
+        label: t('management.room.edit', { defaultValue: 'Edit Room' }),
+        href: '#',
+    },
 ];
 
 export default function RoomEdit() {
-    const { props } = usePage<PageProps>();
+    const { t } = useTranslation();
+    const { props } = usePage<InertiaPageProps & PageProps>();
     const room = props.room;
     const options = props.options;
 
@@ -32,7 +40,7 @@ export default function RoomEdit() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button type="button" variant="outline">
-                        Kelola Master Data
+                        {t('management.room.master_data')}
                         <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
@@ -42,7 +50,8 @@ export default function RoomEdit() {
                             href={route('management.buildings.index')}
                             className="flex items-center gap-2"
                         >
-                            <Building2 className="h-4 w-4" /> Gedung
+                            <Building2 className="h-4 w-4" />{' '}
+                            {t('management.room.master.buildings')}
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -50,7 +59,8 @@ export default function RoomEdit() {
                             href={route('management.floors.index')}
                             className="flex items-center gap-2"
                         >
-                            <Layers className="h-4 w-4" /> Lantai
+                            <Layers className="h-4 w-4" />{' '}
+                            {t('management.room.master.floors')}
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -58,7 +68,8 @@ export default function RoomEdit() {
                             href={route('management.room-types.index')}
                             className="flex items-center gap-2"
                         >
-                            <Tags className="h-4 w-4" /> Tipe Kamar
+                            <Tags className="h-4 w-4" />{' '}
+                            {t('management.room.master.room_types')}
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -66,7 +77,8 @@ export default function RoomEdit() {
                             href={route('management.amenities.index')}
                             className="flex items-center gap-2"
                         >
-                            <Wrench className="h-4 w-4" /> Fasilitas
+                            <Wrench className="h-4 w-4" />{' '}
+                            {t('management.room.master.amenities')}
                         </Link>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -76,9 +88,9 @@ export default function RoomEdit() {
 
     return (
         <AuthLayout
-            pageTitle="Edit Kamar"
-            pageDescription="Ubah data kamar dan kelola foto."
-            breadcrumbs={BREADCRUMBS}
+            pageTitle={t('management.room.title')}
+            pageDescription={t('management.room.desc')}
+            breadcrumbs={makeBreadcrumbs(t)}
             actions={headerActions}
         >
             <div className="space-y-6">

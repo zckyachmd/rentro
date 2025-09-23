@@ -1,13 +1,14 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { router, usePage } from '@inertiajs/react';
 import { FilePlus2 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { QueryBag } from '@/components/ui/data-table-server';
 import { DataTableServer } from '@/components/ui/data-table-server';
-/* dialog moved into dedicated component */
 import {
     Select,
     SelectContent,
@@ -31,7 +32,8 @@ import type {
 const currency = (amount: number): string => formatIDR(amount);
 
 export default function PaymentIndex() {
-    const { props } = usePage<PageProps>();
+    const { t } = useTranslation();
+    const { props } = usePage<InertiaPageProps & PageProps>();
     const paginator = props.payments;
     const rows: PaymentRow[] = React.useMemo(
         () => paginator?.data ?? [],
@@ -92,16 +94,15 @@ export default function PaymentIndex() {
 
     return (
         <AuthLayout
-            pageTitle="Pembayaran"
-            pageDescription="Kelola pembayaran manual (cash/transfer), termasuk cicilan parsial dan cetak kwitansi."
+            pageTitle={t('management.payment.title')}
+            pageDescription={t('management.payment.desc')}
         >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>Daftar Pembayaran</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                            Lihat dan kelola semua pembayaran yang tercatat.
-                        </p>
+                        <CardTitle>
+                            {t('management.payment.list_title')}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -116,11 +117,15 @@ export default function PaymentIndex() {
                                     }
                                 >
                                     <SelectTrigger className="w-[160px]">
-                                        <SelectValue placeholder="Semua status" />
+                                        <SelectValue
+                                            placeholder={t(
+                                                'common.all_statuses',
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
-                                            Semua status
+                                            {t('common.all_statuses')}
                                         </SelectItem>
                                         {statuses.map((s) => (
                                             <SelectItem key={s} value={s}>
@@ -137,7 +142,7 @@ export default function PaymentIndex() {
                                     onClick={() => setOpen(true)}
                                 >
                                     <FilePlus2 className="mr-2 h-4 w-4" />{' '}
-                                    Tambah Pembayaran
+                                    {t('management.payment.add')}
                                 </Button>
                             </div>
                         </div>
@@ -172,13 +177,15 @@ export default function PaymentIndex() {
                                 onQueryChange({ page: 1, search: v })
                             }
                             searchKey="invoice"
-                            searchPlaceholder="Cari invoice/penyewa…"
+                            searchPlaceholder={t(
+                                'management.payment.search_placeholder',
+                            )}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada pembayaran."
+                            emptyText={t('management.payment.empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
                         />

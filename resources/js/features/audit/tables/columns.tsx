@@ -57,12 +57,12 @@ export function createColumns(
                                 <div className="max-w-[180px] truncate font-medium">
                                     {u.name}
                                 </div>
-                                <div className="max-w-[200px] truncate text-xs text-muted-foreground">
+                                <div className="text-muted-foreground max-w-[200px] truncate text-xs">
                                     {u.email}
                                 </div>
                             </>
                         ) : (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-muted-foreground text-xs">
                                 -
                             </span>
                         )}
@@ -83,7 +83,7 @@ export function createColumns(
                         )}
                     </div>
                     {row.original.subject ? (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                             linked
                         </div>
                     ) : null}

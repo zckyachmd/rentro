@@ -1,6 +1,8 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { usePage } from '@inertiajs/react';
 import { UserPlus } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
@@ -35,13 +37,12 @@ import type {
     UserItem,
 } from '@/types/management';
 
-// types moved to pages/types
-
 const computeInitials = (name?: string | null) =>
     (name?.slice(0, 1) ?? '?').toUpperCase();
 
 export default function UsersIndex() {
-    const { props } = usePage<PageProps>();
+    const { t } = useTranslation();
+    const { props } = usePage<InertiaPageProps & PageProps>();
     const roles: Role[] = React.useMemo(() => props.roles ?? [], [props.roles]);
     const paginator = props.users;
 
@@ -112,16 +113,15 @@ export default function UsersIndex() {
 
     return (
         <AuthLayout
-            pageTitle="Pengguna"
-            pageDescription="Kelola akun, peran, keamanan, dan sesi login"
+            pageTitle={t('management.user.title')}
+            pageDescription={t('management.user.desc')}
         >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>Pengelolaan Pengguna</CardTitle>
+                        <CardTitle>{t('management.user.title')}</CardTitle>
                         <CardDescription>
-                            Tambah pengguna, atur peran, reset password, 2FA,
-                            dan sesi aktif.
+                            {t('management.user.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -142,11 +142,15 @@ export default function UsersIndex() {
                                     }
                                 >
                                     <SelectTrigger className="w-[160px]">
-                                        <SelectValue placeholder="Semua peran" />
+                                        <SelectValue
+                                            placeholder={t(
+                                                'management.user.all_roles',
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
-                                            Semua peran
+                                            {t('management.user.all_roles')}
                                         </SelectItem>
                                         {rolesOptions}
                                     </SelectContent>
@@ -159,7 +163,7 @@ export default function UsersIndex() {
                                         onClick={() => openDialog('create')}
                                     >
                                         <UserPlus className="mr-2 h-4 w-4" />{' '}
-                                        Tambah Pengguna
+                                        {t('management.user.add')}
                                     </Button>
                                 </Can>
                             </div>
@@ -178,13 +182,15 @@ export default function UsersIndex() {
                                 onQueryChange({ page: 1, search: v })
                             }
                             searchKey="email"
-                            searchPlaceholder="Cari nama/email/telepon…"
+                            searchPlaceholder={t(
+                                'management.user.search_placeholder',
+                            )}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada pengguna."
+                            emptyText={t('management.user.empty')}
                         />
                     </CardContent>
                 </Card>

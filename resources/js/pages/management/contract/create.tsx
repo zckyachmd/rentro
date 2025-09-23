@@ -1,5 +1,7 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Crumb } from '@/components/breadcrumbs';
 import { DatePickerInput } from '@/components/date-picker';
@@ -36,11 +38,6 @@ import type {
     TenantOption,
 } from '@/types/management';
 
-const BREADCRUMBS: Crumb[] = [
-    { label: 'Kontrak', href: route('management.contracts.index') },
-    { label: 'Buat Kontrak', href: '#' },
-];
-
 const buildRoomLocation = (r: RoomOption) => {
     const floorLabel =
         r.floor_label ??
@@ -68,7 +65,9 @@ const buildRoomBaseLabel = (r: RoomOption) => {
 };
 
 export default function ContractCreate() {
-    const { props } = usePage<{ options?: PageOptions }>();
+    const { t } = useTranslation();
+    const { t: tContract } = useTranslation('management/contract');
+    const { props } = usePage<InertiaPageProps & { options?: PageOptions }>();
     const opt = props.options;
     const todayDay = opt?.today_date
         ? String(Number(opt.today_date.slice(8, 10)))
@@ -319,13 +318,18 @@ export default function ContractCreate() {
         );
     };
 
+    const BREADCRUMBS: Crumb[] = [
+        { label: tContract('list.title'), href: route('management.contracts.index') },
+        { label: tContract('create.title'), href: '#' },
+    ];
+
     return (
         <AuthLayout
-            pageTitle="Buat Kontrak"
-            pageDescription="Daftarkan penyewa ke kamar kosong dan atur detail kontrak."
+            pageTitle={tContract('create.title')}
+            pageDescription={tContract('list.desc')}
             breadcrumbs={BREADCRUMBS}
         >
-            <Head title="Buat Kontrak" />
+            <Head title={tContract('create.title')} />
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -335,7 +339,9 @@ export default function ContractCreate() {
             >
                 <Card>
                     <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <CardTitle>Data Kontrak</CardTitle>
+                        <CardTitle>
+                            {tContract('info_title')}
+                        </CardTitle>
                         <ContractGuideDialog prorata={prorata} />
                     </CardHeader>
                     <CardContent className="grid gap-6 md:grid-cols-2">
@@ -361,7 +367,7 @@ export default function ContractCreate() {
                                 {/* Periode Tagihan */}
                                 <div className="space-y-2">
                                     <Label>
-                                        Periode Tagihan{' '}
+                                        {tContract('billing_period')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -378,7 +384,9 @@ export default function ContractCreate() {
                                         }}
                                     >
                                         <SelectTrigger className="h-9">
-                                            <SelectValue placeholder="Pilih periode" />
+                                            <SelectValue
+                                                placeholder={tContract('select_period')}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
@@ -402,7 +410,7 @@ export default function ContractCreate() {
                                 {data.billing_period === 'Monthly' ? (
                                     <div className="space-y-2">
                                         <Label>
-                                            Durasi (bulan){' '}
+                                            {tContract('duration.months_label')}{' '}
                                             <span className="text-destructive">
                                                 *
                                             </span>
@@ -416,7 +424,9 @@ export default function ContractCreate() {
                                             }
                                         >
                                             <SelectTrigger className="h-9">
-                                                <SelectValue placeholder="Pilih durasi" />
+                                                <SelectValue
+                                                    placeholder={tContract('select_duration')}
+                                                />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectGroup>
@@ -425,7 +435,9 @@ export default function ContractCreate() {
                                                             key={m}
                                                             value={String(m)}
                                                         >
-                                                            {m} bulan
+                                                            {tContract('month_count', {
+                                                                count: m,
+                                                            })}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectGroup>
@@ -438,11 +450,9 @@ export default function ContractCreate() {
                                 ) : (
                                     <div className="space-y-2">
                                         <Label>
-                                            Durasi (
                                             {data.billing_period === 'Weekly'
-                                                ? 'minggu'
-                                                : 'hari'}
-                                            )
+                                                ? tContract('duration.weeks_label')
+                                                : tContract('duration.days_label')}{' '}
                                             <span className="text-destructive">
                                                 *
                                             </span>
@@ -463,17 +473,17 @@ export default function ContractCreate() {
                                                 )
                                             }
                                             className="h-9"
-                                            placeholder={
-                                                data.billing_period === 'Weekly'
-                                                    ? 'cth. 2'
-                                                    : 'cth. 3'
-                                            }
+                                            placeholder={tContract('select_duration')}
                                         />
-                                        <p className="text-xs text-muted-foreground">
-                                            Maksimal{' '}
+                                        <p className="text-muted-foreground text-xs">
+                                            {t('common.max')}{' '}
                                             {data.billing_period === 'Weekly'
-                                                ? weeklyMax + ' minggu'
-                                                : dailyMax + ' hari'}
+                                                ? tContract('week_count', {
+                                                      count: weeklyMax,
+                                                  })
+                                                : tContract('day_count', {
+                                                      count: dailyMax,
+                                                  })}
                                             .
                                         </p>
                                         <InputError
@@ -482,10 +492,9 @@ export default function ContractCreate() {
                                     </div>
                                 )}
 
-                                {/* Tanggal Mulai */}
                                 <div className="space-y-2">
                                     <Label>
-                                        Tanggal Mulai{' '}
+                                        {tContract('start_date_label')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -495,7 +504,7 @@ export default function ContractCreate() {
                                         onChange={(v) =>
                                             setData('start_date', v ?? '')
                                         }
-                                        placeholder="Pilih tanggal mulai"
+                                        placeholder={tContract('start_date_placeholder')}
                                         required
                                     />
                                     <InputError message={errors.start_date} />
@@ -503,7 +512,6 @@ export default function ContractCreate() {
                             </div>
                         </fieldset>
 
-                        {/* Nominal (1 row) */}
                         <fieldset
                             disabled={!canEditDetails}
                             className="contents"
@@ -537,7 +545,6 @@ export default function ContractCreate() {
                             />
                         </fieldset>
 
-                        {/* Pembayaran & Auto-renew (rapat tapi nyaman) */}
                         {data.billing_period === 'Monthly' && (
                             <fieldset
                                 disabled={!canEditDetails}
@@ -545,7 +552,7 @@ export default function ContractCreate() {
                             >
                                 <div className="space-y-3 md:col-span-2">
                                     <div className="space-y-2">
-                                        <Label>Pembayaran</Label>
+                                        <Label>{tContract('payment_label')}</Label>
                                         <RadioGroup
                                             value={data.monthly_payment_mode}
                                             onValueChange={(v) =>
@@ -565,7 +572,7 @@ export default function ContractCreate() {
                                                     htmlFor="pay_per_month"
                                                     className="font-normal"
                                                 >
-                                                    Per bulan
+                                                    {tContract('pay_per_month')}
                                                 </Label>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -577,7 +584,7 @@ export default function ContractCreate() {
                                                     htmlFor="pay_full"
                                                     className="font-normal"
                                                 >
-                                                    Lunas (bayar penuh)
+                                                    {tContract('pay_full')}
                                                 </Label>
                                             </div>
                                         </RadioGroup>
@@ -600,7 +607,7 @@ export default function ContractCreate() {
                                             }}
                                         />
                                         <Label htmlFor="auto_renew">
-                                            Auto‑renew kontrak
+                                            {tContract('auto_renew_contract')}
                                         </Label>
                                     </div>
                                 </div>
@@ -609,14 +616,13 @@ export default function ContractCreate() {
                     </CardContent>
                 </Card>
 
-                <p className="text-sm text-muted-foreground">
-                    Tidak menemukan penyewa? Silakan daftarkan pengguna terlebih
-                    dahulu di halaman{' '}
+                <p className="text-muted-foreground text-sm">
+                    {tContract('user_not_found_hint_prefix')}{' '}
                     <Link
                         href={route('management.users.index')}
                         className="underline"
                     >
-                        Manajemen Pengguna
+                        {tContract('user_management_link')}
                     </Link>
                     .
                 </p>
@@ -626,14 +632,14 @@ export default function ContractCreate() {
                         type="submit"
                         disabled={processing || !canEditDetails}
                     >
-                        Simpan
+                        {t('common.save')}
                     </Button>
                     <Button
                         type="button"
                         variant="outline"
                         onClick={() => history.back()}
                     >
-                        Batal
+                        {t('common.cancel')}
                     </Button>
                 </div>
             </form>
@@ -655,12 +661,7 @@ export default function ContractCreate() {
                 onOpenChange={guard.setOpen}
                 onConfirm={guard.proceed}
                 onCancel={guard.cancel}
-                description={
-                    <>
-                        Anda memiliki perubahan yang belum disimpan pada
-                        formulir kontrak. Jika keluar, perubahan akan hilang.
-                    </>
-                }
+                description={<>{tContract('leave.desc')}</>}
             />
         </AuthLayout>
     );
