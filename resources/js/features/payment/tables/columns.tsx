@@ -20,8 +20,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { variantForPaymentStatus } from '@/lib/status';
 import i18n from '@/lib/i18n';
+import { variantForPaymentStatus } from '@/lib/status';
 import type { PaymentRow } from '@/types/management';
 
 const COL = {
@@ -49,7 +49,9 @@ export const createColumns = (opts?: {
         sortable: true,
         cell: ({ row }) => {
             const p = row.original;
-            const clickable = p.status === 'Completed' && !!p.paid_at;
+            const clickable =
+                (p.status || '').trim().toLowerCase() === 'completed' &&
+                !!p.paid_at;
             if (!clickable) {
                 return <div className={COL.date}>{p.paid_at ?? '—'}</div>;
             }
@@ -135,20 +137,27 @@ export const createColumns = (opts?: {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={i18n.t('payment.actions_for', { invoice: p.invoice ?? '' })}
+                                aria-label={i18n.t('payment.actions_for', {
+                                    invoice: p.invoice ?? '',
+                                })}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>{i18n.t('common.actions')}</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
                             <DropdownMenuItem
                                 onClick={() => opts?.onShowDetail?.(p)}
                             >
-                                <Eye className="mr-2 h-4 w-4" /> {i18n.t('common.view_detail')}
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
-                            {p.method === 'Transfer' &&
-                            p.status === 'Review' ? (
+                            {(p.method || '').trim().toLowerCase() ===
+                                'transfer' &&
+                            (p.status || '').trim().toLowerCase() ===
+                                'review' ? (
                                 <>
                                     <DropdownMenuItem
                                         onClick={() =>
@@ -157,23 +166,27 @@ export const createColumns = (opts?: {
                                                 : opts?.onShowDetail?.(p)
                                         }
                                     >
-                                        <CheckCircle2 className="mr-2 h-4 w-4" /> {i18n.t('payment.review.action')}
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t('payment.review.action')}
                                     </DropdownMenuItem>
                                 </>
                             ) : null}
-                            {p.status === 'Completed' ? (
+                            {(p.status || '').trim().toLowerCase() ===
+                            'completed' ? (
                                 <>
                                     <DropdownMenuItem
                                         onClick={() => opts?.onPrint?.(p)}
                                     >
-                                        <Printer className="mr-2 h-4 w-4" /> {i18n.t('payment.print_receipt')}
+                                        <Printer className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t('payment.print_receipt')}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         className="text-destructive focus:text-destructive"
                                         onClick={() => opts?.onVoid?.(p)}
                                     >
-                                        <XCircle className="mr-2 h-4 w-4" /> {i18n.t('payment.void.title')}
+                                        <XCircle className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t('payment.void.title')}
                                     </DropdownMenuItem>
                                 </>
                             ) : null}

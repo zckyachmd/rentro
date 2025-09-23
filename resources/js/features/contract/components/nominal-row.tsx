@@ -1,8 +1,9 @@
+import { useTranslation } from 'react-i18next';
+
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import { formatIDR } from '@/lib/format';
-import { useTranslation } from 'react-i18next';
 
 export default function NominalRow({
     rent,
@@ -17,15 +18,15 @@ export default function NominalRow({
     onRent: (v: string) => void;
     onDeposit: (v: string) => void;
     errors?: Partial<Record<'rent_cents' | 'deposit_cents', string>>;
-    billingPeriod?: 'Daily' | 'Weekly' | 'Monthly';
+    billingPeriod?: 'daily' | 'weekly' | 'monthly';
 }) {
     const { t } = useTranslation('management/contract');
     const suffix =
-        billingPeriod === 'Monthly'
+        billingPeriod === 'monthly'
             ? t('create.form.suffix.monthly')
-            : billingPeriod === 'Weekly'
+            : billingPeriod === 'weekly'
               ? t('create.form.suffix.weekly')
-              : billingPeriod === 'Daily'
+              : billingPeriod === 'daily'
                 ? t('create.form.suffix.daily')
                 : undefined;
     return (

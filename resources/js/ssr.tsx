@@ -1,8 +1,8 @@
-import React from 'react';
 import type { Page } from '@inertiajs/core';
 import { createInertiaApp } from '@inertiajs/react';
 import createServer from '@inertiajs/react/server';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
 import i18n from '@/lib/i18n';
@@ -105,7 +105,11 @@ createServer(async (page: Page) => {
 
             globalThis.route = routeWithConfig;
 
-            return <React.Suspense fallback={null}><App {...props} /></React.Suspense>;
+            return (
+                <React.Suspense fallback={null}>
+                    <App {...props} />
+                </React.Suspense>
+            );
         },
     });
 });

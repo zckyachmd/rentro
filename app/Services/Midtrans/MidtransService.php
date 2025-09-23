@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Midtrans;
 
+use App\Enum\MidtransBank;
+use App\Enum\PaymentStatus;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
@@ -28,9 +30,6 @@ use Midtrans\Transaction;
  */
 class MidtransService implements MidtransGatewayInterface
 {
-    /** Allowed bank codes for VA charges */
-    private const ALLOWED_BANKS = ['bca', 'bni', 'bri', 'permata', 'cimb'];
-
     /**
      * Initialize Midtrans SDK config once per request.
      */
@@ -39,7 +38,6 @@ class MidtransService implements MidtransGatewayInterface
         Config::$serverKey    = (string) config('midtrans.server_key');
         Config::$isProduction = (bool) config('midtrans.is_production', false);
 
-        // Timeouts & ensure headers slot exists to avoid undefined index when SDK appends headers
         $timeouts            = (array) config('midtrans.timeouts', []);
         Config::$curlOptions = [
             CURLOPT_CONNECTTIMEOUT => (int) ($timeouts['connect'] ?? 10),
@@ -47,8 +45,6 @@ class MidtransService implements MidtransGatewayInterface
             CURLOPT_HTTPHEADER     => [],
         ];
     }
-
-    // Snap flow removed in favor of Core API (VA only)
 
     /**
      * Create a Core API Bank Transfer VA charge (bca|bni|bri|permata|cimb).
@@ -58,7 +54,7 @@ class MidtransService implements MidtransGatewayInterface
         $this->boot();
 
         $this->ensureConfigured();
-        $bank = $this->assertBank($bank);
+        $bank = self::assertBank($bank);
         if ($amountCents <= 0) {
             throw new \InvalidArgumentException('Invalid amount.');
         }
@@ -85,7 +81,6 @@ class MidtransService implements MidtransGatewayInterface
             ],
         ];
 
-        // Optional custom expiry (minutes)
         $expiry = (int) (config('midtrans.expiry_minutes') ?? 0);
         if ($expiry > 0) {
             $params['custom_expiry'] = [
@@ -96,7 +91,6 @@ class MidtransService implements MidtransGatewayInterface
 
         $respArr = $this->chargeWithRetry($params, $orderId, 'bank_transfer');
 
-        // Extract VA details
         $vaNumber   = null;
         $expiryTime = null;
         if (!empty($respArr['va_numbers']) && is_array($respArr['va_numbers'])) {
@@ -137,14 +131,9 @@ class MidtransService implements MidtransGatewayInterface
     }
 
     /** Validate and normalize bank code */
-    private function assertBank(string $bank): string
+    private static function assertBank(string $bank): string
     {
-        $b = strtolower(trim($bank));
-        if (!in_array($b, self::ALLOWED_BANKS, true)) {
-            throw new \InvalidArgumentException('Unsupported bank: ' . $bank);
-        }
-
-        return $b;
+        return MidtransBank::normalize($bank);
     }
 
     /** Sanitize item name/label (length & characters) */
@@ -181,8 +170,7 @@ class MidtransService implements MidtransGatewayInterface
 
             return $this->arrify($resp);
         } catch (\Throwable $e) {
-            $msg = (string) $e->getMessage();
-            // Consider various conflict indicators from Midtrans errors
+            $msg        = (string) $e->getMessage();
             $isConflict = (
                 stripos($msg, 'order_id') !== false && stripos($msg, 'used') !== false
             ) || (
@@ -256,7 +244,7 @@ class MidtransService implements MidtransGatewayInterface
                 'name'     => $this->sanitizeLabel('Invoice ' . ($invoice->number ?? $invoice->id)),
             ];
         }
-        // Ensure sum equals gross (add adjustment when needed)
+
         $sum = 0;
         foreach ($itemDetails as $d) {
             $sum += ((int) $d['price']) * ((int) $d['quantity']);
@@ -298,16 +286,16 @@ class MidtransService implements MidtransGatewayInterface
         $fraud = (string) ($notif['fraud_status'] ?? '');
 
         // Default
-        $status = 'Pending';
+        $status = PaymentStatus::PENDING->value;
         $paidAt = null;
 
         if (in_array($trx, ['settlement', 'capture'], true) && $fraud !== 'challenge') {
-            $status = 'Completed';
+            $status = PaymentStatus::COMPLETED->value;
             $paidAt = (string) ($notif['settlement_time'] ?? ($notif['transaction_time'] ?? null));
         } elseif ($trx === 'pending') {
-            $status = 'Pending';
+            $status = PaymentStatus::PENDING->value;
         } elseif (in_array($trx, ['deny', 'cancel', 'expire', 'failure'], true)) {
-            $status = $trx === 'cancel' ? 'Cancelled' : 'Failed';
+            $status = $trx === 'cancel' ? PaymentStatus::CANCELLED->value : PaymentStatus::FAILED->value;
         }
 
         return ['status' => $status, 'paid_at' => $paidAt];
@@ -422,9 +410,9 @@ class MidtransService implements MidtransGatewayInterface
             }
             $this->boot();
             $this->ensureConfigured();
-            // Midtrans will throw on failure
+
             $resp = Transaction::expire($orderId);
-            $this->arrify($resp); // normalize, ignore content
+            $this->arrify($resp);
 
             return true;
         } catch (\Throwable $e) {

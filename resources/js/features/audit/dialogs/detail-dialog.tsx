@@ -104,7 +104,9 @@ export default function DetailDialog({
                                                             item.causer.email
                                                         }
                                                         variant="link"
-                                                        successMessage={t('profile.email_copied')}
+                                                        successMessage={t(
+                                                            'profile.email_copied',
+                                                        )}
                                                     >
                                                         {item.causer.email}
                                                     </CopyInline>
@@ -149,14 +151,20 @@ export default function DetailDialog({
 
                         <div className="min-w-0 space-y-2">
                             <div className="flex items-center justify-between">
-                                <div className="text-sm font-medium">{t('audit.properties')}</div>
+                                <div className="text-sm font-medium">
+                                    {t('audit.properties')}
+                                </div>
                                 <CopyInline
                                     as="button"
                                     value={textToCopy}
                                     className="bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-1 rounded-md border p-1"
-                                    successMessage={t('audit.properties_copied')}
+                                    successMessage={t(
+                                        'audit.properties_copied',
+                                    )}
                                 >
-                                    <span className="sr-only">{t('audit.copy_properties')}</span>
+                                    <span className="sr-only">
+                                        {t('audit.copy_properties')}
+                                    </span>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         className="h-4 w-4"

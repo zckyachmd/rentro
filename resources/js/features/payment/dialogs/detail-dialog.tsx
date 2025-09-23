@@ -87,7 +87,10 @@ export default function PaymentDetailDialog({
                     {(Array.isArray(data?.payment?.attachments) &&
                         (data?.payment?.attachments?.length ?? 0) > 0) ||
                     data?.payment?.attachment ? (
-                        <Button type="button" onClick={() => setPreviewOpen(true)}>
+                        <Button
+                            type="button"
+                            onClick={() => setPreviewOpen(true)}
+                        >
                             {t('payment.review.view_proof')}
                         </Button>
                     ) : null}
@@ -109,6 +112,7 @@ function PaymentDetailBody({
     previewOpen: boolean;
     setPreviewOpen: (v: boolean) => void;
 }) {
+    const { t } = useTranslation();
     const p = data.payment;
     const inv = data.invoice;
     const tenant = data.tenant;
@@ -173,7 +177,8 @@ function PaymentDetailBody({
                             <div>
                                 {room ? (
                                     <span>
-                                        {room.number || '-'} {room.name ? `— ${room.name}` : ''}
+                                        {room.number || '-'}{' '}
+                                        {room.name ? `— ${room.name}` : ''}
                                     </span>
                                 ) : (
                                     '-'
@@ -212,9 +217,15 @@ function PaymentDetailBody({
                 title={t('payment.attachments_title')}
                 description={t('payment.attachments_desc')}
                 details={[
-                    { label: t('common.amount'), value: formatIDR(p.amount_cents) },
+                    {
+                        label: t('common.amount'),
+                        value: formatIDR(p.amount_cents),
+                    },
                     { label: t('common.tenant'), value: tenant?.name || '-' },
-                    { label: t('invoice.number_label'), value: inv?.number || '-' },
+                    {
+                        label: t('invoice.number_label'),
+                        value: inv?.number || '-',
+                    },
                 ]}
             />
         </div>

@@ -105,13 +105,21 @@ export const createColumns = <T extends BaseInvoiceRow>(
         id: 'status',
         title: i18n.t('common.status'),
         className: COL.status,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge variant={variantForInvoiceStatus(row.original.status)}>
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const raw = row.original.status || '';
+            const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
+            const label = i18n.t(`invoice.status.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return (
+                <div className={COL.status}>
+                    <Badge variant={variantForInvoiceStatus(raw)}>
+                        {label}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<T>({
         id: 'amount_cents',
@@ -174,8 +182,13 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                     </Link>
                                 </DropdownMenuItem>
                             ) : null}
-                            {inv.status === 'Overdue' ||
-                            inv.status === 'Pending' ? (
+                            {(() => {
+                                const k = (inv.status || '')
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '_');
+                                return k === 'overdue' || k === 'pending';
+                            })() ? (
                                 <DropdownMenuItem
                                     onClick={() => opts?.onExtendDue?.(inv)}
                                 >

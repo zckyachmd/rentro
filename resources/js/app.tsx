@@ -1,11 +1,10 @@
-import React from 'react';
-import '../css/app.css';
-
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
 import i18n from '@/lib/i18n';
+import '../css/app.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,9 +18,18 @@ createInertiaApp({
     setup({ el, App, props }) {
         const render = () => {
             if (el.hasChildNodes()) {
-                hydrateRoot(el, <React.Suspense fallback={null}><App {...props} /></React.Suspense>);
+                hydrateRoot(
+                    el,
+                    <React.Suspense fallback={null}>
+                        <App {...props} />
+                    </React.Suspense>,
+                );
             } else {
-                createRoot(el).render(<React.Suspense fallback={null}><App {...props} /></React.Suspense>);
+                createRoot(el).render(
+                    <React.Suspense fallback={null}>
+                        <App {...props} />
+                    </React.Suspense>,
+                );
             }
         };
 

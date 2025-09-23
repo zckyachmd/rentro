@@ -67,6 +67,7 @@ export const createColumns = (opts?: {
             const raw = row.original.status || '';
             const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
             const label = i18n.t(`invoice.status.${key}`, {
+                ns: 'enum',
                 defaultValue: raw,
             });
             return (
@@ -107,7 +108,9 @@ export const createColumns = (opts?: {
         cell: ({ row }) => {
             const inv = row.original;
             const canPay =
-                (inv.outstanding_cents ?? 0) > 0 && inv.status !== 'Cancelled';
+                (inv.outstanding_cents ?? 0) > 0 &&
+                (inv.status || '').trim().toLowerCase().replace(/\s+/g, '_') !==
+                    'cancelled';
             return (
                 <div className={`${COL.actions} flex items-center justify-end`}>
                     <DropdownMenu>

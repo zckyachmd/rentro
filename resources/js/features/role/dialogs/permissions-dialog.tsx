@@ -133,9 +133,7 @@ export default function PermissionsDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <div className="flex items-center justify-between">
-                        <DialogTitle>
-                            {t('role.permissions.title')}
-                        </DialogTitle>
+                        <DialogTitle>{t('role.permissions.title')}</DialogTitle>
                     </div>
                     <DialogDescription>
                         {t('role.permissions.desc')}
@@ -179,7 +177,9 @@ export default function PermissionsDialog({
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder={t('role.permissions.search_placeholder')}
+                            placeholder={t(
+                                'role.permissions.search_placeholder',
+                            )}
                             className="h-9"
                         />
                         <Button

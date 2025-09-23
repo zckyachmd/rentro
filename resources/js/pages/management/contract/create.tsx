@@ -101,7 +101,7 @@ export default function ContractCreate() {
             end_date: '',
             rent_rupiah: '',
             deposit_rupiah: '',
-            billing_period: 'Monthly',
+            billing_period: 'monthly',
             billing_day: todayDay,
             auto_renew: autoRenewDefault,
             notes: '',
@@ -208,7 +208,7 @@ export default function ContractCreate() {
         const count = Math.max(1, Number(data.duration_count));
         let nextEnd = '';
         if (startISO) {
-            if (data.billing_period === 'Monthly') {
+            if (data.billing_period === 'monthly') {
                 const d = new Date(startISO + 'T00:00:00');
                 const y = d.getFullYear();
                 const m = d.getMonth();
@@ -233,7 +233,7 @@ export default function ContractCreate() {
         }
 
         let nextBilling = '';
-        if (data.billing_period === 'Monthly') {
+        if (data.billing_period === 'monthly') {
             nextBilling = nextEnd
                 ? String(new Date(nextEnd + 'T00:00:00').getDate())
                 : '';
@@ -273,7 +273,7 @@ export default function ContractCreate() {
 
     React.useEffect(() => {
         if (!autoRenewAuto) return;
-        const isMonthly = data.billing_period === 'Monthly';
+        const isMonthly = data.billing_period === 'monthly';
         if (data.auto_renew !== isMonthly) {
             setData('auto_renew', isMonthly);
         }
@@ -298,14 +298,14 @@ export default function ContractCreate() {
             deposit_cents: depositCents,
             billing_period: d.billing_period,
             billing_day:
-                d.billing_period === 'Monthly'
+                d.billing_period === 'monthly'
                     ? Number(d.billing_day || '1')
                     : undefined,
             auto_renew: d.auto_renew,
             notes: d.notes || undefined,
             duration_count: Number(d.duration_count),
             monthly_payment_mode:
-                d.billing_period === 'Monthly'
+                d.billing_period === 'monthly'
                     ? d.monthly_payment_mode
                     : undefined,
         }));
@@ -319,7 +319,10 @@ export default function ContractCreate() {
     };
 
     const BREADCRUMBS: Crumb[] = [
-        { label: tContract('list.title'), href: route('management.contracts.index') },
+        {
+            label: tContract('list.title'),
+            href: route('management.contracts.index'),
+        },
         { label: tContract('create.title'), href: '#' },
     ];
 
@@ -339,9 +342,7 @@ export default function ContractCreate() {
             >
                 <Card>
                     <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <CardTitle>
-                            {tContract('info_title')}
-                        </CardTitle>
+                        <CardTitle>{tContract('info_title')}</CardTitle>
                         <ContractGuideDialog prorata={prorata} />
                     </CardHeader>
                     <CardContent className="grid gap-6 md:grid-cols-2">
@@ -385,7 +386,9 @@ export default function ContractCreate() {
                                     >
                                         <SelectTrigger className="h-9">
                                             <SelectValue
-                                                placeholder={tContract('select_period')}
+                                                placeholder={tContract(
+                                                    'select_period',
+                                                )}
                                             />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -407,7 +410,7 @@ export default function ContractCreate() {
                                 </div>
 
                                 {/* Durasi */}
-                                {data.billing_period === 'Monthly' ? (
+                                {data.billing_period === 'monthly' ? (
                                     <div className="space-y-2">
                                         <Label>
                                             {tContract('duration.months_label')}{' '}
@@ -425,7 +428,9 @@ export default function ContractCreate() {
                                         >
                                             <SelectTrigger className="h-9">
                                                 <SelectValue
-                                                    placeholder={tContract('select_duration')}
+                                                    placeholder={tContract(
+                                                        'select_duration',
+                                                    )}
                                                 />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -435,9 +440,12 @@ export default function ContractCreate() {
                                                             key={m}
                                                             value={String(m)}
                                                         >
-                                                            {tContract('month_count', {
-                                                                count: m,
-                                                            })}
+                                                            {tContract(
+                                                                'month_count',
+                                                                {
+                                                                    count: m,
+                                                                },
+                                                            )}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectGroup>
@@ -450,9 +458,13 @@ export default function ContractCreate() {
                                 ) : (
                                     <div className="space-y-2">
                                         <Label>
-                                            {data.billing_period === 'Weekly'
-                                                ? tContract('duration.weeks_label')
-                                                : tContract('duration.days_label')}{' '}
+                                            {data.billing_period === 'weekly'
+                                                ? tContract(
+                                                      'duration.weeks_label',
+                                                  )
+                                                : tContract(
+                                                      'duration.days_label',
+                                                  )}{' '}
                                             <span className="text-destructive">
                                                 *
                                             </span>
@@ -461,7 +473,7 @@ export default function ContractCreate() {
                                             type="number"
                                             min={1}
                                             max={
-                                                data.billing_period === 'Weekly'
+                                                data.billing_period === 'weekly'
                                                     ? weeklyMax
                                                     : dailyMax
                                             }
@@ -473,11 +485,13 @@ export default function ContractCreate() {
                                                 )
                                             }
                                             className="h-9"
-                                            placeholder={tContract('select_duration')}
+                                            placeholder={tContract(
+                                                'select_duration',
+                                            )}
                                         />
                                         <p className="text-muted-foreground text-xs">
                                             {t('common.max')}{' '}
-                                            {data.billing_period === 'Weekly'
+                                            {data.billing_period === 'weekly'
                                                 ? tContract('week_count', {
                                                       count: weeklyMax,
                                                   })
@@ -504,7 +518,9 @@ export default function ContractCreate() {
                                         onChange={(v) =>
                                             setData('start_date', v ?? '')
                                         }
-                                        placeholder={tContract('start_date_placeholder')}
+                                        placeholder={tContract(
+                                            'start_date_placeholder',
+                                        )}
                                         required
                                     />
                                     <InputError message={errors.start_date} />
@@ -527,9 +543,9 @@ export default function ContractCreate() {
                                 }}
                                 billingPeriod={
                                     data.billing_period as
-                                        | 'Daily'
-                                        | 'Weekly'
-                                        | 'Monthly'
+                                        | 'daily'
+                                        | 'weekly'
+                                        | 'monthly'
                                 }
                             />
                         </fieldset>
@@ -545,14 +561,16 @@ export default function ContractCreate() {
                             />
                         </fieldset>
 
-                        {data.billing_period === 'Monthly' && (
+                        {data.billing_period === 'monthly' && (
                             <fieldset
                                 disabled={!canEditDetails}
                                 className="contents"
                             >
                                 <div className="space-y-3 md:col-span-2">
                                     <div className="space-y-2">
-                                        <Label>{tContract('payment_label')}</Label>
+                                        <Label>
+                                            {tContract('payment_label')}
+                                        </Label>
                                         <RadioGroup
                                             value={data.monthly_payment_mode}
                                             onValueChange={(v) =>

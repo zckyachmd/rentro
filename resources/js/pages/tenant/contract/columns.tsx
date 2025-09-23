@@ -115,6 +115,7 @@ export const createColumns = (
             const raw = row.original.status || '';
             const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
             const label = i18n.t(`contract.status.${key}`, {
+                ns: 'enum',
                 defaultValue: raw,
             });
             return (
@@ -195,7 +196,11 @@ export const createColumns = (
         className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const r = row.original as TenantContractItem;
-            const isActive = String(r.status || '').toLowerCase() === 'active';
+            const isActive =
+                String(r.status || '')
+                    .trim()
+                    .toLowerCase()
+                    .replace(/\s+/g, '_') === 'active';
             return (
                 <div className={COL.actions + ' flex items-center justify-end'}>
                     <DropdownMenu>
@@ -203,7 +208,10 @@ export const createColumns = (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={i18n.t('tenant/contract:actions_for', { id: r.id })}
+                                aria-label={i18n.t(
+                                    'tenant/contract:actions_for',
+                                    { id: r.id },
+                                )}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -269,7 +277,9 @@ export const createColumns = (
                                 onClick={() => opts?.onStopAutoRenew?.(r)}
                             >
                                 <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                {i18n.t('management/contract:autorenew.stop_action')}
+                                {i18n.t(
+                                    'management/contract:autorenew.stop_action',
+                                )}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

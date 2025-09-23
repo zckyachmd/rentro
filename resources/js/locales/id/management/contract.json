@@ -29,7 +29,7 @@
         "desc": "Anda memiliki perubahan yang belum disimpan pada formulir kontrak. Jika keluar, perubahan akan hilang."
     },
     "payment": { "full": "Lunas" },
-    
+
     "preview": {
         "title": "Konfirmasi Data Kontrak",
         "description": "Tinjau kembali data. Pastikan semua informasi sudah benar.",
@@ -222,9 +222,19 @@
             "placeholder": "Opsional: tambahkan aturan khusus, kondisi kamar, kebijakan listrik/air, dsb."
         },
         "form": {
-            "suffix": { "daily": "per hari", "weekly": "per minggu", "monthly": "per bulan" },
-            "fields": { "rent": "Biaya Sewa ({{suffix}})", "deposit": "Deposit" },
-            "placeholders": { "rent": "cth. 1.200.000", "deposit": "cth. 500.000 (opsional)" }
+            "suffix": {
+                "daily": "per hari",
+                "weekly": "per minggu",
+                "monthly": "per bulan"
+            },
+            "fields": {
+                "rent": "Biaya Sewa ({{suffix}})",
+                "deposit": "Deposit"
+            },
+            "placeholders": {
+                "rent": "cth. 1.200.000",
+                "deposit": "cth. 500.000 (opsional)"
+            }
         }
     }
 }

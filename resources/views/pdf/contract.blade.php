@@ -37,7 +37,7 @@
         <div class="left">
             <div class="brand">{{ config('app.name') }}</div>
             <h2 class="title">Kontrak <span class="mono">{{ $c['number'] ?? '-' }}</span></h2>
-            <div class="small">Status: {{ $c['status'] ?? '-' }}</div>
+            <div class="small">Status: {{ isset($c['status']) ? __('enum.contract.status.' . strtolower((string)$c['status'])) : '-' }}</div>
         </div>
         <div class="right">
             <div class="meta-inline">
@@ -51,7 +51,14 @@
                 </div>
                 <div class="item">
                     <div class="label">Periode Tagih</div>
-                    <div class="value">{{ $c['billing_period'] ?? '-' }} @if(!empty($c['billing_day'])) <span class="small">(tgl {{ $c['billing_day'] }})</span> @endif</div>
+                    <div class="value">
+                        @if(!empty($c['billing_period']))
+                            {{ __('enum.billing_period.' . strtolower((string)$c['billing_period'])) }}
+                        @else
+                            -
+                        @endif
+                        @if(!empty($c['billing_day'])) <span class="small">(tgl {{ $c['billing_day'] }})</span> @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -87,7 +94,14 @@
             </tr>
             <tr>
                 <th>Periode Tagih</th>
-                <td>{{ $c['billing_period'] ?? '-' }}@if(!empty($c['billing_day'])) <span class="small"> (tanggal tagih: {{ $c['billing_day'] }})</span>@endif</td>
+                <td>
+                    @if(!empty($c['billing_period']))
+                        {{ __('enum.billing_period.' . strtolower((string)$c['billing_period'])) }}
+                    @else
+                        -
+                    @endif
+                    @if(!empty($c['billing_day'])) <span class="small"> (tanggal tagih: {{ $c['billing_day'] }})</span>@endif
+                </td>
             </tr>
         </tbody>
     </table>
@@ -107,4 +121,3 @@
     @endif
 </div>
 @endsection
-

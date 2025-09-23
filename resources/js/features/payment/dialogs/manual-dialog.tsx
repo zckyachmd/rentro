@@ -36,7 +36,7 @@ export function ManualPaymentDialog({
             invoice_number: initialInvoiceNumber ?? '',
             invoice_id: '',
             amount_cents: '',
-            method: methods?.[0]?.value ?? 'Cash',
+            method: methods?.[0]?.value ?? 'cash',
             paid_at: '',
             note: '',
             provider: 'Kasir',
@@ -45,7 +45,7 @@ export function ManualPaymentDialog({
         });
 
     const defaultMethod = React.useMemo(
-        () => methods?.[0]?.value ?? 'Cash',
+        () => methods?.[0]?.value ?? 'cash',
         [methods],
     );
 
@@ -204,10 +204,17 @@ export function ManualPaymentDialog({
                 status: match.status,
                 tenant_name: match.tenant ?? null,
                 outstanding: match.outstanding,
-                eligible:
-                    (match.status === 'Pending' ||
-                        match.status === 'Overdue') &&
-                    (match.outstanding ?? 0) > 0,
+                eligible: (() => {
+                    const norm = String(match.status || '')
+                        .trim()
+                        .toLowerCase()
+                        .replace(/\s+/g, '_');
+                    const isPending = norm === 'pending';
+                    const isOverdue = norm === 'overdue';
+                    return (
+                        (isPending || isOverdue) && (match.outstanding ?? 0) > 0
+                    );
+                })(),
             });
         } else {
             setData('invoice_number', init);
@@ -323,10 +330,22 @@ export function ManualPaymentDialog({
                                         status: payload.status,
                                         tenant_name: payload.tenant ?? null,
                                         outstanding: payload.outstanding,
-                                        eligible:
-                                            (payload.status === 'Pending' ||
-                                                payload.status === 'Overdue') &&
-                                            (payload.outstanding ?? 0) > 0,
+                                        eligible: (() => {
+                                            const norm = String(
+                                                payload.status || '',
+                                            )
+                                                .trim()
+                                                .toLowerCase()
+                                                .replace(/\s+/g, '_');
+                                            const isPending =
+                                                norm === 'pending';
+                                            const isOverdue =
+                                                norm === 'overdue';
+                                            return (
+                                                (isPending || isOverdue) &&
+                                                (payload.outstanding ?? 0) > 0
+                                            );
+                                        })(),
                                     });
                                     setLookupError(null);
                                     if (payload.id) amountRef.current?.focus();

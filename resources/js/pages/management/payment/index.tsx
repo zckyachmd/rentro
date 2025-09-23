@@ -162,7 +162,14 @@ export default function PaymentIndex() {
                                         '_blank',
                                     ),
                                 onVoid: (row) => {
-                                    if (row.status === 'Cancelled') return;
+                                    if (
+                                        (row.status || '')
+                                            .trim()
+                                            .toLowerCase()
+                                            .replace(/\s+/g, '_') ===
+                                        'cancelled'
+                                    )
+                                        return;
                                     setVoiding({ target: row, reason: '' });
                                 },
                                 onShowDetail: (row) =>

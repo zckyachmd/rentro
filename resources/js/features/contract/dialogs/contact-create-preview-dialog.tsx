@@ -59,9 +59,7 @@ export default function ContractCreatePreviewDialog({
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-[720px]">
                     <DialogHeader>
-                        <DialogTitle>
-                            {t('preview.title')}
-                        </DialogTitle>
+                        <DialogTitle>{t('preview.title')}</DialogTitle>
                         <DialogDescription>
                             {t('preview.description')}
                         </DialogDescription>
@@ -77,7 +75,9 @@ export default function ContractCreatePreviewDialog({
                             <div className="min-w-0">
                                 <div className="truncate text-sm font-medium">
                                     {tenant?.label ??
-                                        t('preview.placeholders.tenantNotSelected')}
+                                        t(
+                                            'preview.placeholders.tenantNotSelected',
+                                        )}
                                 </div>
                                 <div className="text-muted-foreground truncate text-xs">
                                     {tenant?.description || '-'}
@@ -130,30 +130,31 @@ export default function ContractCreatePreviewDialog({
                                         {periodLabel}
                                     </span>
                                 </div>
-                                {(data.billing_period === 'Monthly' ||
-                                    data.billing_period === 'Weekly' ||
-                                    data.billing_period === 'Daily') && (
+                                {(data.billing_period === 'monthly' ||
+                                    data.billing_period === 'weekly' ||
+                                    data.billing_period === 'daily') && (
                                     <div className="bg-muted/30 grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md p-3">
                                         <span className="text-muted-foreground">
-                                            {t(
-                                                'preview.fields.payment',
-                                            )}
+                                            {t('preview.fields.payment')}
                                         </span>
                                         <span
                                             className="min-w-0 justify-self-end truncate text-right font-medium"
-                                        title={
-                                            data.billing_period === 'Monthly'
-                                                ? data.monthly_payment_mode === 'full'
+                                            title={
+                                                data.billing_period ===
+                                                'monthly'
+                                                    ? data.monthly_payment_mode ===
+                                                      'full'
+                                                        ? t('payment.full')
+                                                        : t('common.monthly')
+                                                    : t('payment.full')
+                                            }
+                                        >
+                                            {data.billing_period === 'monthly'
+                                                ? data.monthly_payment_mode ===
+                                                  'full'
                                                     ? t('payment.full')
                                                     : t('common.monthly')
-                                                : t('payment.full')
-                                        }
-                                        >
-                                        {data.billing_period === 'Monthly'
-                                            ? data.monthly_payment_mode === 'full'
-                                                ? t('payment.full')
-                                                : t('common.monthly')
-                                            : t('payment.full')}
+                                                : t('payment.full')}
                                         </span>
                                     </div>
                                 )}
@@ -164,10 +165,14 @@ export default function ContractCreatePreviewDialog({
                                     <span
                                         className="min-w-0 justify-self-end truncate text-right font-medium"
                                         title={
-                                            data.auto_renew ? t('common.yes') : t('common.no')
+                                            data.auto_renew
+                                                ? t('common.yes')
+                                                : t('common.no')
                                         }
                                     >
-                                        {data.auto_renew ? t('common.yes') : t('common.no')}
+                                        {data.auto_renew
+                                            ? t('common.yes')
+                                            : t('common.no')}
                                     </span>
                                 </div>
                                 <div className="bg-muted/30 grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md p-3">
@@ -223,7 +228,9 @@ export default function ContractCreatePreviewDialog({
                                         </span>
                                         <span
                                             className="min-w-0 justify-self-end truncate text-right font-medium"
-                                            title={formatRupiah(data.rent_rupiah)}
+                                            title={formatRupiah(
+                                                data.rent_rupiah,
+                                            )}
                                         >
                                             {formatRupiah(data.rent_rupiah)}
                                         </span>

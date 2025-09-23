@@ -182,7 +182,9 @@ export default function GenerateInvoiceDialog({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="per_month">
-                                            {t('invoice.generate.mode.per_month')}
+                                            {t(
+                                                'invoice.generate.mode.per_month',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="full">
                                             {t('invoice.generate.mode.full')}

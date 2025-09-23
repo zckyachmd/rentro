@@ -156,7 +156,9 @@ export function ResetPasswordDialog({
                                     rows={3}
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
-                                    placeholder={t('user.reset_password.reason_placeholder')}
+                                    placeholder={t(
+                                        'user.reset_password.reason_placeholder',
+                                    )}
                                     maxLength={200}
                                 />
                                 <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">

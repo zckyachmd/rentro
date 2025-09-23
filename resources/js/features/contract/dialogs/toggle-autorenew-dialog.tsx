@@ -45,10 +45,14 @@ export default function ToggleAutoRenewDialog({
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>
-                        {turningOff ? t('autorenew.stop_title') : t('autorenew.start_title')}
+                        {turningOff
+                            ? t('autorenew.stop_title')
+                            : t('autorenew.start_title')}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                        {turningOff ? t('autorenew.stop_desc') : t('autorenew.start_desc')}
+                        {turningOff
+                            ? t('autorenew.stop_desc')
+                            : t('autorenew.start_desc')}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 {turningOff && (

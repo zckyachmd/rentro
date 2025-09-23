@@ -34,14 +34,15 @@ import type {
     ContractItem,
 } from '@/types/management';
 
+const norm = (s: string) => (s || '').trim().toLowerCase().replace(/\s+/g, '_');
 const CS = {
-    PENDING_PAYMENT: 'Pending Payment',
-    BOOKED: 'Booked',
-    PAID: 'Paid',
-    ACTIVE: 'Active',
-    COMPLETED: 'Completed',
-    OVERDUE: 'Overdue',
-    CANCELLED: 'Cancelled',
+    PENDING_PAYMENT: 'pending_payment',
+    BOOKED: 'booked',
+    PAID: 'paid',
+    ACTIVE: 'active',
+    COMPLETED: 'completed',
+    OVERDUE: 'overdue',
+    CANCELLED: 'cancelled',
 } as const;
 
 const CANCELABLE: ReadonlyArray<string> = [CS.PENDING_PAYMENT, CS.BOOKED];
@@ -79,7 +80,10 @@ export const createColumns = (
                         <Link
                             href={href}
                             className="underline underline-offset-2 hover:opacity-80"
-                            title={i18n.t('management/contract:table.view_detail_title', { number: no })}
+                            title={i18n.t(
+                                'management/contract:table.view_detail_title',
+                                { number: no },
+                            )}
                         >
                             {no}
                         </Link>
@@ -150,13 +154,21 @@ export const createColumns = (
         title: i18n.t('common.status'),
         className: COL.status,
         sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge variant={variantForContractStatus(row.original.status)}>
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const raw = row.original.status || '';
+            const key = norm(raw);
+            const label = i18n.t(`contract.status.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return (
+                <div className={COL.status}>
+                    <Badge variant={variantForContractStatus(raw)}>
+                        {label}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<ContractItem>({
         id: 'days_left',
@@ -185,7 +197,9 @@ export const createColumns = (
             if (days <= 0) {
                 return (
                     <div className={COL.daysLeft}>
-                        <Badge variant="destructive">{i18n.t('management/contract:table.expired')}</Badge>
+                        <Badge variant="destructive">
+                            {i18n.t('management/contract:table.expired')}
+                        </Badge>
                     </div>
                 );
             }
@@ -200,7 +214,9 @@ export const createColumns = (
             }
             return (
                 <div className={COL.daysLeft}>
-                    <Badge variant="secondary">{i18n.t('common.days', { count: days })}</Badge>
+                    <Badge variant="secondary">
+                        {i18n.t('common.days', { count: days })}
+                    </Badge>
                 </div>
             );
         },
@@ -211,7 +227,9 @@ export const createColumns = (
         className: COL.renew,
         cell: ({ row }) => (
             <div className={COL.renew}>
-                {row.original.auto_renew ? i18n.t('common.yes') : i18n.t('common.no')}
+                {row.original.auto_renew
+                    ? i18n.t('common.yes')
+                    : i18n.t('common.no')}
             </div>
         ),
     }),
@@ -220,7 +238,8 @@ export const createColumns = (
         title: i18n.t('common.actions'),
         className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
-            const s = row.original.status;
+            const sRaw = row.original.status || '';
+            const s = norm(sRaw);
             const canCancel = CANCELABLE.includes(s);
             const canStartRenew = RENEW_ALLOWED.includes(s);
             const canStopRenew = s === CS.ACTIVE;
@@ -258,13 +277,18 @@ export const createColumns = (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={i18n.t('management/contract:table.actions_for', { id: row.original.id })}
+                                aria-label={i18n.t(
+                                    'management/contract:table.actions_for',
+                                    { id: row.original.id },
+                                )}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>{i18n.t('common.actions')}</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
@@ -276,7 +300,8 @@ export const createColumns = (
                                     )
                                 }
                             >
-                                <Eye className="mr-2 h-4 w-4" /> {i18n.t('common.view_detail')}
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() =>
@@ -288,7 +313,8 @@ export const createColumns = (
                                     )
                                 }
                             >
-                                <Printer className="mr-2 h-4 w-4" /> {i18n.t('contract.actions.print')}
+                                <Printer className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('contract.actions.print')}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
@@ -300,7 +326,8 @@ export const createColumns = (
                                     router.visit(url + qs);
                                 }}
                             >
-                                <ReceiptText className="mr-2 h-4 w-4" /> {i18n.t('contract.actions.view_invoice')}
+                                <ReceiptText className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('contract.actions.view_invoice')}
                             </DropdownMenuItem>
 
                             {canCheckin && (
@@ -310,7 +337,14 @@ export const createColumns = (
                                             opts?.onCheckin?.(row.original)
                                         }
                                     >
-                                        <LogIn className="mr-2 h-4 w-4" /> {lastCheckin === 'disputed' ? i18n.t('management/contract:handover.menu.redo_checkin') : i18n.t('management/contract:handover.menu.checkin')}
+                                        <LogIn className="mr-2 h-4 w-4" />{' '}
+                                        {lastCheckin === 'disputed'
+                                            ? i18n.t(
+                                                  'management/contract:handover.menu.redo_checkin',
+                                              )
+                                            : i18n.t(
+                                                  'management/contract:handover.menu.checkin',
+                                              )}
                                     </DropdownMenuItem>
                                 </Can>
                             )}
@@ -321,28 +355,37 @@ export const createColumns = (
                                             opts?.onCheckout?.(row.original)
                                         }
                                     >
-                                        <LogOut className="mr-2 h-4 w-4" /> {i18n.t('management/contract:handover.menu.checkout')}
+                                        <LogOut className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t(
+                                            'management/contract:handover.menu.checkout',
+                                        )}
                                     </DropdownMenuItem>
                                 </Can>
                             )}
 
                             {row.original.auto_renew && canStopRenew && (
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            opts?.onStopAutoRenew?.(row.original)
-                                        }
-                                    >
-                                        <RefreshCcw className="mr-2 h-4 w-4" /> {i18n.t('management/contract:autorenew.stop_action')}
-                                    </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        opts?.onStopAutoRenew?.(row.original)
+                                    }
+                                >
+                                    <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t(
+                                        'management/contract:autorenew.stop_action',
+                                    )}
+                                </DropdownMenuItem>
                             )}
                             {!row.original.auto_renew && canStartRenew && (
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            opts?.onStartAutoRenew?.(row.original)
-                                        }
-                                    >
-                                        <RefreshCw className="mr-2 h-4 w-4" /> {i18n.t('management/contract:autorenew.start_action')}
-                                    </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        opts?.onStartAutoRenew?.(row.original)
+                                    }
+                                >
+                                    <RefreshCw className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t(
+                                        'management/contract:autorenew.start_action',
+                                    )}
+                                </DropdownMenuItem>
                             )}
 
                             {canCancel && (
@@ -354,7 +397,8 @@ export const createColumns = (
                                         }
                                         className="text-destructive focus:text-destructive"
                                     >
-                                        <Trash2 className="mr-2 h-4 w-4" /> {i18n.t('common.cancel')}
+                                        <Trash2 className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t('common.cancel')}
                                     </DropdownMenuItem>
                                 </>
                             )}

@@ -167,7 +167,10 @@ export default function CreateUserDialog({
                                                 ),
                                             )
                                         }
-                                        title={t('user.create.remove_role_title', { role: label })}
+                                        title={t(
+                                            'user.create.remove_role_title',
+                                            { role: label },
+                                        )}
                                     >
                                         <span>{label}</span>
                                         <X className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100" />

@@ -23,9 +23,7 @@ export default function ContractsActionGuideDialog({
             <DialogContent className="sm:max-w-[640px]">
                 <DialogHeader>
                     <DialogTitle>{t('guide.title')}</DialogTitle>
-                    <DialogDescription>
-                        {t('guide.desc')}
-                    </DialogDescription>
+                    <DialogDescription>{t('guide.desc')}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
                     <div>

@@ -115,7 +115,10 @@ export const createColumns = (
                         variant={statusColor[st] ?? 'outline'}
                         className="capitalize"
                     >
-                        {t.t(`room.status.${st}`, { defaultValue: row.original.status })}
+                        {t.t(`room.status.${st}`, {
+                            ns: 'enum',
+                            defaultValue: row.original.status,
+                        })}
                     </Badge>
                 </div>
             );

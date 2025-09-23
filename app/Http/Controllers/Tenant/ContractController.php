@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Tenant;
 
+use App\Enum\BillingPeriod;
 use App\Enum\ContractStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StopAutoRenewRequest;
@@ -144,7 +145,7 @@ class ContractController extends Controller
                     'id'          => (string) $r->id,
                     'number'      => (string) $r->number,
                     'name'        => (string) ($r->name ?? ''),
-                    'price_cents' => (int) ($r->effectivePriceCents('Monthly') ?? 0),
+                    'price_cents' => (int) ($r->effectivePriceCents(BillingPeriod::MONTHLY->value) ?? 0),
                     'building'    => $r->building ? [
                         'id'   => (string) $r->building->id,
                         'name' => (string) ($r->building->name ?? ''),

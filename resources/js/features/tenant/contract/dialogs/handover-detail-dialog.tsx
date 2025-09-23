@@ -181,13 +181,17 @@ export default function TenantHandoverDetailDialog({
                                 <section className="bg-muted/10 rounded-xl border">
                                     <div className="grid grid-cols-2 gap-3 p-4 text-sm sm:grid-cols-3 sm:gap-4 sm:p-5">
                                         <div className="space-y-1">
-                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">{t('common.type')}</div>
+                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">
+                                                {t('common.type')}
+                                            </div>
                                             <div className="text-base font-semibold capitalize">
                                                 {currentHandover.type}
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">{t('common.time')}</div>
+                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">
+                                                {t('common.time')}
+                                            </div>
                                             <div className="text-base font-semibold">
                                                 {formatDate(
                                                     currentHandover.recorded_at,
@@ -196,7 +200,9 @@ export default function TenantHandoverDetailDialog({
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">{t('common.status')}</div>
+                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">
+                                                {t('common.status')}
+                                            </div>
                                             <div>
                                                 <Badge variant="outline">
                                                     {currentHandover.status}
@@ -209,7 +215,9 @@ export default function TenantHandoverDetailDialog({
                                     {currentHandover.disputed ? (
                                         <div className="border-destructive/30 bg-destructive/5 mx-4 mb-4 rounded-lg border p-3 sm:mx-5 sm:mb-5 sm:p-4">
                                             <div className="flex items-center gap-2 text-sm">
-                                                <Badge variant="destructive">{t('handover.disputed')}</Badge>
+                                                <Badge variant="destructive">
+                                                    {t('handover.disputed')}
+                                                </Badge>
                                                 {!disputeSameAsRecorded && (
                                                     <span className="text-destructive">
                                                         {formatDate(
@@ -230,7 +238,9 @@ export default function TenantHandoverDetailDialog({
                                     ) : currentHandover.acknowledged ? (
                                         <div className="mx-4 mb-4 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 sm:mx-5 sm:mb-5 sm:p-4 dark:border-emerald-900/40 dark:bg-emerald-900/15">
                                             <div className="flex items-center gap-2 text-sm">
-                                                <Badge variant="outline">{t('handover.confirmed')}</Badge>
+                                                <Badge variant="outline">
+                                                    {t('handover.confirmed')}
+                                                </Badge>
                                                 {!ackSameAsRecorded && (
                                                     <span className="text-muted-foreground">
                                                         {formatDate(
@@ -255,7 +265,9 @@ export default function TenantHandoverDetailDialog({
                                 {currentHandover.notes ? (
                                     <section className="bg-muted/10 rounded-xl border">
                                         <div className="flex min-w-0 flex-col gap-3 p-4 sm:p-5">
-                                            <div className="text-foreground text-sm font-semibold">{t('common.note')}</div>
+                                            <div className="text-foreground text-sm font-semibold">
+                                                {t('common.note')}
+                                            </div>
                                             <ScrollArea className="bg-background/80 max-h-48 min-h-[84px] overflow-auto rounded-lg border">
                                                 <div className="max-w-full p-4 text-sm leading-relaxed break-words wrap-anywhere whitespace-pre-wrap">
                                                     {String(
@@ -273,8 +285,15 @@ export default function TenantHandoverDetailDialog({
                                     <section className="bg-muted/10 rounded-xl border">
                                         <div className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-5">
                                             <div className="flex items-center justify-between">
-                                                <div className="text-foreground text-sm font-semibold">{t('common.attachments')}</div>
-                                                <span className="text-muted-foreground text-xs">{t('common.files', { count: currentHandover.attachments.length })}</span>
+                                                <div className="text-foreground text-sm font-semibold">
+                                                    {t('common.attachments')}
+                                                </div>
+                                                <span className="text-muted-foreground text-xs">
+                                                    {t('common.files', {
+                                                        count: currentHandover
+                                                            .attachments.length,
+                                                    })}
+                                                </span>
                                             </div>
                                             <ScrollArea className="bg-background/40 max-h-[280px] rounded-lg border border-dashed">
                                                 <div className="grid gap-3 p-3 sm:grid-cols-3 sm:p-4 md:grid-cols-4 md:p-5">
@@ -412,7 +431,11 @@ export default function TenantHandoverDetailDialog({
                                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                                     {disputeMode ? (
                                         <div className="flex w-full flex-col gap-2 sm:w-[360px]">
-                                            <div className="text-muted-foreground text-xs font-medium">{t('tenant.handover.dispute_label')}</div>
+                                            <div className="text-muted-foreground text-xs font-medium">
+                                                {t(
+                                                    'tenant.handover.dispute_label',
+                                                )}
+                                            </div>
                                             <textarea
                                                 rows={3}
                                                 className="bg-background w-full resize-y rounded-md border p-2 text-sm"
@@ -422,7 +445,9 @@ export default function TenantHandoverDetailDialog({
                                                         e.target.value,
                                                     )
                                                 }
-                                                placeholder={t('tenant.handover.dispute_placeholder')}
+                                                placeholder={t(
+                                                    'tenant.handover.dispute_placeholder',
+                                                )}
                                             />
                                             <div className="text-muted-foreground flex items-center justify-between text-[11px]">
                                                 <span>
@@ -453,8 +478,12 @@ export default function TenantHandoverDetailDialog({
                                                         onClick={doDispute}
                                                     >
                                                         {disputeSaving
-                                                            ? t('common.sending')
-                                                            : t('tenant.handover.submit_dispute')}
+                                                            ? t(
+                                                                  'common.sending',
+                                                              )
+                                                            : t(
+                                                                  'tenant.handover.submit_dispute',
+                                                              )}
                                                     </Button>
                                                 </div>
                                             </div>
@@ -479,7 +508,9 @@ export default function TenantHandoverDetailDialog({
                                             >
                                                 {ackSaving
                                                     ? t('common.saving')
-                                                    : t('tenant.handover.confirm')}
+                                                    : t(
+                                                          'tenant.handover.confirm',
+                                                      )}
                                             </Button>
                                         </>
                                     )}

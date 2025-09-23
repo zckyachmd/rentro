@@ -28,13 +28,19 @@ function discoverNamespacesFor(lang: string): string[] {
     const tsSuffix = '.ts';
     const jsSuffix = '.js';
     const nsFromModules = Object.keys(modTable)
-        .filter((k) => k.startsWith(prefix) && (k.endsWith(tsSuffix) || k.endsWith(jsSuffix)))
+        .filter(
+            (k) =>
+                k.startsWith(prefix) &&
+                (k.endsWith(tsSuffix) || k.endsWith(jsSuffix)),
+        )
         .map((k) => {
             const noPrefix = k.slice(prefix.length);
             return noPrefix.replace(/\.(ts|js)$/i, '');
         });
 
-    return uniq([...nsFromJson, ...nsFromModules]).filter((ns) => ns && ns !== 'common');
+    return uniq([...nsFromJson, ...nsFromModules]).filter(
+        (ns) => ns && ns !== 'common',
+    );
 }
 
 function readMeta(name: string): string | undefined {
@@ -170,8 +176,19 @@ if (!i18n.isInitialized) {
             const active = (i18n.language || fallbackSetting).toLowerCase();
             const base = active.split('-')[0];
 
-            const envPreload = String((import.meta as any).env?.VITE_I18N_PRELOAD_ALL || '').toLowerCase() === 'true';
-            const preloadAll = (Boolean((import.meta as any).env?.DEV) === true) || envPreload;
+            type MetaEnv = {
+                VITE_I18N_PRELOAD_ALL?: string;
+                DEV?: string | boolean;
+            };
+            const env = (import.meta as unknown as { env?: MetaEnv }).env || {};
+            const envPreload =
+                String(env.VITE_I18N_PRELOAD_ALL ?? '').toLowerCase() ===
+                'true';
+            const devFlag =
+                typeof env.DEV === 'boolean'
+                    ? env.DEV
+                    : String(env.DEV ?? '').toLowerCase() === 'true';
+            const preloadAll = devFlag || envPreload;
 
             if (!preloadAll) {
                 return;

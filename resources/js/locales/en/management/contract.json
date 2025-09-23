@@ -29,7 +29,7 @@
         "desc": "You have unsaved changes on the contract form. Leaving will discard them."
     },
     "payment": { "full": "Paid in full" },
-    
+
     "preview": {
         "title": "Confirm Contract Data",
         "description": "Review the data. Make sure all information is correct.",
@@ -222,9 +222,19 @@
             "placeholder": "Optional: add special rules, room conditions, electricity/water policy, etc."
         },
         "form": {
-            "suffix": { "daily": "per day", "weekly": "per week", "monthly": "per month" },
-            "fields": { "rent": "Rent Cost ({{suffix}})", "deposit": "Deposit" },
-            "placeholders": { "rent": "e.g. 1,200,000", "deposit": "e.g. 500,000 (optional)" }
+            "suffix": {
+                "daily": "per day",
+                "weekly": "per week",
+                "monthly": "per month"
+            },
+            "fields": {
+                "rent": "Rent Cost ({{suffix}})",
+                "deposit": "Deposit"
+            },
+            "placeholders": {
+                "rent": "e.g. 1,200,000",
+                "deposit": "e.g. 500,000 (optional)"
+            }
         },
         "list": {}
     }

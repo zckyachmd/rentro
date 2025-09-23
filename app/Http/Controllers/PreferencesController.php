@@ -11,13 +11,7 @@ class PreferencesController extends Controller
 {
     public function updateTheme(UpdateThemePreferenceRequest $request): Response|RedirectResponse
     {
-        $theme = $request->theme();
-        // Normalize enum/string to plain string for persistence & cookie
-        if ($theme instanceof \BackedEnum) {
-            $theme = $theme->value;
-        } elseif (!is_string($theme)) {
-            $theme = (string) $theme;
-        }
+        $theme = $request->theme()->value;
 
         if ($request->user()) {
             try {
@@ -52,13 +46,7 @@ class PreferencesController extends Controller
 
     public function updateLocale(UpdateLocalePreferenceRequest $request): Response|RedirectResponse
     {
-        $locale = $request->locale();
-        // Normalize enum/string to plain string for persistence & cookie
-        if ($locale instanceof \BackedEnum) {
-            $locale = $locale->value;
-        } elseif (!is_string($locale)) {
-            $locale = (string) $locale;
-        }
+        $locale = $request->locale()->value;
 
         if ($request->user()) {
             try {

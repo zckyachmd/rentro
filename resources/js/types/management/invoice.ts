@@ -5,7 +5,7 @@ export type BaseInvoiceRow = {
     amount_cents: number;
     outstanding?: number;
     ticket_url?: string | null;
-    status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
+    status: string; // e.g., 'pending' | 'overdue' | 'paid' | 'cancelled'
     tenant?: string | null;
     room_number?: string | null;
 };
@@ -22,7 +22,7 @@ export type InvoiceRow = BaseInvoiceRow;
 export type ContractOption = {
     id: string;
     name: string;
-    period?: 'Monthly' | 'Weekly' | 'Daily' | string;
+    period?: 'monthly' | 'weekly' | 'daily' | string;
     start_date?: string | null;
     end_date?: string | null;
 };

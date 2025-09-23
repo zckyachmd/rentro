@@ -87,7 +87,8 @@ export function RoleDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <ShieldCheck className="h-5 w-5" /> {t('user.actions.manage_roles')}
+                        <ShieldCheck className="h-5 w-5" />{' '}
+                        {t('user.actions.manage_roles')}
                     </DialogTitle>
                     <DialogDescription>
                         {t('user.roles.dialog_desc')}
@@ -117,7 +118,9 @@ export function RoleDialog({
                     <div className="relative flex-1">
                         <Search className="pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 opacity-50" />
                         <Input
-                            placeholder={t('management.role.search_placeholder')}
+                            placeholder={t(
+                                'management.role.search_placeholder',
+                            )}
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             className="pl-8"
@@ -175,7 +178,10 @@ export function RoleDialog({
                 <DialogFooter>
                     <div className="text-muted-foreground flex w-full items-center justify-between text-xs">
                         <span>
-                            {t('common.selected')}: <span className="text-foreground font-medium">{countSelected}</span>
+                            {t('common.selected')}:{' '}
+                            <span className="text-foreground font-medium">
+                                {countSelected}
+                            </span>
                         </span>
                         <div className="flex items-center gap-2">
                             <Button

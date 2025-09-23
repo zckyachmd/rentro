@@ -1,60 +1,60 @@
 {
-  "title": "Kontrak Saya",
-  "title_with_number": "Kontrak #{{number}}",
-  "desc": "Daftar kontrak kamar Anda.",
-  "detail_desc": "Detail kontrak Anda.",
-  "filter": "Filter",
-  "search": {
-    "aria": "Cari nomor kontrak atau kamar",
-    "placeholder": "Cari nomor kontrak/kamar…"
-  },
-  "empty": "Tidak ada kontrak.",
-  "expired": "Habis",
-  "days_left": "Sisa Hari",
-  "period": "Periode",
-  "rent": "Sewa",
-  "deposit": "Deposit",
-  "auto_renew": "Auto‑Renew",
-  "billing_period": "Periode Tagih",
-  "billing_day": "Tanggal Penagihan",
-  "room_info": { "title": "Informasi Kamar", "room_price": "Harga Kamar" },
-  "info": { "title": "Informasi Kontrak" },
-  "no_checkin": "Belum ada data check‑in.",
-  "no_checkout": "Belum ada data check‑out.",
-  "breadcrumb": { "contracts": "Kontrak", "detail": "Detail Kontrak" },
-  "actions_for": "Aksi kontrak {{id}}",
-  "view_checkin": "Lihat Check‑in",
-  "view_checkout": "Lihat Check‑out",
-  "handover": {
-    "confirm_button": "Konfirmasi",
-    "title": "Serah Terima",
-    "actions_aria": "Aksi Serah Terima",
-    "confirm_title": "Konfirmasi Serah Terima",
-    "confirm_desc": "Pastikan Anda sudah meninjau catatan & lampiran. Aksi ini menandai serah terima sebagai telah Anda setujui.",
-    "confirm_note_prefix": "Setelah dikonfirmasi, Anda tetap dapat mengajukan sanggahan melalui admin jika diperlukan, namun status awal akan tercatat sebagai",
-    "confirmed": "Dikonfirmasi",
-    "dispute_title": "Sanggah Serah Terima",
-    "dispute_desc": "Jelaskan alasan sanggahan Anda.",
-    "dispute_placeholder": "Contoh: terdapat kerusakan yang belum dicatat",
-    "dispute_hint": "Tulis alasan secara ringkas dan jelas (min. 5 karakter).",
-    "dispute_submit": "Kirim Sanggahan",
-    "empty": "Belum ada riwayat serah terima."
-  },
-  "stop": {
-    "title": "Nonaktifkan Perpanjangan Otomatis",
-    "desc": "Apakah Anda yakin ingin menonaktifkan perpanjangan otomatis kontrak ini? Jika dinonaktifkan, kontrak tidak akan diperpanjang secara otomatis setelah berakhir. Untuk mengaktifkan kembali perpanjangan otomatis, silakan hubungi admin.",
-    "disable_button": "Nonaktifkan",
-    "confirm_ack": "Saya telah membaca dan memahami informasi di atas.",
-    "summary": {
-      "end_date": "Tanggal berakhir",
-      "days_left": "Sisa hari",
-      "forfeit_limit": "Batas penalti deposit"
+    "title": "Kontrak Saya",
+    "title_with_number": "Kontrak #{{number}}",
+    "desc": "Daftar kontrak kamar Anda.",
+    "detail_desc": "Detail kontrak Anda.",
+    "filter": "Filter",
+    "search": {
+        "aria": "Cari nomor kontrak atau kamar",
+        "placeholder": "Cari nomor kontrak/kamar…"
     },
-    "notice": {
-      "title": "Hal yang perlu diperhatikan:",
-      "no_guarantee": "Tidak ada jaminan perpanjangan jika kamar sudah dibooking penyewa lain.",
-      "forfeit_now": "Karena kurang dari {{days}} hari sebelum tanggal berakhir, deposit Anda akan hangus sesuai kebijakan.",
-      "forfeit_cond": "Jika penghentian dilakukan kurang dari {{days}} hari sebelum tanggal berakhir, deposit akan hangus sesuai kebijakan."
+    "empty": "Tidak ada kontrak.",
+    "expired": "Habis",
+    "days_left": "Sisa Hari",
+    "period": "Periode",
+    "rent": "Sewa",
+    "deposit": "Deposit",
+    "auto_renew": "Auto‑Renew",
+    "billing_period": "Periode Tagih",
+    "billing_day": "Tanggal Penagihan",
+    "room_info": { "title": "Informasi Kamar", "room_price": "Harga Kamar" },
+    "info": { "title": "Informasi Kontrak" },
+    "no_checkin": "Belum ada data check‑in.",
+    "no_checkout": "Belum ada data check‑out.",
+    "breadcrumb": { "contracts": "Kontrak", "detail": "Detail Kontrak" },
+    "actions_for": "Aksi kontrak {{id}}",
+    "view_checkin": "Lihat Check‑in",
+    "view_checkout": "Lihat Check‑out",
+    "handover": {
+        "confirm_button": "Konfirmasi",
+        "title": "Serah Terima",
+        "actions_aria": "Aksi Serah Terima",
+        "confirm_title": "Konfirmasi Serah Terima",
+        "confirm_desc": "Pastikan Anda sudah meninjau catatan & lampiran. Aksi ini menandai serah terima sebagai telah Anda setujui.",
+        "confirm_note_prefix": "Setelah dikonfirmasi, Anda tetap dapat mengajukan sanggahan melalui admin jika diperlukan, namun status awal akan tercatat sebagai",
+        "confirmed": "Dikonfirmasi",
+        "dispute_title": "Sanggah Serah Terima",
+        "dispute_desc": "Jelaskan alasan sanggahan Anda.",
+        "dispute_placeholder": "Contoh: terdapat kerusakan yang belum dicatat",
+        "dispute_hint": "Tulis alasan secara ringkas dan jelas (min. 5 karakter).",
+        "dispute_submit": "Kirim Sanggahan",
+        "empty": "Belum ada riwayat serah terima."
+    },
+    "stop": {
+        "title": "Nonaktifkan Perpanjangan Otomatis",
+        "desc": "Apakah Anda yakin ingin menonaktifkan perpanjangan otomatis kontrak ini? Jika dinonaktifkan, kontrak tidak akan diperpanjang secara otomatis setelah berakhir. Untuk mengaktifkan kembali perpanjangan otomatis, silakan hubungi admin.",
+        "disable_button": "Nonaktifkan",
+        "confirm_ack": "Saya telah membaca dan memahami informasi di atas.",
+        "summary": {
+            "end_date": "Tanggal berakhir",
+            "days_left": "Sisa hari",
+            "forfeit_limit": "Batas penalti deposit"
+        },
+        "notice": {
+            "title": "Hal yang perlu diperhatikan:",
+            "no_guarantee": "Tidak ada jaminan perpanjangan jika kamar sudah dibooking penyewa lain.",
+            "forfeit_now": "Karena kurang dari {{days}} hari sebelum tanggal berakhir, deposit Anda akan hangus sesuai kebijakan.",
+            "forfeit_cond": "Jika penghentian dilakukan kurang dari {{days}} hari sebelum tanggal berakhir, deposit akan hangus sesuai kebijakan."
+        }
     }
-  }
 }

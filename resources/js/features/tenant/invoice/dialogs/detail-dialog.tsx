@@ -312,7 +312,10 @@ export default function TenantInvoiceDetailDialog({
                             >
                                 {(() => {
                                     const last = (data.payments || [])[0];
-                                    return last && last.status === 'Rejected'
+                                    return last &&
+                                        (last.status || '')
+                                            .trim()
+                                            .toLowerCase() === 'rejected'
                                         ? t('tenant.invoice.pay_again')
                                         : t('common.pay');
                                 })()}

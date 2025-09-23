@@ -140,7 +140,9 @@ export default function RoleUpsertDialog({
                                 aria-label={t('role.pick_guard')}
                                 className="h-10 w-full justify-between text-sm"
                             >
-                                <SelectValue placeholder={t('role.pick_guard')} />
+                                <SelectValue
+                                    placeholder={t('role.pick_guard')}
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 {guardOptions.map((g) => (

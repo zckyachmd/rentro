@@ -84,7 +84,7 @@ class InvoiceService implements InvoiceServiceInterface
         $rentCentsMonthly = (int) $contract->rent_cents;
 
         $latest = $contract->invoices()
-            ->where('status', '!=', InvoiceStatus::CANCELLED)
+            ->where('status', '!=', InvoiceStatus::CANCELLED->value)
             ->orderByDesc('period_end')
             ->first(['id', 'period_start', 'period_end', 'status']);
         /** @var \App\Models\Invoice|null $latest */
@@ -563,7 +563,7 @@ class InvoiceService implements InvoiceServiceInterface
             'amount_cents'      => $amount,
             'outstanding_cents' => $amount,
             'items'             => $items,
-            'status'            => InvoiceStatus::PENDING,
+            'status'            => InvoiceStatus::PENDING->value,
             'paid_at'           => null,
         ]);
     }

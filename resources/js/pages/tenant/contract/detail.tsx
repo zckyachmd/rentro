@@ -212,7 +212,10 @@ export default function TenantContractDetail(props: PageProps) {
                                             .trim()
                                             .toLowerCase()
                                             .replace(/\s+/g, '_')}`,
-                                        { defaultValue: contract.status },
+                                        {
+                                            ns: 'enum',
+                                            defaultValue: contract.status,
+                                        },
                                     )}
                                 </Badge>
                             </div>
@@ -222,9 +225,7 @@ export default function TenantContractDetail(props: PageProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            {tTenant('room_info.title')}
-                        </CardTitle>
+                        <CardTitle>{tTenant('room_info.title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-3 text-sm">
                         <div className="flex items-center justify-between">
@@ -275,7 +276,9 @@ export default function TenantContractDetail(props: PageProps) {
                                     <th className="h-10 px-4 text-left">
                                         {t('common.number')}
                                     </th>
-                                    <th className="h-10 px-4 text-left">{tTenant('period')}</th>
+                                    <th className="h-10 px-4 text-left">
+                                        {tTenant('period')}
+                                    </th>
                                     <th className="h-10 px-4 text-left">
                                         {t('common.due_date')}
                                     </th>
@@ -295,7 +298,9 @@ export default function TenantContractDetail(props: PageProps) {
                                                 <a
                                                     href={`${route('tenant.invoices.index')}?q=${encodeURIComponent(inv.number)}`}
                                                     className="underline underline-offset-2 hover:opacity-80"
-                                                    title={t('contract.actions.view_invoices_page')}
+                                                    title={t(
+                                                        'contract.actions.view_invoices_page',
+                                                    )}
                                                 >
                                                     {inv.number}
                                                 </a>
@@ -329,6 +334,7 @@ export default function TenantContractDetail(props: PageProps) {
                                                                 '_',
                                                             )}`,
                                                         {
+                                                            ns: 'enum',
                                                             defaultValue:
                                                                 inv.status,
                                                         },
@@ -412,7 +418,9 @@ export default function TenantContractDetail(props: PageProps) {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8"
-                                                aria-label={tTenant('handover.actions_aria')}
+                                                                aria-label={tTenant(
+                                                                    'handover.actions_aria',
+                                                                )}
                                                             >
                                                                 <MoreHorizontal className="h-4 w-4" />
                                                             </Button>
@@ -626,10 +634,10 @@ export default function TenantContractDetail(props: PageProps) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                                {tTenant('handover.dispute_title')}
+                            {tTenant('handover.dispute_title')}
                         </DialogTitle>
                         <DialogDescription>
-                                {tTenant('handover.dispute_desc')}
+                            {tTenant('handover.dispute_desc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-2">
@@ -643,12 +651,12 @@ export default function TenantContractDetail(props: PageProps) {
                                     note: e.target.value,
                                 }))
                             }
-                                placeholder={tTenant('handover.dispute_placeholder')}
+                            placeholder={tTenant(
+                                'handover.dispute_placeholder',
+                            )}
                         />
                         <div className="text-muted-foreground flex items-center justify-between text-[11px]">
-                            <span>
-                                {tTenant('handover.dispute_hint')}
-                            </span>
+                            <span>{tTenant('handover.dispute_hint')}</span>
                             {disputeRule.length < 5 ? (
                                 <span>{disputeRule.length}/5*</span>
                             ) : null}

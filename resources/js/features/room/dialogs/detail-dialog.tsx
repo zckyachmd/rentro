@@ -134,7 +134,9 @@ export default function RoomDetailDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex w-[95vw] max-w-[calc(100%-1.5rem)] flex-col gap-0 p-0 sm:max-w-3xl">
                 <DialogHeader className="px-5 pt-6 pb-4 sm:px-6">
-                    <DialogTitle>{t('management.room.detail_title')}</DialogTitle>
+                    <DialogTitle>
+                        {t('management.room.detail_title')}
+                    </DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 overflow-auto overscroll-contain">
                     <div className="space-y-6 px-5 py-6 sm:px-6">
@@ -193,8 +195,15 @@ export default function RoomDetailDialog({
                                                         }
                                                     >
                                                         {t(
-                                                            `room.status.${String(data.status || '').toLowerCase()}`,
-                                                            { defaultValue: data.status },
+                                                            `room.status.${String(
+                                                                data.status ||
+                                                                    '',
+                                                            ).toLowerCase()}`,
+                                                            {
+                                                                ns: 'enum',
+                                                                defaultValue:
+                                                                    data.status,
+                                                            },
                                                         )}
                                                     </Badge>
                                                 </div>
@@ -224,7 +233,9 @@ export default function RoomDetailDialog({
                                         <div className="grid gap-4 sm:grid-cols-3">
                                             <div className="space-y-1">
                                                 <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                                                    {t('management.room.building')}
+                                                    {t(
+                                                        'management.room.building',
+                                                    )}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.building?.name ?? '-'}
@@ -267,7 +278,9 @@ export default function RoomDetailDialog({
                                                         src={currentPhoto.url}
                                                         alt={`${t('common.room')} ${data.number}`}
                                                         className="h-full w-full cursor-zoom-in object-cover"
-                                                        title={t('common.click_to_preview')}
+                                                        title={t(
+                                                            'common.click_to_preview',
+                                                        )}
                                                         onClick={() => {
                                                             setPreviewOpen(
                                                                 true,
@@ -281,7 +294,9 @@ export default function RoomDetailDialog({
                                                     <div className="text-muted-foreground flex h-full w-full items-center justify-center">
                                                         <div className="flex items-center gap-2">
                                                             <ImageIcon className="h-5 w-5" />{' '}
-                                                            {t('management.room.no_photos')}
+                                                            {t(
+                                                                'management.room.no_photos',
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -293,7 +308,9 @@ export default function RoomDetailDialog({
                                                             variant="secondary"
                                                             className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/60 text-white hover:bg-black/70"
                                                             onClick={prev}
-                                                            title={t('datatable.prev')}
+                                                            title={t(
+                                                                'datatable.prev',
+                                                            )}
                                                         >
                                                             <ChevronLeft className="h-4 w-4" />
                                                         </Button>
@@ -303,7 +320,9 @@ export default function RoomDetailDialog({
                                                             variant="secondary"
                                                             className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/60 text-white hover:bg-black/70"
                                                             onClick={next}
-                                                            title={t('datatable.next')}
+                                                            title={t(
+                                                                'datatable.next',
+                                                            )}
                                                         >
                                                             <ChevronRight className="h-4 w-4" />
                                                         </Button>
@@ -327,7 +346,6 @@ export default function RoomDetailDialog({
                                                         onClick={() =>
                                                             selectThumb(i)
                                                         }
-                                                        
                                                     >
                                                         <img
                                                             src={p.url}
@@ -336,7 +354,9 @@ export default function RoomDetailDialog({
                                                         />
                                                         {p.is_cover ? (
                                                             <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
-                                                                {t('management.room.form.photos.cover')}
+                                                                {t(
+                                                                    'management.room.form.photos.cover',
+                                                                )}
                                                             </span>
                                                         ) : null}
                                                     </button>
@@ -364,7 +384,9 @@ export default function RoomDetailDialog({
                                                     ))
                                                 ) : (
                                                     <div className="text-muted-foreground">
-                                                        {t('common.no_amenities')}
+                                                        {t(
+                                                            'common.no_amenities',
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

@@ -48,13 +48,18 @@ export default function ContractDetailPage(props: {
     const { t: tContract } = useTranslation('management/contract');
     const { contract, tenant, room, invoices, handover } = props;
     const BREADCRUMBS: Crumb[] = [
-        { label: tContract('list.title'), href: route('management.contracts.index') },
+        {
+            label: tContract('list.title'),
+            href: route('management.contracts.index'),
+        },
         { label: tContract('detail.title', 'Contract Detail'), href: '#' },
     ];
 
     return (
         <AuthLayout
-            pageTitle={tContract('detail.title_format', { number: contract.number ?? contract.id })}
+            pageTitle={tContract('detail.title_format', {
+                number: contract.number ?? contract.id,
+            })}
             pageDescription={tContract('list.desc')}
             breadcrumbs={BREADCRUMBS}
         >
@@ -69,9 +74,7 @@ export default function ContractDetailPage(props: {
                 {/* Informasi Kontrak */}
                 <Card className="lg:col-span-2">
                     <CardHeader className="pb-3">
-                        <CardTitle>
-                            {tContract('info_title')}
-                        </CardTitle>
+                        <CardTitle>{tContract('info_title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -123,9 +126,7 @@ export default function ContractDetailPage(props: {
                             <div className="rounded-lg border p-4">
                                 <div className="text-muted-foreground mb-2 flex items-center gap-2">
                                     <Repeat className="h-4 w-4" />
-                                    <span>
-                                        {tContract('settings')}
-                                    </span>
+                                    <span>{tContract('settings')}</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-y-2">
                                     <div className="text-muted-foreground">
@@ -182,16 +183,21 @@ export default function ContractDetailPage(props: {
                             <div className="rounded-lg border p-4 md:col-span-2">
                                 <div className="text-muted-foreground mb-2 flex items-center gap-2">
                                     <Wallet className="h-4 w-4" />
-                                    <span>
-                                        {tContract('costs')}
-                                    </span>
+                                    <span>{tContract('costs')}</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-y-2">
-                                    <div className="text-muted-foreground">{tContract('detail.costs.rent', 'Rent')}</div>
+                                    <div className="text-muted-foreground">
+                                        {tContract('detail.costs.rent', 'Rent')}
+                                    </div>
                                     <div className="text-right">
                                         {formatIDR(contract.rent_cents)}
                                     </div>
-                                    <div className="text-muted-foreground">{tContract('detail.costs.deposit', 'Deposit')}</div>
+                                    <div className="text-muted-foreground">
+                                        {tContract(
+                                            'detail.costs.deposit',
+                                            'Deposit',
+                                        )}
+                                    </div>
                                     <div className="text-right">
                                         {formatIDR(contract.deposit_cents)}
                                     </div>
@@ -204,18 +210,14 @@ export default function ContractDetailPage(props: {
                 {/* Penyewa & Kamar */}
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle>
-                            {tContract('tenant_room_title')}
-                        </CardTitle>
+                        <CardTitle>{tContract('tenant_room_title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm">
                         <div className="space-y-3">
                             <div className="rounded-lg border p-4">
                                 <div className="text-muted-foreground mb-2 flex items-center gap-2">
                                     <User className="h-4 w-4" />
-                                    <span>
-                                        {t('common.tenant')}
-                                    </span>
+                                    <span>{t('common.tenant')}</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-y-2">
                                     <div className="text-muted-foreground">
@@ -315,9 +317,7 @@ export default function ContractDetailPage(props: {
             {/* Invoice */}
             <Card className="mt-6">
                 <CardHeader className="pb-3">
-                    <CardTitle>
-                        {t('invoice.title')}
-                    </CardTitle>
+                    <CardTitle>{t('invoice.title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="w-full">

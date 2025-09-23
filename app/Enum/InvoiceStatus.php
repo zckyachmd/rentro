@@ -4,8 +4,13 @@ namespace App\Enum;
 
 enum InvoiceStatus: string
 {
-    case PENDING   = 'Pending';
-    case OVERDUE   = 'Overdue';
-    case PAID      = 'Paid';
-    case CANCELLED = 'Cancelled';
+    case PENDING   = 'pending';
+    case OVERDUE   = 'overdue';
+    case PAID      = 'paid';
+    case CANCELLED = 'cancelled';
+
+    public function label(): string
+    {
+        return __('enum.invoice.status.' . strtolower($this->name));
+    }
 }

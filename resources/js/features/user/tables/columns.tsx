@@ -124,9 +124,9 @@ export const createColumns = (
             const roles = row.original.roles || [];
             if (!roles.length) {
                 return (
-                        <Badge variant="outline">
-                            {i18n.t('user.table.no_role')}
-                        </Badge>
+                    <Badge variant="outline">
+                        {i18n.t('user.table.no_role')}
+                    </Badge>
                 );
             }
             return (

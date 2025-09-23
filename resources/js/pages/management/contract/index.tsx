@@ -183,8 +183,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                     router.visit(route('management.contracts.create'))
                 }
             >
-                <Plus className="mr-2 h-4 w-4" />{' '}
-                {tContract('list.create')}
+                <Plus className="mr-2 h-4 w-4" /> {tContract('list.create')}
             </Button>
         </div>
     );
@@ -211,7 +210,9 @@ export default function ContractIndex(props: ContractsPageProps) {
                     <CardContent className="space-y-3">
                         <div className="grid items-end gap-3 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="contract-search">{t('datatable.search')}</Label>
+                                <Label htmlFor="contract-search">
+                                    {t('datatable.search')}
+                                </Label>
                                 <div className="relative">
                                     <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                                     <Input
@@ -227,8 +228,12 @@ export default function ContractIndex(props: ContractsPageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder={t('datatable.search_placeholder')}
-                                        aria-label={t('datatable.search_placeholder')}
+                                        placeholder={t(
+                                            'datatable.search_placeholder',
+                                        )}
+                                        aria-label={t(
+                                            'datatable.search_placeholder',
+                                        )}
                                     />
                                 </div>
                             </div>

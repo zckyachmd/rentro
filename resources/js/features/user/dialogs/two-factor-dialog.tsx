@@ -172,14 +172,18 @@ export function TwoFADialog({
                         {enabled ? (
                             <>
                                 <div className="space-y-2">
-                                    <Label>{t('user.twofa.reason_label')}</Label>
+                                    <Label>
+                                        {t('user.twofa.reason_label')}
+                                    </Label>
                                     <Textarea
                                         rows={3}
                                         value={reason}
                                         onChange={(e) =>
                                             setReason(e.target.value)
                                         }
-                                        placeholder={t('user.twofa.reason_placeholder')}
+                                        placeholder={t(
+                                            'user.twofa.reason_placeholder',
+                                        )}
                                         maxLength={200}
                                     />
                                     <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
@@ -200,7 +204,9 @@ export function TwoFADialog({
                                         disabled={
                                             loading === 'view' || !rule.valid
                                         }
-                                        aria-label={t('user.twofa.view_codes_aria')}
+                                        aria-label={t(
+                                            'user.twofa.view_codes_aria',
+                                        )}
                                     >
                                         {loading === 'view' ? (
                                             <EyeOff className="mr-2 h-4 w-4" />
@@ -217,7 +223,9 @@ export function TwoFADialog({
                                         disabled={
                                             loading === 'disable' || !rule.valid
                                         }
-                                        aria-label={t('user.twofa.disable_aria')}
+                                        aria-label={t(
+                                            'user.twofa.disable_aria',
+                                        )}
                                     >
                                         {t('security.2fa.disable')}
                                     </Button>
@@ -241,10 +249,14 @@ export function TwoFADialog({
                                                 size="sm"
                                                 onClick={handleRegenerate}
                                                 disabled={loading === 'regen'}
-                                                aria-label={t('security.2fa.recovery.regen')}
+                                                aria-label={t(
+                                                    'security.2fa.recovery.regen',
+                                                )}
                                             >
                                                 <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                                {t('security.2fa.recovery.regen')}
+                                                {t(
+                                                    'security.2fa.recovery.regen',
+                                                )}
                                             </Button>
                                         ) : null}
                                     </div>
@@ -299,7 +311,9 @@ export function TwoFADialog({
                         ) : null}
                     </div>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogCancel>
+                            {t('common.cancel')}
+                        </AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             onClick={handleDisable}

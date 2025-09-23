@@ -215,6 +215,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
                                                     {t(
                                                         `invoice.status.${slug}`,
                                                         {
+                                                            ns: 'enum',
                                                             defaultValue:
                                                                 String(s),
                                                         },

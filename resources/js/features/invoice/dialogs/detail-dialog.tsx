@@ -14,8 +14,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { createAbort, getJson } from '@/lib/api';
-import i18n from '@/lib/i18n';
 import { formatDate, formatIDR } from '@/lib/format';
+import i18n from '@/lib/i18n';
 import type {
     ManagementInvoiceDetailDTO as InvoiceDetailDTO,
     ManagementInvoiceDetailTarget as InvoiceDetailTarget,
@@ -147,7 +147,9 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                                             variant="icon"
                                             size="xs"
                                             title={t('contract.copy_number')}
-                                            aria-label={t('contract.copy_number')}
+                                            aria-label={t(
+                                                'contract.copy_number',
+                                            )}
                                         />
                                     ) : null}
                                 </div>

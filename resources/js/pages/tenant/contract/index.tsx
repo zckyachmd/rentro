@@ -165,7 +165,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                 // ignore
             }
         },
-        [t],
+        [tTenant],
     );
 
     const daysUntil = (end?: string | null): number | null => {
@@ -202,7 +202,9 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                     <CardContent className="space-y-3">
                         <div className="grid items-end gap-3 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="contract-search">{t('datatable.search')}</Label>
+                                <Label htmlFor="contract-search">
+                                    {t('datatable.search')}
+                                </Label>
                                 <div className="relative">
                                     <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                                     <Input
@@ -218,7 +220,9 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder={t('datatable.search_placeholder')}
+                                        placeholder={t(
+                                            'datatable.search_placeholder',
+                                        )}
                                         aria-label={tTenant('search.aria')}
                                     />
                                 </div>
@@ -257,6 +261,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                                         {t(
                                                             `contract.status.${slug}`,
                                                             {
+                                                                ns: 'enum',
                                                                 defaultValue:
                                                                     s.label ??
                                                                     String(
@@ -335,9 +340,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             <div className="grid gap-3 sm:grid-cols-3">
                                 <div className="min-w-0">
                                     <div className="text-muted-foreground text-xs">
-                                        {t(
-                                            tTenant('stop.summary.end_date'),
-                                        )}
+                                        {t(tTenant('stop.summary.end_date'))}
                                     </div>
                                     <div className="font-medium">
                                         {stopTarget?.end_date
@@ -349,9 +352,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                 </div>
                                 <div className="min-w-0">
                                     <div className="text-muted-foreground text-xs">
-                                        {t(
-                                            tTenant('stop.summary.days_left'),
-                                        )}
+                                        {t(tTenant('stop.summary.days_left'))}
                                     </div>
                                     <div className="font-mono tabular-nums">
                                         {(() => {
@@ -365,7 +366,9 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                 <div className="min-w-0">
                                     <div className="text-muted-foreground text-xs">
                                         {t(
-                                            tTenant('stop.summary.forfeit_limit'),
+                                            tTenant(
+                                                'stop.summary.forfeit_limit',
+                                            ),
                                         )}
                                     </div>
                                     <div className="font-mono tabular-nums">
@@ -382,15 +385,11 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">
                                 <div className="flex items-center gap-2 font-medium">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <span>
-                                        {tTenant('stop.notice.title')}
-                                    </span>
+                                    <span>{tTenant('stop.notice.title')}</span>
                                 </div>
                                 <ul className="mt-2 list-disc space-y-1.5 pl-5">
                                     <li>
-                                        {t(
-                                            tTenant('stop.notice.no_guarantee'),
-                                        )}
+                                        {t(tTenant('stop.notice.no_guarantee'))}
                                     </li>
                                     {(() => {
                                         const d = daysUntil(
@@ -400,7 +399,9 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                             return (
                                                 <li>
                                                     {t(
-                                                    tTenant('stop.notice.forfeit_now'),
+                                                        tTenant(
+                                                            'stop.notice.forfeit_now',
+                                                        ),
                                                         { days: forfeitDays },
                                                     )}
                                                 </li>
@@ -409,7 +410,9 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                         return (
                                             <li>
                                                 {t(
-                                                    tTenant('stop.notice.forfeit_cond'),
+                                                    tTenant(
+                                                        'stop.notice.forfeit_cond',
+                                                    ),
                                                     { days: forfeitDays },
                                                 )}
                                             </li>

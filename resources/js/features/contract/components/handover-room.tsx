@@ -163,7 +163,11 @@ export default function HandoverRoomSection({
                                             size="sm"
                                             onClick={() => setCheckinOpen(true)}
                                         >
-                                            {lastIn === 'disputed' ? t('handover.menu.redo_checkin') : t('handover.menu.checkin')}
+                                            {lastIn === 'disputed'
+                                                ? t(
+                                                      'handover.menu.redo_checkin',
+                                                  )
+                                                : t('handover.menu.checkin')}
                                         </Button>
                                     ) : null}
                                     {canCheckout ? (
@@ -253,7 +257,9 @@ export default function HandoverRoomSection({
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-8 w-8"
-                                               aria-label={t('handover.actions')}
+                                                                    aria-label={t(
+                                                                        'handover.actions',
+                                                                    )}
                                                                 >
                                                                     <MoreHorizontal className="h-4 w-4" />
                                                                 </Button>
@@ -263,7 +269,9 @@ export default function HandoverRoomSection({
                                                                 className="w-56"
                                                             >
                                                                 <DropdownMenuLabel>
-                                                                    {t('common.actions')}
+                                                                    {t(
+                                                                        'common.actions',
+                                                                    )}
                                                                 </DropdownMenuLabel>
                                                                 <DropdownMenuSeparator />
                                                                 <DropdownMenuItem
@@ -273,7 +281,9 @@ export default function HandoverRoomSection({
                                                                         )
                                                                     }
                                                                 >
-                                                                    {t('common.view_detail')}
+                                                                    {t(
+                                                                        'common.view_detail',
+                                                                    )}
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>

@@ -287,8 +287,7 @@
                     <div class="item"><span class="label">{{ __('common.due_date') }}</span> <span class="value">{{ $dueAt ?: '—'
                             }}</span></div>
 
-                    <div class="item"><span class="label">{{ __('common.status') }}</span> <span class="value">{{ ucfirst($status)
-                            }}</span></div>
+                    <div class="item"><span class="label">{{ __('common.status') }}</span> <span class="value">{{ __('enum.invoice.status.' . strtolower((string)$status)) }}</span></div>
                 </div>
             </div>
         </div>

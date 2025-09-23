@@ -148,7 +148,9 @@ export default function PaymentDetailsForm({
                                         <div className="text-right">
                                             {b.holder}
                                         </div>
-                                        <div>{t('payment.form.account_no')}</div>
+                                        <div>
+                                            {t('payment.form.account_no')}
+                                        </div>
                                         <div className="text-right font-mono">
                                             {b.account}
                                         </div>

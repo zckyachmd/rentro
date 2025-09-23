@@ -15,7 +15,7 @@ class ContractsMarkOverdue extends Command
         {--chunk=200 : Chunk size for processing contracts}
         {--dry-run : Only show counts without dispatching jobs}';
 
-    protected $description = 'Mark contracts OVERDUE when there are invoices past due (Pending/Overdue), and mark past-due Pending invoices to OVERDUE as well (ignoring Cancelled; no Paid invoices present).';
+    protected $description = 'Mark contracts overdue when invoices are past due (pending/overdue), and mark past-due pending invoices to overdue as well (ignoring cancelled; only when no paid invoice exists).';
 
     public function handle(): int
     {

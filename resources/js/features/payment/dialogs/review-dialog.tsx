@@ -166,19 +166,31 @@ export default function PaymentReviewDialog({
                                 </span>
                             </div>
                             <div className="grid grid-cols-1 gap-y-1 sm:grid-cols-2">
-                                <div className="text-muted-foreground">{t('invoice.title')}</div>
+                                <div className="text-muted-foreground">
+                                    {t('invoice.title')}
+                                </div>
                                 <div className="font-mono">
                                     {inv?.number ?? '-'}
                                 </div>
-                                <div className="text-muted-foreground">{t('common.tenant')}</div>
+                                <div className="text-muted-foreground">
+                                    {t('common.tenant')}
+                                </div>
                                 <div>{tenant?.name ?? '-'}</div>
-                                <div className="text-muted-foreground">{t('common.amount')}</div>
+                                <div className="text-muted-foreground">
+                                    {t('common.amount')}
+                                </div>
                                 <div>{formatIDR(p.amount_cents)}</div>
-                                <div className="text-muted-foreground">{t('payment.form.method')}</div>
+                                <div className="text-muted-foreground">
+                                    {t('payment.form.method')}
+                                </div>
                                 <div>{p.method}</div>
-                                <div className="text-muted-foreground">{t('payment.form.paid_at')}</div>
+                                <div className="text-muted-foreground">
+                                    {t('payment.form.paid_at')}
+                                </div>
                                 <div>{formatDate(p.paid_at, true)}</div>
-                                <div className="text-muted-foreground">{t('payment.form.receiver_bank')}</div>
+                                <div className="text-muted-foreground">
+                                    {t('payment.form.receiver_bank')}
+                                </div>
                                 <div>
                                     {p.receiver_bank
                                         ? `${p.receiver_bank} — ${p.receiver_account || ''} ${p.receiver_holder ? `(${p.receiver_holder})` : ''}`
@@ -203,14 +215,18 @@ export default function PaymentReviewDialog({
                             <div className="space-y-3">
                                 {p.note ? (
                                     <div className="bg-muted/30 rounded-md border p-2 text-xs">
-                                        <div className="text-foreground mb-1 font-medium">{t('payment.review.sender_note')}</div>
+                                        <div className="text-foreground mb-1 font-medium">
+                                            {t('payment.review.sender_note')}
+                                        </div>
                                         <div className="text-muted-foreground break-words whitespace-pre-wrap">
                                             {p.note}
                                         </div>
                                     </div>
                                 ) : null}
                                 <div className="space-y-1">
-                                    <Label>{t('payment.review.decision')}</Label>
+                                    <Label>
+                                        {t('payment.review.decision')}
+                                    </Label>
                                     <div className="flex items-center gap-3 text-sm">
                                         <label className="inline-flex cursor-pointer items-center gap-2">
                                             <input
@@ -223,7 +239,9 @@ export default function PaymentReviewDialog({
                                                     setDecision('approve')
                                                 }
                                             />
-                                            <span>{t('payment.review.approve')}</span>
+                                            <span>
+                                                {t('payment.review.approve')}
+                                            </span>
                                         </label>
                                         <label className="inline-flex cursor-pointer items-center gap-2">
                                             <input
@@ -236,7 +254,9 @@ export default function PaymentReviewDialog({
                                                     setDecision('reject')
                                                 }
                                             />
-                                            <span>{t('payment.review.reject')}</span>
+                                            <span>
+                                                {t('payment.review.reject')}
+                                            </span>
                                         </label>
                                     </div>
                                     <InputError message={decisionError} />
@@ -247,7 +267,9 @@ export default function PaymentReviewDialog({
                                         {t('common.note')}
                                         <span className="text-muted-foreground ml-1">
                                             {decision === 'reject'
-                                                ? t('payment.review.note_required_hint')
+                                                ? t(
+                                                      'payment.review.note_required_hint',
+                                                  )
                                                 : t('common.optional')}
                                         </span>
                                     </Label>
@@ -259,8 +281,12 @@ export default function PaymentReviewDialog({
                                         rows={3}
                                         placeholder={
                                             decision === 'reject'
-                                                ? t('payment.review.note_placeholder_required')
-                                                : t('payment.form.note_placeholder')
+                                                ? t(
+                                                      'payment.review.note_placeholder_required',
+                                                  )
+                                                : t(
+                                                      'payment.form.note_placeholder',
+                                                  )
                                         }
                                     />
                                     <div className="text-muted-foreground flex items-center justify-end text-[11px]">

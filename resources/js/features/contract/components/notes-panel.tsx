@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next';
+
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useTranslation } from 'react-i18next';
 
 export default function NotesPanel({
     value,

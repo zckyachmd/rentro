@@ -99,7 +99,9 @@ export default function ForceLogoutDialog({
                             <label className="flex items-center gap-2">
                                 <RadioGroupItem value="all_except_current" />
                                 <span className="text-sm">
-                                    {t('user.force_logout.scope.all_except_current')}
+                                    {t(
+                                        'user.force_logout.scope.all_except_current',
+                                    )}
                                 </span>
                             </label>
                         </RadioGroup>
