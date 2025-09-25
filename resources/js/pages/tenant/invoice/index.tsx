@@ -125,8 +125,10 @@ export default function TenantInvoiceIndex(props: PageProps) {
     const columns = React.useMemo(() => {
         void lang;
         return createColumns({
-            onPay: (row: TenantInvoiceItem) => setPay({ id: row.id, number: row.number }),
-            onShowDetail: (row: TenantInvoiceItem) => setDetail({ id: row.id, number: row.number }),
+            onPay: (row: TenantInvoiceItem) =>
+                setPay({ id: row.id, number: row.number }),
+            onShowDetail: (row: TenantInvoiceItem) =>
+                setDetail({ id: row.id, number: row.number }),
         });
     }, [lang]);
 

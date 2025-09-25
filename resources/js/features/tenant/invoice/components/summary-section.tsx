@@ -8,10 +8,7 @@ import type { TenantInvoiceDTO } from '@/types/tenant';
 export default function SummarySection({ data }: { data: TenantInvoiceDTO }) {
     const { t } = useTranslation('tenant/invoice');
     return (
-        <Section
-            title={t('summary.title')}
-            subtitle={t('summary.subtitle')}
-        >
+        <Section title={t('summary.title')} subtitle={t('summary.subtitle')}>
             <div className="grid gap-3 sm:grid-cols-2">
                 <KVP
                     label={t('common.number')}

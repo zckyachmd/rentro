@@ -181,18 +181,18 @@ class UserManagementController extends Controller
         $messages = [];
         $status   = 'success';
 
-        $messages[] = __('management.users.created');
+        $messages[] = __('management/users.created');
         if ($inviteOk) {
-            $messages[] = __('management.users.invite.sent');
+            $messages[] = __('management/users.invite.sent');
         } else {
-            $messages[] = __('management.users.invite.failed');
+            $messages[] = __('management/users.invite.failed');
             $status     = 'warning';
         }
         if ($verificationRequested) {
             if ($verifyOk) {
-                $messages[] = __('management.users.verify.sent');
+                $messages[] = __('management/users.verify.sent');
             } else {
-                $messages[] = __('management.users.verify.failed');
+                $messages[] = __('management/users.verify.failed');
                 if ($status === 'success') {
                     $status = 'warning';
                 }
@@ -221,22 +221,22 @@ class UserManagementController extends Controller
         sort($targetIds);
 
         if ($currentIds === $targetIds) {
-            return back()->with('success', __('management.users.roles.no_changes'));
+            return back()->with('success', __('management/users.roles.no_changes'));
         }
 
         $user->syncRoles($roles);
 
-        return back()->with('success', __('management.users.roles.updated'));
+        return back()->with('success', __('management/users.roles.updated'));
     }
 
     public function resetPasswordLink(ResetPasswordRequest $request, User $user)
     {
         if (!$user->email) {
             if ($request->input('mode') === 'generate') {
-                return response()->json(['message' => __('management.users.email_missing')], 400);
+                return response()->json(['message' => __('management/users.email_missing')], 400);
             }
 
-            return back()->with('error', __('management.users.email_missing'));
+            return back()->with('error', __('management/users.email_missing'));
         }
 
         $validated = $request->validated();
@@ -266,7 +266,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message'   => __('management.users.reset_link_generated'),
+                    'message'   => __('management/users.reset_link_generated'),
                     'reset_url' => $resetUrl,
                 ]);
             })(),
@@ -287,7 +287,7 @@ class UserManagementController extends Controller
                         ],
                     );
 
-                    return back()->with('success', __('management.users.reset_link_sent'));
+                    return back()->with('success', __('management/users.reset_link_sent'));
                 }
 
                 $this->logEvent(
@@ -319,11 +319,11 @@ class UserManagementController extends Controller
                 // If FE sent JSON (e.g., for generate), return JSON error
                 if ($request->input('mode') === 'generate') {
                     return response()->json([
-                        'message' => __('management.users.reset_mode_invalid'),
+                        'message' => __('management/users.reset_mode_invalid'),
                     ], 400);
                 }
 
-                return back()->with('error', __('management.users.reset_mode_invalid'));
+                return back()->with('error', __('management/users.reset_mode_invalid'));
             })(),
         };
     }
@@ -350,7 +350,7 @@ class UserManagementController extends Controller
                     ],
                 );
 
-                return back()->with('success', __('management.users.2fa.disabled'));
+                return back()->with('success', __('management/users.2fa.disabled'));
             })(),
 
             'recovery_show' => (function () use ($user, $request) {
@@ -367,7 +367,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message' => __('management.users.recovery.retrieved'),
+                    'message' => __('management/users.recovery.retrieved'),
                     'codes'   => $codes,
                 ]);
             })(),
@@ -387,7 +387,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message' => __('management.users.recovery.regenerated'),
+                    'message' => __('management/users.recovery.regenerated'),
                     'codes'   => $newCodes,
                 ]);
             })(),
@@ -403,7 +403,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message' => __('management.users.invalid_mode'),
+                    'message' => __('management/users.invalid_mode'),
                 ], 400);
             })(),
         };
@@ -427,7 +427,7 @@ class UserManagementController extends Controller
 
         $ids = $query->pluck('id');
         if ($ids->isEmpty()) {
-            return back()->with('success', __('management.users.sessions.none'));
+            return back()->with('success', __('management/users.sessions.none'));
         }
 
         Session::query()->whereIn('id', $ids)->delete();
@@ -443,6 +443,6 @@ class UserManagementController extends Controller
             ],
         );
 
-        return back()->with('success', __('management.users.sessions.deleted_count', ['count' => $ids->count()]));
+        return back()->with('success', __('management/users.sessions.deleted_count', ['count' => $ids->count()]));
     }
 }

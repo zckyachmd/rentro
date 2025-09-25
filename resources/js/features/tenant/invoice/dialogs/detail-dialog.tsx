@@ -67,7 +67,9 @@ export default function TenantInvoiceDetailDialog({
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>{tInv('detail.title')}</DialogTitle>
-                        <DialogDescription className="text-xs">{tInv('detail.subtitle')}</DialogDescription>
+                        <DialogDescription className="text-xs">
+                            {tInv('detail.subtitle')}
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         {loading || !data ? (
@@ -76,7 +78,9 @@ export default function TenantInvoiceDetailDialog({
                             <div className="space-y-3 text-sm">
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="rounded-lg border p-3">
-                                        <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">{tInv('detail.info')}</div>
+                                        <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+                                            {tInv('detail.info')}
+                                        </div>
                                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
                                             <Label>{t('common.number')}</Label>
                                             <div className="font-mono">
@@ -104,7 +108,9 @@ export default function TenantInvoiceDetailDialog({
                                                 data.invoice.status || '',
                                             ).toLowerCase() === 'cancelled' ? (
                                                 <div className="text-muted-foreground col-span-2 mt-1 text-[11px]">
-                                                    {tInv('detail.cancelled_note')}
+                                                    {tInv(
+                                                        'detail.cancelled_note',
+                                                    )}
                                                 </div>
                                             ) : null}
                                         </div>
@@ -195,32 +201,62 @@ export default function TenantInvoiceDetailDialog({
                                                                 </div>
                                                                 {pmt.reference ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                                                        {tInv('detail.reference')}: {pmt.reference}
+                                                                        {tInv(
+                                                                            'detail.reference',
+                                                                        )}
+                                                                        :{' '}
+                                                                        {
+                                                                            pmt.reference
+                                                                        }
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.receiver_bank ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                                                        {tInv('detail.receiver_bank')}: {pmt.receiver_bank}
-                                                                        {pmt.receiver_account ? ` — ${pmt.receiver_account}` : ''}
-                                                                        {pmt.receiver_holder ? ` (${pmt.receiver_holder})` : ''}
+                                                                        {tInv(
+                                                                            'detail.receiver_bank',
+                                                                        )}
+                                                                        :{' '}
+                                                                        {
+                                                                            pmt.receiver_bank
+                                                                        }
+                                                                        {pmt.receiver_account
+                                                                            ? ` — ${pmt.receiver_account}`
+                                                                            : ''}
+                                                                        {pmt.receiver_holder
+                                                                            ? ` (${pmt.receiver_holder})`
+                                                                            : ''}
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.reject_reason ? (
                                                                     <div className="text-destructive mt-0.5 text-[11px]">
-                                                                        {tInv('detail.rejected')}: {pmt.reject_reason}
+                                                                        {tInv(
+                                                                            'detail.rejected',
+                                                                        )}
+                                                                        :{' '}
+                                                                        {
+                                                                            pmt.reject_reason
+                                                                        }
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.note ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px] break-words whitespace-pre-wrap">
-                                                                        {pmt.review_by ? `${tInv('detail.admin_note')}:` : `${tInv('detail.note')}:`}{' '}
-                                                                        {pmt.note}
+                                                                        {pmt.review_by
+                                                                            ? `${tInv('detail.admin_note')}:`
+                                                                            : `${tInv('detail.note')}:`}{' '}
+                                                                        {
+                                                                            pmt.note
+                                                                        }
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.review_by ||
                                                                 pmt.review_at ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                                                        {pmt.review_by ? `${tInv('detail.reviewed_by')} ${pmt.review_by}` : ''}
-                                                                        {pmt.review_at ? `${pmt.review_by ? ' • ' : ''}${formatDate(pmt.review_at, true)}` : ''}
+                                                                        {pmt.review_by
+                                                                            ? `${tInv('detail.reviewed_by')} ${pmt.review_by}`
+                                                                            : ''}
+                                                                        {pmt.review_at
+                                                                            ? `${pmt.review_by ? ' • ' : ''}${formatDate(pmt.review_at, true)}`
+                                                                            : ''}
                                                                     </div>
                                                                 ) : null}
                                                             </div>

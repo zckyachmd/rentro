@@ -62,7 +62,9 @@ export default function ContactsTable({
                                         value={c.email}
                                         variant="link"
                                         className="text-xs sm:text-sm"
-                                        successMessage={tProfile('email_copied')}
+                                        successMessage={tProfile(
+                                            'email_copied',
+                                        )}
                                     >
                                         {c.email}
                                     </CopyInline>
@@ -76,7 +78,9 @@ export default function ContactsTable({
                                         value={c.phone}
                                         variant="link"
                                         className="font-mono text-xs sm:text-sm"
-                                        successMessage={tProfile('phone_copied')}
+                                        successMessage={tProfile(
+                                            'phone_copied',
+                                        )}
                                     >
                                         {c.phone}
                                     </CopyInline>

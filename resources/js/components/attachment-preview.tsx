@@ -150,7 +150,9 @@ export default function AttachmentPreviewDialog({
                     {sources.length <= 1 ? (
                         <div className="bg-background rounded-md border p-1">
                             {loading ? (
-                                <div className="text-muted-foreground p-4 text-sm">{t('attachment.loading')}</div>
+                                <div className="text-muted-foreground p-4 text-sm">
+                                    {t('attachment.loading')}
+                                </div>
                             ) : sources[0] && isImage(0) ? (
                                 <div className="flex max-h-[65vh] items-center justify-center overflow-auto">
                                     <img
@@ -172,7 +174,11 @@ export default function AttachmentPreviewDialog({
                                     className="h-[65vh] w-full rounded"
                                 />
                             ) : null}
-                            <div className="text-muted-foreground px-1 pt-2 pb-1 text-[10px]">{t('attachment.file_type')}: {mimes[0] || t('attachment.unknown')} • {t('attachment.size')}: {fmtSize(sizes[0])}</div>
+                            <div className="text-muted-foreground px-1 pt-2 pb-1 text-[10px]">
+                                {t('attachment.file_type')}:{' '}
+                                {mimes[0] || t('attachment.unknown')} •{' '}
+                                {t('attachment.size')}: {fmtSize(sizes[0])}
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-2">
@@ -203,7 +209,11 @@ export default function AttachmentPreviewDialog({
                                             </AspectRatio>
                                         ) : (
                                             <div className="p-2">
-                                                <div className="bg-muted text-muted-foreground rounded p-2 text-center text-xs">{t('attachment.preview_not_available')}</div>
+                                                <div className="bg-muted text-muted-foreground rounded p-2 text-center text-xs">
+                                                    {t(
+                                                        'attachment.preview_not_available',
+                                                    )}
+                                                </div>
                                                 <div className="text-muted-foreground mt-2 truncate text-[11px]">
                                                     {mimes[i] || 'unknown'} •{' '}
                                                     {fmtSize(sizes[i])}

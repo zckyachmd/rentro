@@ -46,7 +46,8 @@ export default function NominalRow({
                     className="h-9"
                 />
                 <p className="text-muted-foreground text-xs">
-                    {t('form.preview', { ns: 'management/room' })} {formatIDR(rent)}
+                    {t('form.preview', { ns: 'management/room' })}{' '}
+                    {formatIDR(rent)}
                 </p>
                 <InputError message={errors.rent_cents} />
             </div>
@@ -63,7 +64,8 @@ export default function NominalRow({
                     className="h-9"
                 />
                 <p className="text-muted-foreground text-xs">
-                    {t('form.preview', { ns: 'management/room' })} {formatIDR(deposit)}
+                    {t('form.preview', { ns: 'management/room' })}{' '}
+                    {formatIDR(deposit)}
                 </p>
                 <InputError message={errors.deposit_cents} />
             </div>

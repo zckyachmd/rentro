@@ -90,9 +90,7 @@ export default function TenantPaymentDetailDialog({
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
-                    <DialogTitle>
-                        {tInv('payment_detail.title')}
-                    </DialogTitle>
+                    <DialogTitle>{tInv('payment_detail.title')}</DialogTitle>
                     <DialogDescription className="text-xs">
                         {tInv('payment_detail.subtitle')}
                     </DialogDescription>
@@ -115,40 +113,28 @@ export default function TenantPaymentDetailDialog({
                                     <div>
                                         {formatIDR(data.payment.amount_cents)}
                                     </div>
-                                    <Label>
-                                        {tInv('manual.paid_at')}
-                                    </Label>
+                                    <Label>{tInv('manual.paid_at')}</Label>
                                     <div>
                                         {formatDate(data.payment.paid_at, true)}
                                     </div>
-                                    <Label>
-                                        {tInv('detail.reference')}
-                                    </Label>
+                                    <Label>{tInv('detail.reference')}</Label>
                                     <div>{data.payment.reference || '-'}</div>
                                 </div>
                             </div>
                             <div className="rounded-lg border p-3">
                                 <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                                    {t(
-                                        tInv('payment_detail.receiver_section'),
-                                    )}
+                                    {t(tInv('payment_detail.receiver_section'))}
                                 </div>
                                 <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                                    <Label>
-                                        {tInv('manual.bank')}
-                                    </Label>
+                                    <Label>{tInv('manual.bank')}</Label>
                                     <div>
                                         {data.payment.receiver_bank || '-'}
                                     </div>
-                                    <Label>
-                                        {tInv('manual.account_no')}
-                                    </Label>
+                                    <Label>{tInv('manual.account_no')}</Label>
                                     <div className="font-mono">
                                         {data.payment.receiver_account || '-'}
                                     </div>
-                                    <Label>
-                                        {tInv('manual.name')}
-                                    </Label>
+                                    <Label>{tInv('manual.name')}</Label>
                                     <div>
                                         {data.payment.receiver_holder || '-'}
                                     </div>
@@ -164,8 +150,8 @@ export default function TenantPaymentDetailDialog({
                                     <div className="space-y-1 text-sm">
                                         {data.payment.reject_reason ? (
                                             <div className="text-destructive">
-                                                {tInv('detail.rejected')}
-                                                : {data.payment.reject_reason}
+                                                {tInv('detail.rejected')}:{' '}
+                                                {data.payment.reject_reason}
                                             </div>
                                         ) : null}
                                         {data.payment.note ? (

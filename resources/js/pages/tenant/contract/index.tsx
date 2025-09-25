@@ -364,7 +364,9 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                 </div>
                                 <div className="min-w-0">
                                     <div className="text-muted-foreground text-xs">
-                                        {t('contract.stop.summary.forfeit_limit')}
+                                        {t(
+                                            'contract.stop.summary.forfeit_limit',
+                                        )}
                                     </div>
                                     <div className="font-mono tabular-nums">
                                         {t('common.days', {
@@ -380,10 +382,14 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">
                                 <div className="flex items-center gap-2 font-medium">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <span>{t('contract.stop.notice.title')}</span>
+                                    <span>
+                                        {t('contract.stop.notice.title')}
+                                    </span>
                                 </div>
                                 <ul className="mt-2 list-disc space-y-1.5 pl-5">
-                                    <li>{t('contract.stop.notice.no_guarantee')}</li>
+                                    <li>
+                                        {t('contract.stop.notice.no_guarantee')}
+                                    </li>
                                     {(() => {
                                         const d = daysUntil(
                                             stopTarget?.end_date,
@@ -391,13 +397,19 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                         if (d != null && d < forfeitDays) {
                                             return (
                                                 <li>
-                                                    {t('contract.stop.notice.forfeit_now', { days: forfeitDays })}
+                                                    {t(
+                                                        'contract.stop.notice.forfeit_now',
+                                                        { days: forfeitDays },
+                                                    )}
                                                 </li>
                                             );
                                         }
                                         return (
                                             <li>
-                                                {t('contract.stop.notice.forfeit_cond', { days: forfeitDays })}
+                                                {t(
+                                                    'contract.stop.notice.forfeit_cond',
+                                                    { days: forfeitDays },
+                                                )}
                                             </li>
                                         );
                                     })()}

@@ -51,7 +51,7 @@ type AuthLayoutProps = PropsWithChildren<{
 }>;
 
 type AppPageProps = InertiaPageProps<{
-    menuGroups?: ServerMenuGroup[];
+    menus?: ServerMenuGroup[];
 }>;
 
 export default function AuthLayout({
@@ -66,8 +66,7 @@ export default function AuthLayout({
     const { t } = useTranslation();
     const brandLabel = getAppName();
 
-    const { auth, menuGroups: serverMenuGroups } =
-        usePage<AppPageProps>().props;
+    const { auth, menus: serverMenus } = usePage<AppPageProps>().props;
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
 
     const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -95,7 +94,7 @@ export default function AuthLayout({
     };
 
     const menuGroups: MenuGroup[] = React.useMemo(() => {
-        const groups = serverMenuGroups ?? [];
+        const groups = serverMenus ?? [];
         return groups.map((g) => ({
             id: g.id,
             label: g.label,
@@ -110,7 +109,7 @@ export default function AuthLayout({
                 })),
             })),
         }));
-    }, [serverMenuGroups]);
+    }, [serverMenus]);
 
     const effectiveBreadcrumbs: Crumb[] = React.useMemo(() => {
         if (breadcrumbs && breadcrumbs.length) return breadcrumbs;

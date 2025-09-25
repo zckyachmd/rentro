@@ -208,7 +208,9 @@ export const createColumns = (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={i18n.t('contract.actions_for', { id: r.id })}
+                                aria-label={i18n.t('contract.actions_for', {
+                                    id: r.id,
+                                })}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -274,7 +276,7 @@ export const createColumns = (
                                 onClick={() => opts?.onStopAutoRenew?.(r)}
                             >
                                 <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('contract.autorenew.stop_action')}
+                                {i18n.t('contract.autorenew.stop_action')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

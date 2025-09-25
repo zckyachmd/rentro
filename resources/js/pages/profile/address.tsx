@@ -78,7 +78,9 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('village', e.target.value)
                                 }
-                                placeholder={tProfile('address.village_placeholder')}
+                                placeholder={tProfile(
+                                    'address.village_placeholder',
+                                )}
                                 label={
                                     <>
                                         {tProfile('address.village')}{' '}
@@ -96,7 +98,9 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('district', e.target.value)
                                 }
-                                placeholder={tProfile('address.district_placeholder')}
+                                placeholder={tProfile(
+                                    'address.district_placeholder',
+                                )}
                                 label={
                                     <>
                                         {tProfile('address.district')}{' '}
@@ -114,7 +118,9 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('postal_code', e.target.value)
                                 }
-                                placeholder={tProfile('address.postal_placeholder')}
+                                placeholder={tProfile(
+                                    'address.postal_placeholder',
+                                )}
                                 label={
                                     <>
                                         {tProfile('address.postal')}{' '}
@@ -135,7 +141,9 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('city', e.target.value)
                                 }
-                                placeholder={tProfile('address.city_placeholder')}
+                                placeholder={tProfile(
+                                    'address.city_placeholder',
+                                )}
                                 label={
                                     <>
                                         {tProfile('address.city')}{' '}
@@ -153,7 +161,9 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('province', e.target.value)
                                 }
-                                placeholder={tProfile('address.province_placeholder')}
+                                placeholder={tProfile(
+                                    'address.province_placeholder',
+                                )}
                                 label={
                                     <>
                                         {tProfile('address.province')}{' '}
@@ -173,14 +183,24 @@ export default function AddressSection({
                                     onValueChange={(v) => setField('label', v)}
                                 >
                                     <SelectTrigger id="label">
-                                        <SelectValue placeholder={tProfile('address.label_placeholder')} />
+                                        <SelectValue
+                                            placeholder={tProfile(
+                                                'address.label_placeholder',
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {addressLabels.map((label: string) => (
-                                            <SelectItem key={label} value={label}>
-                                                {tEnum(`address_label.${label}`, {
-                                                    defaultValue: label,
-                                                })}
+                                            <SelectItem
+                                                key={label}
+                                                value={label}
+                                            >
+                                                {tEnum(
+                                                    `address_label.${label}`,
+                                                    {
+                                                        defaultValue: label,
+                                                    },
+                                                )}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

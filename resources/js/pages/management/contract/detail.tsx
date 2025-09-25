@@ -108,9 +108,13 @@ export default function ContractDetailPage(props: {
                                     </div>
                                     <div className="text-right">
                                         <Badge variant="outline">
-                                            {tEnum(`billing_period.${contract.billing_period}`, {
-                                                defaultValue: contract.billing_period,
-                                            })}
+                                            {tEnum(
+                                                `billing_period.${contract.billing_period}`,
+                                                {
+                                                    defaultValue:
+                                                        contract.billing_period,
+                                                },
+                                            )}
                                         </Badge>
                                     </div>
                                     {contract.auto_renew ? (
@@ -141,9 +145,13 @@ export default function ContractDetailPage(props: {
                                                 contract.status,
                                             )}
                                         >
-                                            {tEnum(`contract.status.${contract.status}`, {
-                                                defaultValue: contract.status,
-                                            })}
+                                            {tEnum(
+                                                `contract.status.${contract.status}`,
+                                                {
+                                                    defaultValue:
+                                                        contract.status,
+                                                },
+                                            )}
                                         </Badge>
                                     </div>
                                     <div className="text-muted-foreground">
@@ -240,7 +248,10 @@ export default function ContractDetailPage(props: {
                                                 value={tenant.email}
                                                 variant="link"
                                                 className="break-words"
-                                                successMessage={t('email_copied', { ns: 'profile' })}
+                                                successMessage={t(
+                                                    'email_copied',
+                                                    { ns: 'profile' },
+                                                )}
                                             >
                                                 {tenant.email}
                                             </CopyInline>
@@ -257,7 +268,10 @@ export default function ContractDetailPage(props: {
                                                 value={tenant.phone}
                                                 variant="link"
                                                 className="break-words"
-                                                successMessage={t('phone_copied', { ns: 'profile' })}
+                                                successMessage={t(
+                                                    'phone_copied',
+                                                    { ns: 'profile' },
+                                                )}
                                             >
                                                 {tenant.phone}
                                             </CopyInline>
@@ -389,9 +403,13 @@ export default function ContractDetailPage(props: {
                                                             inv.status,
                                                         )}
                                                     >
-                                                        {tEnum(`invoice.status.${inv.status}`, {
-                                                            defaultValue: inv.status,
-                                                        })}
+                                                        {tEnum(
+                                                            `invoice.status.${inv.status}`,
+                                                            {
+                                                                defaultValue:
+                                                                    inv.status,
+                                                            },
+                                                        )}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">

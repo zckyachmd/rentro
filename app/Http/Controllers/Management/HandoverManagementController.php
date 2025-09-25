@@ -78,7 +78,7 @@ class HandoverManagementController extends Controller
             ])
             ->log('Handover check-in dibuat oleh admin');
 
-        return back()->with('success', __('management.handover.checkin_created'));
+        return back()->with('success', __('management/handover.checkin_created'));
     }
 
     public function checkout(CheckoutRequest $request, Contract $contract)
@@ -106,7 +106,7 @@ class HandoverManagementController extends Controller
             ])
             ->log('Handover check-out dibuat oleh admin');
 
-        return back()->with('success', __('management.handover.checkout_created'));
+        return back()->with('success', __('management/handover.checkout_created'));
     }
 
     public function attachmentGeneral(RoomHandover $handover, string $path)

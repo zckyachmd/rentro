@@ -181,7 +181,9 @@ export default function GenerateInvoiceDialog({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="per_month">
-                                            {tInvoice('generate.mode.per_month')}
+                                            {tInvoice(
+                                                'generate.mode.per_month',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="full">
                                             {tInvoice('generate.mode.full')}
@@ -236,7 +238,9 @@ export default function GenerateInvoiceDialog({
                                     reason: e.target.value,
                                 }))
                             }
-                            placeholder={tInvoice('generate.reason_placeholder')}
+                            placeholder={tInvoice(
+                                'generate.reason_placeholder',
+                            )}
                             maxLength={200}
                         />
                         <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">

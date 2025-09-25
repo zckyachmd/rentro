@@ -45,7 +45,10 @@ export default function MethodSelection({
     const isManual = bank === 'manual';
     const { t: tInv } = useTranslation('tenant/invoice');
     return (
-        <Section title={tInv('method_section.title')} subtitle={tInv('method_section.subtitle')}>
+        <Section
+            title={tInv('method_section.title')}
+            subtitle={tInv('method_section.subtitle')}
+        >
             <div className="space-y-3">
                 <div className="space-y-1">
                     <Label>{tInv('method')}</Label>
@@ -56,8 +59,7 @@ export default function MethodSelection({
                         <SelectContent>
                             {vaBanks.map((b) => (
                                 <SelectItem key={b} value={b}>
-                                    {String(b).toUpperCase()}{' '}
-                                    {tInv('va_label')}
+                                    {String(b).toUpperCase()} {tInv('va_label')}
                                 </SelectItem>
                             ))}
                             <SelectItem value="manual">
@@ -119,7 +121,9 @@ export default function MethodSelection({
                                                 <div className="text-right">
                                                     {b.holder}
                                                 </div>
-                                                <div>{tInv('manual.account_no')}</div>
+                                                <div>
+                                                    {tInv('manual.account_no')}
+                                                </div>
                                                 <div className="flex items-center justify-end gap-1">
                                                     <span className="font-mono">
                                                         {b.account}
@@ -152,7 +156,7 @@ export default function MethodSelection({
                             />
                             {manualAttachment ? (
                                 <div className="text-muted-foreground text-[12px]">
-                                    {tInv('manual.file')}: 
+                                    {tInv('manual.file')}:
                                     {manualAttachment.name}
                                 </div>
                             ) : null}
@@ -175,9 +179,7 @@ export default function MethodSelection({
                         </div>
 
                         <div className="space-y-1">
-                            <Label>
-                                {tInv('manual.note_label')}
-                            </Label>
+                            <Label>{tInv('manual.note_label')}</Label>
                             <Textarea
                                 rows={3}
                                 value={manualNote}

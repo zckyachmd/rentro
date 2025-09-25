@@ -79,16 +79,16 @@ export default function PaymentDetailsForm({
                                 const key = String(m.value || '')
                                     .trim()
                                     .toLowerCase()
-                                    .replace(/\s+/g, '_')
+                                    .replace(/\s+/g, '_');
                                 const label = t(`payment.method.${key}`, {
                                     ns: 'enum',
                                     defaultValue: m.label || m.value,
-                                })
+                                });
                                 return (
                                     <SelectItem key={m.value} value={m.value}>
                                         {label}
                                     </SelectItem>
-                                )
+                                );
                             })}
                         </SelectContent>
                     </Select>

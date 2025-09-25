@@ -66,8 +66,12 @@ export default function PaymentDetailDialog({
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">{tMgmtPayment('title')}</DialogTitle>
-                    <DialogDescription className="text-xs">{tMgmtPayment('desc')}</DialogDescription>
+                    <DialogTitle className="flex items-center gap-2">
+                        {tMgmtPayment('title')}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                        {tMgmtPayment('desc')}
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     {loading || !data ? (
@@ -88,7 +92,7 @@ export default function PaymentDetailDialog({
                             type="button"
                             onClick={() => setPreviewOpen(true)}
                         >
-                        {t('payment.review.view_proof')}
+                            {t('payment.review.view_proof')}
                         </Button>
                     ) : null}
                     <Button type="button" variant="outline" onClick={onClose}>
@@ -142,19 +146,23 @@ function PaymentDetailBody({
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
                         <Label>{t('payment.form.method')}</Label>
                         <div>
-                            {t(`payment.method.${String(p.method || '')
-                                .trim()
-                                .toLowerCase()
-                                .replace(/\s+/g, '_')}`,
-                            { ns: 'enum', defaultValue: p.method })}
+                            {t(
+                                `payment.method.${String(p.method || '')
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '_')}`,
+                                { ns: 'enum', defaultValue: p.method },
+                            )}
                         </div>
                         <Label>{t('common.status')}</Label>
                         <div>
-                            {t(`payment.status.${String(p.status || '')
-                                .trim()
-                                .toLowerCase()
-                                .replace(/\s+/g, '_')}`,
-                            { ns: 'enum', defaultValue: p.status })}
+                            {t(
+                                `payment.status.${String(p.status || '')
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '_')}`,
+                                { ns: 'enum', defaultValue: p.status },
+                            )}
                         </div>
                         <Label>{t('common.amount')}</Label>
                         <div>{formatIDR(p.amount_cents)}</div>
@@ -197,11 +205,13 @@ function PaymentDetailBody({
                             <div>{formatDate(inv.due_date)}</div>
                             <Label>{t('common.status')}</Label>
                             <div>
-                                {t(`invoice.status.${String(inv.status || '')
-                                    .trim()
-                                    .toLowerCase()
-                                    .replace(/\s+/g, '_')}`,
-                                { ns: 'enum', defaultValue: inv.status })}
+                                {t(
+                                    `invoice.status.${String(inv.status || '')
+                                        .trim()
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '_')}`,
+                                    { ns: 'enum', defaultValue: inv.status },
+                                )}
                             </div>
                             <Label>{t('common.amount')}</Label>
                             <div>{formatIDR(inv.amount_cents)}</div>

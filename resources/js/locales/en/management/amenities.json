@@ -1,0 +1,26 @@
+{
+    "title": "Amenities",
+    "desc": "Manage amenity master data.",
+    "add": "Add Amenity",
+    "all_categories": "All categories",
+    "search_placeholder": "Search amenity...",
+    "empty": "No amenities yet.",
+    "create_title": "Create Amenity",
+    "edit_title": "Edit Amenity",
+    "form": {
+        "name_locale": "Name ({{locale}})",
+        "icon": "Icon",
+        "icon_hint": "Uses Lucide icon names (e.g., AirVent). See lucide.dev/icons.",
+        "category": "Category",
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+  "delete": {
+    "title": "Delete Amenity",
+    "confirm": "Delete this amenity? This action cannot be undone.",
+    "confirm_named": "Delete amenity \"{{name}}\"? This action cannot be undone."
+  },
+    "created": "Amenity created.",
+    "updated": "Amenity updated.",
+    "deleted": "Amenity deleted."
+}

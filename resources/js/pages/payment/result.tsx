@@ -60,7 +60,7 @@ export default function PaymentResult(props: PageProps) {
                 </p>
                 {props.provider ? (
                     <p className="text-muted-foreground mt-2 text-xs">
-                    {t('payment.result.provider_label')} {props.provider}
+                        {t('payment.result.provider_label')} {props.provider}
                     </p>
                 ) : null}
 

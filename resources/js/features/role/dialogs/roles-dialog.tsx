@@ -125,7 +125,9 @@ export default function RoleUpsertDialog({
                                         />
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p className="max-w-[240px] text-xs">{tRole('guard_hint')}</p>
+                                        <p className="max-w-[240px] text-xs">
+                                            {tRole('guard_hint')}
+                                        </p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -139,7 +141,9 @@ export default function RoleUpsertDialog({
                                 aria-label={tRole('pick_guard')}
                                 className="h-10 w-full justify-between text-sm"
                             >
-                                <SelectValue placeholder={tRole('pick_guard')} />
+                                <SelectValue
+                                    placeholder={tRole('pick_guard')}
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 {guardOptions.map((g) => (
@@ -153,7 +157,9 @@ export default function RoleUpsertDialog({
                     </div>
 
                     {!isEdit && (
-                        <p className="text-muted-foreground mt-1 text-xs">{tRole('permissions_hint')}</p>
+                        <p className="text-muted-foreground mt-1 text-xs">
+                            {tRole('permissions_hint')}
+                        </p>
                     )}
                 </div>
                 <DialogFooter>

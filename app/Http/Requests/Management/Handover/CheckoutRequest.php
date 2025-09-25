@@ -35,17 +35,17 @@ class CheckoutRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'notes'           => __('management.handover.attributes.notes'),
-            'files.general'   => __('management.handover.attributes.attachments'),
-            'files.general.*' => __('management.handover.attributes.attachments'),
+            'notes'           => __('management/handover.attributes.notes'),
+            'files.general'   => __('management/handover.attributes.attachments'),
+            'files.general.*' => __('management/handover.attributes.attachments'),
         ];
     }
 
     public function messages(): array
     {
         return [
-            'files.general.required' => __('management.handover.validation.files.general.required'),
-            'files.general.min'      => __('management.handover.validation.files.general.min'),
+            'files.general.required' => __('management/handover.validation.files.general.required'),
+            'files.general.min'      => __('management/handover.validation.files.general.min'),
         ];
     }
 

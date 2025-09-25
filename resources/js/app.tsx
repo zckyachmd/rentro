@@ -53,10 +53,6 @@ createInertiaApp({
                 p?.initialPage?.props?.i18n ??
                 p?.page?.props?.i18n ??
                 undefined;
-            if (cfg?.fallback) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (i18n.options as any).fallbackLng = cfg.fallback;
-            }
             if (cfg?.supported && Array.isArray(cfg.supported)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (i18n.options as any).supportedLngs = cfg.supported;

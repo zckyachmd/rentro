@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Midtrans;
+namespace App\Services;
 
 use App\Enum\MidtransBank;
 use App\Enum\PaymentStatus;

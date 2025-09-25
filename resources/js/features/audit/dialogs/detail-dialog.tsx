@@ -34,14 +34,17 @@ export default function DetailDialog({
     const { t: tAudit } = useTranslation('management/audit');
     const createdAt = React.useMemo(() => {
         try {
-            return new Date(item?.created_at || '').toLocaleString(i18n.language, {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            });
+            return new Date(item?.created_at || '').toLocaleString(
+                i18n.language,
+                {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                },
+            );
         } catch {
             return item?.created_at ?? '-';
         }
@@ -59,8 +62,12 @@ export default function DetailDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[95vw] p-0 sm:max-w-2xl">
                 <DialogHeader className="px-6 pt-6 pb-2">
-                    <DialogTitle className="text-base sm:text-lg">{tAudit('detail_title')}</DialogTitle>
-                    <DialogDescription className="text-xs sm:text-sm">{tAudit('detail_desc')}</DialogDescription>
+                    <DialogTitle className="text-base sm:text-lg">
+                        {tAudit('detail_title')}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs sm:text-sm">
+                        {tAudit('detail_desc')}
+                    </DialogDescription>
                 </DialogHeader>
 
                 {item ? (
@@ -101,7 +108,10 @@ export default function DetailDialog({
                                                             item.causer.email
                                                         }
                                                         variant="link"
-                                                        successMessage={t('email_copied', { ns: 'profile' })}
+                                                        successMessage={t(
+                                                            'email_copied',
+                                                            { ns: 'profile' },
+                                                        )}
                                                     >
                                                         {item.causer.email}
                                                     </CopyInline>

@@ -370,7 +370,9 @@ export default function ContractCreate() {
                                 <div className="space-y-2">
                                     <Label>
                                         {t('common.billing_period')}{' '}
-                                        <span className="text-destructive">*</span>
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
                                     </Label>
                                     <Select
                                         value={data.billing_period}

@@ -126,9 +126,7 @@ export default function AuditLogIndex() {
                 <Card>
                     <CardHeader>
                         <CardTitle>{tAudit('list_title')}</CardTitle>
-                        <CardDescription>
-                            {tAudit('desc')}
-                        </CardDescription>
+                        <CardDescription>{tAudit('desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center justify-end gap-2" />

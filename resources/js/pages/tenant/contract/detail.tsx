@@ -363,9 +363,9 @@ export default function TenantContractDetail(props: PageProps) {
 
             {/* Serah Terima */}
             <Card className="mt-6">
-                    <CardHeader className="pb-3">
+                <CardHeader className="pb-3">
                     <CardTitle>{t('contract.handover.title')}</CardTitle>
-                    </CardHeader>
+                </CardHeader>
                 <CardContent>
                     <div className="overflow-x-auto rounded-md border">
                         <table className="w-full text-sm">
@@ -409,19 +409,21 @@ export default function TenantContractDetail(props: PageProps) {
                                             <td className="px-4 py-3 text-right align-middle">
                                                 <div className="flex items-center justify-end">
                                                     <DropdownMenu>
-                                <DropdownMenuTrigger
-                                    asChild
-                                >
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        aria-label={t('contract.handover.actions_aria')}
-                                    >
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
+                                                        <DropdownMenuTrigger
+                                                            asChild
+                                                        >
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8"
+                                                                aria-label={t(
+                                                                    'contract.handover.actions_aria',
+                                                                )}
+                                                            >
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
                                                         <DropdownMenuContent
                                                             align="end"
                                                             className="w-56"
@@ -648,7 +650,9 @@ export default function TenantContractDetail(props: PageProps) {
                                     note: e.target.value,
                                 }))
                             }
-                            placeholder={t('contract.handover.dispute_placeholder')}
+                            placeholder={t(
+                                'contract.handover.dispute_placeholder',
+                            )}
                         />
                         <div className="text-muted-foreground flex items-center justify-between text-[11px]">
                             <span>{t('contract.handover.dispute_hint')}</span>

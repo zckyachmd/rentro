@@ -34,6 +34,14 @@ class ClearMenuCacheOnAuth
         try {
             $key = CacheKey::MenuForUser->forUser($userId);
             Cache::forget($key);
+            if ($userId) {
+                // Bump Ziggy cache namespace for this user
+                try {
+                    Cache::increment(CacheKey::ZiggyUserBump->forUser($userId));
+                } catch (\Throwable) {
+                    // ignore cache errors
+                }
+            }
         } catch (\Throwable) {
             // ignore cache errors
         }

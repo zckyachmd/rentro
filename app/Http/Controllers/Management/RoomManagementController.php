@@ -176,7 +176,7 @@ class RoomManagementController extends Controller
             }),
             'statuses'        => RoomStatus::options(),
             'gender_policies' => GenderPolicyEnum::options(),
-            'amenities'       => Amenity::query()->select('id', 'name')->orderBy('name')->get(),
+            'amenities'       => Amenity::query()->select('id', 'name', 'name_i18n')->orderBy('name')->get(),
         ];
 
         return Inertia::render('management/room/create', [
@@ -289,7 +289,7 @@ class RoomManagementController extends Controller
 
         return redirect()
             ->route('management.rooms.edit', $room)
-            ->with('success', __('management.rooms.created'));
+            ->with('success', __('management/rooms.created'));
     }
 
     public function show(Room $room)
@@ -299,7 +299,7 @@ class RoomManagementController extends Controller
             'floor:id,building_id,level',
             'type:id,name,prices,deposits',
             'photos:id,room_id,path,is_cover,ordering',
-            'amenities:id,name',
+            'amenities:id,name,name_i18n',
         ]);
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
@@ -393,7 +393,7 @@ class RoomManagementController extends Controller
             }),
             'statuses'        => RoomStatus::options(),
             'gender_policies' => GenderPolicyEnum::options(),
-            'amenities'       => Amenity::query()->select('id', 'name')->orderBy('name')->get(),
+            'amenities'       => Amenity::query()->select('id', 'name', 'name_i18n')->orderBy('name')->get(),
         ];
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
@@ -564,7 +564,7 @@ class RoomManagementController extends Controller
             }
         });
 
-        return back()->with('success', __('management.rooms.updated'));
+        return back()->with('success', __('management/rooms.updated'));
     }
 
     public function destroy(Room $room)
@@ -579,6 +579,6 @@ class RoomManagementController extends Controller
             $room->delete();
         });
 
-        return back()->with('success', __('management.rooms.deleted'));
+        return back()->with('success', __('management/rooms.deleted'));
     }
 }

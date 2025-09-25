@@ -340,7 +340,9 @@ export default function RoomDetailDialog({
                                                         />
                                                         {p.is_cover ? (
                                                             <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
-                                                                {tRoom('form.photos.cover')}
+                                                                {tRoom(
+                                                                    'form.photos.cover',
+                                                                )}
                                                             </span>
                                                         ) : null}
                                                     </button>

@@ -168,7 +168,9 @@ export function ManualPaymentDialog({
             if (json?.id) amountRef.current?.focus();
         } catch (e) {
             if (!ctrl.signal.aborted)
-                setLookupError((e as Error).message || t('common.fetch_failed'));
+                setLookupError(
+                    (e as Error).message || t('common.fetch_failed'),
+                );
             setData('invoice_id', '');
         } finally {
             if (!ctrl.signal.aborted) setLookupLoading(false);
@@ -287,7 +289,9 @@ export function ManualPaymentDialog({
             >
                 <DialogHeader>
                     <DialogTitle>{t('payment.manual.title')}</DialogTitle>
-                    <p className="text-muted-foreground text-xs">{t('payment.manual.desc')}</p>
+                    <p className="text-muted-foreground text-xs">
+                        {t('payment.manual.desc')}
+                    </p>
                 </DialogHeader>
 
                 <div className="space-y-3 text-sm">

@@ -107,7 +107,9 @@ export default function Navbar({
                         >
                             <div className="flex h-full min-h-0 flex-col">
                                 <SheetHeader className="sr-only">
-                                    <SheetTitle>{tNav('nav.nav_menu')}</SheetTitle>
+                                    <SheetTitle>
+                                        {tNav('nav.nav_menu')}
+                                    </SheetTitle>
                                     <SheetDescription>
                                         {tNav('nav.nav_menu_desc')}
                                     </SheetDescription>
@@ -162,11 +164,11 @@ export default function Navbar({
                     </Sheet>
 
                     {/* Desktop: collapse/expand sidebar */}
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={onToggleCollapsed}
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={onToggleCollapsed}
                         aria-label={tNav('nav.sidebar.label')}
                         className="hidden size-9 md:inline-flex"
                         title={
@@ -236,7 +238,9 @@ export default function Navbar({
                         aria-label={tNav('nav.language')}
                         title={tNav('nav.language')}
                         onClick={() => {
-                            const next = i18n.language?.toLowerCase().startsWith('id')
+                            const next = i18n.language
+                                ?.toLowerCase()
+                                .startsWith('id')
                                 ? 'en'
                                 : 'id';
                             setLocale(next);
@@ -245,7 +249,9 @@ export default function Navbar({
                             }).catch(() => {});
                         }}
                     >
-                        {i18n.language?.toLowerCase().startsWith('id') ? 'ID' : 'EN'}
+                        {i18n.language?.toLowerCase().startsWith('id')
+                            ? 'ID'
+                            : 'EN'}
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

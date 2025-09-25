@@ -43,31 +43,18 @@ export function discoverNamespacesFor(lang: string): string[] {
     );
 }
 
-function readMeta(name: string): string | undefined {
-    if (typeof document === 'undefined') return undefined;
-    const el = document.querySelector(`meta[name="${name}"]`);
-    return el?.getAttribute('content') || undefined;
-}
-
-function detectSupported(): string[] {
-    const raw = readMeta('i18n-supported');
-    if (raw) {
-        const arr = raw
-            .split(',')
-            .map((s) => s.trim().toLowerCase())
-            .filter(Boolean);
-        if (arr.length > 0) return arr;
-    }
-    return ['en', 'id'];
-}
-
-function detectFallback(): string {
-    const raw = readMeta('i18n-fallback');
-    return (raw && raw.toLowerCase()) || 'en';
-}
-
-const supported = detectSupported();
-const fallbackSetting = detectFallback();
+const supported = (() => {
+    const langs = new Set<string>();
+    const collect = (key: string) => {
+        const m = key.match(/\.\.\/locales\/([^/]+)\//);
+        if (m && m[1]) langs.add(m[1].toLowerCase());
+    };
+    Object.keys(jsonTable).forEach(collect);
+    Object.keys(modTable).forEach(collect);
+    const arr = Array.from(langs);
+    return arr.length ? arr : ['id', 'en'];
+})();
+const fallbackSetting = 'id';
 
 const dynamicBackend = {
     type: 'backend' as const,
@@ -157,13 +144,8 @@ if (!i18n.isInitialized) {
             defaultNS: 'common',
             fallbackNS: ['common', 'menu', 'validation', 'nav', 'auth'],
             supportedLngs: supported,
-            lng: 'en',
-            fallbackLng: (code?: string) => {
-                if (!code) return [];
-                const lower = code.toLowerCase();
-                const base = lower.split('-')[0];
-                return base && base !== lower ? [base] : [];
-            },
+            lng: 'id',
+            fallbackLng: 'id',
 
             load: 'currentOnly',
             nonExplicitSupportedLngs: true,

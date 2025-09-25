@@ -95,9 +95,14 @@ export default function InvoiceIndex() {
         void lang;
         return createColumns<InvoiceRow>({
             onCancel: (inv) => setCancel({ target: inv, reason: '' }),
-            onShowDetail: (inv) => setDetail({ id: inv.id, number: inv.number }),
+            onShowDetail: (inv) =>
+                setDetail({ id: inv.id, number: inv.number }),
             onExtendDue: (inv) =>
-                setExtend({ target: inv, dueDate: defaultTomorrow, reason: '' }),
+                setExtend({
+                    target: inv,
+                    dueDate: defaultTomorrow,
+                    reason: '',
+                }),
             onPrint: (inv) => {
                 const url = route('management.invoices.print', inv.id);
                 if (typeof window !== 'undefined') {
@@ -147,11 +152,18 @@ export default function InvoiceIndex() {
                                                     .toLowerCase()
                                                     .replace(/\s+/g, '_');
                                                 return (
-                                                    <SelectItem key={s} value={s}>
-                                                        {t(`invoice.status.${slug}`, {
-                                                            ns: 'enum',
-                                                            defaultValue: String(s),
-                                                        })}
+                                                    <SelectItem
+                                                        key={s}
+                                                        value={s}
+                                                    >
+                                                        {t(
+                                                            `invoice.status.${slug}`,
+                                                            {
+                                                                ns: 'enum',
+                                                                defaultValue:
+                                                                    String(s),
+                                                            },
+                                                        )}
                                                     </SelectItem>
                                                 );
                                             })}

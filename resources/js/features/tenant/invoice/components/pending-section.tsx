@@ -19,16 +19,10 @@ export default function PendingSection({
 }) {
     const { t } = useTranslation('tenant/invoice');
     return (
-        <Section
-            title={t('pending.title')}
-            subtitle={t('pending.subtitle')}
-        >
+        <Section title={t('pending.title')} subtitle={t('pending.subtitle')}>
             <div className="grid gap-3 sm:grid-cols-2">
                 <KVP label={t('method')} value={methodLabel} />
-                <KVP
-                    label={t('deadline')}
-                    value={`${remaining ?? '-'}`}
-                />
+                <KVP label={t('deadline')} value={`${remaining ?? '-'}`} />
                 {String(pending.payment_type || '').toLowerCase() ===
                 'manual' ? (
                     <div className="text-muted-foreground text-xs sm:col-span-2">

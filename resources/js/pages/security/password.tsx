@@ -67,7 +67,9 @@ export default function PasswordTab() {
                                 <Input
                                     id="current_password"
                                     type={show.current ? 'text' : 'password'}
-                                    placeholder={tSecurity('password.current_placeholder')}
+                                    placeholder={tSecurity(
+                                        'password.current_placeholder',
+                                    )}
                                     value={passwordForm.data.current_password}
                                     className="pr-10"
                                     onChange={(e) =>
@@ -115,7 +117,9 @@ export default function PasswordTab() {
                                 <Input
                                     id="password"
                                     type={show.new ? 'text' : 'password'}
-                                    placeholder={tSecurity('password.new_placeholder')}
+                                    placeholder={tSecurity(
+                                        'password.new_placeholder',
+                                    )}
                                     value={passwordForm.data.password}
                                     className="pr-10"
                                     onChange={(e) =>
@@ -159,7 +163,9 @@ export default function PasswordTab() {
                                 <Input
                                     id="password_confirmation"
                                     type={show.confirm ? 'text' : 'password'}
-                                    placeholder={tSecurity('password.confirm_placeholder')}
+                                    placeholder={tSecurity(
+                                        'password.confirm_placeholder',
+                                    )}
                                     value={
                                         passwordForm.data.password_confirmation
                                     }

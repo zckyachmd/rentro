@@ -446,9 +446,7 @@ export default function RoomUpsertForm({
                             )}
                         </div>
                         <div className="grid gap-1.5">
-                            <Label>
-                                {tRoom('form.name_label')}
-                            </Label>
+                            <Label>{tRoom('form.name_label')}</Label>
                             <Input
                                 value={data.name}
                                 onChange={onChange('name')}
@@ -690,10 +688,13 @@ export default function RoomUpsertForm({
                                                 key={s.value}
                                                 value={s.value}
                                             >
-                                                {t(`room.status.${String(s.value).toLowerCase()}`, {
-                                                    ns: 'enum',
-                                                    defaultValue: s.label,
-                                                })}
+                                                {t(
+                                                    `room.status.${String(s.value).toLowerCase()}`,
+                                                    {
+                                                        ns: 'enum',
+                                                        defaultValue: s.label,
+                                                    },
+                                                )}
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
@@ -740,9 +741,7 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>
-                                {tRoom('form.price_month_label')}
-                            </Label>
+                            <Label>{tRoom('form.price_month_label')}</Label>
                             <Input
                                 type="number"
                                 min={0}
@@ -779,9 +778,7 @@ export default function RoomUpsertForm({
 
                         {/* Kanan: Luas + Deposit */}
                         <div className="grid gap-2">
-                            <Label>
-                                {tRoom('form.size_label')}
-                            </Label>
+                            <Label>{tRoom('form.size_label')}</Label>
                             <Input
                                 type="number"
                                 min={0}
@@ -816,9 +813,7 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>
-                                {tRoom('form.deposit_month_label')}
-                            </Label>
+                            <Label>{tRoom('form.deposit_month_label')}</Label>
                             <Input
                                 type="number"
                                 min={0}
@@ -874,9 +869,7 @@ export default function RoomUpsertForm({
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="grid gap-2">
-                            <Label>
-                                {tRoom('form.price_week_label')}
-                            </Label>
+                            <Label>{tRoom('form.price_week_label')}</Label>
                             <Input
                                 type="number"
                                 min={0}
@@ -924,9 +917,7 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>
-                                {tRoom('form.price_day_label')}
-                            </Label>
+                            <Label>{tRoom('form.price_day_label')}</Label>
                             <Input
                                 type="number"
                                 min={0}
@@ -972,13 +963,13 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>
-                                {tRoom('form.deposit_week_label')}
-                            </Label>
+                            <Label>{tRoom('form.deposit_week_label')}</Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder={tRoom('form.deposit_week_placeholder')}
+                                placeholder={tRoom(
+                                    'form.deposit_week_placeholder',
+                                )}
                                 value={data.deposit_weekly_rupiah}
                                 onChange={(e) =>
                                     setData(
@@ -1024,13 +1015,13 @@ export default function RoomUpsertForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label>
-                                {tRoom('form.deposit_day_label')}
-                            </Label>
+                            <Label>{tRoom('form.deposit_day_label')}</Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder={tRoom('form.deposit_day_placeholder')}
+                                placeholder={tRoom(
+                                    'form.deposit_day_placeholder',
+                                )}
                                 value={data.deposit_daily_rupiah}
                                 onChange={(e) =>
                                     setData(
@@ -1082,8 +1073,7 @@ export default function RoomUpsertForm({
                 <div className="space-y-2">
                     <div className="text-foreground text-sm font-medium">
                         {t('common.amenities', 'Amenities')} (
-                        {tRoom('form.notes.placeholder')}
-                        )
+                        {tRoom('form.notes.placeholder')})
                     </div>
                     {amenities.length === 0 ? (
                         <p className="text-muted-foreground text-sm">
@@ -1128,8 +1118,12 @@ export default function RoomUpsertForm({
 
                 {/* Foto Kamar */}
                 <div className="space-y-2">
-                    <div className="text-foreground text-sm font-medium">{t('common.photos')}</div>
-                    <p className="text-muted-foreground text-xs">{t('common.photos_hint')}</p>
+                    <div className="text-foreground text-sm font-medium">
+                        {t('common.photos')}
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                        {t('common.photos_hint')}
+                    </p>
                     {/* Foto Saat Ini (mode edit) */}
                     {mode === 'edit' && (photos?.length ?? 0) > 0 ? (
                         <div className="space-y-2">
@@ -1196,7 +1190,7 @@ export default function RoomUpsertForm({
                                             {p.is_cover ? (
                                                 <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
                                                     {t(
-                                                            'management/room:form.photos.cover',
+                                                        'management/room:form.photos.cover',
                                                         'Cover',
                                                     )}
                                                 </span>
@@ -1318,8 +1312,13 @@ export default function RoomUpsertForm({
                                             value={g.value}
                                         />
                                         <Label htmlFor={`gender-${g.value}`}>
-                                            {t(`gender_policy.${String(g.value).toLowerCase()}`,
-                                                { ns: 'enum', defaultValue: g.label })}
+                                            {t(
+                                                `gender_policy.${String(g.value).toLowerCase()}`,
+                                                {
+                                                    ns: 'enum',
+                                                    defaultValue: g.label,
+                                                },
+                                            )}
                                         </Label>
                                     </div>
                                 ))}

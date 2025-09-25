@@ -115,13 +115,13 @@ export default function PaymentIndex() {
                                         })
                                     }
                                 >
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue
-                                    placeholder={t(
-                                        'common.all_statuses',
-                                    )}
-                                />
-                            </SelectTrigger>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue
+                                            placeholder={t(
+                                                'common.all_statuses',
+                                            )}
+                                        />
+                                    </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
                                             {t('common.all_statuses')}
@@ -133,10 +133,14 @@ export default function PaymentIndex() {
                                                 .replace(/\s+/g, '_');
                                             return (
                                                 <SelectItem key={s} value={s}>
-                                                    {t(`payment.status.${slug}`, {
-                                                        ns: 'enum',
-                                                        defaultValue: String(s),
-                                                    })}
+                                                    {t(
+                                                        `payment.status.${slug}`,
+                                                        {
+                                                            ns: 'enum',
+                                                            defaultValue:
+                                                                String(s),
+                                                        },
+                                                    )}
                                                 </SelectItem>
                                             );
                                         })}

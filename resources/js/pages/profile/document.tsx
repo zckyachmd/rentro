@@ -127,9 +127,12 @@ export default function DocumentSection({
                                     <SelectContent>
                                         {documentTypes.map((type) => (
                                             <SelectItem key={type} value={type}>
-                                                {tEnum(`document.type.${type}`, {
-                                                    defaultValue: type,
-                                                })}
+                                                {tEnum(
+                                                    `document.type.${type}`,
+                                                    {
+                                                        defaultValue: type,
+                                                    },
+                                                )}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

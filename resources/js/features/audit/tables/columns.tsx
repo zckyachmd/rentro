@@ -40,7 +40,9 @@ export function createColumns(
             sortable: true,
             cell: ({ row }) => (
                 <div className={COL.time + ' whitespace-nowrap'}>
-                    {new Date(row.original.created_at).toLocaleString(i18n.language)}
+                    {new Date(row.original.created_at).toLocaleString(
+                        i18n.language,
+                    )}
                 </div>
             ),
         }),
@@ -85,7 +87,10 @@ export function createColumns(
                     </div>
                     {row.original.subject ? (
                         <div className="text-muted-foreground text-xs">
-                            {i18n.t('linked', { ns: 'management/audit', defaultValue: 'linked' })}
+                            {i18n.t('linked', {
+                                ns: 'management/audit',
+                                defaultValue: 'linked',
+                            })}
                         </div>
                     ) : null}
                 </div>

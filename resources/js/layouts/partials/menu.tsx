@@ -201,10 +201,10 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                     : 'h-5 w-5 shrink-0'
                                             }
                                         />
-                                            <span
-                                                className={
-                                                    isMobile
-                                                        ? 'align-middle'
+                                        <span
+                                            className={
+                                                isMobile
+                                                    ? 'align-middle'
                                                     : [
                                                           'overflow-hidden whitespace-nowrap',
                                                           (
@@ -251,9 +251,11 @@ export function MenuGroups(props: MenuGroupsProps) {
                                         title={
                                             !isMobile &&
                                             (props as SidebarProps).collapsed
-                                                ? tMenu(ensureMenuKey(item.label))
+                                                ? tMenu(
+                                                      ensureMenuKey(item.label),
+                                                  )
                                                 : undefined
-                                            }
+                                        }
                                         onClick={(e) => {
                                             if (isMobile) {
                                                 e.stopPropagation();
@@ -295,7 +297,11 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                         icon={parent.icon}
                                                         className="h-4 w-4"
                                                     />
-                                                    <span>{getParentText(parent.label)}</span>
+                                                    <span>
+                                                        {getParentText(
+                                                            parent.label,
+                                                        )}
+                                                    </span>
                                                 </span>
                                             </AccordionTrigger>
                                             <AccordionContent>
@@ -344,7 +350,9 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                     className="mr-2 inline-block h-4 w-4 align-middle"
                                                                 />
                                                                 <span className="align-middle">
-                                                                    {tMenu(child.label)}
+                                                                    {tMenu(
+                                                                        child.label,
+                                                                    )}
                                                                 </span>
                                                             </Link>
                                                         );
@@ -398,7 +406,9 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                     );
                                                                 }}
                                                                 className="hover:bg-accent hover:text-accent-foreground flex w-full justify-center rounded-md px-3 py-2 text-sm"
-                                                                title={getParentText(parent.label)}
+                                                                title={getParentText(
+                                                                    parent.label,
+                                                                )}
                                                             >
                                                                 <IconOrFallback
                                                                     icon={
@@ -421,7 +431,11 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                     }
                                                                     className="h-4 w-4"
                                                                 />
-                                                                <span className="truncate">{getParentText(parent.label)}</span>
+                                                                <span className="truncate">
+                                                                    {getParentText(
+                                                                        parent.label,
+                                                                    )}
+                                                                </span>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 {(
@@ -458,7 +472,11 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                                 className="mr-2 inline-block h-4 w-4 align-middle"
                                                                             />
                                                                             <span className="align-middle">
-                                                                                {tMenu(ensureMenuKey(child.label))}
+                                                                                {tMenu(
+                                                                                    ensureMenuKey(
+                                                                                        child.label,
+                                                                                    ),
+                                                                                )}
                                                                             </span>
                                                                         </Link>
                                                                     ),
@@ -517,7 +535,9 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                         opacity: 1,
                                                                     }}
                                                                 >
-                                                                    {getParentText(parent.label)}
+                                                                    {getParentText(
+                                                                        parent.label,
+                                                                    )}
                                                                 </span>
                                                             </span>
                                                         </AccordionTrigger>
@@ -565,7 +585,11 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                                     className="h-4 w-4"
                                                                                 />
                                                                                 <span>
-                                                                                    {tMenu(ensureMenuKey(child.label))}
+                                                                                    {tMenu(
+                                                                                        ensureMenuKey(
+                                                                                            child.label,
+                                                                                        ),
+                                                                                    )}
                                                                                 </span>
                                                                             </Link>
                                                                         );

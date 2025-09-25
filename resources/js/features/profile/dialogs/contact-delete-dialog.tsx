@@ -36,7 +36,9 @@ export default function ContactDeleteDialog({
         <Dialog open={!!target} onOpenChange={(open) => !open && onCancel()}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>{tProfile('contact.delete_title')}</DialogTitle>
+                    <DialogTitle>
+                        {tProfile('contact.delete_title')}
+                    </DialogTitle>
                     <DialogDescription>
                         {target ? (
                             <>

@@ -444,7 +444,9 @@ export default function TenantHandoverDetailDialog({
                                                         e.target.value,
                                                     )
                                                 }
-                                                placeholder={tTenant('dispute_placeholder')}
+                                                placeholder={tTenant(
+                                                    'dispute_placeholder',
+                                                )}
                                             />
                                             <div className="text-muted-foreground flex items-center justify-between text-[11px]">
                                                 <span>
@@ -478,7 +480,9 @@ export default function TenantHandoverDetailDialog({
                                                             ? t(
                                                                   'common.sending',
                                                               )
-                                                            : tTenant('submit_dispute')}
+                                                            : tTenant(
+                                                                  'submit_dispute',
+                                                              )}
                                                     </Button>
                                                 </div>
                                             </div>

@@ -112,6 +112,11 @@ return [
         'id' => 'Indonesia',
     ],
 
+    'amenity_category' => [
+        'room' => 'Kamar',
+        'communal' => 'Komunal',
+    ],
+
     'theme' => [
         'light'  => 'Terang',
         'dark'   => 'Gelap',

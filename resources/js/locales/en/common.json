@@ -37,6 +37,7 @@
         "manage": "Manage",
         "monthly": "Monthly",
         "name": "Name",
+        "icon": "Icon",
         "no": "No",
         "no_amenities": "No amenities",
         "note": "Note",
@@ -369,8 +370,7 @@
             "info": "Payment Info"
         },
         "no_invoice": "Not linked to any invoice"
-    }
-    ,
+    },
     "management": {
         "role": {
             "title": "Roles",

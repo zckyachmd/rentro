@@ -4,11 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @php($__supportedLocales = array_map(fn(\App\Enum\Locale $c) => $c->value, \App\Enum\Locale::cases()))
-    <meta name="i18n-supported" content="{{ implode(',', $__supportedLocales) }}">
-    <meta name="i18n-fallback" content="{{ config('app.fallback_locale', 'en') }}">
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 

@@ -150,3 +150,10 @@ export type {
     UserItem,
     UsersPaginator,
 } from './user';
+
+// Amenity
+export type {
+    AmenitiesPageProps,
+    AmenityItem,
+    AmenityPaginator,
+} from './amenity';

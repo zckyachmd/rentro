@@ -134,7 +134,9 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'outstanding',
-        title: i18n.t('table.columns.outstanding', { ns: 'management/invoice' }),
+        title: i18n.t('table.columns.outstanding', {
+            ns: 'management/invoice',
+        }),
         className: COL.outstanding,
         cell: ({ row }) => (
             <div className={COL.outstanding}>
@@ -179,7 +181,9 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                 <DropdownMenuItem asChild>
                                     <Link href={inv.ticket_url} target="_blank">
                                         <Receipt className="mr-2 h-4 w-4" />
-                                        {t('table.view_ticket', { ns: 'management/invoice' })}
+                                        {t('table.view_ticket', {
+                                            ns: 'management/invoice',
+                                        })}
                                     </Link>
                                 </DropdownMenuItem>
                             ) : null}
@@ -194,7 +198,9 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                     onClick={() => opts?.onExtendDue?.(inv)}
                                 >
                                     <Clock3 className="mr-2 h-4 w-4" />{' '}
-                                    {t('extend_due.action', { ns: 'management/invoice' })}
+                                    {t('extend_due.action', {
+                                        ns: 'management/invoice',
+                                    })}
                                 </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuItem

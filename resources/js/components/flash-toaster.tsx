@@ -17,15 +17,8 @@ export type FlashBag = {
 
 export type ToastKey = Exclude<keyof FlashBag, 'data'>;
 
-export type CallbackBag = {
-    success?: string;
-    error?: string;
-    data?: unknown;
-};
-
 type PageShared = {
-    flash?: FlashBag;
-    cb?: CallbackBag;
+    alert?: FlashBag;
 };
 
 export type FlashToasterProps = {
@@ -53,7 +46,7 @@ export default function FlashToaster({
     const { props } = usePage<PageProps<PageShared>>();
 
     const activeRef = React.useRef<Set<string>>(new Set());
-    const storeKey = 'rentro:flash:consumed:v1';
+    const storeKey = 'rentro:alert:consumed:v1';
 
     const readConsumed = React.useCallback((): Record<string, number> => {
         try {
@@ -80,7 +73,10 @@ export default function FlashToaster({
         }
     }, []);
 
-    type HistoryState = { __flashConsumed?: Record<string, boolean> } & Record<string, unknown>;
+    type HistoryState = { __alertConsumed?: Record<string, boolean> } & Record<
+        string,
+        unknown
+    >;
 
     const historyConsumed = React.useCallback((type: ToastKey): boolean => {
         try {
@@ -89,7 +85,7 @@ export default function FlashToaster({
                 typeof raw === 'object' && raw !== null
                     ? (raw as Record<string, unknown>)
                     : {};
-            const consumed = (st as HistoryState).__flashConsumed;
+            const consumed = (st as HistoryState).__alertConsumed;
             return Boolean(consumed && consumed[type]);
         } catch {
             return false;
@@ -103,17 +99,25 @@ export default function FlashToaster({
                 typeof raw === 'object' && raw !== null
                     ? (raw as Record<string, unknown>)
                     : {};
-            const consumed = { ...((st.__flashConsumed as Record<string, boolean> | undefined) ?? {}), [type]: true };
-            const next = { ...st, __flashConsumed: consumed } as HistoryState;
-            window.history.replaceState(next as unknown as object, '', window.location.href);
+            const consumed = {
+                ...((st.__alertConsumed as
+                    | Record<string, boolean>
+                    | undefined) ?? {}),
+                [type]: true,
+            };
+            const next = { ...st, __alertConsumed: consumed } as HistoryState;
+            window.history.replaceState(
+                next as unknown as object,
+                '',
+                window.location.href,
+            );
         } catch {
             // ignore
         }
     }, []);
 
     React.useEffect(() => {
-        const f = props.flash || {};
-        const c = props.cb || {};
+        const f = props.alert || {};
 
         const show = (type: ToastKey, message: string) => {
             const sig = `${type}|${message}`;
@@ -178,13 +182,9 @@ export default function FlashToaster({
         };
 
         for (const k of priority) {
-            const val: string | undefined =
-                (f[k as ToastKey] as string | undefined) ??
-                (k === 'success'
-                    ? c.success
-                    : k === 'error'
-                      ? c.error
-                      : undefined);
+            const val: string | undefined = f[k as ToastKey] as
+                | string
+                | undefined;
             if (!val) continue;
 
             if (dedupe && historyConsumed(k as ToastKey)) {
@@ -192,7 +192,9 @@ export default function FlashToaster({
             }
             markHistoryConsumed(k as ToastKey);
 
-            const path = (typeof window !== 'undefined' && window.location?.pathname) || '';
+            const path =
+                (typeof window !== 'undefined' && window.location?.pathname) ||
+                '';
             const token = `path:${path}|type:${k}`;
             const consumed = readConsumed();
             consumed[token] = Date.now();
@@ -215,7 +217,16 @@ export default function FlashToaster({
                     return;
             }
         }
-    }, [props.flash, props.cb, dedupe, priority, toastDuration, readConsumed, writeConsumed, historyConsumed, markHistoryConsumed]);
+    }, [
+        props.alert,
+        dedupe,
+        priority,
+        toastDuration,
+        readConsumed,
+        writeConsumed,
+        historyConsumed,
+        markHistoryConsumed,
+    ]);
 
     return null;
 }

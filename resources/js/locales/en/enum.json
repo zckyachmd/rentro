@@ -90,6 +90,10 @@
             "economy": "Economy"
         }
     },
+    "amenity_category": {
+        "room": "Room",
+        "communal": "Communal"
+    },
     "billing_period": {
         "daily": "Daily",
         "weekly": "Weekly",

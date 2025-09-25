@@ -195,7 +195,9 @@ export default function ContactDialog({
                     </div>
 
                     <div className="space-y-1.5">
-                            <Label htmlFor="c-address">{tProfile('address.label')}</Label>
+                        <Label htmlFor="c-address">
+                            {tProfile('address.label')}
+                        </Label>
                         <Textarea
                             id="c-address"
                             value={values.address_line || ''}

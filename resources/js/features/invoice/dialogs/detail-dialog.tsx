@@ -42,7 +42,10 @@ function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
             } catch (e) {
                 setError(
                     e instanceof Error
-                        ? e.message || i18n.t('detail.error', { ns: 'management/invoice' })
+                        ? e.message ||
+                              i18n.t('detail.error', {
+                                  ns: 'management/invoice',
+                              })
                         : i18n.t('detail.error', { ns: 'management/invoice' }),
                 );
             } finally {
@@ -167,19 +170,24 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                         <div>{formatDate(inv.due_date)}</div>
                         <Label>{t('common.status')}</Label>
                         <div>
-                            {t(`invoice.status.${String(inv.status || '')
-                                .trim()
-                                .toLowerCase()
-                                .replace(/\s+/g, '_')}`, {
-                                ns: 'enum',
-                                defaultValue: inv.status,
-                            })}
+                            {t(
+                                `invoice.status.${String(inv.status || '')
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '_')}`,
+                                {
+                                    ns: 'enum',
+                                    defaultValue: inv.status,
+                                },
+                            )}
                         </div>
                         {typeof inv.release_day === 'number' &&
                             (c?.billing_period || '').toLowerCase() ===
                                 'monthly' && (
                                 <>
-                                    <Label>{tInvoice('detail.release_day')}</Label>
+                                    <Label>
+                                        {tInvoice('detail.release_day')}
+                                    </Label>
                                     <div>
                                         {tInvoice('detail.release_day_value', {
                                             day: inv.release_day,

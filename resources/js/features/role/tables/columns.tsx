@@ -103,7 +103,9 @@ export const createColumns = (
                             onClick={() => opts?.onPermissions?.(row.original)}
                         >
                             <ShieldCheck className="mr-2 h-4 w-4" />{' '}
-                            {i18n.t('actions.manage_permissions', { ns: 'role' })}
+                            {i18n.t('actions.manage_permissions', {
+                                ns: 'role',
+                            })}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

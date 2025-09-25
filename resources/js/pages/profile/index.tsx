@@ -31,8 +31,7 @@ export default function ShowProfile() {
     const { t: tEnum } = useTranslation('enum');
     const { t: tProfile } = useTranslation('profile');
     const { props } = usePage<InertiaPageProps & ShowPageProps>();
-    const { user, addresses, document, contacts, mustVerifyEmail } =
-        props;
+    const { user, addresses, document, contacts, mustVerifyEmail } = props;
 
     const rowCls =
         'flex flex-col gap-1 py-2 sm:flex-row sm:items-start sm:gap-4';
@@ -129,7 +128,9 @@ export default function ShowProfile() {
                                     <CopyInline
                                         value={user.email}
                                         variant="link"
-                                        successMessage={tProfile('email_copied')}
+                                        successMessage={tProfile(
+                                            'email_copied',
+                                        )}
                                     >
                                         {user.email}
                                     </CopyInline>
@@ -221,7 +222,9 @@ export default function ShowProfile() {
                                         value={user.phone}
                                         variant="link"
                                         className="font-mono"
-                                        successMessage={tProfile('phone_copied')}
+                                        successMessage={tProfile(
+                                            'phone_copied',
+                                        )}
                                     >
                                         {user.phone}
                                     </CopyInline>
@@ -236,7 +239,10 @@ export default function ShowProfile() {
                             <dt className={dtCls}>{tProfile('gender')}</dt>
                             <dd>
                                 {user.gender ? (
-                                    <Badge variant="secondary" className="capitalize">
+                                    <Badge
+                                        variant="secondary"
+                                        className="capitalize"
+                                    >
                                         {tEnum(`gender.${user.gender}`, {
                                             defaultValue: user.gender,
                                         })}
@@ -255,7 +261,9 @@ export default function ShowProfile() {
 
                         {/* Address */}
                         <div className={rowCls}>
-                            <dt className={dtCls}>{tProfile('address.title')}</dt>
+                            <dt className={dtCls}>
+                                {tProfile('address.title')}
+                            </dt>
                             <dd className="text-muted-foreground text-base leading-relaxed">
                                 {primaryAddress ? (
                                     <ShowMore
@@ -281,7 +289,10 @@ export default function ShowProfile() {
                                             {document
                                                 ? tEnum(
                                                       `document.type.${document.type}`,
-                                                      { defaultValue: document.type },
+                                                      {
+                                                          defaultValue:
+                                                              document.type,
+                                                      },
                                                   )
                                                 : '-'}
                                         </span>
@@ -300,18 +311,26 @@ export default function ShowProfile() {
                                         </span>
                                         <span>
                                             {document ? (
-                                                document.status === 'approved' ? (
+                                                document.status ===
+                                                'approved' ? (
                                                     <Badge className="gap-1">
                                                         <ShieldCheck className="h-3 w-3" />{' '}
-                                                        {tEnum('document.status.approved')}
+                                                        {tEnum(
+                                                            'document.status.approved',
+                                                        )}
                                                     </Badge>
-                                                ) : document.status === 'pending' ? (
+                                                ) : document.status ===
+                                                  'pending' ? (
                                                     <Badge variant="secondary">
-                                                        {tEnum('document.status.pending')}
+                                                        {tEnum(
+                                                            'document.status.pending',
+                                                        )}
                                                     </Badge>
                                                 ) : (
                                                     <Badge variant="destructive">
-                                                        {tEnum('document.status.rejected')}
+                                                        {tEnum(
+                                                            'document.status.rejected',
+                                                        )}
                                                     </Badge>
                                                 )
                                             ) : (

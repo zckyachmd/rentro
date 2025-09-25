@@ -90,6 +90,10 @@
             "economy": "Ekonomi"
         }
     },
+    "amenity_category": {
+        "room": "Kamar",
+        "communal": "Komunal"
+    },
     "billing_period": {
         "daily": "Harian",
         "weekly": "Mingguan",

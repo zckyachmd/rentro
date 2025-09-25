@@ -57,7 +57,9 @@ export default function ForceLogoutDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>{tUser('user.force_logout.title')}</DialogTitle>
+                    <DialogTitle>
+                        {tUser('user.force_logout.title')}
+                    </DialogTitle>
                     <DialogDescription>
                         {tUser('user.force_logout.desc')}
                     </DialogDescription>
@@ -100,7 +102,9 @@ export default function ForceLogoutDialog({
                             <label className="flex items-center gap-2">
                                 <RadioGroupItem value="all_except_current" />
                                 <span className="text-sm">
-                                    {tUser('user.force_logout.scope.all_except_current')}
+                                    {tUser(
+                                        'user.force_logout.scope.all_except_current',
+                                    )}
                                 </span>
                             </label>
                         </RadioGroup>

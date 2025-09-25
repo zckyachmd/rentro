@@ -359,8 +359,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                                <Filter className="h-4 w-4" />{' '}
-                                {tRoom('filter')}
+                                <Filter className="h-4 w-4" /> {tRoom('filter')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-3 md:grid-cols-12">
@@ -381,13 +380,11 @@ export default function RoomIndex(props: RoomsPageProps) {
                                             applyFilters();
                                         }
                                     }}
-                                        placeholder={tRoom('search_placeholder')}
+                                    placeholder={tRoom('search_placeholder')}
                                 />
                             </div>
                             <div className="md:col-span-4">
-                                <Label>
-                                    {tRoom('period_label')}
-                                </Label>
+                                <Label>{tRoom('period_label')}</Label>
                                 <Select
                                     value={pricePeriod}
                                     onValueChange={(v) => {
@@ -408,18 +405,22 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue placeholder={tRoom('period.monthly')} />
+                                        <SelectValue
+                                            placeholder={tRoom(
+                                                'period.monthly',
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             <SelectItem value="daily">
-                                            {tRoom('period.daily')}
+                                                {tRoom('period.daily')}
                                             </SelectItem>
                                             <SelectItem value="weekly">
-                                            {tRoom('period.weekly')}
+                                                {tRoom('period.weekly')}
                                             </SelectItem>
                                             <SelectItem value="monthly">
-                                            {tRoom('period.monthly')}
+                                                {tRoom('period.monthly')}
                                             </SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
@@ -488,7 +489,10 @@ export default function RoomIndex(props: RoomsPageProps) {
                                                     key={f.id}
                                                     value={String(f.id)}
                                                 >
-                                                    {tRoom('form.floor_option', { level: f.level })}
+                                                    {tRoom(
+                                                        'form.floor_option',
+                                                        { level: f.level },
+                                                    )}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
@@ -556,10 +560,14 @@ export default function RoomIndex(props: RoomsPageProps) {
                                                     key={s.value}
                                                     value={s.value}
                                                 >
-                                                    {t(`room.status.${String(s.value).toLowerCase()}`, {
-                                                        ns: 'enum',
-                                                        defaultValue: s.label,
-                                                    })}
+                                                    {t(
+                                                        `room.status.${String(s.value).toLowerCase()}`,
+                                                        {
+                                                            ns: 'enum',
+                                                            defaultValue:
+                                                                s.label,
+                                                        },
+                                                    )}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
@@ -582,13 +590,23 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue placeholder={t('common.all')} />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {(['any', 'male', 'female'] as const).map((g) => (
+                                            {(
+                                                [
+                                                    'any',
+                                                    'male',
+                                                    'female',
+                                                ] as const
+                                            ).map((g) => (
                                                 <SelectItem key={g} value={g}>
-                                                    {t(`gender_policy.${g}`, { ns: 'enum' })}
+                                                    {t(`gender_policy.${g}`, {
+                                                        ns: 'enum',
+                                                    })}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>

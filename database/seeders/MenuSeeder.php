@@ -58,7 +58,7 @@ class MenuSeeder extends Seeder
                         'children' => [
                             ['label' => 'menu.rooms.list', 'href' => route('management.rooms.index'), 'icon' => 'BedDouble', 'permission' => PermissionName::ROOM_MANAGE_VIEW],
                             ['label' => 'menu.room_types', 'href' => '#', 'icon' => 'Tags'],
-                            ['label' => 'menu.amenities', 'href' => '#', 'icon' => 'AirVent'],
+                            ['label' => 'menu.amenities', 'href' => "" . route('management.amenities.index') . "", 'icon' => 'AirVent', 'permission' => PermissionName::AMENITY_VIEW],
                         ],
                     ],
                     [

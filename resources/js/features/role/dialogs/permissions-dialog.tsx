@@ -136,7 +136,9 @@ export default function PermissionsDialog({
                     <div className="flex items-center justify-between">
                         <DialogTitle>{tRole('permissions.title')}</DialogTitle>
                     </div>
-                    <DialogDescription>{tRole('permissions.desc')}</DialogDescription>
+                    <DialogDescription>
+                        {tRole('permissions.desc')}
+                    </DialogDescription>
                 </DialogHeader>
 
                 {role && (
@@ -176,7 +178,9 @@ export default function PermissionsDialog({
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder={tRole('permissions.search_placeholder')}
+                            placeholder={tRole(
+                                'permissions.search_placeholder',
+                            )}
                             className="h-9"
                         />
                         <Button
@@ -207,24 +211,51 @@ export default function PermissionsDialog({
                                             <div className="flex items-center justify-between px-3 py-2">
                                                 <div className="flex items-center gap-2">
                                                     {(() => {
-                                                        const all = isGroupAllSelected(items)
-                                                        const some = items.some((p) => selected.has(p.id))
-                                                        const state: boolean | 'indeterminate' = all ? true : (some ? 'indeterminate' : false)
+                                                        const all =
+                                                            isGroupAllSelected(
+                                                                items,
+                                                            );
+                                                        const some = items.some(
+                                                            (p) =>
+                                                                selected.has(
+                                                                    p.id,
+                                                                ),
+                                                        );
+                                                        const state:
+                                                            | boolean
+                                                            | 'indeterminate' =
+                                                            all
+                                                                ? true
+                                                                : some
+                                                                  ? 'indeterminate'
+                                                                  : false;
                                                         return (
                                                             <Checkbox
                                                                 checked={state}
-                                                                onCheckedChange={() => toggleGroup(items)}
-                                                                aria-label={tRole('permissions.select_group', { group })}
+                                                                onCheckedChange={() =>
+                                                                    toggleGroup(
+                                                                        items,
+                                                                    )
+                                                                }
+                                                                aria-label={tRole(
+                                                                    'permissions.select_group',
+                                                                    { group },
+                                                                )}
                                                             />
-                                                        )
+                                                        );
                                                     })()}
                                                     <span className="text-sm font-medium capitalize">
                                                         {group}
                                                     </span>
                                                 </div>
-                                                <AccordionTrigger className="px-0 py-0 hover:no-underline w-auto flex-none" aria-label={`Toggle ${group}`}>
+                                                <AccordionTrigger
+                                                    className="w-auto flex-none px-0 py-0 hover:no-underline"
+                                                    aria-label={`Toggle ${group}`}
+                                                >
                                                     {/* Only chevron is rendered when no children */}
-                                                    <span className="sr-only">Toggle</span>
+                                                    <span className="sr-only">
+                                                        Toggle
+                                                    </span>
                                                 </AccordionTrigger>
                                             </div>
                                             <AccordionContent>
@@ -249,7 +280,12 @@ export default function PermissionsDialog({
                                                                                 p.id,
                                                                             )
                                                                         }
-                                                                        aria-label={tRole('permissions.select_permission', { name: p.name })}
+                                                                        aria-label={tRole(
+                                                                            'permissions.select_permission',
+                                                                            {
+                                                                                name: p.name,
+                                                                            },
+                                                                        )}
                                                                     />
                                                                     <span className="text-sm">
                                                                         {p.name}

@@ -40,7 +40,9 @@ export default function VoidPaymentDialog({
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{t('payment.void.title')}</AlertDialogTitle>
+                    <AlertDialogTitle>
+                        {t('payment.void.title')}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                         {target ? (
                             <>

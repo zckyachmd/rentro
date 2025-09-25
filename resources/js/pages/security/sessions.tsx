@@ -81,10 +81,20 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
                                             <div className="font-medium">
                                                 {s.agent_label ??
                                                     s.agent ??
-                                                    tSecurity('sessions.device')}
+                                                    tSecurity(
+                                                        'sessions.device',
+                                                    )}
                                             </div>
                                             <div className="text-muted-foreground">
-                                                {tSecurity('sessions.ip_active', { ip: s.ip_address ?? '—', last_active: s.last_active ?? '—' })}
+                                                {tSecurity(
+                                                    'sessions.ip_active',
+                                                    {
+                                                        ip: s.ip_address ?? '—',
+                                                        last_active:
+                                                            s.last_active ??
+                                                            '—',
+                                                    },
+                                                )}
                                             </div>
                                         </div>
                                     </div>

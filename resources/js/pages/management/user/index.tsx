@@ -118,9 +118,7 @@ export default function UsersIndex() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle>{tUser('title')}</CardTitle>
-                        <CardDescription>
-                            {tUser('desc')}
-                        </CardDescription>
+                        <CardDescription>{tUser('desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -140,7 +138,9 @@ export default function UsersIndex() {
                                     }
                                 >
                                     <SelectTrigger className="w-[160px]">
-                                        <SelectValue placeholder={tUser('all_roles')} />
+                                        <SelectValue
+                                            placeholder={tUser('all_roles')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">

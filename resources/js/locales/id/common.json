@@ -37,6 +37,7 @@
         "manage": "Kelola",
         "monthly": "Bulanan",
         "name": "Nama",
+        "icon": "Ikon",
         "no": "Tidak",
         "no_amenities": "Tidak ada fasilitas",
         "note": "Catatan",
@@ -98,8 +99,6 @@
         "days_left": "Sisa Hari",
         "expired": "Habis"
     },
-
-
 
     "dashboard": {
         "desc": "Ringkasan aktivitas harian, status hunian, dan metrik penting di kost Anda.",
@@ -256,13 +255,20 @@
     },
 
     "room": { "max_occupancy": "Penghuni Maks." },
-    "status": { "approved": "Disetujui", "pending": "Menunggu", "rejected": "Ditolak" },
-    "ui": { "select": { "no_results": "Tidak ada hasil", "placeholder": "Pilih…", "search_placeholder": "Cari…" } },
+    "status": {
+        "approved": "Disetujui",
+        "pending": "Menunggu",
+        "rejected": "Ditolak"
+    },
+    "ui": {
+        "select": {
+            "no_results": "Tidak ada hasil",
+            "placeholder": "Pilih…",
+            "search_placeholder": "Cari…"
+        }
+    },
 
-
-
-
-  "payment": {
+    "payment": {
         "manual": {
             "title": "Pembayaran Manual",
             "desc": "Masukkan pembayaran manual dengan cepat."
@@ -362,8 +368,7 @@
             "info": "Info Pembayaran"
         },
         "no_invoice": "Tidak terkait invoice"
-    }
-    ,
+    },
     "management": {
         "role": {
             "title": "Role",

@@ -85,7 +85,10 @@ export default function SecurityIndex() {
     }, [tab]);
 
     return (
-        <AuthLayout pageTitle={tSecurity('title')} pageDescription={tSecurity('desc')}>
+        <AuthLayout
+            pageTitle={tSecurity('title')}
+            pageDescription={tSecurity('desc')}
+        >
             <Head title={tSecurity('title')} />
 
             {/* Summary */}
@@ -106,7 +109,9 @@ export default function SecurityIndex() {
                                 summary.email_verified ? 'default' : 'secondary'
                             }
                         >
-                            {summary.email_verified ? tSecurity('email.verified') : tSecurity('email.unverified')}
+                            {summary.email_verified
+                                ? tSecurity('email.verified')
+                                : tSecurity('email.unverified')}
                         </Badge>
                         {!summary.email_verified && (
                             <Dialog
@@ -143,7 +148,11 @@ export default function SecurityIndex() {
                                             onClick={handleResendVerification}
                                             disabled={sending}
                                         >
-                                            {sending ? tSecurity('sending') : tSecurity('email.resend_button')}
+                                            {sending
+                                                ? tSecurity('sending')
+                                                : tSecurity(
+                                                      'email.resend_button',
+                                                  )}
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -169,7 +178,9 @@ export default function SecurityIndex() {
                                     : 'secondary'
                             }
                         >
-                            {summary.two_factor_enabled ? tSecurity('enabled') : tSecurity('disabled')}
+                            {summary.two_factor_enabled
+                                ? tSecurity('enabled')
+                                : tSecurity('disabled')}
                         </Badge>
                         <Button
                             size="sm"

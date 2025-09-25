@@ -183,7 +183,9 @@ export function TwoFADialog({
                                         onChange={(e) =>
                                             setReason(e.target.value)
                                         }
-                                        placeholder={tUser('user.twofa.reason_placeholder')}
+                                        placeholder={tUser(
+                                            'user.twofa.reason_placeholder',
+                                        )}
                                         maxLength={200}
                                     />
                                     <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
@@ -238,7 +240,9 @@ export function TwoFADialog({
                                 <div className="text-muted-foreground mb-2 flex items-center justify-between text-xs">
                                     <span>
                                         {codes.length > 0
-                                            ? tUser('user.twofa.recovery_available')
+                                            ? tUser(
+                                                  'user.twofa.recovery_available',
+                                              )
                                             : tUser('user.twofa.no_recovery')}
                                     </span>
                                     <div className="flex items-center gap-2">
@@ -249,10 +253,14 @@ export function TwoFADialog({
                                                 size="sm"
                                                 onClick={handleRegenerate}
                                                 disabled={loading === 'regen'}
-                                        aria-label={tSecurity('2fa.recovery.regen')}
+                                                aria-label={tSecurity(
+                                                    '2fa.recovery.regen',
+                                                )}
                                             >
                                                 <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                                {tSecurity('2fa.recovery.regen')}
+                                                {tSecurity(
+                                                    '2fa.recovery.regen',
+                                                )}
                                             </Button>
                                         ) : null}
                                     </div>

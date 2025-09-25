@@ -13,6 +13,7 @@ import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CopyInline } from '@/components/ui/copy-inline';
 import { makeColumn } from '@/components/ui/data-table-column-header';
 import {
     DropdownMenu,
@@ -64,7 +65,10 @@ export const createColumns = (
                     <div className="min-w-0">
                         <div className="truncate font-medium">{u.name}</div>
                         {u.phone && (
-                            <div className="text-muted-foreground truncate text-xs">
+                            <div
+                                className="text-muted-foreground truncate text-xs"
+                                title={u.phone}
+                            >
                                 {u.phone}
                             </div>
                         )}
@@ -75,17 +79,24 @@ export const createColumns = (
                             <div className="text-muted-foreground mt-1 space-y-1 text-xs">
                                 <div>
                                     <span className="font-medium">
-                                        {i18n.t('user.table.active', { ns: 'management/user' })}
+                                        {i18n.t('user.table.active', {
+                                            ns: 'management/user',
+                                        })}
                                     </span>{' '}
                                     {u.last_active_at ?? '—'}
                                 </div>
                                 <div>
                                     <span className="font-medium">
-                                        {i18n.t('tabs.2fa', { ns: 'security' })}:
+                                        {i18n.t('tabs.2fa', { ns: 'security' })}
+                                        :
                                     </span>{' '}
                                     {u.two_factor_enabled
-                                        ? i18n.t('user.table.enabled', { ns: 'management/user' })
-                                        : i18n.t('user.table.disabled', { ns: 'management/user' })}
+                                        ? i18n.t('user.table.enabled', {
+                                              ns: 'management/user',
+                                          })
+                                        : i18n.t('user.table.disabled', {
+                                              ns: 'management/user',
+                                          })}
                                 </div>
                             </div>
                         )}
@@ -104,13 +115,22 @@ export const createColumns = (
             const u = row.original;
             return (
                 <div className={`${COL.email} truncate`}>
-                    <a
-                        href={`mailto:${u.email}`}
-                        className="block w-full truncate text-sm hover:underline"
-                        title={u.email}
-                    >
-                        {u.email}
-                    </a>
+                    <div className="flex items-center gap-1">
+                        <a
+                            href={`mailto:${u.email}`}
+                            className="block max-w-full truncate text-sm hover:underline"
+                            title={u.email}
+                        >
+                            {u.email}
+                        </a>
+                        <CopyInline
+                            value={u.email}
+                            variant="icon"
+                            size="xs"
+                            className="ml-0.5"
+                            aria-label={i18n.t('common.copy_to_clipboard')}
+                        />
+                    </div>
                 </div>
             );
         },
@@ -125,7 +145,9 @@ export const createColumns = (
             if (!roles.length) {
                 return (
                     <Badge variant="outline">
-                        {i18n.t('user.table.no_role', { ns: 'management/user' })}
+                        {i18n.t('user.table.no_role', {
+                            ns: 'management/user',
+                        })}
                     </Badge>
                 );
             }
@@ -157,8 +179,12 @@ export const createColumns = (
                     }
                 >
                     {row.original.two_factor_enabled
-                        ? i18n.t('user.table.enabled', { ns: 'management/user' })
-                        : i18n.t('user.table.disabled', { ns: 'management/user' })}
+                        ? i18n.t('user.table.enabled', {
+                              ns: 'management/user',
+                          })
+                        : i18n.t('user.table.disabled', {
+                              ns: 'management/user',
+                          })}
                 </Badge>
             </div>
         ),
@@ -200,7 +226,9 @@ export const createColumns = (
                                     onClick={() => opts?.onManageRoles?.(u)}
                                 >
                                     <ShieldCheck className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('user.actions.manage_roles', { ns: 'management/user' })}
+                                    {i18n.t('user.actions.manage_roles', {
+                                        ns: 'management/user',
+                                    })}
                                 </DropdownMenuItem>
                             </Can>
                             <Can all={['user.password.reset']}>
@@ -208,7 +236,9 @@ export const createColumns = (
                                     onClick={() => opts?.onResetPassword?.(u)}
                                 >
                                     <KeyRound className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('user.actions.reset_password', { ns: 'management/user' })}
+                                    {i18n.t('user.actions.reset_password', {
+                                        ns: 'management/user',
+                                    })}
                                 </DropdownMenuItem>
                             </Can>
                             {u.two_factor_enabled ? (
@@ -219,7 +249,9 @@ export const createColumns = (
                                         }
                                     >
                                         <ScanFace className="mr-2 h-4 w-4" />{' '}
-                                        {i18n.t('user.actions.twofa_recovery', { ns: 'management/user' })}
+                                        {i18n.t('user.actions.twofa_recovery', {
+                                            ns: 'management/user',
+                                        })}
                                     </DropdownMenuItem>
                                 </Can>
                             ) : null}
@@ -230,7 +262,9 @@ export const createColumns = (
                                     onClick={() => opts?.onRevokeSession?.(u)}
                                 >
                                     <LogOut className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('user.actions.force_logout', { ns: 'management/user' })}
+                                    {i18n.t('user.actions.force_logout', {
+                                        ns: 'management/user',
+                                    })}
                                 </DropdownMenuItem>
                             </Can>
                         </DropdownMenuContent>

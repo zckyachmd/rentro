@@ -289,7 +289,9 @@ export default function TwoFactorTab({ summary }: TwoFactorTabProps) {
                                                         v,
                                                     )
                                                 }
-                                                placeholder={tSecurity('2fa.placeholder_otp')}
+                                                placeholder={tSecurity(
+                                                    '2fa.placeholder_otp',
+                                                )}
                                             />
                                             <InputError
                                                 message={

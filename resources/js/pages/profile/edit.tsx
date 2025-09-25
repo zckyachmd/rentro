@@ -138,7 +138,9 @@ export default function Edit({
                                     <div className="space-y-2">
                                         <Label htmlFor="name">
                                             {tProfile('full_name')}{' '}
-                                            <span className="text-destructive">*</span>
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="name"
@@ -156,7 +158,9 @@ export default function Edit({
                                     <div className="space-y-2">
                                         <Label htmlFor="username">
                                             {tProfile('username')}{' '}
-                                            <span className="text-destructive">*</span>
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="username"
@@ -198,7 +202,9 @@ export default function Edit({
                                     <div className="space-y-2">
                                         <Label htmlFor="phone">
                                             {tProfile('phone')}{' '}
-                                            <span className="text-destructive">*</span>
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="phone"
@@ -256,7 +262,10 @@ export default function Edit({
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {options.genders.map((g) => (
-                                                    <SelectItem key={g} value={g}>
+                                                    <SelectItem
+                                                        key={g}
+                                                        value={g}
+                                                    >
                                                         {t(`gender.${g}`, {
                                                             ns: 'enum',
                                                             defaultValue: g,

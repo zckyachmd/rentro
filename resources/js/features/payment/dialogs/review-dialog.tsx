@@ -158,15 +158,17 @@ export default function PaymentReviewDialog({
                                         {t('common.summary')}
                                     </div>
                                     <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                    {t('payment.review.check_hint')}
+                                        {t('payment.review.check_hint')}
                                     </div>
                                 </div>
                                 <span className="bg-muted text-foreground/80 rounded-full px-2 py-0.5 text-[11px]">
-                                    {t(`payment.status.${String(p.status || '')
-                                        .trim()
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '_')}`,
-                                    { ns: 'enum', defaultValue: p.status })}
+                                    {t(
+                                        `payment.status.${String(p.status || '')
+                                            .trim()
+                                            .toLowerCase()
+                                            .replace(/\s+/g, '_')}`,
+                                        { ns: 'enum', defaultValue: p.status },
+                                    )}
                                 </span>
                             </div>
                             <div className="grid grid-cols-1 gap-y-1 sm:grid-cols-2">
@@ -188,11 +190,13 @@ export default function PaymentReviewDialog({
                                     {t('payment.form.method')}
                                 </div>
                                 <div>
-                                    {t(`payment.method.${String(p.method || '')
-                                        .trim()
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '_')}`,
-                                    { ns: 'enum', defaultValue: p.method })}
+                                    {t(
+                                        `payment.method.${String(p.method || '')
+                                            .trim()
+                                            .toLowerCase()
+                                            .replace(/\s+/g, '_')}`,
+                                        { ns: 'enum', defaultValue: p.method },
+                                    )}
                                 </div>
                                 <div className="text-muted-foreground">
                                     {t('payment.form.paid_at')}
@@ -226,7 +230,7 @@ export default function PaymentReviewDialog({
                                 {p.note ? (
                                     <div className="bg-muted/30 rounded-md border p-2 text-xs">
                                         <div className="text-foreground mb-1 font-medium">
-                                    {t('payment.review.sender_note')}
+                                            {t('payment.review.sender_note')}
                                         </div>
                                         <div className="text-muted-foreground break-words whitespace-pre-wrap">
                                             {p.note}
@@ -277,7 +281,9 @@ export default function PaymentReviewDialog({
                                         {t('common.note')}
                                         <span className="text-muted-foreground ml-1">
                                             {decision === 'reject'
-                                                ? t('payment.review.note_required_hint')
+                                                ? t(
+                                                      'payment.review.note_required_hint',
+                                                  )
                                                 : t('common.optional')}
                                         </span>
                                     </Label>
@@ -289,8 +295,12 @@ export default function PaymentReviewDialog({
                                         rows={3}
                                         placeholder={
                                             decision === 'reject'
-                                                ? t('payment.review.note_placeholder_required')
-                                                : t('payment.form.note_placeholder')
+                                                ? t(
+                                                      'payment.review.note_placeholder_required',
+                                                  )
+                                                : t(
+                                                      'payment.form.note_placeholder',
+                                                  )
                                         }
                                     />
                                     <div className="text-muted-foreground flex items-center justify-end text-[11px]">
