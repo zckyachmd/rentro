@@ -157,3 +157,10 @@ export type {
     AmenityItem,
     AmenityPaginator,
 } from './amenity';
+
+// Room Type
+export type {
+    RoomTypeItem as ManagementRoomTypeItem,
+    RoomTypePaginator as ManagementRoomTypePaginator,
+    RoomTypesPageProps,
+} from './room-type';

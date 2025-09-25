@@ -1,5 +1,6 @@
 {
     "common": {
+        "active": "Aktif",
         "actions": "Aksi",
         "all": "Semua",
         "all_statuses": "Semua status",

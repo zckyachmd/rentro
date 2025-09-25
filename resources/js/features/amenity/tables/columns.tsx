@@ -30,13 +30,13 @@ export const createColumns = (opts?: {
             <div className={COL.name}>{String(getValue() ?? '')}</div>
         ),
     }),
-  makeColumn<AmenityItem>({
-    id: 'category',
-    accessorKey: 'category',
-    title: i18n.t('form.category', { ns: 'management/amenities' }),
-    className: COL.category,
-    sortable: true,
-    cell: ({ getValue }) => {
+    makeColumn<AmenityItem>({
+        id: 'category',
+        accessorKey: 'category',
+        title: i18n.t('form.category', { ns: 'management/amenities' }),
+        className: COL.category,
+        sortable: true,
+        cell: ({ getValue }) => {
             const v = String(getValue() ?? '') as 'room' | 'communal' | '';
             const label = v
                 ? i18n.t(`amenity_category.${v}`, { ns: 'enum' })

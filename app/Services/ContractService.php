@@ -135,8 +135,8 @@ class ContractService implements ContractServiceInterface
                 $payloadDeposit         = isset($data['deposit_cents']) ? (int) $data['deposit_cents'] : 0;
                 $effectiveRoomRentCents = (int) ($room->effectivePriceCents($period) ?? 0);
                 $effectiveRoomDepCents  = (int) ($room->effectiveDepositCents($period) ?? 0);
-                $fallbackRentRupiah     = (int) round($effectiveRoomRentCents / 100);
-                $fallbackDepositRupiah  = (int) round($effectiveRoomDepCents / 100);
+                $fallbackRentRupiah     = (int) $effectiveRoomRentCents;
+                $fallbackDepositRupiah  = (int) $effectiveRoomDepCents;
                 $finalRent              = $payloadRent > 0 ? $payloadRent : $fallbackRentRupiah;
                 $finalDeposit           = $payloadDeposit > 0 ? $payloadDeposit : $fallbackDepositRupiah;
 

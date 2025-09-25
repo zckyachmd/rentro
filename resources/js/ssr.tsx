@@ -1,4 +1,3 @@
-import type { Page } from '@inertiajs/core';
 import { createInertiaApp } from '@inertiajs/react';
 import createServer from '@inertiajs/react/server';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -18,7 +17,7 @@ declare global {
     var route: ZiggyRouteFn;
 }
 
-createServer(async (page: Page) => {
+createServer(async (page) => {
     try {
         const cfg = (
             page.props as unknown as {

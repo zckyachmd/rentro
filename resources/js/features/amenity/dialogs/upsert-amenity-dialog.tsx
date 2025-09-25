@@ -39,15 +39,14 @@ export default function UpsertAmenityDialog({
     const { t: tAmen } = useTranslation('management/amenities');
     const { t: tEnum } = useTranslation('enum');
 
-    const { data, setData, post, put, processing, clearErrors } =
-        useForm({
-            names: Object.assign({}, item?.names ?? {}),
-            icon: item?.icon ?? '',
-            category:
-                item?.category && ['room', 'communal'].includes(item.category)
-                    ? item.category
-                    : 'room',
-        });
+    const { data, setData, post, put, processing, clearErrors } = useForm({
+        names: Object.assign({}, item?.names ?? {}),
+        icon: item?.icon ?? '',
+        category:
+            item?.category && ['room', 'communal'].includes(item.category)
+                ? item.category
+                : 'room',
+    });
 
     React.useEffect(() => {
         setData({
@@ -128,7 +127,9 @@ export default function UpsertAmenityDialog({
                         <Label>{tAmen('form.category')}</Label>
                         <Select
                             value={String(data.category)}
-                            onValueChange={(v) => setData('category', v as 'room' | 'communal')}
+                            onValueChange={(v) =>
+                                setData('category', v as 'room' | 'communal')
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue />

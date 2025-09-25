@@ -144,15 +144,11 @@ export default function ContractCreate() {
             const deposit = r.deposits?.[key] ?? null;
             setData(
                 'rent_rupiah',
-                price != null
-                    ? String(Math.round((price as number) / 100))
-                    : '',
+                price != null ? String(Math.round(price as number)) : '',
             );
             setData(
                 'deposit_rupiah',
-                deposit != null
-                    ? String(Math.round((deposit as number) / 100))
-                    : '',
+                deposit != null ? String(Math.round(deposit as number)) : '',
             );
             if (r.billing_period) setData('billing_period', r.billing_period);
         }
@@ -166,13 +162,11 @@ export default function ContractCreate() {
         const deposit = r.deposits?.[key] ?? null;
         setData(
             'rent_rupiah',
-            price != null ? String(Math.round((price as number) / 100)) : '',
+            price != null ? String(Math.round(price as number)) : '',
         );
         setData(
             'deposit_rupiah',
-            deposit != null
-                ? String(Math.round((deposit as number) / 100))
-                : '',
+            deposit != null ? String(Math.round(deposit as number)) : '',
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data.billing_period, data.room_id]);

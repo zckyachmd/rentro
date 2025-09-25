@@ -1,0 +1,30 @@
+{
+    "title": "Room Types",
+    "desc": "Manage room type master data.",
+    "add": "Add Room Type",
+    "search_placeholder": "Search room type...",
+    "empty": "No room types yet.",
+    "create_title": "Create Room Type",
+    "edit_title": "Edit Room Type",
+    "form": {
+        "capacity": "Capacity",
+        "slug_hint": "Lowercase URL-friendly key. Leave empty to auto-generate from name.",
+        "slug_example": "e.g., single-bed, deluxe-suite",
+        "price_monthly": "Price (Monthly)",
+        "price_weekly": "Price (Weekly)",
+        "price_daily": "Price (Daily)",
+        "deposit_monthly": "Deposit (Monthly)",
+        "deposit_weekly": "Deposit (Weekly)",
+        "deposit_daily": "Deposit (Daily)",
+        "is_active": "Active",
+        "save": "Save"
+    },
+    "delete": {
+        "title": "Delete Room Type",
+        "confirm": "Delete this room type? This action cannot be undone.",
+        "confirm_named": "Delete room type \"{{name}}\"? This action cannot be undone."
+    },
+    "created": "Room type created.",
+    "updated": "Room type updated.",
+    "deleted": "Room type deleted."
+}

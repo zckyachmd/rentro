@@ -15,11 +15,11 @@
         "save": "Simpan",
         "cancel": "Batal"
     },
-  "delete": {
-    "title": "Hapus Fasilitas",
-    "confirm": "Hapus fasilitas ini? Tindakan ini tidak dapat dibatalkan.",
-    "confirm_named": "Hapus fasilitas \"{{name}}\"? Tindakan ini tidak dapat dibatalkan."
-  },
+    "delete": {
+        "title": "Hapus Fasilitas",
+        "confirm": "Hapus fasilitas ini? Tindakan ini tidak dapat dibatalkan.",
+        "confirm_named": "Hapus fasilitas \"{{name}}\"? Tindakan ini tidak dapat dibatalkan."
+    },
     "created": "Fasilitas berhasil ditambahkan.",
     "updated": "Fasilitas berhasil diperbarui.",
     "deleted": "Fasilitas berhasil dihapus."

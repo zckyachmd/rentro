@@ -176,29 +176,21 @@ export default function RoomUpsertForm({
             const depWeekly = t.deposits?.weekly ?? null;
             const depDaily = t.deposits?.daily ?? null;
             const price =
-                monthly != null
-                    ? String(Math.round((monthly as number) / 100))
-                    : '';
+                monthly != null ? String(Math.round(monthly as number)) : '';
             const priceW =
-                weekly != null
-                    ? String(Math.round((weekly as number) / 100))
-                    : '';
+                weekly != null ? String(Math.round(weekly as number)) : '';
             const priceD =
-                daily != null
-                    ? String(Math.round((daily as number) / 100))
-                    : '';
+                daily != null ? String(Math.round(daily as number)) : '';
             const deposit =
                 depMonthly != null
-                    ? String(Math.round((depMonthly as number) / 100))
+                    ? String(Math.round(depMonthly as number))
                     : '';
             const depositW =
                 depWeekly != null
-                    ? String(Math.round((depWeekly as number) / 100))
+                    ? String(Math.round(depWeekly as number))
                     : '';
             const depositD =
-                depDaily != null
-                    ? String(Math.round((depDaily as number) / 100))
-                    : '';
+                depDaily != null ? String(Math.round(depDaily as number)) : '';
             setData((prev) => ({
                 ...prev,
                 price_rupiah: prev.price_rupiah || price,
@@ -581,33 +573,26 @@ export default function RoomUpsertForm({
                                     const price =
                                         monthly != null
                                             ? String(
-                                                  Math.round(
-                                                      (monthly as number) / 100,
-                                                  ),
+                                                  Math.round(monthly as number),
                                               )
                                             : '';
                                     const priceW =
                                         weekly != null
                                             ? String(
-                                                  Math.round(
-                                                      (weekly as number) / 100,
-                                                  ),
+                                                  Math.round(weekly as number),
                                               )
                                             : '';
                                     const priceD =
                                         daily != null
                                             ? String(
-                                                  Math.round(
-                                                      (daily as number) / 100,
-                                                  ),
+                                                  Math.round(daily as number),
                                               )
                                             : '';
                                     const deposit =
                                         depMonthly != null
                                             ? String(
                                                   Math.round(
-                                                      (depMonthly as number) /
-                                                          100,
+                                                      depMonthly as number,
                                                   ),
                                               )
                                             : '';
@@ -615,8 +600,7 @@ export default function RoomUpsertForm({
                                         depWeekly != null
                                             ? String(
                                                   Math.round(
-                                                      (depWeekly as number) /
-                                                          100,
+                                                      depWeekly as number,
                                                   ),
                                               )
                                             : '';
@@ -624,8 +608,7 @@ export default function RoomUpsertForm({
                                         depDaily != null
                                             ? String(
                                                   Math.round(
-                                                      (depDaily as number) /
-                                                          100,
+                                                      depDaily as number,
                                                   ),
                                               )
                                             : '';
