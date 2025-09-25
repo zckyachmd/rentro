@@ -9,7 +9,7 @@ class UpdateBuildingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('building.update') ?? false;
+        return $this->user() !== null;
     }
 
     public function rules(): array

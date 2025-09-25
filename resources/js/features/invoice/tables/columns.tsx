@@ -11,6 +11,7 @@ import {
     XCircle,
 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
@@ -147,7 +148,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     makeColumn<T>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: COL.actions,
+        className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const inv = row.original;
             const t = i18n.t.bind(i18n);
@@ -194,14 +195,16 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                     .replace(/\s+/g, '_');
                                 return k === 'overdue' || k === 'pending';
                             })() ? (
-                                <DropdownMenuItem
-                                    onClick={() => opts?.onExtendDue?.(inv)}
-                                >
-                                    <Clock3 className="mr-2 h-4 w-4" />{' '}
-                                    {t('extend_due.action', {
-                                        ns: 'management/invoice',
-                                    })}
-                                </DropdownMenuItem>
+                                <Can all={['invoice.update']}>
+                                    <DropdownMenuItem
+                                        onClick={() => opts?.onExtendDue?.(inv)}
+                                    >
+                                        <Clock3 className="mr-2 h-4 w-4" />{' '}
+                                        {t('extend_due.action', {
+                                            ns: 'management/invoice',
+                                        })}
+                                    </DropdownMenuItem>
+                                </Can>
                             ) : null}
                             <DropdownMenuItem
                                 onClick={() => opts?.onPrint?.(inv)}
@@ -211,13 +214,15 @@ export const createColumns = <T extends BaseInvoiceRow>(
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {inv.status !== 'Voided' ? (
-                                <DropdownMenuItem
-                                    onClick={() => opts?.onCancel?.(inv)}
-                                    className="text-destructive focus:text-destructive"
-                                >
-                                    <XCircle className="mr-2 h-4 w-4" />{' '}
-                                    {t('common.cancel')}
-                                </DropdownMenuItem>
+                                <Can all={['invoice.update']}>
+                                    <DropdownMenuItem
+                                        onClick={() => opts?.onCancel?.(inv)}
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <XCircle className="mr-2 h-4 w-4" />{' '}
+                                        {t('common.cancel')}
+                                    </DropdownMenuItem>
+                                </Can>
                             ) : null}
                         </DropdownMenuContent>
                     </DropdownMenu>

@@ -364,39 +364,53 @@ export const createColumns = (
                             )}
 
                             {row.original.auto_renew && canStopRenew && (
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        opts?.onStopAutoRenew?.(row.original)
-                                    }
-                                >
-                                    <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('contract.autorenew.stop_action')}
-                                </DropdownMenuItem>
+                                <Can all={['contract.renew']}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onStopAutoRenew?.(
+                                                row.original,
+                                            )
+                                        }
+                                    >
+                                        <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t(
+                                            'contract.autorenew.stop_action',
+                                        )}
+                                    </DropdownMenuItem>
+                                </Can>
                             )}
                             {!row.original.auto_renew && canStartRenew && (
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        opts?.onStartAutoRenew?.(row.original)
-                                    }
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('contract.autorenew.start_action')}
-                                </DropdownMenuItem>
+                                <Can all={['contract.renew']}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onStartAutoRenew?.(
+                                                row.original,
+                                            )
+                                        }
+                                    >
+                                        <RefreshCw className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t(
+                                            'contract.autorenew.start_action',
+                                        )}
+                                    </DropdownMenuItem>
+                                </Can>
                             )}
 
                             {canCancel && (
-                                <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            opts?.onCancel?.(row.original)
-                                        }
-                                        className="text-destructive focus:text-destructive"
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />{' '}
-                                        {i18n.t('common.cancel')}
-                                    </DropdownMenuItem>
-                                </>
+                                <Can all={['contract.cancel']}>
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                opts?.onCancel?.(row.original)
+                                            }
+                                            className="text-destructive focus:text-destructive"
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('common.cancel')}
+                                        </DropdownMenuItem>
+                                    </>
+                                </Can>
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>

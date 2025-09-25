@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Pencil, ShieldCheck, Trash2 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -93,28 +94,36 @@ export const createColumns = (
                             {i18n.t('common.actions')}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => opts?.onEdit?.(row.original)}
-                        >
-                            <Pencil className="mr-2 h-4 w-4" />{' '}
-                            {i18n.t('actions.edit_role', { ns: 'role' })}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => opts?.onPermissions?.(row.original)}
-                        >
-                            <ShieldCheck className="mr-2 h-4 w-4" />{' '}
-                            {i18n.t('actions.manage_permissions', {
-                                ns: 'role',
-                            })}
-                        </DropdownMenuItem>
+                        <Can all={['role.update']}>
+                            <DropdownMenuItem
+                                onClick={() => opts?.onEdit?.(row.original)}
+                            >
+                                <Pencil className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('actions.edit_role', { ns: 'role' })}
+                            </DropdownMenuItem>
+                        </Can>
+                        <Can all={['role.permission.manage']}>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    opts?.onPermissions?.(row.original)
+                                }
+                            >
+                                <ShieldCheck className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('actions.manage_permissions', {
+                                    ns: 'role',
+                                })}
+                            </DropdownMenuItem>
+                        </Can>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => opts?.onDelete?.(row.original)}
-                        >
-                            <Trash2 className="text-destructive mr-2 h-4 w-4" />{' '}
-                            {i18n.t('common.delete')}
-                        </DropdownMenuItem>
+                        <Can all={['role.delete']}>
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => opts?.onDelete?.(row.original)}
+                            >
+                                <Trash2 className="text-destructive mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.delete')}
+                            </DropdownMenuItem>
+                        </Can>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

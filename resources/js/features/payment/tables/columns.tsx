@@ -9,6 +9,7 @@ import {
     XCircle,
 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -144,7 +145,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: COL.actions,
+        className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const p = row.original;
             return (
@@ -175,7 +176,7 @@ export const createColumns = (opts?: {
                                 'transfer' &&
                             (p.status || '').trim().toLowerCase() ===
                                 'review' ? (
-                                <>
+                                <Can all={['payment.update']}>
                                     <DropdownMenuItem
                                         onClick={() =>
                                             opts?.onReview
@@ -186,25 +187,29 @@ export const createColumns = (opts?: {
                                         <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
                                         {i18n.t('payment.review.action')}
                                     </DropdownMenuItem>
-                                </>
+                                </Can>
                             ) : null}
                             {(p.status || '').trim().toLowerCase() ===
                             'completed' ? (
                                 <>
-                                    <DropdownMenuItem
-                                        onClick={() => opts?.onPrint?.(p)}
-                                    >
-                                        <Printer className="mr-2 h-4 w-4" />{' '}
-                                        {i18n.t('payment.print_receipt')}
-                                    </DropdownMenuItem>
+                                    <Can all={['payment.view']}>
+                                        <DropdownMenuItem
+                                            onClick={() => opts?.onPrint?.(p)}
+                                        >
+                                            <Printer className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('payment.print_receipt')}
+                                        </DropdownMenuItem>
+                                    </Can>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive"
-                                        onClick={() => opts?.onVoid?.(p)}
-                                    >
-                                        <XCircle className="mr-2 h-4 w-4" />{' '}
-                                        {i18n.t('payment.void.title')}
-                                    </DropdownMenuItem>
+                                    <Can all={['payment.update']}>
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={() => opts?.onVoid?.(p)}
+                                        >
+                                            <XCircle className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('payment.void.title')}
+                                        </DropdownMenuItem>
+                                    </Can>
                                 </>
                             ) : null}
                         </DropdownMenuContent>

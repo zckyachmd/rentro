@@ -23,8 +23,20 @@ class MenuSeeder extends Seeder
                 'items' => [
                     ['label' => 'menu.dashboard', 'href' => route('dashboard'), 'icon' => 'Home'],
                     ['label' => 'menu.booking', 'href' => '#', 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
-                    ['label' => 'menu.contracts', 'href' => route('tenant.contracts.index'), 'icon' => 'ScrollText', 'roles' => [RoleName::TENANT->value]],
-                    ['label' => 'menu.invoices', 'href' => route('tenant.invoices.index'), 'icon' => 'ReceiptText', 'roles' => [RoleName::TENANT->value]],
+                    [
+                        'label' => 'menu.contracts',
+                        'href' => route('tenant.contracts.index'),
+                        'icon' => 'ScrollText',
+                        'roles' => [RoleName::TENANT->value],
+                        'permission' => PermissionName::CONTRACT_VIEW,
+                    ],
+                    [
+                        'label' => 'menu.invoices',
+                        'href' => route('tenant.invoices.index'),
+                        'icon' => 'ReceiptText',
+                        'roles' => [RoleName::TENANT->value],
+                        'permission' => PermissionName::INVOICE_VIEW,
+                    ],
                 ],
             ],
 

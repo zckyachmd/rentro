@@ -11,14 +11,13 @@ class CreateAmenityRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('amenity.create') ?? false;
+        return $this->user() !== null;
     }
 
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'string', 'max:100', Rule::unique('amenities', 'name')],
-            // Names map by locale
+            'name'     => ['nullable', 'string', 'max:100', Rule::unique('amenities', 'name')],
             'names'    => ['required', 'array'],
             'names.*'  => ['nullable', 'string', 'max:100'],
             'icon'     => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z][A-Za-z0-9]*$/'],

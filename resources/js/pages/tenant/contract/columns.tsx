@@ -10,6 +10,7 @@ import {
     RefreshCcw,
 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -248,16 +249,20 @@ export const createColumns = (
                                     {i18n.t('contract.view_checkout')}
                                 </DropdownMenuItem>
                             ) : null}
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    const url = route('tenant.invoices.index');
-                                    const qs = `?q=${encodeURIComponent(`contract:${r.id}`)}`;
-                                    router.visit(url + qs);
-                                }}
-                            >
-                                <ReceiptText className="mr-2 h-4 w-4" />{' '}
-                                {i18n.t('contract.actions.view_invoices')}
-                            </DropdownMenuItem>
+                            <Can all={['invoice.view']}>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        const url = route(
+                                            'tenant.invoices.index',
+                                        );
+                                        const qs = `?q=${encodeURIComponent(`contract:${r.id}`)}`;
+                                        router.visit(url + qs);
+                                    }}
+                                >
+                                    <ReceiptText className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('contract.actions.view_invoices')}
+                                </DropdownMenuItem>
+                            </Can>
                             <DropdownMenuItem
                                 onClick={() =>
                                     window.open(
@@ -271,13 +276,15 @@ export const createColumns = (
                                 <Printer className="mr-2 h-4 w-4" />{' '}
                                 {i18n.t('contract.actions.print')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                                disabled={!r.auto_renew || !isActive}
-                                onClick={() => opts?.onStopAutoRenew?.(r)}
-                            >
-                                <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                {i18n.t('contract.autorenew.stop_action')}
-                            </DropdownMenuItem>
+                            <Can all={['contract.renew']}>
+                                <DropdownMenuItem
+                                    disabled={!r.auto_renew || !isActive}
+                                    onClick={() => opts?.onStopAutoRenew?.(r)}
+                                >
+                                    <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('contract.autorenew.stop_action')}
+                                </DropdownMenuItem>
+                            </Can>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

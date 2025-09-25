@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { CreditCard, Eye, MoreHorizontal, Printer } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -104,7 +105,7 @@ export const createColumns = (opts?: {
     makeColumn<TenantInvoiceItem>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: COL.actions,
+        className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const inv = row.original;
             const canPay =
@@ -133,26 +134,33 @@ export const createColumns = (opts?: {
                                 <Eye className="mr-2 h-4 w-4" />{' '}
                                 {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    window.open(
-                                        route('tenant.invoices.print', inv.id),
-                                        '_blank',
-                                    )
-                                }
-                            >
-                                <Printer className="mr-2 h-4 w-4" />{' '}
-                                {i18n.t('common.print')}
-                            </DropdownMenuItem>
+                            <Can all={['invoice.view']}>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        window.open(
+                                            route(
+                                                'tenant.invoices.print',
+                                                inv.id,
+                                            ),
+                                            '_blank',
+                                        )
+                                    }
+                                >
+                                    <Printer className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('common.print')}
+                                </DropdownMenuItem>
+                            </Can>
                             {canPay ? (
                                 <>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        onClick={() => opts?.onPay?.(inv)}
-                                    >
-                                        <CreditCard className="mr-2 h-4 w-4" />{' '}
-                                        {i18n.t('common.pay')}
-                                    </DropdownMenuItem>
+                                    <Can all={['payment.create']}>
+                                        <DropdownMenuItem
+                                            onClick={() => opts?.onPay?.(inv)}
+                                        >
+                                            <CreditCard className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('common.pay')}
+                                        </DropdownMenuItem>
+                                    </Can>
                                 </>
                             ) : null}
                         </DropdownMenuContent>

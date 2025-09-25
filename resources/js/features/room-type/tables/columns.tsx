@@ -72,7 +72,7 @@ export const createColumns = (opts?: {
     makeColumn<ManagementRoomTypeItem>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: COL.actions,
+        className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const a = row.original;
             return (

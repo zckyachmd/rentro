@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -197,26 +198,32 @@ export const createColumns = (
                             {i18n.t('common.actions')}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => opts?.onDetail?.(row.original)}
-                        >
-                            <Eye className="mr-2 h-4 w-4" />{' '}
-                            {i18n.t('common.view_detail')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => opts?.onEdit?.(row.original)}
-                        >
-                            <Pencil className="mr-2 h-4 w-4" />{' '}
-                            {i18n.t('common.edit')}
-                        </DropdownMenuItem>
+                        <Can all={['room.manage.view']}>
+                            <DropdownMenuItem
+                                onClick={() => opts?.onDetail?.(row.original)}
+                            >
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.view_detail')}
+                            </DropdownMenuItem>
+                        </Can>
+                        <Can all={['room.manage.update']}>
+                            <DropdownMenuItem
+                                onClick={() => opts?.onEdit?.(row.original)}
+                            >
+                                <Pencil className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.edit')}
+                            </DropdownMenuItem>
+                        </Can>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => opts?.onDelete?.(row.original)}
-                        >
-                            <Trash2 className="text-destructive mr-2 h-4 w-4" />{' '}
-                            {i18n.t('common.delete')}
-                        </DropdownMenuItem>
+                        <Can all={['room.manage.delete']}>
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => opts?.onDelete?.(row.original)}
+                            >
+                                <Trash2 className="text-destructive mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.delete')}
+                            </DropdownMenuItem>
+                        </Can>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

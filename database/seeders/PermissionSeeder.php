@@ -130,7 +130,20 @@ class PermissionSeeder extends Seeder
                 PermissionName::HANDOVER_CREATE,
                 PermissionName::HANDOVER_UPDATE,
             ],
-            RoleName::TENANT->value => [],
+            RoleName::TENANT->value => [
+                // Contracts
+                PermissionName::CONTRACT_VIEW,
+                PermissionName::CONTRACT_RENEW,
+                // Handovers
+                PermissionName::HANDOVER_VIEW,
+                PermissionName::HANDOVER_UPDATE,
+                // Invoices
+                PermissionName::INVOICE_VIEW,
+                // Payments
+                PermissionName::PAYMENT_VIEW,
+                PermissionName::PAYMENT_CREATE,
+                PermissionName::PAYMENT_UPDATE,
+            ],
         ];
 
         foreach ($rolesWithPermissions as $roleName => $permissions) {

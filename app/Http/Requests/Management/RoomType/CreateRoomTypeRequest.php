@@ -14,7 +14,7 @@ class CreateRoomTypeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('room-type.create') ?? false;
+        return $this->user() !== null;
     }
 
     public function rules(): array

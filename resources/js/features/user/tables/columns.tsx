@@ -202,7 +202,7 @@ export const createColumns = (
     makeColumn<UserItem>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: `text-right ${COL.actions}`,
+        className: `text-right ${COL.actions} flex justify-end items-center`,
         cell: ({ row }) => {
             const u = row.original;
             return (
