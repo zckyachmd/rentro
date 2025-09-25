@@ -30,10 +30,11 @@ export default function DetailDialog({
     onOpenChange: (open: boolean) => void;
     item: ActivityItem | null;
 }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const { t: tAudit } = useTranslation('management/audit');
     const createdAt = React.useMemo(() => {
         try {
-            return new Date(item?.created_at || '').toLocaleString('id-ID', {
+            return new Date(item?.created_at || '').toLocaleString(i18n.language, {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',
@@ -44,7 +45,7 @@ export default function DetailDialog({
         } catch {
             return item?.created_at ?? '-';
         }
-    }, [item?.created_at]);
+    }, [item?.created_at, i18n.language]);
 
     const textToCopy = React.useMemo(
         () =>
@@ -58,12 +59,8 @@ export default function DetailDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[95vw] p-0 sm:max-w-2xl">
                 <DialogHeader className="px-6 pt-6 pb-2">
-                    <DialogTitle className="text-base sm:text-lg">
-                        {t('management.audit.detail_title')}
-                    </DialogTitle>
-                    <DialogDescription className="text-xs sm:text-sm">
-                        {t('management.audit.detail_desc')}
-                    </DialogDescription>
+                    <DialogTitle className="text-base sm:text-lg">{tAudit('detail_title')}</DialogTitle>
+                    <DialogDescription className="text-xs sm:text-sm">{tAudit('detail_desc')}</DialogDescription>
                 </DialogHeader>
 
                 {item ? (
@@ -79,7 +76,7 @@ export default function DetailDialog({
                             </div>
                             <div className="space-y-1">
                                 <dt className="text-muted-foreground text-xs">
-                                    {t('audit.event')}
+                                    {tAudit('event')}
                                 </dt>
                                 <dd>
                                     <Badge variant="secondary">
@@ -104,9 +101,7 @@ export default function DetailDialog({
                                                             item.causer.email
                                                         }
                                                         variant="link"
-                                                        successMessage={t(
-                                                            'profile.email_copied',
-                                                        )}
+                                                        successMessage={t('email_copied', { ns: 'profile' })}
                                                     >
                                                         {item.causer.email}
                                                     </CopyInline>
@@ -122,7 +117,7 @@ export default function DetailDialog({
                             </div>
                             <div className="space-y-1">
                                 <dt className="text-muted-foreground text-xs">
-                                    {t('audit.subject')}
+                                    {tAudit('subject')}
                                 </dt>
                                 <dd className="text-sm">
                                     {subjectLabel(
@@ -133,7 +128,7 @@ export default function DetailDialog({
                             </div>
                             <div className="space-y-1 sm:col-span-2">
                                 <dt className="text-muted-foreground text-xs">
-                                    {t('audit.log_name')}
+                                    {tAudit('log_name')}
                                 </dt>
                                 <dd className="text-sm">
                                     {item.log_name ?? '-'}
@@ -152,18 +147,16 @@ export default function DetailDialog({
                         <div className="min-w-0 space-y-2">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm font-medium">
-                                    {t('audit.properties')}
+                                    {tAudit('properties')}
                                 </div>
                                 <CopyInline
                                     as="button"
                                     value={textToCopy}
                                     className="bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-1 rounded-md border p-1"
-                                    successMessage={t(
-                                        'audit.properties_copied',
-                                    )}
+                                    successMessage={tAudit('properties_copied')}
                                 >
                                     <span className="sr-only">
-                                        {t('audit.copy_properties')}
+                                        {tAudit('copy_properties')}
                                     </span>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"

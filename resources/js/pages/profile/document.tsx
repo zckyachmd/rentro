@@ -30,36 +30,28 @@ function getAlertText(
     messages: DocumentSectionProps['messages'] = {},
     t: TFunction,
 ) {
-    const title = messages.infoTitle || t('profile.document.alert.info_title');
+    const title = messages.infoTitle || t('document.alert.info_title');
     const lines: string[] = [];
 
     if (value.file) {
-        lines.push(
-            messages.filePicked || t('profile.document.alert.file_picked'),
-        );
+        lines.push(messages.filePicked || t('document.alert.file_picked'));
     } else {
         switch (value.status) {
             case 'pending':
-                lines.push(
-                    messages.pending || t('profile.document.alert.pending'),
-                );
+                lines.push(messages.pending || t('document.alert.pending'));
                 break;
             case 'approved':
-                lines.push(
-                    messages.approved || t('profile.document.alert.approved'),
-                );
+                lines.push(messages.approved || t('document.alert.approved'));
                 break;
             case 'rejected':
-                lines.push(
-                    messages.rejected || t('profile.document.alert.rejected'),
-                );
+                lines.push(messages.rejected || t('document.alert.rejected'));
                 break;
         }
     }
 
     if (value.notes) {
         lines.push(
-            `\n${messages.notesTitle || t('profile.document.alert.notes_title')}:\n${value.notes}`,
+            `\n${messages.notesTitle || t('document.alert.notes_title')}:\n${value.notes}`,
         );
     }
 
@@ -76,6 +68,8 @@ export default function DocumentSection({
     documentTypes = [],
 }: DocumentSectionProps) {
     const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tEnum } = useTranslation('enum');
     const setField = React.useCallback(
         <K extends keyof DocumentFormValue>(
             key: K,
@@ -103,7 +97,7 @@ export default function DocumentSection({
         >
             <AccordionItem value="document">
                 <AccordionTrigger className="text-base font-semibold">
-                    {title ?? t('profile.document.title')}
+                    {title ?? tProfile('document.title')}
                 </AccordionTrigger>
                 <AccordionContent>
                     <div className="space-y-4">
@@ -111,7 +105,7 @@ export default function DocumentSection({
                             {/* Jenis Dokumen */}
                             <div className="space-y-2">
                                 <Label htmlFor="doc_type">
-                                    {t('profile.document.type')}{' '}
+                                    {tProfile('document.type')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Select
@@ -133,7 +127,9 @@ export default function DocumentSection({
                                     <SelectContent>
                                         {documentTypes.map((type) => (
                                             <SelectItem key={type} value={type}>
-                                                {type}
+                                                {tEnum(`document.type.${type}`, {
+                                                    defaultValue: type,
+                                                })}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -144,7 +140,7 @@ export default function DocumentSection({
                             {/* Nomor Dokumen */}
                             <div className="space-y-2">
                                 <Label htmlFor="doc_number">
-                                    {t('profile.document.number')}{' '}
+                                    {tProfile('document.number')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
@@ -164,7 +160,7 @@ export default function DocumentSection({
                             {/* Tanggal Terbit */}
                             <div className="space-y-2">
                                 <Label htmlFor="issued_at">
-                                    {t('profile.document.issued_at')}{' '}
+                                    {tProfile('document.issued_at')}{' '}
                                     <span className="text-destructive">*</span>
                                 </Label>
                                 <DatePickerInput
@@ -187,7 +183,7 @@ export default function DocumentSection({
                             {/* Berlaku Hingga */}
                             <div className="space-y-2">
                                 <Label htmlFor="expires_at">
-                                    {t('profile.document.expires_at')}
+                                    {tProfile('document.expires_at')}
                                 </Label>
                                 <DatePickerInput
                                     id="expires_at"
@@ -208,7 +204,7 @@ export default function DocumentSection({
 
                             <div className="space-y-2 md:col-span-4">
                                 <Label className="mb-1 block">
-                                    {t('profile.document.file')}{' '}
+                                    {tProfile('document.file')}{' '}
                                     <span className="text-destructive">
                                         {!value.has_file ||
                                         value.status === 'rejected'
@@ -235,7 +231,7 @@ export default function DocumentSection({
                             {value.status && (
                                 <div className="md:col-span-4">
                                     <Label className="mr-2">
-                                        {t('profile.document.verify_status')}
+                                        {tProfile('document.verify_status')}
                                     </Label>
                                     <span>
                                         <DocumentStatusBadge
@@ -248,7 +244,7 @@ export default function DocumentSection({
                         {shouldShowAlert &&
                             (() => {
                                 const { title: alertTitle, text } =
-                                    getAlertText(value, messages, t);
+                                    getAlertText(value, messages, tProfile);
                                 return (
                                     <Alert>
                                         <AlertTitle>{alertTitle}</AlertTitle>

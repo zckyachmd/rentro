@@ -47,6 +47,7 @@ export default function RoomDetailDialog({
     onOpenChange: (open: boolean) => void;
 }) {
     const { t } = useTranslation();
+    const { t: tRoom } = useTranslation('management/room');
     const roomId = item?.id ?? null;
 
     const [loading, setLoading] = React.useState(false);
@@ -112,13 +113,13 @@ export default function RoomDetailDialog({
                 );
                 setData(res?.room ?? null);
             } catch {
-                setError(t('management.room.detail_error'));
+                setError(tRoom('detail_error'));
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
             }
         })();
         return () => controller.abort();
-    }, [open, roomId, t]);
+    }, [open, roomId, tRoom]);
 
     const prev = React.useCallback(
         () => setCurrent((i) => Math.max(0, i - 1)),
@@ -134,9 +135,7 @@ export default function RoomDetailDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex w-[95vw] max-w-[calc(100%-1.5rem)] flex-col gap-0 p-0 sm:max-w-3xl">
                 <DialogHeader className="px-5 pt-6 pb-4 sm:px-6">
-                    <DialogTitle>
-                        {t('management.room.detail_title')}
-                    </DialogTitle>
+                    <DialogTitle>{tRoom('detail_title')}</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 overflow-auto overscroll-contain">
                     <div className="space-y-6 px-5 py-6 sm:px-6">
@@ -168,15 +167,6 @@ export default function RoomDetailDialog({
                                                     ) : null}
                                                 </div>
                                             </div>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={goEdit}
-                                            >
-                                                <Pencil className="mr-2 h-4 w-4" />{' '}
-                                                {t('common.edit')}
-                                            </Button>
                                         </div>
                                         <div className="grid gap-4 sm:grid-cols-4">
                                             <div className="space-y-1">
@@ -233,9 +223,7 @@ export default function RoomDetailDialog({
                                         <div className="grid gap-4 sm:grid-cols-3">
                                             <div className="space-y-1">
                                                 <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                                                    {t(
-                                                        'management.room.building',
-                                                    )}
+                                                    {tRoom('building')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.building?.name ?? '-'}
@@ -243,7 +231,7 @@ export default function RoomDetailDialog({
                                             </div>
                                             <div className="space-y-1">
                                                 <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                                                    {t('management.room.floor')}
+                                                    {tRoom('floor')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.floor?.level ?? '-'}
@@ -251,7 +239,7 @@ export default function RoomDetailDialog({
                                             </div>
                                             <div className="space-y-1">
                                                 <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                                                    {t('management.room.type')}
+                                                    {tRoom('type')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.type?.name ?? '-'}
@@ -294,9 +282,7 @@ export default function RoomDetailDialog({
                                                     <div className="text-muted-foreground flex h-full w-full items-center justify-center">
                                                         <div className="flex items-center gap-2">
                                                             <ImageIcon className="h-5 w-5" />{' '}
-                                                            {t(
-                                                                'management.room.no_photos',
-                                                            )}
+                                                            {tRoom('no_photos')}
                                                         </div>
                                                     </div>
                                                 )}
@@ -354,9 +340,7 @@ export default function RoomDetailDialog({
                                                         />
                                                         {p.is_cover ? (
                                                             <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
-                                                                {t(
-                                                                    'management.room.form.photos.cover',
-                                                                )}
+                                                                {tRoom('form.photos.cover')}
                                                             </span>
                                                         ) : null}
                                                     </button>
@@ -393,7 +377,7 @@ export default function RoomDetailDialog({
                                         </div>
                                         <div>
                                             <div className="text-sm font-semibold">
-                                                {t('management.room.notes')}
+                                                {tRoom('notes')}
                                             </div>
                                             <div className="bg-background text-muted-foreground mt-2 rounded border p-3 text-sm">
                                                 {data.notes ?? '-'}
@@ -404,7 +388,7 @@ export default function RoomDetailDialog({
                             </div>
                         ) : (
                             <div className="text-muted-foreground rounded-md border p-6 text-center text-sm">
-                                {t('management.room.no_data')}
+                                {tRoom('no_data')}
                             </div>
                         )}
                     </div>
@@ -417,6 +401,13 @@ export default function RoomDetailDialog({
                         onClick={closeDialog}
                     >
                         {t('common.close')}
+                    </Button>
+                    <Button
+                        type="button"
+                        className="w-full sm:w-auto"
+                        onClick={goEdit}
+                    >
+                        <Pencil className="mr-2 h-4 w-4" /> {t('common.edit')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -208,10 +208,7 @@ export const createColumns = (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={i18n.t(
-                                    'tenant/contract:actions_for',
-                                    { id: r.id },
-                                )}
+                                aria-label={i18n.t('contract.actions_for', { id: r.id })}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -238,7 +235,7 @@ export const createColumns = (
                                     onClick={() => opts?.onViewCheckin?.(r)}
                                 >
                                     <Eye className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('tenant/contract:view_checkin')}
+                                    {i18n.t('contract.view_checkin')}
                                 </DropdownMenuItem>
                             ) : null}
                             {r.needs_ack_checkout ? (
@@ -246,7 +243,7 @@ export const createColumns = (
                                     onClick={() => opts?.onViewCheckout?.(r)}
                                 >
                                     <Eye className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('tenant/contract:view_checkout')}
+                                    {i18n.t('contract.view_checkout')}
                                 </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuItem
@@ -277,9 +274,7 @@ export const createColumns = (
                                 onClick={() => opts?.onStopAutoRenew?.(r)}
                             >
                                 <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                {i18n.t(
-                                    'management/contract:autorenew.stop_action',
-                                )}
+                                    {i18n.t('contract.autorenew.stop_action')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

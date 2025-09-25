@@ -23,6 +23,7 @@ export default function ContactDeleteDialog({
     onConfirm: () => void;
 }) {
     const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
     const [agree, setAgree] = React.useState(false);
 
     React.useEffect(() => {
@@ -35,18 +36,16 @@ export default function ContactDeleteDialog({
         <Dialog open={!!target} onOpenChange={(open) => !open && onCancel()}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>
-                        {t('profile.contact.delete_title')}
-                    </DialogTitle>
+                    <DialogTitle>{tProfile('contact.delete_title')}</DialogTitle>
                     <DialogDescription>
                         {target ? (
                             <>
-                                {t('profile.contact.delete_desc_prefix')}{' '}
+                                {tProfile('contact.delete_desc_prefix')}{' '}
                                 <b>{target.name}</b> ({target.relationship}).{' '}
-                                {t('profile.contact.delete_desc_suffix')}
+                                {tProfile('contact.delete_desc_suffix')}
                             </>
                         ) : (
-                            t('profile.contact.delete_desc_fallback')
+                            tProfile('contact.delete_desc_fallback')
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -60,7 +59,7 @@ export default function ContactDeleteDialog({
                         htmlFor="ack"
                         className="text-muted-foreground text-sm leading-snug"
                     >
-                        {t('profile.contact.delete_ack')}
+                        {tProfile('contact.delete_ack')}
                     </label>
                 </div>
                 <DialogFooter>

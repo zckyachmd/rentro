@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 
 export default function PasswordTab() {
     const { t } = useTranslation();
+    const { t: tSecurity } = useTranslation('security');
     const [show, setShow] = useState<{
         current: boolean;
         new: boolean;
@@ -50,9 +51,9 @@ export default function PasswordTab() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{t('security.password.change_title')}</CardTitle>
+                <CardTitle>{tSecurity('password.change_title')}</CardTitle>
                 <CardDescription>
-                    {t('security.password.change_desc')}
+                    {tSecurity('password.change_desc')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -60,15 +61,13 @@ export default function PasswordTab() {
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="current_password">
-                                {t('security.password.current')}
+                                {tSecurity('password.current')}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="current_password"
                                     type={show.current ? 'text' : 'password'}
-                                    placeholder={t(
-                                        'security.password.current_placeholder',
-                                    )}
+                                    placeholder={tSecurity('password.current_placeholder')}
                                     value={passwordForm.data.current_password}
                                     className="pr-10"
                                     onChange={(e) =>
@@ -110,15 +109,13 @@ export default function PasswordTab() {
 
                         <div className="space-y-2">
                             <Label htmlFor="password">
-                                {t('security.password.new')}
+                                {tSecurity('password.new')}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="password"
                                     type={show.new ? 'text' : 'password'}
-                                    placeholder={t(
-                                        'security.password.new_placeholder',
-                                    )}
+                                    placeholder={tSecurity('password.new_placeholder')}
                                     value={passwordForm.data.password}
                                     className="pr-10"
                                     onChange={(e) =>
@@ -156,15 +153,13 @@ export default function PasswordTab() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password_confirmation">
-                                {t('security.password.confirm')}
+                                {tSecurity('password.confirm')}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="password_confirmation"
                                     type={show.confirm ? 'text' : 'password'}
-                                    placeholder={t(
-                                        'security.password.confirm_placeholder',
-                                    )}
+                                    placeholder={tSecurity('password.confirm_placeholder')}
                                     value={
                                         passwordForm.data.password_confirmation
                                     }

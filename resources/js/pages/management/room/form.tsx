@@ -49,6 +49,7 @@ export default function RoomUpsertForm({
     options?: RoomUpsertOptions;
     room?: import('@/types/management').RoomUpsert;
 }) {
+    const { t: tRoom } = useTranslation('management/room');
     const { t } = useTranslation();
     // =========================
     // 1) Sumber data opsi (tanpa useMemo — ringan & jelas)
@@ -415,22 +416,22 @@ export default function RoomUpsertForm({
                 {/* Identitas Kamar */}
                 <div className="space-y-2">
                     <div className="text-foreground text-sm font-medium">
-                        {t('management.room.form.identity.title')}
+                        {tRoom('form.identity.title')}
                     </div>
                     <p className="text-muted-foreground text-xs">
-                        {t('management.room.form.identity.desc')}
+                        {tRoom('form.identity.desc')}
                     </p>
                     <div className="grid gap-3 md:grid-cols-2">
                         <div className="grid gap-1.5">
                             <Label>
-                                {t('management.room.form.number_label')}{' '}
+                                {tRoom('form.number_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 value={data.number}
                                 onChange={onChange('number')}
                                 placeholder={t(
-                                    'management.room.form.number_placeholder',
+                                    'management/room:form.number_placeholder',
                                 )}
                                 disabled={processing}
                                 className="h-10 text-sm"
@@ -438,7 +439,7 @@ export default function RoomUpsertForm({
 
                             {!errors.number ? (
                                 <p className="text-muted-foreground text-xs">
-                                    {t('management.room.form.number_hint')}
+                                    {tRoom('form.number_hint')}
                                 </p>
                             ) : (
                                 <InputError message={errors.number} />
@@ -446,13 +447,13 @@ export default function RoomUpsertForm({
                         </div>
                         <div className="grid gap-1.5">
                             <Label>
-                                {t('management.room.form.name_label')}
+                                {tRoom('form.name_label')}
                             </Label>
                             <Input
                                 value={data.name}
                                 onChange={onChange('name')}
                                 placeholder={t(
-                                    'management.room.form.name_placeholder',
+                                    'management/room:form.name_placeholder',
                                 )}
                                 disabled={processing}
                                 className="h-10 text-sm"
@@ -460,7 +461,7 @@ export default function RoomUpsertForm({
 
                             {!errors.name ? (
                                 <p className="text-muted-foreground text-xs">
-                                    {t('management.room.form.name_hint')}
+                                    {tRoom('form.name_hint')}
                                 </p>
                             ) : (
                                 <InputError message={errors.name} />
@@ -473,15 +474,15 @@ export default function RoomUpsertForm({
                 {/* Lokasi & Klasifikasi */}
                 <div className="space-y-2">
                     <div className="text-foreground text-sm font-medium">
-                        {t('management.room.form.location.title')}
+                        {tRoom('form.location.title')}
                     </div>
                     <p className="text-muted-foreground text-xs">
-                        {t('management.room.form.location.desc')}
+                        {tRoom('form.location.desc')}
                     </p>
                     <div className="grid gap-2 md:grid-cols-2">
                         <div className="grid gap-1">
                             <Label>
-                                {t('management.room.form.building_label')}{' '}
+                                {tRoom('form.building_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -503,7 +504,7 @@ export default function RoomUpsertForm({
                                 <SelectTrigger className="h-10 text-sm">
                                     <SelectValue
                                         placeholder={t(
-                                            'management.room.form.building_placeholder',
+                                            'management/room:form.building_placeholder',
                                         )}
                                     />
                                 </SelectTrigger>
@@ -525,7 +526,7 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-1">
                             <Label>
-                                {t('management.room.form.floor_label')}{' '}
+                                {tRoom('form.floor_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -536,7 +537,7 @@ export default function RoomUpsertForm({
                                 <SelectTrigger className="h-10 text-sm">
                                     <SelectValue
                                         placeholder={t(
-                                            'management.room.form.floor_placeholder',
+                                            'management/room:form.floor_placeholder',
                                         )}
                                     />
                                 </SelectTrigger>
@@ -548,7 +549,7 @@ export default function RoomUpsertForm({
                                                 value={String(f.id)}
                                             >
                                                 {t(
-                                                    'management.room.form.floor_option',
+                                                    'management/room:form.floor_option',
                                                     { level: f.level },
                                                 )}
                                             </SelectItem>
@@ -561,7 +562,7 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-1">
                             <Label>
-                                {t('management.room.form.type_label')}{' '}
+                                {tRoom('form.type_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -645,7 +646,7 @@ export default function RoomUpsertForm({
                                 <SelectTrigger className="h-10 text-sm">
                                     <SelectValue
                                         placeholder={t(
-                                            'management.room.form.type_placeholder',
+                                            'management/room:form.type_placeholder',
                                         )}
                                     />
                                 </SelectTrigger>
@@ -667,7 +668,7 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-1">
                             <Label>
-                                {t('management.room.form.status_label')}{' '}
+                                {tRoom('form.status_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -678,7 +679,7 @@ export default function RoomUpsertForm({
                                 <SelectTrigger className="h-10 text-sm">
                                     <SelectValue
                                         placeholder={t(
-                                            'management.room.form.status_placeholder',
+                                            'management/room:form.status_placeholder',
                                         )}
                                     />
                                 </SelectTrigger>
@@ -689,7 +690,10 @@ export default function RoomUpsertForm({
                                                 key={s.value}
                                                 value={s.value}
                                             >
-                                                {s.label}
+                                                {t(`room.status.${String(s.value).toLowerCase()}`, {
+                                                    ns: 'enum',
+                                                    defaultValue: s.label,
+                                                })}
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
@@ -698,29 +702,28 @@ export default function RoomUpsertForm({
                             <InputError message={errors.status} />
                         </div>
                     </div>
-                    {/* Separator dipindah ke akhir seluruh blok harga/dep mingguan-harian */}
                 </div>
 
                 {/* Kapasitas, Harga, Deposit, Luas */}
                 <div className="space-y-2">
                     <div className="text-foreground text-sm font-medium">
-                        {t('management.room.form.capacity.title')}
+                        {tRoom('form.capacity.title')}
                     </div>
                     <p className="text-muted-foreground text-xs">
-                        {t('management.room.form.capacity.desc')}
+                        {tRoom('form.capacity.desc')}
                     </p>
                     <div className="grid gap-4 md:grid-cols-2">
                         {/* Kiri: Kapasitas + Harga */}
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.capacity_label')}{' '}
+                                {tRoom('form.capacity_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 type="number"
                                 min={1}
                                 placeholder={t(
-                                    'management.room.form.capacity_placeholder',
+                                    'management/room:form.capacity_placeholder',
                                 )}
                                 value={data.max_occupancy}
                                 onChange={onChange('max_occupancy')}
@@ -731,20 +734,20 @@ export default function RoomUpsertForm({
                                 <InputError message={errors.max_occupancy} />
                             ) : (
                                 <p className="text-muted-foreground text-xs">
-                                    {t('management.room.form.capacity_hint')}
+                                    {tRoom('form.capacity_hint')}
                                 </p>
                             )}
                         </div>
 
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.price_month_label')}
+                                {tRoom('form.price_month_label')}
                             </Label>
                             <Input
                                 type="number"
                                 min={0}
                                 placeholder={t(
-                                    'management.room.form.price_month_placeholder',
+                                    'management/room:form.price_month_placeholder',
                                 )}
                                 value={data.price_rupiah}
                                 onChange={onChange('price_rupiah')}
@@ -754,18 +757,18 @@ export default function RoomUpsertForm({
                             <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.price_rupiah) && (
                                     <span>
-                                        {t('management.room.form.preview')}{' '}
+                                        {tRoom('form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(data.price_rupiah)}
                                         </span>{' '}
-                                        {t('management.room.form.per_month')}
+                                        {tRoom('form.per_month')}
                                     </span>
                                 )}
                                 {!data.price_rupiah &&
                                 data.room_type_id &&
                                 typeMonthly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        {t('management.room.form.follow_type')}
+                                        {tRoom('form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -777,14 +780,14 @@ export default function RoomUpsertForm({
                         {/* Kanan: Luas + Deposit */}
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.size_label')}
+                                {tRoom('form.size_label')}
                             </Label>
                             <Input
                                 type="number"
                                 min={0}
                                 step="0.01"
                                 placeholder={t(
-                                    'management.room.form.size_placeholder',
+                                    'management/room:form.size_placeholder',
                                 )}
                                 value={data.size_m2}
                                 onChange={(e) =>
@@ -814,13 +817,13 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.deposit_month_label')}
+                                {tRoom('form.deposit_month_label')}
                             </Label>
                             <Input
                                 type="number"
                                 min={0}
                                 placeholder={t(
-                                    'management.room.form.deposit_month_placeholder',
+                                    'management/room:form.deposit_month_placeholder',
                                 )}
                                 value={data.deposit_rupiah}
                                 onChange={(e) =>
@@ -832,7 +835,7 @@ export default function RoomUpsertForm({
                             <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.deposit_rupiah) ? (
                                     <span>
-                                        {t('management.room.form.preview')}{' '}
+                                        {tRoom('form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(data.deposit_rupiah)}
                                         </span>
@@ -842,7 +845,7 @@ export default function RoomUpsertForm({
                                 data.room_type_id &&
                                 typeDepMonthly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        {t('management.room.form.follow_type')}
+                                        {tRoom('form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -867,18 +870,18 @@ export default function RoomUpsertForm({
                 {/* Harga & Deposit (Mingguan/Harian) */}
                 <div className="space-y-2">
                     <div className="text-foreground text-sm font-medium">
-                        {t('management.room.form.weekday.title')}
+                        {tRoom('form.weekday.title')}
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.price_week_label')}
+                                {tRoom('form.price_week_label')}
                             </Label>
                             <Input
                                 type="number"
                                 min={0}
                                 placeholder={t(
-                                    'management.room.form.price_week_placeholder',
+                                    'management/room:form.price_week_placeholder',
                                 )}
                                 value={data.price_weekly_rupiah}
                                 onChange={onChange('price_weekly_rupiah')}
@@ -888,20 +891,20 @@ export default function RoomUpsertForm({
                             <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.price_weekly_rupiah) ? (
                                     <span>
-                                        {t('management.room.form.preview')}{' '}
+                                        {tRoom('form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(
                                                 data.price_weekly_rupiah,
                                             )}
                                         </span>{' '}
-                                        {t('management.room.form.per_week')}
+                                        {tRoom('form.per_week')}
                                     </span>
                                 ) : null}
                                 {!data.price_weekly_rupiah &&
                                 data.room_type_id &&
                                 typeWeekly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        {t('management.room.form.follow_type')}
+                                        {tRoom('form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -922,13 +925,13 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.price_day_label')}
+                                {tRoom('form.price_day_label')}
                             </Label>
                             <Input
                                 type="number"
                                 min={0}
                                 placeholder={t(
-                                    'management.room.form.price_day_placeholder',
+                                    'management/room:form.price_day_placeholder',
                                 )}
                                 value={data.price_daily_rupiah}
                                 onChange={onChange('price_daily_rupiah')}
@@ -938,18 +941,18 @@ export default function RoomUpsertForm({
                             <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.price_daily_rupiah) ? (
                                     <span>
-                                        {t('management.room.form.preview')}{' '}
+                                        {tRoom('form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(data.price_daily_rupiah)}
                                         </span>{' '}
-                                        {t('management.room.form.per_day')}
+                                        {tRoom('form.per_day')}
                                     </span>
                                 ) : null}
                                 {!data.price_daily_rupiah &&
                                 data.room_type_id &&
                                 typeDaily != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        {t('management.room.form.follow_type')}
+                                        {tRoom('form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -970,14 +973,12 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.deposit_week_label')}
+                                {tRoom('form.deposit_week_label')}
                             </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder={t(
-                                    'management.room.form.deposit_week_placeholder',
-                                )}
+                                placeholder={tRoom('form.deposit_week_placeholder')}
                                 value={data.deposit_weekly_rupiah}
                                 onChange={(e) =>
                                     setData(
@@ -991,10 +992,7 @@ export default function RoomUpsertForm({
                             <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.deposit_weekly_rupiah) ? (
                                     <span>
-                                        {t(
-                                            'management.room.form.preview',
-                                            'Preview:',
-                                        )}{' '}
+                                        {tRoom('form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(
                                                 data.deposit_weekly_rupiah,
@@ -1006,10 +1004,7 @@ export default function RoomUpsertForm({
                                 data.room_type_id &&
                                 typeDepWeekly != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        {t(
-                                            'management.room.form.follow_type',
-                                            'Follow type',
-                                        )}
+                                        {tRoom('form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -1030,14 +1025,12 @@ export default function RoomUpsertForm({
 
                         <div className="grid gap-2">
                             <Label>
-                                {t('management.room.form.deposit_day_label')}
+                                {tRoom('form.deposit_day_label')}
                             </Label>
                             <Input
                                 type="number"
                                 min={0}
-                                placeholder={t(
-                                    'management.room.form.deposit_day_placeholder',
-                                )}
+                                placeholder={tRoom('form.deposit_day_placeholder')}
                                 value={data.deposit_daily_rupiah}
                                 onChange={(e) =>
                                     setData(
@@ -1051,10 +1044,7 @@ export default function RoomUpsertForm({
                             <div className="text-muted-foreground flex min-h-[18px] items-center gap-2 text-xs">
                                 {formatIDR(data.deposit_daily_rupiah) ? (
                                     <span>
-                                        {t(
-                                            'management.room.form.preview',
-                                            'Preview:',
-                                        )}{' '}
+                                        {tRoom('form.preview')}{' '}
                                         <span className="font-medium">
                                             {formatIDR(
                                                 data.deposit_daily_rupiah,
@@ -1066,10 +1056,7 @@ export default function RoomUpsertForm({
                                 data.room_type_id &&
                                 typeDepDaily != null ? (
                                     <span className="rounded border px-1.5 py-0.5 text-[10px]">
-                                        {t(
-                                            'management.room.form.follow_type',
-                                            'Follow type',
-                                        )}
+                                        {tRoom('form.follow_type')}
                                     </span>
                                 ) : null}
                             </div>
@@ -1095,18 +1082,12 @@ export default function RoomUpsertForm({
                 <div className="space-y-2">
                     <div className="text-foreground text-sm font-medium">
                         {t('common.amenities', 'Amenities')} (
-                        {t(
-                            'management.room.form.notes.placeholder',
-                            'check available',
-                        )}
+                        {tRoom('form.notes.placeholder')}
                         )
                     </div>
                     {amenities.length === 0 ? (
                         <p className="text-muted-foreground text-sm">
-                            {t(
-                                'management.room.form.amenities_empty',
-                                'No amenities available yet. Add amenities master data first.',
-                            )}
+                            {tRoom('form.amenities_empty')}
                         </p>
                     ) : (
                         <ScrollArea className="h-40 rounded-md border sm:h-48 lg:h-56">
@@ -1147,24 +1128,14 @@ export default function RoomUpsertForm({
 
                 {/* Foto Kamar */}
                 <div className="space-y-2">
-                    <div className="text-foreground text-sm font-medium">
-                        {t('common.photos') || 'Foto Kamar'}
-                    </div>
-                    <p className="text-muted-foreground text-xs">
-                        {t(
-                            'common.photos_hint',
-                            'Unggah foto kamar agar mudah dikenali (minimal 1 foto).',
-                        )}
-                    </p>
+                    <div className="text-foreground text-sm font-medium">{t('common.photos')}</div>
+                    <p className="text-muted-foreground text-xs">{t('common.photos_hint')}</p>
                     {/* Foto Saat Ini (mode edit) */}
                     {mode === 'edit' && (photos?.length ?? 0) > 0 ? (
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <div className="text-foreground text-sm font-medium">
-                                    {t(
-                                        'management.room.form.photos.current',
-                                        'Current Photos',
-                                    )}
+                                    {tRoom('form.photos.current')}
                                 </div>
                                 {photosDirty ? (
                                     <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
@@ -1225,7 +1196,7 @@ export default function RoomUpsertForm({
                                             {p.is_cover ? (
                                                 <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
                                                     {t(
-                                                        'management.room.form.photos.cover',
+                                                            'management/room:form.photos.cover',
                                                         'Cover',
                                                     )}
                                                 </span>
@@ -1242,7 +1213,7 @@ export default function RoomUpsertForm({
                                                             setAsCover(p.id);
                                                         }}
                                                         title={t(
-                                                            'management.room.form.photos.make_cover',
+                                                            'management/room:form.photos.make_cover',
                                                         )}
                                                     >
                                                         <ImageIcon className="h-4 w-4" />
@@ -1257,7 +1228,7 @@ export default function RoomUpsertForm({
                                                             deletePhoto(p.id);
                                                         }}
                                                         title={t(
-                                                            'management.room.form.photos.delete_photo',
+                                                            'management/room:form.photos.delete_photo',
                                                         )}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
@@ -1268,7 +1239,7 @@ export default function RoomUpsertForm({
                                                 <GripVertical className="h-3.5 w-3.5" />
                                                 <span>
                                                     {t(
-                                                        'management.room.form.photos.drag_hint',
+                                                        'management/room:form.photos.drag_hint',
                                                     )}
                                                 </span>
                                             </div>
@@ -1301,18 +1272,15 @@ export default function RoomUpsertForm({
                     {/* Catatan */}
                     <div className="space-y-2">
                         <div className="text-foreground text-sm font-medium">
-                            {t('management.room.form.notes.title')}
+                            {tRoom('form.notes.title')}
                         </div>
                         <Textarea
                             value={data.notes}
                             onChange={(e) => setData('notes', e.target.value)}
-                            placeholder={t(
-                                'management.room.form.notes.placeholder',
-                            )}
+                            placeholder={tRoom('form.notes.placeholder')}
                             disabled={processing}
                         />
                         <InputError message={errors.notes} />
-                        {/* Separator removed for Catatan section */}
                     </div>
 
                     <Separator className="my-3" />
@@ -1321,18 +1289,15 @@ export default function RoomUpsertForm({
                 {/* Kebijakan Penghuni */}
                 <div className="space-y-2">
                     <div className="text-foreground text-sm font-medium">
-                        {t('management.room.form.policy.title')}
+                        {tRoom('form.policy.title')}
                     </div>
                     <p className="text-muted-foreground text-xs">
-                        {t('management.room.form.policy.desc')}
+                        {tRoom('form.policy.desc')}
                     </p>
                     <div className="grid gap-3 md:grid-cols-2">
                         <div className="grid gap-1.5">
                             <Label>
-                                {t(
-                                    'management.room.form.gender_policy',
-                                    'Gender Policy',
-                                )}{' '}
+                                {tRoom('form.gender_policy')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <RadioGroup
@@ -1353,7 +1318,8 @@ export default function RoomUpsertForm({
                                             value={g.value}
                                         />
                                         <Label htmlFor={`gender-${g.value}`}>
-                                            {g.label}
+                                            {t(`gender_policy.${String(g.value).toLowerCase()}`,
+                                                { ns: 'enum', defaultValue: g.label })}
                                         </Label>
                                     </div>
                                 ))}
@@ -1380,12 +1346,12 @@ export default function RoomUpsertForm({
                         }}
                         disabled={processing}
                     >
-                        {t('management.room.form.reset')}
+                        {tRoom('form.reset')}
                     </Button>
                     <Button type="submit" size="sm" disabled={processing}>
                         {mode === 'create'
-                            ? t('management.room.form.save')
-                            : t('management.room.form.save_changes')}
+                            ? tRoom('form.save')
+                            : tRoom('form.save_changes')}
                     </Button>
                 </div>
             </form>
@@ -1395,9 +1361,9 @@ export default function RoomUpsertForm({
                 onOpenChange={setLeaveOpen}
                 onConfirm={confirmLeave}
                 onCancel={cancelLeave}
-                title={t('management.room.form.leave.title')}
-                description={<>{t('management.room.form.leave.desc')}</>}
-                confirmText={t('management.room.form.leave.confirm')}
+                title={tRoom('form.leave.title')}
+                description={<>{tRoom('form.leave.desc')}</>}
+                confirmText={tRoom('form.leave.confirm')}
                 cancelText={t('common.cancel')}
             />
         </>

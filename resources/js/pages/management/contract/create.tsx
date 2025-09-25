@@ -38,14 +38,15 @@ import type {
     TenantOption,
 } from '@/types/management';
 
-const buildRoomLocation = (r: RoomOption) => {
+const buildRoomLocation = (r: RoomOption, t: (k: string) => string) => {
+    const floorBase = t('common.floor');
     const floorLabel =
         r.floor_label ??
         r.floor_label_text ??
         (typeof r.floor?.level !== 'undefined'
-            ? `Lantai ${r.floor.level}`
+            ? `${floorBase} ${r.floor.level}`
             : r.floor_level
-              ? `Lantai ${r.floor_level}`
+              ? `${floorBase} ${r.floor_level}`
               : undefined);
     const buildingLabel =
         r.building_label ??
@@ -115,7 +116,7 @@ export default function ContractCreate() {
     const roomOptions: SearchOption[] = rooms.map((r) => ({
         value: String(r.id),
         label: buildRoomBaseLabel(r),
-        description: buildRoomLocation(r),
+        description: buildRoomLocation(r, t),
         payload: r,
     }));
 
@@ -368,10 +369,8 @@ export default function ContractCreate() {
                                 {/* Periode Tagihan */}
                                 <div className="space-y-2">
                                     <Label>
-                                        {tContract('billing_period')}{' '}
-                                        <span className="text-destructive">
-                                            *
-                                        </span>
+                                        {t('common.billing_period')}{' '}
+                                        <span className="text-destructive">*</span>
                                     </Label>
                                     <Select
                                         value={data.billing_period}

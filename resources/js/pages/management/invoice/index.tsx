@@ -30,7 +30,8 @@ import type {
 } from '@/types/management';
 
 export default function InvoiceIndex() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const { t: tInvoice } = useTranslation('management/invoice');
     const { props } = usePage<InertiaPageProps & PageProps>();
     const paginator = props.invoices;
     const rows: InvoiceRow[] = React.useMemo(
@@ -89,37 +90,32 @@ export default function InvoiceIndex() {
         id: string;
         number: string;
     } | null>(null);
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns<InvoiceRow>({
-                onCancel: (inv) => setCancel({ target: inv, reason: '' }),
-                onShowDetail: (inv) =>
-                    setDetail({ id: inv.id, number: inv.number }),
-                onExtendDue: (inv) =>
-                    setExtend({
-                        target: inv,
-                        dueDate: defaultTomorrow,
-                        reason: '',
-                    }),
-                onPrint: (inv) => {
-                    const url = route('management.invoices.print', inv.id);
-                    if (typeof window !== 'undefined') {
-                        window.open(url, '_blank');
-                    }
-                },
-            }),
-        [defaultTomorrow],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns<InvoiceRow>({
+            onCancel: (inv) => setCancel({ target: inv, reason: '' }),
+            onShowDetail: (inv) => setDetail({ id: inv.id, number: inv.number }),
+            onExtendDue: (inv) =>
+                setExtend({ target: inv, dueDate: defaultTomorrow, reason: '' }),
+            onPrint: (inv) => {
+                const url = route('management.invoices.print', inv.id);
+                if (typeof window !== 'undefined') {
+                    window.open(url, '_blank');
+                }
+            },
+        });
+    }, [defaultTomorrow, lang]);
 
     return (
         <AuthLayout
-            pageTitle={t('invoice.title')}
-            pageDescription={t('invoice.list_title')}
+            pageTitle={tInvoice('title')}
+            pageDescription={tInvoice('list.title')}
         >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>{t('invoice.list_title')}</CardTitle>
+                        <CardTitle>{tInvoice('list.title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -145,11 +141,20 @@ export default function InvoiceIndex() {
                                             <SelectItem value="all">
                                                 {t('common.all_statuses')}
                                             </SelectItem>
-                                            {statuses.map((s) => (
-                                                <SelectItem key={s} value={s}>
-                                                    {s}
-                                                </SelectItem>
-                                            ))}
+                                            {statuses.map((s) => {
+                                                const slug = String(s)
+                                                    .trim()
+                                                    .toLowerCase()
+                                                    .replace(/\s+/g, '_');
+                                                return (
+                                                    <SelectItem key={s} value={s}>
+                                                        {t(`invoice.status.${slug}`, {
+                                                            ns: 'enum',
+                                                            defaultValue: String(s),
+                                                        })}
+                                                    </SelectItem>
+                                                );
+                                            })}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -161,7 +166,7 @@ export default function InvoiceIndex() {
                                     onClick={() => setGenOpen(true)}
                                 >
                                     <FilePlus2 className="mr-2 h-4 w-4" />{' '}
-                                    {t('management.invoice.generate')}
+                                    {tInvoice('generate.title')}
                                 </Button>
                             </div>
                         </div>
@@ -185,7 +190,7 @@ export default function InvoiceIndex() {
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText={t('invoice.empty')}
+                            emptyText={tInvoice('list.empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
                         />

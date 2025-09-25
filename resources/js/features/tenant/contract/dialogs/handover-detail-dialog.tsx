@@ -36,6 +36,7 @@ export default function TenantHandoverDetailDialog({
 }) {
     const currentHandover = handover;
     const { t } = useTranslation('management/contract');
+    const { t: tTenant } = useTranslation('tenant/handover');
     const [lightbox, setLightbox] = React.useState<{
         open: boolean;
         index: number;
@@ -432,9 +433,7 @@ export default function TenantHandoverDetailDialog({
                                     {disputeMode ? (
                                         <div className="flex w-full flex-col gap-2 sm:w-[360px]">
                                             <div className="text-muted-foreground text-xs font-medium">
-                                                {t(
-                                                    'tenant.handover.dispute_label',
-                                                )}
+                                                {tTenant('dispute_label')}
                                             </div>
                                             <textarea
                                                 rows={3}
@@ -445,9 +444,7 @@ export default function TenantHandoverDetailDialog({
                                                         e.target.value,
                                                     )
                                                 }
-                                                placeholder={t(
-                                                    'tenant.handover.dispute_placeholder',
-                                                )}
+                                                placeholder={tTenant('dispute_placeholder')}
                                             />
                                             <div className="text-muted-foreground flex items-center justify-between text-[11px]">
                                                 <span>
@@ -481,9 +478,7 @@ export default function TenantHandoverDetailDialog({
                                                             ? t(
                                                                   'common.sending',
                                                               )
-                                                            : t(
-                                                                  'tenant.handover.submit_dispute',
-                                                              )}
+                                                            : tTenant('submit_dispute')}
                                                     </Button>
                                                 </div>
                                             </div>
@@ -498,7 +493,7 @@ export default function TenantHandoverDetailDialog({
                                                     setDisputeMode(true)
                                                 }
                                             >
-                                                {t('tenant.handover.dispute')}
+                                                {tTenant('dispute')}
                                             </Button>
                                             <Button
                                                 type="button"
@@ -508,9 +503,7 @@ export default function TenantHandoverDetailDialog({
                                             >
                                                 {ackSaving
                                                     ? t('common.saving')
-                                                    : t(
-                                                          'tenant.handover.confirm',
-                                                      )}
+                                                    : tTenant('confirm')}
                                             </Button>
                                         </>
                                     )}

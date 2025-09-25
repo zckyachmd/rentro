@@ -6,7 +6,7 @@
     $r = $c['room'] ?? null;
 @endphp
 
-@section('title', 'Kontrak ' . ($c['number'] ?? '-'))
+@section('title', __('pdf.contract.title') . ' ' . ($c['number'] ?? '-'))
 
 @push('pdf-styles')
 <style>
@@ -36,28 +36,28 @@
     <div class="header-row">
         <div class="left">
             <div class="brand">{{ config('app.name') }}</div>
-            <h2 class="title">Kontrak <span class="mono">{{ $c['number'] ?? '-' }}</span></h2>
-            <div class="small">Status: {{ isset($c['status']) ? __('enum.contract.status.' . strtolower((string)$c['status'])) : '-' }}</div>
+            <h2 class="title">{{ __('pdf.contract.title') }} <span class="mono">{{ $c['number'] ?? '-' }}</span></h2>
+            <div class="small">{{ __('pdf.contract.status') }}: {{ isset($c['status']) ? __('enum.contract.status.' . strtolower((string)$c['status'])) : '-' }}</div>
         </div>
         <div class="right">
             <div class="meta-inline">
                 <div class="item">
-                    <div class="label">Mulai</div>
+                    <div class="label">{{ __('pdf.contract.start') }}</div>
                     <div class="value">{{ $c['start_date'] ?? '-' }}</div>
                 </div>
                 <div class="item">
-                    <div class="label">Berakhir</div>
+                    <div class="label">{{ __('pdf.contract.end') }}</div>
                     <div class="value">{{ $c['end_date'] ?? '-' }}</div>
                 </div>
                 <div class="item">
-                    <div class="label">Periode Tagih</div>
+                    <div class="label">{{ __('pdf.contract.billing_period') }}</div>
                     <div class="value">
                         @if(!empty($c['billing_period']))
                             {{ __('enum.billing_period.' . strtolower((string)$c['billing_period'])) }}
                         @else
                             -
                         @endif
-                        @if(!empty($c['billing_day'])) <span class="small">(tgl {{ $c['billing_day'] }})</span> @endif
+                        @if(!empty($c['billing_day'])) <span class="small">({{ __('pdf.contract.billing_day_format', ['day' => $c['billing_day']]) }})</span> @endif
                     </div>
                 </div>
             </div>
@@ -67,33 +67,33 @@
 
 <div class="grid-2">
     <div class="section">
-        <div class="label">Penyewa</div>
+        <div class="label">{{ __('pdf.contract.tenant') }}</div>
         <div class="k-v"><span class="value">{{ $t['name'] ?? '-' }}</span></div>
         <div class="k-v">Email: {{ $t['email'] ?? '-' }}</div>
         <div class="k-v">Telepon: {{ $t['phone'] ?? '-' }}</div>
     </div>
     <div class="section">
-        <div class="label">Kamar</div>
+        <div class="label">{{ __('pdf.contract.room') }}</div>
         <div class="k-v"><span class="value">{{ $r['number'] ?? '-' }}</span> — {{ $r['name'] ?? '-' }}</div>
-        <div class="k-v">Gedung: {{ $r['building'] ?? '-' }} &middot; Lantai: {{ $r['floor'] ?? '-' }}</div>
-        <div class="k-v">Tipe: {{ $r['type'] ?? '-' }}</div>
+        <div class="k-v">{{ __('pdf.contract.building') }}: {{ $r['building'] ?? '-' }} &middot; {{ __('pdf.contract.floor') }}: {{ $r['floor'] ?? '-' }}</div>
+        <div class="k-v">{{ __('pdf.contract.type') }}: {{ $r['type'] ?? '-' }}</div>
     </div>
 </div>
 
 <div class="section">
-    <div class="label">Nilai & Ketentuan</div>
+    <div class="label">{{ __('pdf.contract.values_and_terms') }}</div>
     <table>
         <tbody>
             <tr>
-                <th style="width: 40%">Sewa</th>
+                <th style="width: 40%">{{ __('pdf.contract.rent') }}</th>
                 <td class="mono">Rp {{ number_format((int)($c['rent_cents'] ?? 0)/100, 0, ',', '.') }}</td>
             </tr>
             <tr>
-                <th>Deposit</th>
+                <th>{{ __('pdf.contract.deposit') }}</th>
                 <td class="mono">Rp {{ number_format((int)($c['deposit_cents'] ?? 0)/100, 0, ',', '.') }}</td>
             </tr>
             <tr>
-                <th>Periode Tagih</th>
+                <th>{{ __('pdf.contract.billing_period') }}</th>
                 <td>
                     @if(!empty($c['billing_period']))
                         {{ __('enum.billing_period.' . strtolower((string)$c['billing_period'])) }}
@@ -109,13 +109,13 @@
 
 @if(!empty($c['notes']))
 <div class="section">
-    <div class="label">Catatan</div>
+    <div class="label">{{ __('pdf.contract.notes') }}</div>
     <div class="note">{!! nl2br(e($c['notes'])) !!}</div>
     </div>
 @endif
 
 <div class="footer">
-    Dicetak pada {{ now()->format('Y-m-d H:i') }} &middot; {{ config('app.name') }}
+    {{ __('pdf.printed_at', ['datetime' => now()->format('Y-m-d H:i')]) }} &middot; {{ config('app.name') }}
     @if(!empty($autoPrint))
         <script>window.print && window.print()</script>
     @endif

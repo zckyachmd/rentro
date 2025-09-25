@@ -41,7 +41,7 @@ export function DataTableColumnHeader({ column, title }: Props) {
       variant="ghost"
       onClick={() => column.toggleSorting(isAsc)}
       className="h-8 px-0"
-      aria-label={t('datatable.sort_label', { title, direction: dirLabel })}
+      aria-label={t('datatable.sort.label', { title, direction: dirLabel })}
       aria-sort={isAsc ? "ascending" : isDesc ? "descending" : "none"}
       data-state={sorted || "none"}
     >

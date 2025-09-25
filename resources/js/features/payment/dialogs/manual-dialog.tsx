@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +32,7 @@ export function ManualPaymentDialog({
     invoiceCandidates = [],
     manualBanks = [],
 }: ManualPaymentDialogProps) {
+    const { t } = useTranslation();
     const { data, setData, post, processing, transform, errors } =
         useForm<ManualPaymentForm>({
             invoice_number: initialInvoiceNumber ?? '',
@@ -67,15 +69,13 @@ export function ManualPaymentDialog({
         eligible?: boolean;
     } | null>(null);
 
-    const selectedMethod = React.useMemo(
-        () => methods.find((m) => m.value === data.method),
-        [methods, data.method],
-    );
     const isTransfer = React.useMemo(() => {
-        const v = String(data.method || '').toLowerCase();
-        const l = String(selectedMethod?.label || '').toLowerCase();
-        return v.includes('transfer') || l.includes('transfer');
-    }, [data.method, selectedMethod]);
+        const slug = String(data.method || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '_');
+        return slug.includes('transfer');
+    }, [data.method]);
     const [receiverBank, setReceiverBank] = React.useState<string>(() =>
         (manualBanks?.[0]?.bank || 'BCA').toLowerCase(),
     );
@@ -84,13 +84,6 @@ export function ManualPaymentDialog({
             resolvedInvoice ? Math.max(0, resolvedInvoice.outstanding ?? 0) : 0,
         [resolvedInvoice],
     );
-    // Remaining after pay (not currently displayed)
-    // const remainingAfterPay = React.useMemo(() => {
-    //     const outstanding = Number(resolvedInvoice?.outstanding ?? 0);
-    //     const pay =
-    //         typeof data.amount_cents === 'number' ? data.amount_cents : 0;
-    //     return Math.max(0, outstanding - pay);
-    // }, [resolvedInvoice, data.amount_cents]);
 
     const canSubmit =
         !processing &&
@@ -175,21 +168,21 @@ export function ManualPaymentDialog({
             if (json?.id) amountRef.current?.focus();
         } catch (e) {
             if (!ctrl.signal.aborted)
-                setLookupError((e as Error).message || 'Gagal mengambil data');
+                setLookupError((e as Error).message || t('common.fetch_failed'));
             setData('invoice_id', '');
         } finally {
             if (!ctrl.signal.aborted) setLookupLoading(false);
         }
-    }, [lookupLoading, data.invoice_number, setData]);
+    }, [lookupLoading, data.invoice_number, setData, t]);
 
     const invoiceOptions = React.useMemo<SearchOption[]>(() => {
         return invoiceCandidates.map((inv) => ({
             value: inv.id,
-            label: `${inv.number} — Kamar ${inv.room_number ?? '-'}`,
+            label: `${inv.number} — ${t('common.room')} ${inv.room_number ?? '-'}`,
             description: inv.tenant ?? undefined,
             payload: inv,
         }));
-    }, [invoiceCandidates]);
+    }, [invoiceCandidates, t]);
 
     React.useEffect(() => {
         const init = (initialInvoiceNumber || '').trim();
@@ -269,14 +262,6 @@ export function ManualPaymentDialog({
         receiverBank,
     ]);
 
-    const hasErrors = Boolean(
-        errors.invoice_id ||
-            errors.method ||
-            errors.paid_at ||
-            errors.amount_cents ||
-            errors.attachment,
-    );
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
@@ -301,19 +286,13 @@ export function ManualPaymentDialog({
                 }}
             >
                 <DialogHeader>
-                    <DialogTitle>Pembayaran Manual</DialogTitle>
-                    <p className="text-muted-foreground text-xs">
-                        Input pembayaran manual dengan ringkas.
-                    </p>
+                    <DialogTitle>{t('payment.manual.title')}</DialogTitle>
+                    <p className="text-muted-foreground text-xs">{t('payment.manual.desc')}</p>
                 </DialogHeader>
-                {hasErrors ? (
-                    <div className="border-destructive/30 bg-destructive/5 text-destructive mb-2 rounded-md border px-3 py-2 text-[12px]">
-                        Periksa kembali input yang belum valid.
-                    </div>
-                ) : null}
+
                 <div className="space-y-3 text-sm">
                     <div className="space-y-1">
-                        <Label>Nomor Invoice</Label>
+                        <Label>{t('invoice.number_label')}</Label>
                         <InvoiceLookup
                             options={invoiceOptions}
                             value={data.invoice_id}
@@ -393,7 +372,7 @@ export function ManualPaymentDialog({
                 </div>
                 <DialogFooter>
                     <Button type="button" variant="ghost" onClick={close}>
-                        Batal
+                        {t('common.cancel')}
                     </Button>
                     {resolvedInvoice?.eligible ? (
                         <Button
@@ -401,7 +380,7 @@ export function ManualPaymentDialog({
                             disabled={!canSubmit}
                             onClick={submit}
                         >
-                            Simpan
+                            {t('common.save')}
                         </Button>
                     ) : null}
                 </DialogFooter>

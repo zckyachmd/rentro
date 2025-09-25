@@ -5,7 +5,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import i18n from '@/lib/i18n';
+import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import type { Config as ZiggyConfig } from 'ziggy-js';
 
 import { route } from '../../vendor/tightenco/ziggy';
@@ -41,10 +41,8 @@ createServer(async (page: Page) => {
         const locale = toBase(rawLocale);
         if (i18n.language !== locale) {
             await i18n.changeLanguage(locale);
-            await i18n.reloadResources([locale], ['common']);
         }
-
-        await i18n.loadNamespaces(['common']);
+        await preloadLocaleNamespaces(locale);
     } catch {
         // ignore
     }

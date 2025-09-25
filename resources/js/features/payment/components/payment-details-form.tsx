@@ -75,42 +75,24 @@ export default function PaymentDetailsForm({
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {methods.map((m) => (
-                                <SelectItem key={m.value} value={m.value}>
-                                    {m.label}
-                                </SelectItem>
-                            ))}
+                            {methods.map((m) => {
+                                const key = String(m.value || '')
+                                    .trim()
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '_')
+                                const label = t(`payment.method.${key}`, {
+                                    ns: 'enum',
+                                    defaultValue: m.label || m.value,
+                                })
+                                return (
+                                    <SelectItem key={m.value} value={m.value}>
+                                        {label}
+                                    </SelectItem>
+                                )
+                            })}
                         </SelectContent>
                     </Select>
                     <InputError message={errors.method} />
-
-                    {isTransfer && manualBanks.length > 0 ? (
-                        <div className="mt-2 space-y-1.5">
-                            <Label>{t('payment.form.receiver_bank')}</Label>
-                            <Select
-                                value={(
-                                    receiverBank ||
-                                    manualBanks[0]?.bank ||
-                                    'BCA'
-                                ).toLowerCase()}
-                                onValueChange={(v) => onReceiverBank?.(v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {manualBanks.map((b) => (
-                                        <SelectItem
-                                            key={b.bank}
-                                            value={b.bank.toLowerCase()}
-                                        >
-                                            {b.bank}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    ) : null}
                 </div>
                 <div className="space-y-1.5">
                     <Label>{t('payment.form.paid_at')}</Label>
@@ -122,6 +104,36 @@ export default function PaymentDetailsForm({
                     <InputError message={errors.paid_at} />
                 </div>
             </div>
+
+            {isTransfer && manualBanks.length > 0 ? (
+                <div className="mt-3">
+                    <div className="space-y-1.5">
+                        <Label>{t('payment.form.receiver_bank')}</Label>
+                        <Select
+                            value={(
+                                receiverBank ||
+                                manualBanks[0]?.bank ||
+                                'BCA'
+                            ).toLowerCase()}
+                            onValueChange={(v) => onReceiverBank?.(v)}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {manualBanks.map((b) => (
+                                    <SelectItem
+                                        key={b.bank}
+                                        value={b.bank.toLowerCase()}
+                                    >
+                                        {b.bank}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            ) : null}
 
             {isTransfer && manualBanks.length > 0 ? (
                 <div className="grid gap-3 sm:grid-cols-2">

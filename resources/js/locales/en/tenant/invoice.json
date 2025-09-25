@@ -1,0 +1,114 @@
+{
+    "actions_for": "Invoice actions {{number}}",
+    "amounts": "Amounts",
+    "cstore_label": "Convenience Store",
+    "deadline": "Deadline",
+    "desc": "List of invoices and payments.",
+    "detail": {
+        "admin_note": "Admin Note",
+        "cancelled_note": "Invoice is cancelled. New payment is unavailable, payment history remains recorded.",
+        "info": "Invoice Info",
+        "items": "Item Details",
+        "note": "Note",
+        "payment_history": "Payment History",
+        "receiver_bank": "Receiver Bank",
+        "reference": "Reference",
+        "rejected": "Rejected",
+        "reviewed_by": "Reviewed by",
+        "subtitle": "Invoice summary",
+        "title": "Invoice Detail"
+    },
+    "filter": "Filter",
+    "manual": {
+        "account_detail": "Account Detail",
+        "account_no": "Account No.",
+        "bank": "Bank",
+        "dest_account": "Destination Account",
+        "file": "File",
+        "info": "After sending the proof, status becomes pending admin review.",
+        "name": "Name",
+        "note_label": "Note (optional)",
+        "note_placeholder": "Example: transferred from bank X",
+        "paid_at": "Paid At",
+        "proof": "Transfer Proof",
+        "title": "Manual Transfer"
+    },
+    "method": "Method",
+    "method_manual": "Manual",
+    "method_section": {
+        "subtitle": "Choose a method and fill the details",
+        "title": "Payment Method"
+    },
+    "outstanding": "Outstanding",
+    "pay": {
+        "check_status": "Check Status",
+        "create_va": "Create VA",
+        "submit_proof": "Submit Proof",
+        "subtitle": "Choose a payment method and follow the steps.",
+        "title": "Pay Invoice"
+    },
+    "pay_again": "Pay Again",
+    "payment_detail": {
+        "attachments_desc": "Preview payment proof.",
+        "attachments_title": "Payment Attachments",
+        "info": "Payment Info",
+        "receiver_section": "Receiver Account",
+        "review_title": "Review Result",
+        "subtitle": "Payment summary and review result",
+        "title": "Payment Detail",
+        "view_proof": "View Proof"
+    },
+    "pending": {
+        "info": "Please complete the payment as instructed.",
+        "manual_note": "Transfer proof sent and pending admin review.",
+        "subtitle": "Complete before time runs out",
+        "title": "Pending Payment"
+    },
+    "search": "Search",
+    "search_placeholder": "Search invoice/room number…",
+    "steps": {
+        "manual": {
+            "1": {
+                "desc": "Pick one of the admin accounts available.",
+                "title": "Choose destination account"
+            },
+            "2": {
+                "desc": "Transfer to selected account; include invoice number in notes if asked.",
+                "title": "Transfer as instructed"
+            },
+            "3": {
+                "desc": "Upload proof on the form and submit.",
+                "title": "Upload transfer proof"
+            },
+            "4": {
+                "desc": "Admin verifies payment; status will update.",
+                "title": "Await admin review"
+            }
+        },
+        "subtitle": "Quick guide",
+        "title": "How to Pay",
+        "va": {
+            "1": {
+                "desc": "Choose VA bank and create a VA number.",
+                "title": "Create VA"
+            },
+            "2": {
+                "desc": "Pay to VA number before the deadline.",
+                "title": "Make the payment"
+            },
+            "3": {
+                "desc": "System checks status periodically.",
+                "title": "Automatic confirmation"
+            }
+        }
+    },
+    "summary": {
+        "subtitle": "Invoice information",
+        "title": "Summary"
+    },
+    "title": "My Invoices",
+    "va_copied": "VA number copied",
+    "va_label": "VA",
+    "va_number": "VA Number",
+    "virtual_account": "Virtual Account"
+}

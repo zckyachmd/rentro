@@ -48,7 +48,7 @@ export const createColumns = (
     }),
     makeColumn<RoleItem>({
         id: 'guard_name',
-        title: i18n.t('role.guard'),
+        title: i18n.t('guard', { ns: 'role' }),
         className: COL.guard,
         cell: ({ getValue }) => (
             <div className={COL.guard}>
@@ -97,13 +97,13 @@ export const createColumns = (
                             onClick={() => opts?.onEdit?.(row.original)}
                         >
                             <Pencil className="mr-2 h-4 w-4" />{' '}
-                            {i18n.t('role.actions.edit_role')}
+                            {i18n.t('actions.edit_role', { ns: 'role' })}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => opts?.onPermissions?.(row.original)}
                         >
                             <ShieldCheck className="mr-2 h-4 w-4" />{' '}
-                            {i18n.t('role.actions.manage_permissions')}
+                            {i18n.t('actions.manage_permissions', { ns: 'role' })}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

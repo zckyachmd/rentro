@@ -1,0 +1,9 @@
+{
+    "title": "Role Management",
+    "desc": "Kelola roles, hapus, dan atur permissions untuk akses aplikasi.",
+    "list_title": "Daftar Role",
+    "add": "Tambah Role",
+    "delete_title": "Hapus Role",
+    "search_placeholder": "Cari peran…",
+    "empty": "Tidak ada peran"
+}

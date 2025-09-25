@@ -46,6 +46,7 @@ export default function ContractDetailPage(props: {
 }) {
     const { t } = useTranslation();
     const { t: tContract } = useTranslation('management/contract');
+    const { t: tEnum } = useTranslation('enum');
     const { contract, tenant, room, invoices, handover } = props;
     const BREADCRUMBS: Crumb[] = [
         {
@@ -103,17 +104,19 @@ export default function ContractDetailPage(props: {
                                         {formatDate(contract.end_date)}
                                     </div>
                                     <div className="text-muted-foreground">
-                                        {tContract('billing_period')}
+                                        {t('common.billing_period')}
                                     </div>
                                     <div className="text-right">
                                         <Badge variant="outline">
-                                            {contract.billing_period}
+                                            {tEnum(`billing_period.${contract.billing_period}`, {
+                                                defaultValue: contract.billing_period,
+                                            })}
                                         </Badge>
                                     </div>
                                     {contract.auto_renew ? (
                                         <>
                                             <div className="text-muted-foreground">
-                                                {tContract('billing_day')}
+                                                {t('common.billing_day')}
                                             </div>
                                             <div className="text-right">
                                                 {contract.billing_day ?? '-'}
@@ -138,7 +141,9 @@ export default function ContractDetailPage(props: {
                                                 contract.status,
                                             )}
                                         >
-                                            {contract.status}
+                                            {tEnum(`contract.status.${contract.status}`, {
+                                                defaultValue: contract.status,
+                                            })}
                                         </Badge>
                                     </div>
                                     <div className="text-muted-foreground">
@@ -235,9 +240,7 @@ export default function ContractDetailPage(props: {
                                                 value={tenant.email}
                                                 variant="link"
                                                 className="break-words"
-                                                successMessage={t(
-                                                    'profile.email_copied',
-                                                )}
+                                                successMessage={t('email_copied', { ns: 'profile' })}
                                             >
                                                 {tenant.email}
                                             </CopyInline>
@@ -254,9 +257,7 @@ export default function ContractDetailPage(props: {
                                                 value={tenant.phone}
                                                 variant="link"
                                                 className="break-words"
-                                                successMessage={t(
-                                                    'profile.phone_copied',
-                                                )}
+                                                successMessage={t('phone_copied', { ns: 'profile' })}
                                             >
                                                 {tenant.phone}
                                             </CopyInline>
@@ -388,7 +389,9 @@ export default function ContractDetailPage(props: {
                                                             inv.status,
                                                         )}
                                                     >
-                                                        {inv.status}
+                                                        {tEnum(`invoice.status.${inv.status}`, {
+                                                            defaultValue: inv.status,
+                                                        })}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">

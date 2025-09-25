@@ -43,7 +43,6 @@ import type {
 
 export default function TenantContractDetail(props: PageProps) {
     const { t } = useTranslation();
-    const { t: tTenant } = useTranslation('tenant/contract');
     const { contract, invoices } = props;
     const [handovers, setHandovers] = React.useState<TenantHandover[]>([]);
     const [loadingHandover, setLoadingHandover] = React.useState(false);
@@ -110,18 +109,18 @@ export default function TenantContractDetail(props: PageProps) {
 
     const breadcrumbs: Crumb[] = [
         {
-            label: tTenant('breadcrumb.contracts'),
+            label: t('contract.breadcrumb.contracts'),
             href: route('tenant.contracts.index'),
         },
-        { label: tTenant('breadcrumb.detail'), href: '#' },
+        { label: t('contract.breadcrumb.detail'), href: '#' },
     ];
 
     return (
         <AuthLayout
-            pageTitle={tTenant('title_with_number', {
+            pageTitle={t('contract.title_with_number', {
                 number: contract.number ?? contract.id,
             })}
-            pageDescription={tTenant('detail_desc')}
+            pageDescription={t('contract.detail_desc')}
             breadcrumbs={breadcrumbs}
         >
             <div className="mb-2 flex items-center justify-end gap-3">
@@ -134,7 +133,7 @@ export default function TenantContractDetail(props: PageProps) {
             <div className="grid gap-6 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>{tTenant('info.title')}</CardTitle>
+                        <CardTitle>{t('contract.info.title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-3 text-sm">
                         <div className="flex items-center justify-between">
@@ -167,7 +166,7 @@ export default function TenantContractDetail(props: PageProps) {
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="text-muted-foreground">
-                                {tTenant('rent')}
+                                {t('common.rent')}
                             </div>
                             <div className="font-semibold">
                                 {formatIDR(contract.rent_cents)}
@@ -176,7 +175,7 @@ export default function TenantContractDetail(props: PageProps) {
                         {typeof contract.deposit_cents === 'number' && (
                             <div className="flex items-center justify-between">
                                 <div className="text-muted-foreground">
-                                    {tTenant('deposit')}
+                                    {t('common.deposit')}
                                 </div>
                                 <div className="font-semibold">
                                     {formatIDR(contract.deposit_cents || 0)}
@@ -185,13 +184,13 @@ export default function TenantContractDetail(props: PageProps) {
                         )}
                         <div className="flex items-center justify-between">
                             <div className="text-muted-foreground">
-                                {tTenant('billing_period')}
+                                {t('common.billing_period')}
                             </div>
                             <div>{contract.billing_period || '-'}</div>
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="text-muted-foreground">
-                                {tTenant('billing_day')}
+                                {t('common.billing_day')}
                             </div>
                             <div>{contract.billing_day ?? '-'}</div>
                         </div>
@@ -225,7 +224,7 @@ export default function TenantContractDetail(props: PageProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>{tTenant('room_info.title')}</CardTitle>
+                        <CardTitle>{t('contract.room_info.title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-3 text-sm">
                         <div className="flex items-center justify-between">
@@ -254,7 +253,7 @@ export default function TenantContractDetail(props: PageProps) {
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="text-muted-foreground">
-                                {tTenant('room_info.room_price')}
+                                {t('contract.room_info.room_price')}
                             </div>
                             <div className="font-semibold">
                                 {formatIDR(contract.room?.price_cents || 0)}
@@ -277,7 +276,7 @@ export default function TenantContractDetail(props: PageProps) {
                                         {t('common.number')}
                                     </th>
                                     <th className="h-10 px-4 text-left">
-                                        {tTenant('period')}
+                                        {t('common.period')}
                                     </th>
                                     <th className="h-10 px-4 text-left">
                                         {t('common.due_date')}
@@ -364,9 +363,9 @@ export default function TenantContractDetail(props: PageProps) {
 
             {/* Serah Terima */}
             <Card className="mt-6">
-                <CardHeader className="pb-3">
-                    <CardTitle>{tTenant('handover.title')}</CardTitle>
-                </CardHeader>
+                    <CardHeader className="pb-3">
+                    <CardTitle>{t('contract.handover.title')}</CardTitle>
+                    </CardHeader>
                 <CardContent>
                     <div className="overflow-x-auto rounded-md border">
                         <table className="w-full text-sm">
@@ -410,21 +409,19 @@ export default function TenantContractDetail(props: PageProps) {
                                             <td className="px-4 py-3 text-right align-middle">
                                                 <div className="flex items-center justify-end">
                                                     <DropdownMenu>
-                                                        <DropdownMenuTrigger
-                                                            asChild
-                                                        >
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8"
-                                                                aria-label={tTenant(
-                                                                    'handover.actions_aria',
-                                                                )}
-                                                            >
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
+                                <DropdownMenuTrigger
+                                    asChild
+                                >
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        aria-label={t('contract.handover.actions_aria')}
+                                    >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
                                                         <DropdownMenuContent
                                                             align="end"
                                                             className="w-56"
@@ -504,7 +501,7 @@ export default function TenantContractDetail(props: PageProps) {
                                         >
                                             {loadingHandover
                                                 ? t('common.loading')
-                                                : tTenant('handover.empty')}
+                                                : t('contract.handover.empty')}
                                         </td>
                                     </tr>
                                 )}
@@ -521,16 +518,16 @@ export default function TenantContractDetail(props: PageProps) {
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>
-                            {tTenant('handover.confirm_title')}
+                            {t('contract.handover.confirm_title')}
                         </DialogTitle>
                         <DialogDescription>
-                            {tTenant('handover.confirm_desc')}
+                            {t('contract.handover.confirm_desc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="bg-muted/40 text-muted-foreground rounded-md p-3 text-xs">
-                        {tTenant('handover.confirm_note_prefix')}{' '}
+                        {t('contract.handover.confirm_note_prefix')}{' '}
                         <span className="text-foreground font-medium">
-                            {tTenant('handover.confirmed')}
+                            {t('contract.handover.confirmed')}
                         </span>
                         .
                     </div>
@@ -608,7 +605,7 @@ export default function TenantContractDetail(props: PageProps) {
                         >
                             {confirmAck.saving
                                 ? t('common.saving')
-                                : tTenant('handover.confirm_button')}
+                                : t('contract.handover.confirm_button')}
                         </Button>
                     </div>
                 </DialogContent>
@@ -634,10 +631,10 @@ export default function TenantContractDetail(props: PageProps) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {tTenant('handover.dispute_title')}
+                            {t('contract.handover.dispute_title')}
                         </DialogTitle>
                         <DialogDescription>
-                            {tTenant('handover.dispute_desc')}
+                            {t('contract.handover.dispute_desc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-2">
@@ -651,12 +648,10 @@ export default function TenantContractDetail(props: PageProps) {
                                     note: e.target.value,
                                 }))
                             }
-                            placeholder={tTenant(
-                                'handover.dispute_placeholder',
-                            )}
+                            placeholder={t('contract.handover.dispute_placeholder')}
                         />
                         <div className="text-muted-foreground flex items-center justify-between text-[11px]">
-                            <span>{tTenant('handover.dispute_hint')}</span>
+                            <span>{t('contract.handover.dispute_hint')}</span>
                             {disputeRule.length < 5 ? (
                                 <span>{disputeRule.length}/5*</span>
                             ) : null}
@@ -736,7 +731,7 @@ export default function TenantContractDetail(props: PageProps) {
                         >
                             {dispute.saving
                                 ? t('common.sending')
-                                : tTenant('handover.dispute_submit')}
+                                : t('contract.handover.dispute_submit')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

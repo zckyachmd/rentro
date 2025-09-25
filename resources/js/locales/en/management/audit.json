@@ -1,0 +1,17 @@
+{
+    "title": "Audit Logs",
+    "desc": "System activity logs for auditing and troubleshooting.",
+    "list_title": "Audit Logs",
+    "search_placeholder": "Search activity…",
+    "empty": "No audit logs.",
+    "detail_title": "Activity Detail",
+    "detail_desc": "Detailed information about this activity.",
+    "event": "Event",
+    "subject": "Subject",
+    "log_name": "Log Name",
+    "properties": "Properties",
+    "properties_copied": "Properties copied to clipboard",
+    "copy_properties": "Copy properties"
+    ,
+    "linked": "linked"
+}

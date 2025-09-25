@@ -22,6 +22,8 @@ export default function TenantRoomSelect({
     errors?: Partial<Record<'user_id' | 'room_id', string>>;
 }) {
     const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
+    const { t: tRoom } = useTranslation('management/room');
     return (
         <>
             <div className="space-y-2">
@@ -33,7 +35,7 @@ export default function TenantRoomSelect({
                     value={userId}
                     onChange={onUserChange}
                     options={tenantOptions}
-                    placeholder={t('management.user.search_placeholder')}
+                    placeholder={tUser('search_placeholder')}
                 />
                 <InputError message={errors.user_id} />
             </div>
@@ -47,7 +49,7 @@ export default function TenantRoomSelect({
                     value={roomId}
                     onChange={onRoomChange}
                     options={roomOptions}
-                    placeholder={t('management.room.search_placeholder')}
+                    placeholder={tRoom('search_placeholder')}
                 />
                 <InputError message={errors.room_id} />
             </div>

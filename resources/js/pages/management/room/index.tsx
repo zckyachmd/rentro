@@ -42,7 +42,8 @@ import type {
 } from '@/types/management';
 
 export default function RoomIndex(props: RoomsPageProps) {
-    const { t } = useTranslation();
+    const { t: tRoom } = useTranslation('management/room');
+    const { t, i18n } = useTranslation();
     const { rooms: paginator, query = {}, options: opt = {} } = props;
     const rooms: RoomItem[] = (paginator?.data ?? []) as RoomItem[];
     const {
@@ -280,25 +281,23 @@ export default function RoomIndex(props: RoomsPageProps) {
         });
     }, [safeOnQueryChange]);
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onDetail: (room) => {
-                    setDetailItem(room);
-                    setDetailOpen(true);
-                },
-                onEdit: (room) => {
-                    router.visit(
-                        route('management.rooms.edit', { room: room.id }),
-                    );
-                },
-                onDelete: (room) => {
-                    setDeletingRoom(room);
-                },
-                displayPeriod: pricePeriod,
-            }),
-        [pricePeriod],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onDetail: (room) => {
+                setDetailItem(room);
+                setDetailOpen(true);
+            },
+            onEdit: (room) => {
+                router.visit(route('management.rooms.edit', { room: room.id }));
+            },
+            onDelete: (room) => {
+                setDeletingRoom(room);
+            },
+            displayPeriod: pricePeriod,
+        });
+    }, [pricePeriod, lang]);
 
     const applyFilters = () => {
         const trimmedQ = (filters.q || '').trim();
@@ -342,7 +341,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                 type="button"
                 onClick={() => router.visit(route('management.rooms.create'))}
             >
-                <Plus className="mr-2 h-4 w-4" /> {t('management.room.add')}
+                <Plus className="mr-2 h-4 w-4" /> {tRoom('add')}
             </Button>
         </div>
     );
@@ -350,8 +349,8 @@ export default function RoomIndex(props: RoomsPageProps) {
     return (
         <>
             <AuthLayout
-                pageTitle={t('management.room.title')}
-                pageDescription={t('management.room.desc')}
+                pageTitle={tRoom('title')}
+                pageDescription={tRoom('desc')}
                 titleIcon="BedDouble"
                 actions={headerActions}
             >
@@ -361,13 +360,13 @@ export default function RoomIndex(props: RoomsPageProps) {
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base font-semibold">
                                 <Filter className="h-4 w-4" />{' '}
-                                {t('management.room.filter')}
+                                {tRoom('filter')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-3 md:grid-cols-12">
                             <div className="md:col-span-4">
                                 <Label htmlFor="room-search">
-                                    {t('management.room.search_label')}
+                                    {tRoom('search_label')}
                                 </Label>
                                 <Input
                                     id="room-search"
@@ -382,14 +381,12 @@ export default function RoomIndex(props: RoomsPageProps) {
                                             applyFilters();
                                         }
                                     }}
-                                    placeholder={t(
-                                        'management.room.search_placeholder',
-                                    )}
+                                        placeholder={tRoom('search_placeholder')}
                                 />
                             </div>
                             <div className="md:col-span-4">
                                 <Label>
-                                    {t('management.room.period_label')}
+                                    {tRoom('period_label')}
                                 </Label>
                                 <Select
                                     value={pricePeriod}
@@ -411,35 +408,25 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue
-                                            placeholder={t(
-                                                'management.room.period.monthly',
-                                            )}
-                                        />
+                                        <SelectValue placeholder={tRoom('period.monthly')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             <SelectItem value="daily">
-                                                {t(
-                                                    'management.room.period.daily',
-                                                )}
+                                            {tRoom('period.daily')}
                                             </SelectItem>
                                             <SelectItem value="weekly">
-                                                {t(
-                                                    'management.room.period.weekly',
-                                                )}
+                                            {tRoom('period.weekly')}
                                             </SelectItem>
                                             <SelectItem value="monthly">
-                                                {t(
-                                                    'management.room.period.monthly',
-                                                )}
+                                            {tRoom('period.monthly')}
                                             </SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{t('management.room.building')}</Label>
+                                <Label>{tRoom('building')}</Label>
                                 <Select
                                     value={filters.building_id}
                                     onValueChange={(v) => {
@@ -475,7 +462,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{t('management.room.floor')}</Label>
+                                <Label>{tRoom('floor')}</Label>
                                 <Select
                                     value={filters.floor_id}
                                     onValueChange={(v) => {
@@ -501,10 +488,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                                     key={f.id}
                                                     value={String(f.id)}
                                                 >
-                                                    {t(
-                                                        'management.room.form.floor_option',
-                                                        { level: f.level },
-                                                    )}
+                                                    {tRoom('form.floor_option', { level: f.level })}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
@@ -512,7 +496,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{t('management.room.type')}</Label>
+                                <Label>{tRoom('type')}</Label>
                                 <Select
                                     value={filters.type_id}
                                     onValueChange={(v) => {
@@ -546,7 +530,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{t('management.room.status')}</Label>
+                                <Label>{tRoom('status')}</Label>
                                 <Select
                                     value={filters.status}
                                     onValueChange={(v) => {
@@ -572,7 +556,39 @@ export default function RoomIndex(props: RoomsPageProps) {
                                                     key={s.value}
                                                     value={s.value}
                                                 >
-                                                    {s.label}
+                                                    {t(`room.status.${String(s.value).toLowerCase()}`, {
+                                                        ns: 'enum',
+                                                        defaultValue: s.label,
+                                                    })}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="md:col-span-4">
+                                <Label>{tRoom('form.gender_policy')}</Label>
+                                <Select
+                                    value={filters.gender_policy}
+                                    onValueChange={(v) => {
+                                        setFilters((f) => ({
+                                            ...f,
+                                            gender_policy: v,
+                                        }));
+                                        safeOnQueryChange({
+                                            page: 1,
+                                            gender_policy: v,
+                                        });
+                                    }}
+                                >
+                                    <SelectTrigger className="h-9">
+                                        <SelectValue placeholder={t('common.all')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {(['any', 'male', 'female'] as const).map((g) => (
+                                                <SelectItem key={g} value={g}>
+                                                    {t(`gender_policy.${g}`, { ns: 'enum' })}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
@@ -606,7 +622,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 onSortChange={handleSortChange}
                                 onQueryChange={safeOnQueryChange}
                                 loading={processing}
-                                emptyText={t('management.room.empty')}
+                                emptyText={tRoom('empty')}
                                 showColumn={false}
                             />
                         </CardContent>
@@ -621,7 +637,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>
-                                {t('management.room.delete_title')}
+                                {tRoom('delete_title')}
                             </AlertDialogTitle>
                             <AlertDialogDescription>
                                 {(() => {
@@ -630,7 +646,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                             ? `${deletingRoom.number} — ${deletingRoom.name}`
                                             : String(deletingRoom.number)
                                         : '';
-                                    return t('management.room.delete_desc', {
+                                    return tRoom('delete_desc', {
                                         label,
                                     });
                                 })()}

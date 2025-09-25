@@ -55,7 +55,8 @@ function useDebounced<P extends unknown[]>(
 }
 
 export default function AuditLogIndex() {
-    const { t } = useTranslation();
+    const { i18n } = useTranslation();
+    const { t: tAudit } = useTranslation('management/audit');
     const { props } = usePage<InertiaPageProps & PageProps>();
     const { logs, query } = props;
 
@@ -110,24 +111,23 @@ export default function AuditLogIndex() {
         item: ActivityItem | null;
     }>({ open: false, item: null });
 
-    const tableColumns = React.useMemo(
-        () => createColumns((row) => setDetail({ open: true, item: row })),
-        [],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns((row) => setDetail({ open: true, item: row }));
+    }, [lang]);
 
     return (
         <AuthLayout
-            pageTitle={t('management.audit.title')}
-            pageDescription={t('management.audit.desc')}
+            pageTitle={tAudit('title')}
+            pageDescription={tAudit('desc')}
         >
             <div className="space-y-3">
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            {t('management.audit.list_title')}
-                        </CardTitle>
+                        <CardTitle>{tAudit('list_title')}</CardTitle>
                         <CardDescription>
-                            {t('management.audit.desc')}
+                            {tAudit('desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -144,15 +144,13 @@ export default function AuditLogIndex() {
                             search={q.search}
                             onSearchChange={(v) => debouncedSearch(v)}
                             searchKey="description"
-                            searchPlaceholder={t(
-                                'management.audit.search_placeholder',
-                            )}
+                            searchPlaceholder={tAudit('search_placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText={t('management.audit.empty')}
+                            emptyText={tAudit('empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
                         />

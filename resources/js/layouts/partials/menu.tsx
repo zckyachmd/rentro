@@ -101,7 +101,8 @@ type SidebarProps = CommonProps & {
 type MenuGroupsProps = MobileProps | SidebarProps;
 
 export function MenuGroups(props: MenuGroupsProps) {
-    const { t } = useTranslation();
+    const { t: tMenu, i18n } = useTranslation('menu');
+    const { t: tNav } = useTranslation('nav');
     const isMobile = props.variant === 'mobile';
     const [flyoutOpen, setFlyoutOpen] = React.useState<string | null>(null);
 
@@ -139,11 +140,29 @@ export function MenuGroups(props: MenuGroupsProps) {
         }
     }, [hasActiveParentId, activeParentId]);
 
+    const ensureMenuKey = React.useCallback(
+        (key: string) => (key.startsWith('menu.') ? key : `menu.${key}`),
+        [],
+    );
+
+    const getParentText = React.useCallback(
+        (key: string) => {
+            const baseKey = ensureMenuKey(key);
+            const labelKey = `${baseKey}.label`;
+            return i18n.exists(`menu:${labelKey}`)
+                ? tMenu(labelKey)
+                : tMenu(baseKey);
+        },
+        [i18n, tMenu, ensureMenuKey],
+    );
+
     return (
         <nav
             className={isMobile ? 'mt-2 space-y-3' : 'space-y-2'}
             role="navigation"
-            aria-label={isMobile ? t('nav.mobile_menu') : t('nav.sidebar')}
+            aria-label={
+                isMobile ? tNav('nav.mobile_menu') : tNav('nav.sidebar.label')
+            }
         >
             {props.menuGroups.map((group) => (
                 <div key={group.id}>
@@ -159,7 +178,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                       : 'sr-only'
                             }
                         >
-                            {t(group.label)}
+                            {tMenu(ensureMenuKey(group.label))}
                         </p>
                     )}
 
@@ -182,10 +201,10 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                     : 'h-5 w-5 shrink-0'
                                             }
                                         />
-                                        <span
-                                            className={
-                                                isMobile
-                                                    ? 'align-middle'
+                                            <span
+                                                className={
+                                                    isMobile
+                                                        ? 'align-middle'
                                                     : [
                                                           'overflow-hidden whitespace-nowrap',
                                                           (
@@ -212,7 +231,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                     : undefined
                                             }
                                         >
-                                            {t(item.label)}
+                                            {tMenu(ensureMenuKey(item.label))}
                                         </span>
                                     </>
                                 );
@@ -232,9 +251,9 @@ export function MenuGroups(props: MenuGroupsProps) {
                                         title={
                                             !isMobile &&
                                             (props as SidebarProps).collapsed
-                                                ? t(item.label)
+                                                ? tMenu(ensureMenuKey(item.label))
                                                 : undefined
-                                        }
+                                            }
                                         onClick={(e) => {
                                             if (isMobile) {
                                                 e.stopPropagation();
@@ -276,9 +295,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                         icon={parent.icon}
                                                         className="h-4 w-4"
                                                     />
-                                                    <span>
-                                                        {t(parent.label)}
-                                                    </span>
+                                                    <span>{getParentText(parent.label)}</span>
                                                 </span>
                                             </AccordionTrigger>
                                             <AccordionContent>
@@ -327,9 +344,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                     className="mr-2 inline-block h-4 w-4 align-middle"
                                                                 />
                                                                 <span className="align-middle">
-                                                                    {
-                                                                        child.label
-                                                                    }
+                                                                    {tMenu(child.label)}
                                                                 </span>
                                                             </Link>
                                                         );
@@ -383,9 +398,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                     );
                                                                 }}
                                                                 className="hover:bg-accent hover:text-accent-foreground flex w-full justify-center rounded-md px-3 py-2 text-sm"
-                                                                title={
-                                                                    parent.label
-                                                                }
+                                                                title={getParentText(parent.label)}
                                                             >
                                                                 <IconOrFallback
                                                                     icon={
@@ -408,11 +421,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                     }
                                                                     className="h-4 w-4"
                                                                 />
-                                                                <span className="truncate">
-                                                                    {t(
-                                                                        parent.label,
-                                                                    )}
-                                                                </span>
+                                                                <span className="truncate">{getParentText(parent.label)}</span>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 {(
@@ -449,9 +458,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                                 className="mr-2 inline-block h-4 w-4 align-middle"
                                                                             />
                                                                             <span className="align-middle">
-                                                                                {t(
-                                                                                    child.label,
-                                                                                )}
+                                                                                {tMenu(ensureMenuKey(child.label))}
                                                                             </span>
                                                                         </Link>
                                                                     ),
@@ -510,9 +517,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                         opacity: 1,
                                                                     }}
                                                                 >
-                                                                    {t(
-                                                                        parent.label,
-                                                                    )}
+                                                                    {getParentText(parent.label)}
                                                                 </span>
                                                             </span>
                                                         </AccordionTrigger>
@@ -560,9 +565,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                                     className="h-4 w-4"
                                                                                 />
                                                                                 <span>
-                                                                                    {t(
-                                                                                        child.label,
-                                                                                    )}
+                                                                                    {tMenu(ensureMenuKey(child.label))}
                                                                                 </span>
                                                                             </Link>
                                                                         );

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export type CopyInlineProps = {
@@ -23,12 +24,13 @@ export function CopyInline({
     variant = 'default',
     size = 'sm',
     showToast = true,
-    successMessage = 'Disalin ke clipboard',
-    errorMessage = 'Gagal menyalin',
+    successMessage,
+    errorMessage,
     onCopied,
     duration = 1200,
     ...rest
 }: CopyInlineProps) {
+    const { t } = useTranslation();
     const [copied, setCopied] = React.useState(false);
     const timeoutRef = React.useRef<number | null>(null);
 
@@ -48,12 +50,14 @@ export function CopyInline({
             if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
             timeoutRef.current = window.setTimeout(() => setCopied(false), duration);
             onCopied?.(true);
-            if (showToast) toast.success(successMessage);
+            if (showToast)
+                toast.success(successMessage || t('common.copy_success'));
         } catch {
             onCopied?.(false);
-            if (showToast) toast.error(errorMessage);
+            if (showToast)
+                toast.error(errorMessage || t('common.copy_error'));
         }
-    }, [value, duration, onCopied, showToast, successMessage, errorMessage]);
+    }, [value, duration, onCopied, showToast, successMessage, errorMessage, t]);
 
     const onKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -85,7 +89,7 @@ export function CopyInline({
         onClick,
         onKeyDown,
         className: [base, sizeClass, className].filter(Boolean).join(' '),
-        'aria-label': 'Copy to clipboard',
+        'aria-label': t('common.copy_to_clipboard'),
         'data-copied': copied ? '1' : undefined,
         ...rest,
     } as React.HTMLAttributes<HTMLElement>;

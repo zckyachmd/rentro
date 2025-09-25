@@ -70,7 +70,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'invoice',
         accessorKey: 'invoice',
-        title: i18n.t('invoice.title'),
+        title: i18n.t('invoice.number_label'),
         className: COL.invoice,
         cell: ({ row }) => (
             <div className={`${COL.invoice} truncate`}>
@@ -95,6 +95,15 @@ export const createColumns = (opts?: {
         title: i18n.t('payment.form.method'),
         className: COL.method,
         sortable: true,
+        cell: ({ row }) => {
+            const raw = row.original.method || '';
+            const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
+            const label = i18n.t(`payment.method.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return <div className={COL.method}>{label}</div>;
+        },
     }),
     makeColumn<PaymentRow>({
         id: 'status',
@@ -102,13 +111,21 @@ export const createColumns = (opts?: {
         title: i18n.t('common.status'),
         className: COL.status,
         sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge variant={variantForPaymentStatus(row.original.status)}>
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const raw = row.original.status || '';
+            const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
+            const label = i18n.t(`payment.status.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return (
+                <div className={COL.status}>
+                    <Badge variant={variantForPaymentStatus(raw)}>
+                        {label}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<PaymentRow>({
         id: 'amount_cents',

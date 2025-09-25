@@ -42,8 +42,8 @@ function useInvoiceDetailLoader(target: InvoiceDetailTarget) {
             } catch (e) {
                 setError(
                     e instanceof Error
-                        ? e.message || i18n.t('invoice.detail_error')
-                        : i18n.t('invoice.detail_error'),
+                        ? e.message || i18n.t('detail.error', { ns: 'management/invoice' })
+                        : i18n.t('detail.error', { ns: 'management/invoice' }),
                 );
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
@@ -65,16 +65,17 @@ export default function InvoiceDetailDialog({
     const open = !!target;
     const { loading, data, error } = useInvoiceDetailLoader(target);
     const { t } = useTranslation();
+    const { t: tInvoice } = useTranslation('management/invoice');
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        {t('invoice.title')} {target?.number ?? ''}
+                        {tInvoice('title')} {target?.number ?? ''}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        {t('invoice.detail.desc')}
+                        {tInvoice('detail.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -105,12 +106,13 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
     const c = data.contract;
     const summary = data.payment_summary;
     const { t } = useTranslation();
+    const { t: tInvoice } = useTranslation('management/invoice');
     return (
         <div className="space-y-3 text-sm">
             <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border p-3">
                     <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                        {t('invoice.detail.info')}
+                        {tInvoice('detail.info')}
                     </div>
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
                         <Label>{t('common.number')}</Label>
@@ -124,7 +126,7 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                                 aria-label={t('invoice.copy_number')}
                             />
                         </div>
-                        <Label>{t('invoice.contract_no')}</Label>
+                        <Label>{tInvoice('detail.contract_no')}</Label>
                         {(() => {
                             const display =
                                 c?.number && c.number.trim() !== ''
@@ -164,14 +166,22 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                         <Label>{t('common.due_date')}</Label>
                         <div>{formatDate(inv.due_date)}</div>
                         <Label>{t('common.status')}</Label>
-                        <div>{inv.status}</div>
+                        <div>
+                            {t(`invoice.status.${String(inv.status || '')
+                                .trim()
+                                .toLowerCase()
+                                .replace(/\s+/g, '_')}`, {
+                                ns: 'enum',
+                                defaultValue: inv.status,
+                            })}
+                        </div>
                         {typeof inv.release_day === 'number' &&
                             (c?.billing_period || '').toLowerCase() ===
                                 'monthly' && (
                                 <>
-                                    <Label>{t('invoice.release_day')}</Label>
+                                    <Label>{tInvoice('detail.release_day')}</Label>
                                     <div>
-                                        {t('invoice.release_day_value', {
+                                        {tInvoice('detail.release_day_value', {
                                             day: inv.release_day,
                                         })}
                                     </div>
@@ -181,14 +191,14 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                 </div>
                 <div className="rounded-lg border p-3">
                     <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                        {t('invoice.amounts')}
+                        {tInvoice('detail.amounts')}
                     </div>
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
                         <Label>{t('common.total')}</Label>
                         <div>{formatIDR(inv.amount_cents)}</div>
-                        <Label>{t('invoice.paid')}</Label>
+                        <Label>{tInvoice('detail.paid')}</Label>
                         <div>{formatIDR(summary?.total_paid ?? 0)}</div>
-                        <Label>{t('invoice.outstanding')}</Label>
+                        <Label>{tInvoice('detail.outstanding')}</Label>
                         <div>{formatIDR(summary?.outstanding ?? 0)}</div>
                     </div>
                 </div>
@@ -196,7 +206,7 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
             <Separator />
             <div className="rounded-lg border p-3">
                 <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                    {t('invoice.items')}
+                    {tInvoice('detail.items')}
                 </div>
                 <div className="space-y-2">
                     {inv.items.map((it, idx) => {

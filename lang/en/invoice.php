@@ -1,5 +1,6 @@
 <?php
 
 return [
-    'empty' => 'No invoices.',
+    'empty'   => 'No invoices.',
+    'context' => 'Contract #:number • Room :room • Period :start to :end',
 ];

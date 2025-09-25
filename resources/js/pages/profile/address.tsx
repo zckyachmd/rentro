@@ -28,7 +28,8 @@ export default function AddressSection({
     defaultOpen = true,
     title,
 }: AddressProps) {
-    const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tEnum } = useTranslation('enum');
     const { props } = usePage<
         InertiaPageProps & { options?: { addressLabels: string[] } }
     >();
@@ -47,7 +48,7 @@ export default function AddressSection({
         >
             <AccordionItem value="address">
                 <AccordionTrigger className="text-base font-semibold">
-                    {title ?? t('profile.address.title')}
+                    {title ?? tProfile('address.title')}
                 </AccordionTrigger>
                 <AccordionContent>
                     <div className="space-y-4">
@@ -59,12 +60,10 @@ export default function AddressSection({
                             onChange={(e) =>
                                 setField('address_line', e.target.value)
                             }
-                            placeholder={t(
-                                'profile.address.street_placeholder',
-                            )}
+                            placeholder={tProfile('address.street_placeholder')}
                             label={
                                 <>
-                                    {t('profile.address.label')}{' '}
+                                    {tProfile('address.label')}{' '}
                                     <span className="text-destructive">*</span>
                                 </>
                             }
@@ -79,12 +78,10 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('village', e.target.value)
                                 }
-                                placeholder={t(
-                                    'profile.address.village_placeholder',
-                                )}
+                                placeholder={tProfile('address.village_placeholder')}
                                 label={
                                     <>
-                                        {t('profile.address.village')}{' '}
+                                        {tProfile('address.village')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -99,12 +96,10 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('district', e.target.value)
                                 }
-                                placeholder={t(
-                                    'profile.address.district_placeholder',
-                                )}
+                                placeholder={tProfile('address.district_placeholder')}
                                 label={
                                     <>
-                                        {t('profile.address.district')}{' '}
+                                        {tProfile('address.district')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -119,12 +114,10 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('postal_code', e.target.value)
                                 }
-                                placeholder={t(
-                                    'profile.address.postal_placeholder',
-                                )}
+                                placeholder={tProfile('address.postal_placeholder')}
                                 label={
                                     <>
-                                        {t('profile.address.postal')}{' '}
+                                        {tProfile('address.postal')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -142,12 +135,10 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('city', e.target.value)
                                 }
-                                placeholder={t(
-                                    'profile.address.city_placeholder',
-                                )}
+                                placeholder={tProfile('address.city_placeholder')}
                                 label={
                                     <>
-                                        {t('profile.address.city')}{' '}
+                                        {tProfile('address.city')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -162,12 +153,10 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('province', e.target.value)
                                 }
-                                placeholder={t(
-                                    'profile.address.province_placeholder',
-                                )}
+                                placeholder={tProfile('address.province_placeholder')}
                                 label={
                                     <>
-                                        {t('profile.address.province')}{' '}
+                                        {tProfile('address.province')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -177,26 +166,21 @@ export default function AddressSection({
                             />
                             <div className="space-y-2">
                                 <Label htmlFor="label">
-                                    {t('profile.address.address_label')}
+                                    {tProfile('address.address_label')}
                                 </Label>
                                 <Select
                                     value={value.label}
                                     onValueChange={(v) => setField('label', v)}
                                 >
                                     <SelectTrigger id="label">
-                                        <SelectValue
-                                            placeholder={t(
-                                                'profile.address.label_placeholder',
-                                            )}
-                                        />
+                                        <SelectValue placeholder={tProfile('address.label_placeholder')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {addressLabels.map((label: string) => (
-                                            <SelectItem
-                                                key={label}
-                                                value={label}
-                                            >
-                                                {label}
+                                            <SelectItem key={label} value={label}>
+                                                {tEnum(`address_label.${label}`, {
+                                                    defaultValue: label,
+                                                })}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

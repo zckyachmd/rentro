@@ -75,17 +75,17 @@ export const createColumns = (
                             <div className="text-muted-foreground mt-1 space-y-1 text-xs">
                                 <div>
                                     <span className="font-medium">
-                                        {i18n.t('user.table.active')}
+                                        {i18n.t('user.table.active', { ns: 'management/user' })}
                                     </span>{' '}
                                     {u.last_active_at ?? '—'}
                                 </div>
                                 <div>
                                     <span className="font-medium">
-                                        {i18n.t('security.tabs.2fa')}:
+                                        {i18n.t('tabs.2fa', { ns: 'security' })}:
                                     </span>{' '}
                                     {u.two_factor_enabled
-                                        ? i18n.t('user.table.enabled')
-                                        : i18n.t('user.table.disabled')}
+                                        ? i18n.t('user.table.enabled', { ns: 'management/user' })
+                                        : i18n.t('user.table.disabled', { ns: 'management/user' })}
                                 </div>
                             </div>
                         )}
@@ -118,14 +118,14 @@ export const createColumns = (
     makeColumn<UserItem>({
         id: 'roles',
         accessorKey: 'roles',
-        title: i18n.t('management.role.title'),
+        title: i18n.t('title', { ns: 'management/role' }),
         className: COL.roles,
         cell: ({ row }) => {
             const roles = row.original.roles || [];
             if (!roles.length) {
                 return (
                     <Badge variant="outline">
-                        {i18n.t('user.table.no_role')}
+                        {i18n.t('user.table.no_role', { ns: 'management/user' })}
                     </Badge>
                 );
             }
@@ -147,7 +147,7 @@ export const createColumns = (
     }),
     makeColumn<UserItem>({
         id: 'twofa',
-        title: i18n.t('security.tabs.2fa'),
+        title: i18n.t('tabs.2fa', { ns: 'security' }),
         className: COL.twofa,
         cell: ({ row }) => (
             <div className={COL.twofa}>
@@ -157,15 +157,15 @@ export const createColumns = (
                     }
                 >
                     {row.original.two_factor_enabled
-                        ? i18n.t('user.table.enabled')
-                        : i18n.t('user.table.disabled')}
+                        ? i18n.t('user.table.enabled', { ns: 'management/user' })
+                        : i18n.t('user.table.disabled', { ns: 'management/user' })}
                 </Badge>
             </div>
         ),
     }),
     makeColumn<UserItem>({
         id: 'last_active_at',
-        title: i18n.t('user.table.last_active'),
+        title: i18n.t('user.table.last_active', { ns: 'management/user' }),
         className: COL.last,
         sortable: true,
         cell: ({ row }) => {
@@ -200,7 +200,7 @@ export const createColumns = (
                                     onClick={() => opts?.onManageRoles?.(u)}
                                 >
                                     <ShieldCheck className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('user.actions.manage_roles')}
+                                    {i18n.t('user.actions.manage_roles', { ns: 'management/user' })}
                                 </DropdownMenuItem>
                             </Can>
                             <Can all={['user.password.reset']}>
@@ -208,7 +208,7 @@ export const createColumns = (
                                     onClick={() => opts?.onResetPassword?.(u)}
                                 >
                                     <KeyRound className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('user.actions.reset_password')}
+                                    {i18n.t('user.actions.reset_password', { ns: 'management/user' })}
                                 </DropdownMenuItem>
                             </Can>
                             {u.two_factor_enabled ? (
@@ -219,7 +219,7 @@ export const createColumns = (
                                         }
                                     >
                                         <ScanFace className="mr-2 h-4 w-4" />{' '}
-                                        {i18n.t('user.actions.twofa_recovery')}
+                                        {i18n.t('user.actions.twofa_recovery', { ns: 'management/user' })}
                                     </DropdownMenuItem>
                                 </Can>
                             ) : null}
@@ -230,7 +230,7 @@ export const createColumns = (
                                     onClick={() => opts?.onRevokeSession?.(u)}
                                 >
                                     <LogOut className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t('user.actions.force_logout')}
+                                    {i18n.t('user.actions.force_logout', { ns: 'management/user' })}
                                 </DropdownMenuItem>
                             </Can>
                         </DropdownMenuContent>

@@ -47,7 +47,6 @@ import { createColumns } from './columns';
 
 export default function TenantContractIndex(props: ContractsPageProps) {
     const { t } = useTranslation();
-    const { t: tTenant } = useTranslation('tenant/contract');
     const { contracts: paginator, query = {}, options = {} } = props;
     const contracts: TenantContractItem[] = (paginator?.data ??
         []) as TenantContractItem[];
@@ -155,8 +154,8 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                 if (!latest) {
                     window.alert(
                         type === 'checkin'
-                            ? tTenant('no_checkin')
-                            : tTenant('no_checkout'),
+                            ? t('contract.no_checkin')
+                            : t('contract.no_checkout'),
                     );
                     return;
                 }
@@ -165,7 +164,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                 // ignore
             }
         },
-        [tTenant],
+        [t],
     );
 
     const daysUntil = (end?: string | null): number | null => {
@@ -188,15 +187,15 @@ export default function TenantContractIndex(props: ContractsPageProps) {
 
     return (
         <AuthLayout
-            pageTitle={tTenant('title')}
-            pageDescription={tTenant('desc')}
+            pageTitle={t('contract.title')}
+            pageDescription={t('contract.desc')}
         >
             <div className="space-y-6">
                 {/* Filter */}
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                            {tTenant('filter')}
+                            {t('contract.filter')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -223,7 +222,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                         placeholder={t(
                                             'datatable.search_placeholder',
                                         )}
-                                        aria-label={tTenant('search.aria')}
+                                        aria-label={t('contract.search.aria')}
                                     />
                                 </div>
                             </div>
@@ -310,7 +309,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText={tTenant('empty')}
+                            emptyText={t('contract.empty')}
                             showColumn={false}
                         />
                     </CardContent>
@@ -328,10 +327,10 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>
-                                {tTenant('stop.title')}
+                                {t('contract.stop.title')}
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                                {tTenant('stop.desc')}
+                                {t('contract.stop.desc')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
 
@@ -340,7 +339,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             <div className="grid gap-3 sm:grid-cols-3">
                                 <div className="min-w-0">
                                     <div className="text-muted-foreground text-xs">
-                                        {t(tTenant('stop.summary.end_date'))}
+                                        {t('contract.stop.summary.end_date')}
                                     </div>
                                     <div className="font-medium">
                                         {stopTarget?.end_date
@@ -352,7 +351,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                 </div>
                                 <div className="min-w-0">
                                     <div className="text-muted-foreground text-xs">
-                                        {t(tTenant('stop.summary.days_left'))}
+                                        {t('contract.stop.summary.days_left')}
                                     </div>
                                     <div className="font-mono tabular-nums">
                                         {(() => {
@@ -365,11 +364,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                 </div>
                                 <div className="min-w-0">
                                     <div className="text-muted-foreground text-xs">
-                                        {t(
-                                            tTenant(
-                                                'stop.summary.forfeit_limit',
-                                            ),
-                                        )}
+                                        {t('contract.stop.summary.forfeit_limit')}
                                     </div>
                                     <div className="font-mono tabular-nums">
                                         {t('common.days', {
@@ -385,12 +380,10 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-200">
                                 <div className="flex items-center gap-2 font-medium">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <span>{tTenant('stop.notice.title')}</span>
+                                    <span>{t('contract.stop.notice.title')}</span>
                                 </div>
                                 <ul className="mt-2 list-disc space-y-1.5 pl-5">
-                                    <li>
-                                        {t(tTenant('stop.notice.no_guarantee'))}
-                                    </li>
+                                    <li>{t('contract.stop.notice.no_guarantee')}</li>
                                     {(() => {
                                         const d = daysUntil(
                                             stopTarget?.end_date,
@@ -398,23 +391,13 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                         if (d != null && d < forfeitDays) {
                                             return (
                                                 <li>
-                                                    {t(
-                                                        tTenant(
-                                                            'stop.notice.forfeit_now',
-                                                        ),
-                                                        { days: forfeitDays },
-                                                    )}
+                                                    {t('contract.stop.notice.forfeit_now', { days: forfeitDays })}
                                                 </li>
                                             );
                                         }
                                         return (
                                             <li>
-                                                {t(
-                                                    tTenant(
-                                                        'stop.notice.forfeit_cond',
-                                                    ),
-                                                    { days: forfeitDays },
-                                                )}
+                                                {t('contract.stop.notice.forfeit_cond', { days: forfeitDays })}
                                             </li>
                                         );
                                     })()}
@@ -431,7 +414,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                     htmlFor="ack-stop-auto-renew"
                                     className="cursor-pointer leading-snug"
                                 >
-                                    {tTenant('stop.confirm_ack')}
+                                    {t('contract.stop.confirm_ack')}
                                 </Label>
                             </div>
                         </div>
@@ -462,7 +445,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                     );
                                 }}
                             >
-                                {tTenant('stop.disable_button')}
+                                {t('contract.stop.disable_button')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ export default function AttachmentPreviewDialog({
     description = 'Pratinjau file terlampir.',
     details = [],
 }: AttachmentPreviewDialogProps) {
+    const { t } = useTranslation();
     const sources = React.useMemo(() => {
         const list =
             Array.isArray(urls) && urls.length ? urls : url ? [url] : [];
@@ -148,14 +150,12 @@ export default function AttachmentPreviewDialog({
                     {sources.length <= 1 ? (
                         <div className="bg-background rounded-md border p-1">
                             {loading ? (
-                                <div className="text-muted-foreground p-4 text-sm">
-                                    Memuat pratinjau…
-                                </div>
+                                <div className="text-muted-foreground p-4 text-sm">{t('attachment.loading')}</div>
                             ) : sources[0] && isImage(0) ? (
                                 <div className="flex max-h-[65vh] items-center justify-center overflow-auto">
                                     <img
                                         src={sources[0]}
-                                        alt="Lampiran"
+                                        alt={t('attachment.image_alt')}
                                         className="max-h-[65vh] w-auto cursor-zoom-in"
                                         onClick={() => {
                                             const idx =
@@ -172,10 +172,7 @@ export default function AttachmentPreviewDialog({
                                     className="h-[65vh] w-full rounded"
                                 />
                             ) : null}
-                            <div className="text-muted-foreground px-1 pt-2 pb-1 text-[10px]">
-                                Tipe file: {mimes[0] || 'tidak diketahui'} •
-                                Ukuran: {fmtSize(sizes[0])}
-                            </div>
+                            <div className="text-muted-foreground px-1 pt-2 pb-1 text-[10px]">{t('attachment.file_type')}: {mimes[0] || t('attachment.unknown')} • {t('attachment.size')}: {fmtSize(sizes[0])}</div>
                         </div>
                     ) : (
                         <div className="space-y-2">
@@ -192,7 +189,7 @@ export default function AttachmentPreviewDialog({
                                             >
                                                 <img
                                                     src={src}
-                                                    alt={`Lampiran ${i + 1}`}
+                                                    alt={`Attachment ${i + 1}`}
                                                     className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
                                                     onClick={() => {
                                                         const idx =
@@ -206,9 +203,7 @@ export default function AttachmentPreviewDialog({
                                             </AspectRatio>
                                         ) : (
                                             <div className="p-2">
-                                                <div className="bg-muted text-muted-foreground rounded p-2 text-center text-xs">
-                                                    Pratinjau tidak tersedia
-                                                </div>
+                                                <div className="bg-muted text-muted-foreground rounded p-2 text-center text-xs">{t('attachment.preview_not_available')}</div>
                                                 <div className="text-muted-foreground mt-2 truncate text-[11px]">
                                                     {mimes[i] || 'unknown'} •{' '}
                                                     {fmtSize(sizes[i])}
@@ -220,7 +215,7 @@ export default function AttachmentPreviewDialog({
                                                         rel="noreferrer"
                                                         className="text-primary text-xs underline"
                                                     >
-                                                        Buka
+                                                        {t('common.open')}
                                                     </a>
                                                 </div>
                                             </div>
@@ -237,7 +232,7 @@ export default function AttachmentPreviewDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Tutup
+                        {t('common.close', { defaultValue: 'Close' })}
                     </Button>
                 </DialogFooter>
             </DialogContent>

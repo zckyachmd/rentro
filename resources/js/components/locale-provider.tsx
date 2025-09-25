@@ -5,7 +5,7 @@ import React, {
     useState,
 } from 'react';
 
-import i18n from '@/lib/i18n';
+import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 
 export type AppLocale = 'en' | 'id';
 
@@ -95,11 +95,7 @@ export function useLocalePreference() {
                 document.cookie = `locale=${encodeURIComponent(locale)}; path=/; max-age=31536000`;
 
                 try {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const ns = ((i18n.options?.ns as any) || [
-                        'common',
-                    ]) as string[];
-                    await i18n.reloadResources([locale], ns);
+                    await preloadLocaleNamespaces(locale);
                 } catch (e) {
                     if (
                         typeof console !== 'undefined' &&

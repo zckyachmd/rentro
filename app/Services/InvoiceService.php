@@ -68,7 +68,7 @@ class InvoiceService implements InvoiceServiceInterface
     public function generate(Contract $contract, array $options = [])
     {
         if (!empty($contract->paid_in_full_at)) {
-            throw new \InvalidArgumentException('Kontrak sudah lunas. Tidak boleh generate invoice baru.');
+            throw new \InvalidArgumentException(__('management/invoices.contract_already_paid_in_full'));
         }
 
         $period           = (string) $contract->billing_period->value;
@@ -100,7 +100,7 @@ class InvoiceService implements InvoiceServiceInterface
                 }
 
                 if ($this->hasActiveOverlap($contract, $start, $periodEnd, $activeStatuses)) {
-                    throw new \InvalidArgumentException('Sudah ada invoice aktif untuk periode awal kontrak.');
+                    throw new \InvalidArgumentException(__('management/invoices.active_overlap_initial'));
                 }
 
                 $needsProrata = (bool) ($prorata && $start->day !== $releaseDom);
@@ -125,7 +125,7 @@ class InvoiceService implements InvoiceServiceInterface
                 ? max(1, (int) $start->diffInDays($contractEnd->copy()->addDay()))
                 : max(1, (int) ceil($start->diffInDays($contractEnd->copy()->addDay()) / 7));
             if ($this->hasActiveOverlap($contract, $start, $contractEnd->copy(), $activeStatuses)) {
-                throw new \InvalidArgumentException('Sudah ada invoice aktif pada rentang waktu ini.');
+                throw new \InvalidArgumentException(__('management/invoices.active_overlap_range'));
             }
             $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $daysOrWeeks, false, $start, (int) $contract->deposit_cents, $releaseDom);
 
@@ -134,17 +134,17 @@ class InvoiceService implements InvoiceServiceInterface
 
         if (!empty($options['month']) && is_string($options['month'])) {
             if ($period !== BillingPeriod::MONTHLY->value) {
-                throw new \InvalidArgumentException('Pilihan bulan hanya berlaku untuk kontrak bulanan.');
+                throw new \InvalidArgumentException(__('management/invoices.month_only_for_monthly'));
             }
 
             try {
                 $start = Carbon::createFromFormat('Y-m', (string) $options['month'])->startOfMonth();
             } catch (\Throwable $e) {
-                throw new \InvalidArgumentException('Format bulan tidak valid.');
+                throw new \InvalidArgumentException(__('management/invoices.period_month_invalid'));
             }
 
             if ($start->lessThan($contractStart->copy()->startOfMonth()) || $start->greaterThan($contractEnd)) {
-                throw new \InvalidArgumentException('Bulan berada di luar masa kontrak.');
+                throw new \InvalidArgumentException(__('management/invoices.period_month_out_of_range'));
             }
 
             $isBackfill = !empty($options['backfill']);
@@ -155,7 +155,7 @@ class InvoiceService implements InvoiceServiceInterface
                 if (!$start->isSameDay($expectedStart)) {
                     $hint = $expectedStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
                         ->translatedFormat('F Y');
-                    throw new \InvalidArgumentException('Tagihan bulanan harus berurutan. Bulan berikutnya yang valid adalah ' . $hint . '.');
+                    throw new \InvalidArgumentException(__('management/invoices.month_must_be_sequential', ['hint' => $hint]));
                 }
             }
 
@@ -186,7 +186,7 @@ class InvoiceService implements InvoiceServiceInterface
             $rangeTo      = $periodEnd->copy();
             $nonCancelled = [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value, InvoiceStatus::PAID->value];
             if ($this->hasActiveOverlap($contract, $rangeFrom, $rangeTo, $nonCancelled)) {
-                throw new \InvalidArgumentException('Sudah ada invoice aktif untuk bulan yang sama.');
+                throw new \InvalidArgumentException(__('management/invoices.active_overlap_month'));
             }
             $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $start, 0, $releaseDom);
 
@@ -197,22 +197,22 @@ class InvoiceService implements InvoiceServiceInterface
             $fromRaw = $options['range']['from'] ?? null;
             $toRaw   = $options['range']['to'] ?? null;
             if (!is_string($fromRaw) || !is_string($toRaw)) {
-                throw new \InvalidArgumentException('Format rentang tanggal tidak valid.');
+                throw new \InvalidArgumentException(__('management/invoices.range_invalid_format'));
             }
             try {
                 $from = Carbon::parse($fromRaw)->startOfDay();
                 $to   = Carbon::parse($toRaw)->startOfDay();
             } catch (\Throwable $e) {
-                throw new \InvalidArgumentException('Format tanggal tidak valid.');
+                throw new \InvalidArgumentException(__('management/invoices.date_invalid_format'));
             }
             if ($from->greaterThan($to)) {
-                throw new \InvalidArgumentException('Rentang tanggal tidak valid.');
+                throw new \InvalidArgumentException(__('management/invoices.range_invalid'));
             }
             if ($from->lessThan($contractStart) || $to->greaterThan($contractEnd)) {
-                throw new \InvalidArgumentException('Rentang tanggal berada di luar masa kontrak.');
+                throw new \InvalidArgumentException(__('management/invoices.range_out_of_contract'));
             }
             if ($this->hasActiveOverlap($contract, $from, $to, $activeStatuses)) {
-                throw new \InvalidArgumentException('Sudah ada invoice aktif pada rentang waktu ini.');
+                throw new \InvalidArgumentException(__('management/invoices.active_overlap_range'));
             }
 
             if ($period === BillingPeriod::MONTHLY->value) {
@@ -234,7 +234,7 @@ class InvoiceService implements InvoiceServiceInterface
                     break;
                 }
                 if (!$aligned || $months <= 0) {
-                    throw new \InvalidArgumentException('Rentang bulan harus berupa kelipatan bulan penuh.');
+                    throw new \InvalidArgumentException(__('management/invoices.months_range_must_be_full'));
                 }
 
                 $items = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $from, 0, $releaseDom);
@@ -269,19 +269,19 @@ class InvoiceService implements InvoiceServiceInterface
                 if (!$monthStart->isSameDay($expectedStart)) {
                     $hint = $expectedStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
                         ->translatedFormat('F Y');
-                    throw new \InvalidArgumentException('Tagihan bulanan harus berurutan. Bulan berikutnya yang valid adalah ' . $hint . '.');
+                    throw new \InvalidArgumentException(__('management/invoices.month_must_be_sequential', ['hint' => $hint]));
                 }
 
                 $nonCancelled = [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value, InvoiceStatus::PAID->value];
                 if ($this->hasActiveOverlap($contract, $monthStart, $periodEnd, $nonCancelled)) {
-                    throw new \InvalidArgumentException('Sudah ada invoice aktif untuk bulan terakhir.');
+                    throw new \InvalidArgumentException(__('management/invoices.active_overlap_month'));
                 }
 
                 $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $monthStart, 0, $releaseDom);
 
                 return $this->createInvoiceRecord($contract, $monthStart, $periodEnd, $dueMonthly, $items);
             }
-            throw new \InvalidArgumentException('Kontrak sudah selesai atau tidak valid untuk generate invoice.');
+            throw new \InvalidArgumentException(__('management/invoices.contract_invalid_for_generation'));
         }
 
         if ($period === BillingPeriod::MONTHLY->value) {
@@ -296,7 +296,7 @@ class InvoiceService implements InvoiceServiceInterface
             $periodEnd = $contractEnd->copy();
             $paidOnly  = [InvoiceStatus::PAID->value];
             if ($this->hasActiveOverlap($contract, $anchor, $periodEnd, $paidOnly)) {
-                throw new \InvalidArgumentException('Periode yang diminta sudah dibayar lunas.');
+                throw new \InvalidArgumentException(__('management/invoices.period_already_paid'));
             }
             $includeDeposit = !empty($options['include_deposit']);
             $depositCents   = $includeDeposit ? (int) $contract->deposit_cents : 0;
@@ -309,7 +309,7 @@ class InvoiceService implements InvoiceServiceInterface
             ? max(1, (int) $start->diffInDays($contractEnd->copy()->addDay()))
             : max(1, (int) ceil($start->diffInDays($contractEnd->copy()->addDay()) / 7));
         if ($this->hasActiveOverlap($contract, $start, $contractEnd->copy(), $activeStatuses)) {
-            throw new \InvalidArgumentException('Sudah ada invoice aktif pada rentang waktu ini.');
+            throw new \InvalidArgumentException(__('management/invoices.active_overlap_range'));
         }
         $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $daysOrWeeks, false, $start, 0, $releaseDom);
 
@@ -431,12 +431,12 @@ class InvoiceService implements InvoiceServiceInterface
                     }
 
                     if ($totalDays > 0) {
-                        $items[] = Invoice::makeItem('PRORATA', 'Prorata Sewa', $lineAmt, [
+                        $items[] = Invoice::makeItem('PRORATA', 'Prorated Rent', $lineAmt, [
                             'days'             => $totalDays,
                             'free_days'        => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
                             'qty'              => $billableDays,
                             'unit_price_cents' => $billableDays > 0 ? $perDay : 0,
-                            'unit'             => 'hari',
+                            'unit'             => 'day',
                             'date_start'       => $pr['from'] ?? $start->toDateString(),
                             'date_end'         => $pr['to'] ?? $start->toDateString(),
                         ]);
@@ -452,10 +452,10 @@ class InvoiceService implements InvoiceServiceInterface
                         ->translatedFormat('F Y');
                     $items[] = Invoice::makeItem(
                         'RENT',
-                        'Sewa - ' . $labelBulan,
+                        'Rent',
                         $rent,
                         [
-                            'unit'             => 'bulan',
+                            'unit'             => 'month',
                             'qty'              => 1,
                             'unit_price_cents' => $rent,
                             'month'            => $monthStart->format('Y-m'),
@@ -486,12 +486,12 @@ class InvoiceService implements InvoiceServiceInterface
                     }
 
                     if ($totalDays > 0) {
-                        $items[] = Invoice::makeItem('PRORATA', 'Prorata Sewa', $lineAmt, [
+                        $items[] = Invoice::makeItem('PRORATA', 'Prorated Rent', $lineAmt, [
                             'days'             => $totalDays,
                             'free_days'        => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
                             'qty'              => $billableDays,
                             'unit_price_cents' => $billableDays > 0 ? $perDay : 0,
-                            'unit'             => 'hari',
+                            'unit'             => 'day',
                             'date_start'       => $pr['from'] ?? $start->toDateString(),
                             'date_end'         => $pr['to'] ?? $start->toDateString(),
                         ]);
@@ -505,10 +505,10 @@ class InvoiceService implements InvoiceServiceInterface
                     ->translatedFormat('F Y');
                 $items[] = Invoice::makeItem(
                     'RENT',
-                    'Sewa - ' . $labelBulan,
+                    'Rent',
                     $rent,
                     [
-                        'unit'             => 'bulan',
+                        'unit'             => 'month',
                         'qty'              => 1,
                         'unit_price_cents' => $rent,
                         'month'            => $monthStart->format('Y-m'),
@@ -517,10 +517,10 @@ class InvoiceService implements InvoiceServiceInterface
                 );
             }
         } else {
-            $unitLabel = $period === BillingPeriod::DAILY->value ? 'hari' : 'minggu';
+            $unitLabel = $period === BillingPeriod::DAILY->value ? 'day' : 'week';
             $items[]   = Invoice::makeItem(
                 'RENT',
-                'Sewa kamar',
+                'Room Rent',
                 $rent * $duration,
                 ['unit' => $unitLabel, 'qty' => (int) $duration, 'unit_price_cents' => $rent],
             );

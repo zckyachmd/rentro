@@ -70,6 +70,7 @@ export default function TenantPaymentDetailDialog({
     const { loading, data } = useTenantPayment(target);
     const [previewOpen, setPreviewOpen] = React.useState(false);
     const { t } = useTranslation();
+    const { t: tInv } = useTranslation('tenant/invoice');
     const attachmentUrls = React.useMemo(() => {
         const count = Array.isArray(data?.payment?.attachments)
             ? data!.payment!.attachments!.length
@@ -90,10 +91,10 @@ export default function TenantPaymentDetailDialog({
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('tenant.invoice.payment_detail.title')}
+                        {tInv('payment_detail.title')}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        {t('tenant.invoice.payment_detail.subtitle')}
+                        {tInv('payment_detail.subtitle')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
@@ -103,10 +104,10 @@ export default function TenantPaymentDetailDialog({
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="rounded-lg border p-3">
                                 <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                                    {t('tenant.invoice.payment_detail.info')}
+                                    {tInv('payment_detail.info')}
                                 </div>
                                 <div className="grid grid-cols-[1fr_auto] gap-y-1">
-                                    <Label>{t('tenant.invoice.method')}</Label>
+                                    <Label>{tInv('method')}</Label>
                                     <div>{data.payment.method}</div>
                                     <Label>{t('common.status')}</Label>
                                     <div>{data.payment.status}</div>
@@ -115,13 +116,13 @@ export default function TenantPaymentDetailDialog({
                                         {formatIDR(data.payment.amount_cents)}
                                     </div>
                                     <Label>
-                                        {t('tenant.invoice.manual.paid_at')}
+                                        {tInv('manual.paid_at')}
                                     </Label>
                                     <div>
                                         {formatDate(data.payment.paid_at, true)}
                                     </div>
                                     <Label>
-                                        {t('tenant.invoice.detail.reference')}
+                                        {tInv('detail.reference')}
                                     </Label>
                                     <div>{data.payment.reference || '-'}</div>
                                 </div>
@@ -129,24 +130,24 @@ export default function TenantPaymentDetailDialog({
                             <div className="rounded-lg border p-3">
                                 <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
                                     {t(
-                                        'tenant.invoice.payment_detail.receiver_section',
+                                        tInv('payment_detail.receiver_section'),
                                     )}
                                 </div>
                                 <div className="grid grid-cols-[1fr_auto] gap-y-1">
                                     <Label>
-                                        {t('tenant.invoice.manual.bank')}
+                                        {tInv('manual.bank')}
                                     </Label>
                                     <div>
                                         {data.payment.receiver_bank || '-'}
                                     </div>
                                     <Label>
-                                        {t('tenant.invoice.manual.account_no')}
+                                        {tInv('manual.account_no')}
                                     </Label>
                                     <div className="font-mono">
                                         {data.payment.receiver_account || '-'}
                                     </div>
                                     <Label>
-                                        {t('tenant.invoice.manual.name')}
+                                        {tInv('manual.name')}
                                     </Label>
                                     <div>
                                         {data.payment.receiver_holder || '-'}
@@ -158,24 +159,20 @@ export default function TenantPaymentDetailDialog({
                                 data.payment.note) && (
                                 <div className="rounded-lg border p-3 sm:col-span-2">
                                     <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                                        {t(
-                                            'tenant.invoice.payment_detail.review_title',
-                                        )}
+                                        {tInv('payment_detail.review_title')}
                                     </div>
                                     <div className="space-y-1 text-sm">
                                         {data.payment.reject_reason ? (
                                             <div className="text-destructive">
-                                                {t(
-                                                    'tenant.invoice.detail.rejected',
-                                                )}
+                                                {tInv('detail.rejected')}
                                                 : {data.payment.reject_reason}
                                             </div>
                                         ) : null}
                                         {data.payment.note ? (
                                             <div className="text-muted-foreground break-words whitespace-pre-wrap">
                                                 {data.payment.review_by
-                                                    ? `${t('tenant.invoice.detail.admin_note')}:`
-                                                    : `${t('tenant.invoice.detail.note')}:`}{' '}
+                                                    ? `${tInv('detail.admin_note')}:`
+                                                    : `${tInv('detail.note')}:`}{' '}
                                                 {data.payment.note}
                                             </div>
                                         ) : null}
@@ -183,7 +180,7 @@ export default function TenantPaymentDetailDialog({
                                         data.payment.review_at ? (
                                             <div className="text-muted-foreground text-[12px]">
                                                 {data.payment.review_by
-                                                    ? `${t('tenant.invoice.detail.reviewed_by')} ${data.payment.review_by}`
+                                                    ? `${tInv('detail.reviewed_by')} ${data.payment.review_by}`
                                                     : ''}
                                                 {data.payment.review_at
                                                     ? `${data.payment.review_by ? ' • ' : ''}${formatDate(data.payment.review_at, true)}`
@@ -202,7 +199,7 @@ export default function TenantPaymentDetailDialog({
                             type="button"
                             onClick={() => setPreviewOpen(true)}
                         >
-                            {t('tenant.invoice.payment_detail.view_proof')}
+                            {tInv('payment_detail.view_proof')}
                         </Button>
                     ) : null}
                     <Button variant="outline" onClick={onClose}>
@@ -215,10 +212,8 @@ export default function TenantPaymentDetailDialog({
                 urls={attachmentUrls}
                 open={previewOpen}
                 onOpenChange={setPreviewOpen}
-                title={t('tenant.invoice.payment_detail.attachments_title')}
-                description={t(
-                    'tenant.invoice.payment_detail.attachments_desc',
-                )}
+                title={tInv('payment_detail.attachments_title')}
+                description={tInv('payment_detail.attachments_desc')}
             />
         </Dialog>
     );

@@ -30,9 +30,10 @@ export default function Edit({
     options,
 }: EditPageProps) {
     const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
     const BREADCRUMBS: Crumb[] = [
-        { label: t('profile.title'), href: route('profile.index') },
-        { label: t('profile.edit') },
+        { label: tProfile('title'), href: route('profile.index') },
+        { label: tProfile('edit') },
     ];
     const initialData: EditForm = {
         name: user.name ?? '',
@@ -93,16 +94,16 @@ export default function Edit({
     };
 
     return (
-        <AuthLayout pageTitle={t('profile.edit')} breadcrumbs={BREADCRUMBS}>
-            <Head title={t('profile.edit')} />
+        <AuthLayout pageTitle={tProfile('edit')} breadcrumbs={BREADCRUMBS}>
+            <Head title={tProfile('edit')} />
 
             <div className="mb-4 flex items-center justify-between">
                 <div>
                     <h2 className="text-lg font-semibold">
-                        {t('profile.account_info')}
+                        {tProfile('account_info')}
                     </h2>
                     <p className="text-muted-foreground text-sm">
-                        {t('profile.update_hint')}
+                        {tProfile('update_hint')}
                     </p>
                 </div>
             </div>
@@ -113,7 +114,7 @@ export default function Edit({
                     <section className="space-y-4">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
                             <div className="space-y-3 md:col-span-1 lg:col-span-1 xl:col-span-1">
-                                <Label>{t('profile.photo')}</Label>
+                                <Label>{tProfile('photo')}</Label>
                                 <div className="flex flex-col items-center gap-1">
                                     <AvatarPicker
                                         src={avatarPreview ?? user.avatar_url}
@@ -127,7 +128,7 @@ export default function Edit({
                                         onPick={onAvatarPicked}
                                     />
                                     <p className="text-muted-foreground mt-2 text-center text-xs">
-                                        {t('profile.photo_hint')}
+                                        {tProfile('photo_hint')}
                                     </p>
                                 </div>
                             </div>
@@ -136,10 +137,8 @@ export default function Edit({
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">
-                                            Nama Lengkap{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
+                                            {tProfile('full_name')}{' '}
+                                            <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                             id="name"
@@ -156,10 +155,8 @@ export default function Edit({
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="username">
-                                            Username{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
+                                            {tProfile('username')}{' '}
+                                            <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                             id="username"
@@ -200,10 +197,8 @@ export default function Edit({
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="phone">
-                                            Telepon{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
+                                            {tProfile('phone')}{' '}
+                                            <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                             id="phone"
@@ -220,7 +215,7 @@ export default function Edit({
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="dob">
-                                            {t('profile.dob')}
+                                            {tProfile('dob')}
                                         </Label>
                                         <DatePickerInput
                                             id="dob"
@@ -238,7 +233,7 @@ export default function Edit({
                                     </div>
                                     <div className="space-y-2">
                                         <Label>
-                                            {t('profile.gender')}{' '}
+                                            {tProfile('gender')}{' '}
                                             <span className="text-destructive">
                                                 *
                                             </span>
@@ -261,14 +256,11 @@ export default function Edit({
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {options.genders.map((g) => (
-                                                    <SelectItem
-                                                        key={g}
-                                                        value={g}
-                                                    >
-                                                        {g
-                                                            .charAt(0)
-                                                            .toUpperCase() +
-                                                            g.slice(1)}
+                                                    <SelectItem key={g} value={g}>
+                                                        {t(`gender.${g}`, {
+                                                            ns: 'enum',
+                                                            defaultValue: g,
+                                                        })}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>

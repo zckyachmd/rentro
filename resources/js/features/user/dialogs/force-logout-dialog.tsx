@@ -26,6 +26,7 @@ export default function ForceLogoutDialog({
     user,
 }: ForceLogoutDialogProps) {
     const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
     const [submitting, setSubmitting] = React.useState(false);
     const { data, setData, reset } = useForm<{
         scope: 'all' | 'all_except_current';
@@ -56,9 +57,9 @@ export default function ForceLogoutDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>{t('user.force_logout.title')}</DialogTitle>
+                    <DialogTitle>{tUser('user.force_logout.title')}</DialogTitle>
                     <DialogDescription>
-                        {t('user.force_logout.desc')}
+                        {tUser('user.force_logout.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -83,7 +84,7 @@ export default function ForceLogoutDialog({
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label>{t('user.force_logout.target')}</Label>
+                        <Label>{tUser('user.force_logout.target')}</Label>
                         <RadioGroup
                             value={data.scope}
                             onValueChange={(v: 'all' | 'all_except_current') =>
@@ -93,15 +94,13 @@ export default function ForceLogoutDialog({
                             <label className="flex items-center gap-2">
                                 <RadioGroupItem value="all" />
                                 <span className="text-sm">
-                                    {t('user.force_logout.scope.all')}
+                                    {tUser('user.force_logout.scope.all')}
                                 </span>
                             </label>
                             <label className="flex items-center gap-2">
                                 <RadioGroupItem value="all_except_current" />
                                 <span className="text-sm">
-                                    {t(
-                                        'user.force_logout.scope.all_except_current',
-                                    )}
+                                    {tUser('user.force_logout.scope.all_except_current')}
                                 </span>
                             </label>
                         </RadioGroup>
@@ -134,7 +133,7 @@ export default function ForceLogoutDialog({
                         disabled={submitting}
                         onClick={onSubmit}
                     >
-                        {t('user.force_logout.submit')}
+                        {tUser('user.force_logout.submit')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -1,0 +1,55 @@
+{
+    "title": "Tagihan",
+    "list": {
+        "title": "Daftar Tagihan",
+        "empty": "Tidak ada invoice."
+    },
+    "table": {
+        "actions_for": "Aksi invoice {{number}}",
+        "view_ticket": "Lihat Tiket",
+        "columns": {
+            "outstanding": "Sisa"
+        }
+    },
+    "cancel": {
+        "title": "Batalkan Invoice",
+        "desc": "Anda akan membatalkan invoice {{number}}. Tindakan ini tidak dapat dibatalkan.",
+        "reason_label": "Alasan pembatalan",
+        "reason_placeholder": "Contoh: duplikasi tagihan, salah nominal, dll.",
+        "confirm": "Batalkan Sekarang"
+    },
+    "extend_due": {
+        "title": "Perpanjang Jatuh Tempo",
+        "desc": "Atur tanggal jatuh tempo baru dan alasannya.",
+        "new_due_date": "Tanggal Jatuh Tempo Baru",
+        "reason": "Alasan",
+        "reason_placeholder": "Contoh: Penagihan sesuai kontrak",
+        "action": "Perpanjang Jatuh Tempo"
+    },
+    "generate": {
+        "title": "Generate Invoice",
+        "desc": "Buat invoice berdasarkan kontrak yang dipilih.",
+        "mode": {
+            "title": "Mode",
+            "per_month": "Per Bulan",
+            "full": "Lunas"
+        },
+        "month": "Bulan",
+        "reason": "Alasan",
+        "reason_placeholder": "Contoh: Penagihan sesuai kontrak",
+        "search_contract": "Cari kontrak…",
+        "action": "Generate"
+    },
+    "detail": {
+        "desc": "Ringkasan tagihan & item.",
+        "info": "Info Invoice",
+        "contract_no": "No. Kontrak",
+        "release_day": "Rilis Tagihan",
+        "release_day_value": "Setiap tanggal {{day}}",
+        "amounts": "Rincian Nominal",
+        "paid": "Terbayar",
+        "outstanding": "Sisa",
+        "items": "Item",
+        "error": "Gagal memuat invoice"
+    }
+}

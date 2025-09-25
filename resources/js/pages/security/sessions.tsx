@@ -18,6 +18,7 @@ import type { SessionItem, SessionsTabProps } from '@/types/security';
 
 export function SessionsTab({ sessions }: SessionsTabProps) {
     const { t } = useTranslation();
+    const { t: tSecurity } = useTranslation('security');
     const destroyForm = useForm({});
 
     const { open, setOpen, openConfirm, handleConfirmed } =
@@ -43,13 +44,13 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{t('security.tabs.sessions')}</CardTitle>
-                <CardDescription>{t('security.sessions.desc')}</CardDescription>
+                <CardTitle>{tSecurity('tabs.sessions')}</CardTitle>
+                <CardDescription>{tSecurity('sessions.desc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="text-muted-foreground text-sm">
-                        {t('security.sessions.count', {
+                        {tSecurity('sessions.count', {
                             count: sessions.length,
                         })}
                     </div>
@@ -58,14 +59,14 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
                         onClick={() => confirmGuard(onConfirmRevokeOthers)}
                         disabled={destroyForm.processing}
                     >
-                        {t('security.sessions.revoke_others')}
+                        {tSecurity('sessions.revoke_others')}
                     </Button>
                 </div>
 
                 <div className="space-y-2">
                     {sessions.length === 0 ? (
                         <p className="text-muted-foreground text-sm">
-                            {t('security.sessions.empty')}
+                            {tSecurity('sessions.empty')}
                         </p>
                     ) : (
                         <div className="divide-y rounded-md border">
@@ -80,20 +81,10 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
                                             <div className="font-medium">
                                                 {s.agent_label ??
                                                     s.agent ??
-                                                    t(
-                                                        'security.sessions.device',
-                                                    )}
+                                                    tSecurity('sessions.device')}
                                             </div>
                                             <div className="text-muted-foreground">
-                                                {t(
-                                                    'security.sessions.ip_active',
-                                                    {
-                                                        ip: s.ip_address ?? '—',
-                                                        last_active:
-                                                            s.last_active ??
-                                                            '—',
-                                                    },
-                                                )}
+                                                {tSecurity('sessions.ip_active', { ip: s.ip_address ?? '—', last_active: s.last_active ?? '—' })}
                                             </div>
                                         </div>
                                     </div>
@@ -101,7 +92,7 @@ export function SessionsTab({ sessions }: SessionsTabProps) {
                                     <div className="flex items-center gap-2">
                                         {s.current ? (
                                             <Badge>
-                                                {t('security.sessions.current')}
+                                                {tSecurity('sessions.current')}
                                             </Badge>
                                         ) : (
                                             <Button

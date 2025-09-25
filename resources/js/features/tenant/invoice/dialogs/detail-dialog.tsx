@@ -60,17 +60,14 @@ export default function TenantInvoiceDetailDialog({
         id: string;
     } | null>(null);
     const { t } = useTranslation();
+    const { t: tInv } = useTranslation('tenant/invoice');
     return (
         <>
             <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>
-                            {t('tenant.invoice.detail.title')}
-                        </DialogTitle>
-                        <DialogDescription className="text-xs">
-                            {t('tenant.invoice.detail.subtitle')}
-                        </DialogDescription>
+                        <DialogTitle>{tInv('detail.title')}</DialogTitle>
+                        <DialogDescription className="text-xs">{tInv('detail.subtitle')}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         {loading || !data ? (
@@ -79,9 +76,7 @@ export default function TenantInvoiceDetailDialog({
                             <div className="space-y-3 text-sm">
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="rounded-lg border p-3">
-                                        <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                                            {t('tenant.invoice.detail.info')}
-                                        </div>
+                                        <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">{tInv('detail.info')}</div>
                                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
                                             <Label>{t('common.number')}</Label>
                                             <div className="font-mono">
@@ -109,16 +104,14 @@ export default function TenantInvoiceDetailDialog({
                                                 data.invoice.status || '',
                                             ).toLowerCase() === 'cancelled' ? (
                                                 <div className="text-muted-foreground col-span-2 mt-1 text-[11px]">
-                                                    {t(
-                                                        'tenant.invoice.detail.cancelled_note',
-                                                    )}
+                                                    {tInv('detail.cancelled_note')}
                                                 </div>
                                             ) : null}
                                         </div>
                                     </div>
                                     <div className="rounded-lg border p-3">
                                         <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                                            {t('tenant.invoice.amounts')}
+                                            {tInv('amounts')}
                                         </div>
                                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
                                             <Label>{t('common.total')}</Label>
@@ -127,11 +120,7 @@ export default function TenantInvoiceDetailDialog({
                                                     data.invoice.amount_cents,
                                                 )}
                                             </div>
-                                            <Label>
-                                                {t(
-                                                    'tenant.invoice.outstanding',
-                                                )}
-                                            </Label>
+                                            <Label>{tInv('outstanding')}</Label>
                                             <div>
                                                 {formatIDR(
                                                     data.payment_summary
@@ -145,9 +134,7 @@ export default function TenantInvoiceDetailDialog({
                                     data.invoice.items.length > 0 ? (
                                         <div className="rounded-lg border p-3 sm:col-span-2">
                                             <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                                                {t(
-                                                    'tenant.invoice.detail.items',
-                                                )}
+                                                {tInv('detail.items')}
                                             </div>
                                             <div className="space-y-1">
                                                 {data.invoice.items.map(
@@ -176,9 +163,7 @@ export default function TenantInvoiceDetailDialog({
                                     data.payments.length > 0 ? (
                                         <div className="rounded-lg border p-3 sm:col-span-2">
                                             <div className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-                                                {t(
-                                                    'tenant.invoice.detail.payment_history',
-                                                )}
+                                                {tInv('detail.payment_history')}
                                             </div>
                                             <ScrollArea className="bg-background/40 max-h-[280px] rounded-md border border-dashed">
                                                 <div className="space-y-2 p-2 sm:p-3">
@@ -210,62 +195,32 @@ export default function TenantInvoiceDetailDialog({
                                                                 </div>
                                                                 {pmt.reference ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                                                        {t(
-                                                                            'tenant.invoice.detail.reference',
-                                                                        )}
-                                                                        :{' '}
-                                                                        {
-                                                                            pmt.reference
-                                                                        }
+                                                                        {tInv('detail.reference')}: {pmt.reference}
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.receiver_bank ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                                                        {t(
-                                                                            'tenant.invoice.detail.receiver_bank',
-                                                                        )}
-                                                                        :{' '}
-                                                                        {
-                                                                            pmt.receiver_bank
-                                                                        }
-                                                                        {pmt.receiver_account
-                                                                            ? ` — ${pmt.receiver_account}`
-                                                                            : ''}
-                                                                        {pmt.receiver_holder
-                                                                            ? ` (${pmt.receiver_holder})`
-                                                                            : ''}
+                                                                        {tInv('detail.receiver_bank')}: {pmt.receiver_bank}
+                                                                        {pmt.receiver_account ? ` — ${pmt.receiver_account}` : ''}
+                                                                        {pmt.receiver_holder ? ` (${pmt.receiver_holder})` : ''}
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.reject_reason ? (
                                                                     <div className="text-destructive mt-0.5 text-[11px]">
-                                                                        {t(
-                                                                            'tenant.invoice.detail.rejected',
-                                                                        )}
-                                                                        :{' '}
-                                                                        {
-                                                                            pmt.reject_reason
-                                                                        }
+                                                                        {tInv('detail.rejected')}: {pmt.reject_reason}
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.note ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px] break-words whitespace-pre-wrap">
-                                                                        {pmt.review_by
-                                                                            ? `${t('tenant.invoice.detail.admin_note')}:`
-                                                                            : `${t('tenant.invoice.detail.note')}:`}{' '}
-                                                                        {
-                                                                            pmt.note
-                                                                        }
+                                                                        {pmt.review_by ? `${tInv('detail.admin_note')}:` : `${tInv('detail.note')}:`}{' '}
+                                                                        {pmt.note}
                                                                     </div>
                                                                 ) : null}
                                                                 {pmt.review_by ||
                                                                 pmt.review_at ? (
                                                                     <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                                                        {pmt.review_by
-                                                                            ? `${t('tenant.invoice.detail.reviewed_by')} ${pmt.review_by}`
-                                                                            : ''}
-                                                                        {pmt.review_at
-                                                                            ? `${pmt.review_by ? ' • ' : ''}${formatDate(pmt.review_at, true)}`
-                                                                            : ''}
+                                                                        {pmt.review_by ? `${tInv('detail.reviewed_by')} ${pmt.review_by}` : ''}
+                                                                        {pmt.review_at ? `${pmt.review_by ? ' • ' : ''}${formatDate(pmt.review_at, true)}` : ''}
                                                                     </div>
                                                                 ) : null}
                                                             </div>
@@ -316,7 +271,7 @@ export default function TenantInvoiceDetailDialog({
                                         (last.status || '')
                                             .trim()
                                             .toLowerCase() === 'rejected'
-                                        ? t('tenant.invoice.pay_again')
+                                        ? tInv('pay_again')
                                         : t('common.pay');
                                 })()}
                             </Button>

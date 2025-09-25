@@ -32,6 +32,7 @@ export default function ExtendDueDialog({
     processing?: boolean;
 }) {
     const { t } = useTranslation();
+    const { t: tInvoice } = useTranslation('management/invoice');
     const [dueDate, setDueDate] = React.useState<string>('');
     const [reason, setReason] = React.useState<string>('');
 
@@ -55,14 +56,14 @@ export default function ExtendDueDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{t('invoice.extend_due.title')}</DialogTitle>
+                    <DialogTitle>{tInvoice('extend_due.title')}</DialogTitle>
                     <DialogDescription>
-                        {t('invoice.extend_due.desc')}
+                        {tInvoice('extend_due.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                     <div className="space-y-2">
-                        <Label>{t('invoice.extend_due.new_due_date')}</Label>
+                        <Label>{tInvoice('extend_due.new_due_date')}</Label>
                         <DatePickerInput
                             id="extend-due-input"
                             value={dueDate}
@@ -71,12 +72,12 @@ export default function ExtendDueDialog({
                         <InputError message={dueDateError} />
                     </div>
                     <div className="space-y-2">
-                        <Label>{t('invoice.reason')}</Label>
+                        <Label>{tInvoice('extend_due.reason')}</Label>
                         <Textarea
                             rows={3}
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
-                            placeholder={t('invoice.reason_placeholder')}
+                            placeholder={tInvoice('extend_due.reason_placeholder')}
                             maxLength={200}
                         />
                         <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">

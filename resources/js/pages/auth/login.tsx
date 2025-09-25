@@ -113,7 +113,7 @@ export default function Login({
                                     href={route('password.request')}
                                     className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
                                 >
-                                    {t('auth.forgot')}
+                                    {t('auth.forgot.link', 'Forgot?')}
                                 </Link>
                             )}
                         </div>

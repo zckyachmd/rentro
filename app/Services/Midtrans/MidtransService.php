@@ -56,7 +56,7 @@ class MidtransService implements MidtransGatewayInterface
         $this->ensureConfigured();
         $bank = self::assertBank($bank);
         if ($amountCents <= 0) {
-            throw new \InvalidArgumentException('Invalid amount.');
+            throw new \InvalidArgumentException(__('management/payments.invalid_amount'));
         }
 
         $invoice->loadMissing(['contract.room:id,number']);
@@ -126,7 +126,7 @@ class MidtransService implements MidtransGatewayInterface
     private function ensureConfigured(): void
     {
         if (!Config::$serverKey) {
-            throw new \RuntimeException('Midtrans server key is not configured.');
+            throw new \RuntimeException(__('management/payments.server_key_missing'));
         }
     }
 

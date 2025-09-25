@@ -16,7 +16,7 @@ import type {
 } from '@/types/profile';
 
 export default function ContactSection({ contacts }: ContactProps) {
-    const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
     const { options } = usePage<
         InertiaPageProps & {
             errors?: Record<string, string>;
@@ -131,11 +131,11 @@ export default function ContactSection({ contacts }: ContactProps) {
             <div className="mt-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-lg font-semibold">
                     <Users className="h-5 w-5" />
-                    {t('profile.contact.title')}
+                    {tProfile('contact.title')}
                 </h2>
                 <div className="flex items-center gap-3">
                     <span className="text-muted-foreground hidden text-xs sm:inline">
-                        {t('profile.contact.max_hint', { count: MAX_CONTACTS })}
+                        {tProfile('contact.max_hint', { count: MAX_CONTACTS })}
                     </span>
                     <Button
                         size="sm"
@@ -143,7 +143,7 @@ export default function ContactSection({ contacts }: ContactProps) {
                         onClick={openAddContact}
                         disabled={!canAdd}
                     >
-                        {t('profile.contact.add')}
+                        {tProfile('contact.add')}
                     </Button>
                     {formState && (
                         <ContactDialog
@@ -198,16 +198,16 @@ export default function ContactSection({ contacts }: ContactProps) {
             {contacts.length === 0 ? (
                 <>
                     <p className="text-muted-foreground text-sm">
-                        {t('profile.contact.empty')}
+                        {tProfile('contact.empty')}
                     </p>
                     <p className="text-muted-foreground mt-2 text-xs sm:hidden">
-                        {t('profile.contact.max_hint', { count: MAX_CONTACTS })}
+                        {tProfile('contact.max_hint', { count: MAX_CONTACTS })}
                     </p>
                 </>
             ) : (
                 <>
                     <p className="text-muted-foreground mb-2 text-xs">
-                        {t('profile.contact.count', {
+                        {tProfile('contact.count', {
                             total,
                             max: MAX_CONTACTS,
                         })}

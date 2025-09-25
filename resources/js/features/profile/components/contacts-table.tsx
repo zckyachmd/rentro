@@ -22,14 +22,16 @@ export default function ContactsTable({
     onDelete?: (c: ContactDTO) => void;
 }) {
     const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tEnum } = useTranslation('enum');
     return (
         <div className="rounded-md border">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>{t('profile.contact.table.name')}</TableHead>
+                        <TableHead>{tProfile('contact.table.name')}</TableHead>
                         <TableHead>
-                            {t('profile.contact.table.relationship')}
+                            {tProfile('contact.table.relationship')}
                         </TableHead>
                         <TableHead>{t('common.email')}</TableHead>
                         <TableHead>{t('common.phone')}</TableHead>
@@ -46,16 +48,21 @@ export default function ContactsTable({
                             <TableCell className="font-medium">
                                 {c.name}
                             </TableCell>
-                            <TableCell>{c.relationship}</TableCell>
+                            <TableCell>
+                                {c.relationship
+                                    ? tEnum(
+                                          `emergency_relationship.${c.relationship}`,
+                                          { defaultValue: c.relationship },
+                                      )
+                                    : '-'}
+                            </TableCell>
                             <TableCell>
                                 {c.email ? (
                                     <CopyInline
                                         value={c.email}
                                         variant="link"
                                         className="text-xs sm:text-sm"
-                                        successMessage={t(
-                                            'profile.email_copied',
-                                        )}
+                                        successMessage={tProfile('email_copied')}
                                     >
                                         {c.email}
                                     </CopyInline>
@@ -69,9 +76,7 @@ export default function ContactsTable({
                                         value={c.phone}
                                         variant="link"
                                         className="font-mono text-xs sm:text-sm"
-                                        successMessage={t(
-                                            'profile.phone_copied',
-                                        )}
+                                        successMessage={tProfile('phone_copied')}
                                     >
                                         {c.phone}
                                     </CopyInline>
@@ -89,7 +94,7 @@ export default function ContactsTable({
                                                 variant="outline"
                                                 onClick={() => onEdit(c)}
                                             >
-                                                {t('profile.contact.edit')}
+                                                {tProfile('contact.edit')}
                                             </Button>
                                         ) : null}
                                         {onDelete ? (
@@ -99,7 +104,7 @@ export default function ContactsTable({
                                                 variant="destructive"
                                                 onClick={() => onDelete(c)}
                                             >
-                                                {t('profile.contact.delete')}
+                                                {tProfile('contact.delete')}
                                             </Button>
                                         ) : null}
                                     </div>

@@ -53,6 +53,63 @@ export default function FlashToaster({
     const { props } = usePage<PageProps<PageShared>>();
 
     const activeRef = React.useRef<Set<string>>(new Set());
+    const storeKey = 'rentro:flash:consumed:v1';
+
+    const readConsumed = React.useCallback((): Record<string, number> => {
+        try {
+            const raw = sessionStorage.getItem(storeKey);
+            if (!raw) return {};
+            const obj = JSON.parse(raw) as Record<string, number>;
+            return obj && typeof obj === 'object' ? obj : {};
+        } catch {
+            return {};
+        }
+    }, []);
+
+    const writeConsumed = React.useCallback((obj: Record<string, number>) => {
+        try {
+            const now = Date.now();
+            const pruned: Record<string, number> = {};
+            const entries = Object.entries(obj)
+                .filter(([, ts]) => now - ts < 30 * 60 * 1000)
+                .slice(-100);
+            for (const [k, v] of entries) pruned[k] = v;
+            sessionStorage.setItem(storeKey, JSON.stringify(pruned));
+        } catch {
+            // ignore
+        }
+    }, []);
+
+    type HistoryState = { __flashConsumed?: Record<string, boolean> } & Record<string, unknown>;
+
+    const historyConsumed = React.useCallback((type: ToastKey): boolean => {
+        try {
+            const raw = (window.history && window.history.state) || {};
+            const st: HistoryState =
+                typeof raw === 'object' && raw !== null
+                    ? (raw as Record<string, unknown>)
+                    : {};
+            const consumed = (st as HistoryState).__flashConsumed;
+            return Boolean(consumed && consumed[type]);
+        } catch {
+            return false;
+        }
+    }, []);
+
+    const markHistoryConsumed = React.useCallback((type: ToastKey) => {
+        try {
+            const raw = (window.history && window.history.state) || {};
+            const st: HistoryState =
+                typeof raw === 'object' && raw !== null
+                    ? (raw as Record<string, unknown>)
+                    : {};
+            const consumed = { ...((st.__flashConsumed as Record<string, boolean> | undefined) ?? {}), [type]: true };
+            const next = { ...st, __flashConsumed: consumed } as HistoryState;
+            window.history.replaceState(next as unknown as object, '', window.location.href);
+        } catch {
+            // ignore
+        }
+    }, []);
 
     React.useEffect(() => {
         const f = props.flash || {};
@@ -129,6 +186,17 @@ export default function FlashToaster({
                       ? c.error
                       : undefined);
             if (!val) continue;
+
+            if (dedupe && historyConsumed(k as ToastKey)) {
+                return;
+            }
+            markHistoryConsumed(k as ToastKey);
+
+            const path = (typeof window !== 'undefined' && window.location?.pathname) || '';
+            const token = `path:${path}|type:${k}`;
+            const consumed = readConsumed();
+            consumed[token] = Date.now();
+            writeConsumed(consumed);
             switch (k) {
                 case 'success':
                     show('success', String(val));
@@ -147,7 +215,7 @@ export default function FlashToaster({
                     return;
             }
         }
-    }, [props.flash, props.cb, dedupe, priority, toastDuration]);
+    }, [props.flash, props.cb, dedupe, priority, toastDuration, readConsumed, writeConsumed, historyConsumed, markHistoryConsumed]);
 
     return null;
 }

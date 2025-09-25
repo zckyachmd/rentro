@@ -2,7 +2,6 @@
 
 @push('pdf-styles')
 <style>
-    /* Margin only; paper size set in controller */
     @page {
         margin: 5mm 4mm;
     }
@@ -69,7 +68,7 @@ $fmt = fn($n) => 'Rp ' . number_format((int) $n, 0, ',', '.');
 $now = now()->format('Y-m-d H:i');
 @endphp
 
-@section('title', 'Kwitansi Pembayaran')
+@section('title', __('pdf.receipt.title'))
 
 @section('content')
 <div class="center">
@@ -87,27 +86,27 @@ $now = now()->format('Y-m-d H:i');
     <tbody>
         @if(!empty($invoice['number']))
         <tr>
-            <td>Invoice</td>
+            <td>{{ __('pdf.receipt.invoice') }}</td>
             <td class="text-end mono">{{ $invoice['number'] }}</td>
         </tr>
         @endif
         <tr>
-            <td>Metode</td>
+            <td>{{ __('pdf.receipt.method') }}</td>
             <td class="text-end">{{ $payment['method'] ?? '-' }}</td>
         </tr>
         <tr>
-            <td>Tanggal Bayar</td>
+            <td>{{ __('pdf.receipt.paid_at') }}</td>
             <td class="text-end">{{ $payment['paid_at'] ?? '-' }}</td>
         </tr>
         @if(!empty($payment['reference']))
         <tr>
-            <td>Referensi</td>
+            <td>{{ __('pdf.receipt.reference') }}</td>
             <td class="text-end mono">{{ $payment['reference'] }}</td>
         </tr>
         @endif
         @isset($recorded_by)
         <tr>
-            <td>Dicatat oleh</td>
+            <td>{{ __('pdf.receipt.recorded_by') }}</td>
             <td class="text-end">{{ $recorded_by }}</td>
         </tr>
         @endisset
@@ -120,13 +119,13 @@ $now = now()->format('Y-m-d H:i');
     <tbody>
         @if(!empty($tenant['name']))
         <tr>
-            <td>Penyewa</td>
+            <td>{{ __('pdf.receipt.tenant') }}</td>
             <td class="text-end">{{ $tenant['name'] }}</td>
         </tr>
         @endif
         @if(!empty($room['number']) || !empty($room['name']))
         <tr>
-            <td>Kamar</td>
+            <td>{{ __('pdf.receipt.room') }}</td>
             <td class="text-end">{{ ($room['number'] ?? '') }} {{ ($room['name'] ?? '') }}</td>
         </tr>
         @endif
@@ -139,19 +138,19 @@ $now = now()->format('Y-m-d H:i');
 <table class="table table-sm">
     <tbody>
         <tr>
-            <td>Total Tagihan</td>
+            <td>{{ __('pdf.receipt.total_invoice') }}</td>
             <td class="text-end">{{ $fmt($summary['total_invoice'] ?? 0) }}</td>
         </tr>
         <tr>
-            <td>Sisa Sebelum</td>
+            <td>{{ __('pdf.receipt.pre_outstanding') }}</td>
             <td class="text-end">{{ $fmt($summary['pre_outstanding'] ?? 0) }}</td>
         </tr>
         <tr>
-            <td>Dibayar Saat Ini</td>
+            <td>{{ __('pdf.receipt.current_paid') }}</td>
             <td class="text-end fw-bold">{{ $fmt($summary['current_paid'] ?? 0) }}</td>
         </tr>
         <tr>
-            <td>Sisa Setelah</td>
+            <td>{{ __('pdf.receipt.post_outstanding') }}</td>
             <td class="text-end">{{ $fmt($summary['post_outstanding'] ?? 0) }}</td>
         </tr>
     </tbody>
@@ -159,7 +158,7 @@ $now = now()->format('Y-m-d H:i');
 @endisset
 
 <div class="footnote">
-    Dicetak {{ $now }} • Simpan struk ini sebagai bukti pembayaran.
+    {{ __('pdf.receipt.footnote', ['datetime' => $now]) }}
 </div>
 <div class="cutline"></div>
 @endsection

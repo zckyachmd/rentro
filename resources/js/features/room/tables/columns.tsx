@@ -21,12 +21,12 @@ import type {
 } from '@/types/management';
 
 const COL = {
-    number: 'shrink-0 w-[110px]',
-    building: 'shrink-0 min-w-[140px] md:w-[180px] lg:w-[220px]',
+    number: 'shrink-0 w-[120px]',
+    building: 'shrink-0 min-w-[90px] md:w-[130px] lg:w-[170px]',
     floor: 'shrink-0 w-[90px]',
-    type: 'shrink-0 min-w-[120px] md:w-[160px]',
-    status: 'shrink-0 w-[120px]',
-    max: 'shrink-0 w-[80px] text-right',
+    type: 'shrink-0 min-w-[80px] md:w-[100px]',
+    status: 'shrink-0 w-[80px]',
+    max: 'shrink-0 w-[120px] text-right',
     price: 'shrink-0 w-[140px] text-right',
     amenities: 'shrink-0 w-[90px] text-center',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
@@ -58,7 +58,7 @@ export const createColumns = (
                     type="button"
                     className="text-primary w-fit font-medium underline-offset-2 hover:underline focus:underline"
                     onClick={() => opts?.onDetail?.(row.original)}
-                    aria-label={`${i18n.t('management.room.view_detail_aria')} ${row.original.number}`}
+                    aria-label={`${i18n.t('view_detail_aria', { ns: 'management/room' })} ${row.original.number}`}
                 >
                     {row.original.number}
                 </button>
@@ -87,7 +87,7 @@ export const createColumns = (
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.floor}>
-                {i18n.t('management.room.floor_prefix')}{' '}
+                {i18n.t('floor_prefix', { ns: 'management/room' })}{' '}
                 {row.original.floor?.level ?? '-'}
             </div>
         ),

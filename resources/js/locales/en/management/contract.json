@@ -5,8 +5,6 @@
     "paid_in_full": "Paid in Full",
     "costs": "Costs",
     "tenant_room_title": "Tenant & Room",
-    "billing_period": "Billing Period",
-    "billing_day": "Billing Day",
     "select_period": "Select period",
     "duration": {
         "months_label": "Duration (months)",
@@ -126,9 +124,7 @@
         "stop_desc": "Contract will not be auto‑renewed at period end.",
         "start_desc": "Contract will be auto‑renewed at period end.",
         "reason_label": "Reason",
-        "reason_placeholder": "e.g., tenant request, contract adjustment, etc.",
-        "stop_action": "Stop auto‑renew",
-        "start_action": "Start auto‑renew"
+        "reason_placeholder": "e.g., tenant request, contract adjustment, etc."
     },
     "table": {
         "view_detail_title": "View contract {{number}}",

@@ -6,11 +6,11 @@ import { formatDate, formatIDR } from '@/lib/format';
 import type { TenantInvoiceDTO } from '@/types/tenant';
 
 export default function SummarySection({ data }: { data: TenantInvoiceDTO }) {
-    const { t } = useTranslation();
+    const { t } = useTranslation('tenant/invoice');
     return (
         <Section
-            title={t('tenant.invoice.summary.title')}
-            subtitle={t('tenant.invoice.summary.subtitle')}
+            title={t('summary.title')}
+            subtitle={t('summary.subtitle')}
         >
             <div className="grid gap-3 sm:grid-cols-2">
                 <KVP

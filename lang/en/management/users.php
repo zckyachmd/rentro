@@ -30,4 +30,9 @@ return [
         'sent'   => 'Verification email has also been sent.',
         'failed' => 'Verification email not sent. The user can request verification from their profile or you can resend it.',
     ],
+    'errors' => [
+        'self_edit_forbidden'      => 'You are not allowed to change your own role. Please contact the administrator.',
+        'cannot_edit_super'        => 'You do not have permission to change the role of a Super Admin user.',
+        'cannot_remove_last_super' => 'Cannot remove the last Super Admin. There must be at least one user with the Super Admin role.',
+    ],
 ];

@@ -17,20 +17,17 @@ import AuthLayout from '@/layouts/auth-layout';
 import RoomUpsertForm from '@/pages/management/room/form';
 import type { RoomCreatePageProps as CreatePageProps } from '@/types/management';
 
-const makeBreadcrumbs = (t: TFunction): Crumb[] => [
-    { label: t('management.room.title', { defaultValue: 'Rooms' }), href: '#' },
+const makeBreadcrumbs = (tRoom: TFunction): Crumb[] => [
+    { label: tRoom('title', { defaultValue: 'Rooms' }), href: '#' },
     {
-        label: t('management.room.title', { defaultValue: 'Rooms' }),
+        label: tRoom('title', { defaultValue: 'Rooms' }),
         href: route('management.rooms.index'),
     },
-    {
-        label: t('management.room.add', { defaultValue: 'Add Room' }),
-        href: '#',
-    },
+    { label: tRoom('add', { defaultValue: 'Add Room' }), href: '#' },
 ];
 
 export default function RoomCreate() {
-    const { t } = useTranslation();
+    const { t: tRoom } = useTranslation('management/room');
     const { props } = usePage<InertiaPageProps & CreatePageProps>();
     const opt = props.options ?? {};
 
@@ -39,7 +36,7 @@ export default function RoomCreate() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button type="button" variant="outline">
-                        {t('management.room.master_data')}
+                        {tRoom('master_data')}
                         <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
@@ -50,7 +47,7 @@ export default function RoomCreate() {
                             className="flex items-center gap-2"
                         >
                             <Building2 className="h-4 w-4" />{' '}
-                            {t('management.room.master.buildings')}
+                            {tRoom('master.buildings')}
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -59,7 +56,7 @@ export default function RoomCreate() {
                             className="flex items-center gap-2"
                         >
                             <Layers className="h-4 w-4" />{' '}
-                            {t('management.room.master.floors')}
+                            {tRoom('master.floors')}
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -68,7 +65,7 @@ export default function RoomCreate() {
                             className="flex items-center gap-2"
                         >
                             <Tags className="h-4 w-4" />{' '}
-                            {t('management.room.master.room_types')}
+                            {tRoom('master.room_types')}
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -77,7 +74,7 @@ export default function RoomCreate() {
                             className="flex items-center gap-2"
                         >
                             <Wrench className="h-4 w-4" />{' '}
-                            {t('management.room.master.amenities')}
+                            {tRoom('master.amenities')}
                         </Link>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -87,9 +84,9 @@ export default function RoomCreate() {
 
     return (
         <AuthLayout
-            pageTitle={t('management.room.title')}
-            pageDescription={t('management.room.desc')}
-            breadcrumbs={makeBreadcrumbs(t)}
+            pageTitle={tRoom('title')}
+            pageDescription={tRoom('desc')}
+            breadcrumbs={makeBreadcrumbs(tRoom)}
             actions={headerActions}
         >
             <div className="space-y-6">

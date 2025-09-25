@@ -36,7 +36,7 @@ import type {
 } from '@/types/management';
 
 export default function ContractIndex(props: ContractsPageProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { t: tContract } = useTranslation('management/contract');
     const {
         contracts: paginator,
@@ -154,19 +154,19 @@ export default function ContractIndex(props: ContractsPageProps) {
     const [checkinTarget, setCheckinTarget] = React.useState<Target>(null);
     const [checkoutTarget, setCheckoutTarget] = React.useState<Target>(null);
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onCancel: (c) => setCancelTarget(c),
-                onStopAutoRenew: (c) => setToggleTarget(c),
-                onStartAutoRenew: (c) => setToggleTarget(c),
-                onCheckin: (c) => setCheckinTarget(c),
-                onCheckout: (c) => setCheckoutTarget(c),
-                requireCheckinForActivate:
-                    handoverSettings.require_checkin_for_activate,
-            }),
-        [handoverSettings.require_checkin_for_activate],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onCancel: (c) => setCancelTarget(c),
+            onStopAutoRenew: (c) => setToggleTarget(c),
+            onStartAutoRenew: (c) => setToggleTarget(c),
+            onCheckin: (c) => setCheckinTarget(c),
+            onCheckout: (c) => setCheckoutTarget(c),
+            requireCheckinForActivate:
+                handoverSettings.require_checkin_for_activate,
+        });
+    }, [handoverSettings.require_checkin_for_activate, lang]);
 
     const headerActions = (
         <div className="flex items-center gap-2">

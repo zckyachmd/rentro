@@ -39,6 +39,8 @@ export function TwoFADialog({
     autoReload = true,
 }: TwoFADialogProps) {
     const { t } = useTranslation();
+    const { t: tSecurity } = useTranslation('security');
+    const { t: tUser } = useTranslation('management/user');
     const [codes, setCodes] = React.useState<string[]>([]);
     const [viewing, setViewing] = React.useState(false);
     const [loading, setLoading] = React.useState<
@@ -137,10 +139,10 @@ export function TwoFADialog({
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <ScanFace className="h-5 w-5" />
-                            {t('user.twofa.title')}
+                            {tSecurity('2fa.title')}
                         </DialogTitle>
                         <DialogDescription>
-                            {t('user.twofa.desc')}
+                            {tUser('user.twofa.desc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3 text-sm">
@@ -173,7 +175,7 @@ export function TwoFADialog({
                             <>
                                 <div className="space-y-2">
                                     <Label>
-                                        {t('user.twofa.reason_label')}
+                                        {tUser('user.twofa.reason_label')}
                                     </Label>
                                     <Textarea
                                         rows={3}
@@ -181,9 +183,7 @@ export function TwoFADialog({
                                         onChange={(e) =>
                                             setReason(e.target.value)
                                         }
-                                        placeholder={t(
-                                            'user.twofa.reason_placeholder',
-                                        )}
+                                        placeholder={tUser('user.twofa.reason_placeholder')}
                                         maxLength={200}
                                     />
                                     <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
@@ -213,7 +213,7 @@ export function TwoFADialog({
                                         ) : (
                                             <Eye className="mr-2 h-4 w-4" />
                                         )}
-                                        {t('user.twofa.view_codes')}
+                                        {tUser('user.twofa.view_codes')}
                                     </Button>
                                     <Button
                                         type="button"
@@ -227,7 +227,7 @@ export function TwoFADialog({
                                             'user.twofa.disable_aria',
                                         )}
                                     >
-                                        {t('security.2fa.disable')}
+                                        {tSecurity('2fa.disable')}
                                     </Button>
                                 </div>
                             </>
@@ -238,8 +238,8 @@ export function TwoFADialog({
                                 <div className="text-muted-foreground mb-2 flex items-center justify-between text-xs">
                                     <span>
                                         {codes.length > 0
-                                            ? t('user.twofa.recovery_available')
-                                            : t('user.twofa.no_recovery')}
+                                            ? tUser('user.twofa.recovery_available')
+                                            : tUser('user.twofa.no_recovery')}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         {codes.length === 0 ? (
@@ -249,14 +249,10 @@ export function TwoFADialog({
                                                 size="sm"
                                                 onClick={handleRegenerate}
                                                 disabled={loading === 'regen'}
-                                                aria-label={t(
-                                                    'security.2fa.recovery.regen',
-                                                )}
+                                        aria-label={tSecurity('2fa.recovery.regen')}
                                             >
                                                 <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                                {t(
-                                                    'security.2fa.recovery.regen',
-                                                )}
+                                                {tSecurity('2fa.recovery.regen')}
                                             </Button>
                                         ) : null}
                                     </div>
@@ -264,7 +260,7 @@ export function TwoFADialog({
                                 {codes.length > 0 ? (
                                     <div className="space-y-2">
                                         <p className="text-muted-foreground text-xs">
-                                            {t('user.twofa.recovery_hint')}
+                                            {tUser('user.twofa.recovery_hint')}
                                         </p>
                                         <div className="flex items-center justify-between rounded-md border p-2 font-mono text-xs">
                                             <span>{codes[0]}</span>
@@ -278,7 +274,7 @@ export function TwoFADialog({
                                     </div>
                                 ) : (
                                     <div className="text-muted-foreground text-xs">
-                                        {t('user.twofa.generate_hint')}
+                                        {tUser('user.twofa.generate_hint')}
                                     </div>
                                 )}
                             </div>
@@ -290,10 +286,10 @@ export function TwoFADialog({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {t('user.twofa.disable_title')}
+                            {tUser('user.twofa.disable_title')}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {t('user.twofa.disable_desc')}
+                            {tUser('user.twofa.disable_desc')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="space-y-2 text-sm">
@@ -319,7 +315,7 @@ export function TwoFADialog({
                             onClick={handleDisable}
                             disabled={loading === 'disable'}
                         >
-                            {t('user.twofa.disable_now')}
+                            {tUser('user.twofa.disable_now')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

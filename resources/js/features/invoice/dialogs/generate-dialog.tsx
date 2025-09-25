@@ -35,6 +35,7 @@ export default function GenerateInvoiceDialog({
     contracts?: ContractOption[];
 }) {
     const { t } = useTranslation();
+    const { t: tInvoice } = useTranslation('management/invoice');
     const [saving, setSaving] = React.useState(false);
     const [form, setForm] = React.useState({
         mode: 'per_month' as 'per_month' | 'full',
@@ -128,11 +129,9 @@ export default function GenerateInvoiceDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>
-                        {t('management.invoice.generate')}
-                    </DialogTitle>
+                    <DialogTitle>{tInvoice('generate.title')}</DialogTitle>
                     <DialogDescription>
-                        {t('invoice.generate.desc')}
+                        {tInvoice('generate.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
@@ -156,14 +155,14 @@ export default function GenerateInvoiceDialog({
                             onChange={(value) =>
                                 setForm((s) => ({ ...s, contractId: value }))
                             }
-                            placeholder={t('invoice.search_contract')}
+                            placeholder={tInvoice('generate.search_contract')}
                         />
                         <InputError name="contract_id" reserveSpace={false} />
                     </div>
                     {isMonthly ? (
                         <>
                             <div className="space-y-2">
-                                <Label>{t('invoice.generate.mode')}</Label>
+                                <Label>{tInvoice('generate.mode.title')}</Label>
                                 <Select
                                     value={form.mode}
                                     onValueChange={(v: 'per_month' | 'full') =>
@@ -182,19 +181,17 @@ export default function GenerateInvoiceDialog({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="per_month">
-                                            {t(
-                                                'invoice.generate.mode.per_month',
-                                            )}
+                                            {tInvoice('generate.mode.per_month')}
                                         </SelectItem>
                                         <SelectItem value="full">
-                                            {t('invoice.generate.mode.full')}
+                                            {tInvoice('generate.mode.full')}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             {form.mode === 'per_month' ? (
                                 <div className="space-y-2">
-                                    <Label>{t('invoice.month')}</Label>
+                                    <Label>{tInvoice('generate.month')}</Label>
                                     <input
                                         type="month"
                                         className="bg-background h-9 w-full rounded-md border px-3 text-sm shadow-sm focus:outline-none"
@@ -229,7 +226,7 @@ export default function GenerateInvoiceDialog({
                         </>
                     ) : null}
                     <div className="space-y-2">
-                        <Label>{t('invoice.reason')}</Label>
+                        <Label>{tInvoice('generate.reason')}</Label>
                         <Textarea
                             rows={3}
                             value={form.reason}
@@ -239,7 +236,7 @@ export default function GenerateInvoiceDialog({
                                     reason: e.target.value,
                                 }))
                             }
-                            placeholder={t('invoice.reason_placeholder')}
+                            placeholder={tInvoice('generate.reason_placeholder')}
                             maxLength={200}
                         />
                         <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
@@ -267,7 +264,7 @@ export default function GenerateInvoiceDialog({
                     >
                         {saving
                             ? t('common.processing')
-                            : t('invoice.generate_action')}
+                            : tInvoice('generate.action')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

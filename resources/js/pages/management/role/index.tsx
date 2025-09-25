@@ -36,7 +36,7 @@ import type {
 } from '@/types/management';
 
 export default function RolesIndex() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { props } = usePage<InertiaPageProps & PageProps>();
     const { roles, permissions = [], guards = [], query } = props;
 
@@ -84,15 +84,15 @@ export default function RolesIndex() {
         });
     }, [dialog.del.role?.id]);
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onEdit: (role: RoleItem) => openDialog('edit', role),
-                onPermissions: (role: RoleItem) => openDialog('perm', role),
-                onDelete: (role: RoleItem) => openDialog('del', role),
-            }),
-        [openDialog],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onEdit: (role: RoleItem) => openDialog('edit', role),
+            onPermissions: (role: RoleItem) => openDialog('perm', role),
+            onDelete: (role: RoleItem) => openDialog('del', role),
+        });
+    }, [openDialog, lang]);
 
     return (
         <AuthLayout
@@ -143,7 +143,7 @@ export default function RolesIndex() {
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada role."
+                            emptyText={t('management.role.empty')}
                         />
                     </CardContent>
                 </Card>

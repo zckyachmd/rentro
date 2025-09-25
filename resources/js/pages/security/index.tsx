@@ -47,6 +47,7 @@ function setTabInUrl(value: TabKey) {
 
 export default function SecurityIndex() {
     const { t } = useTranslation();
+    const { t: tSecurity } = useTranslation('security');
     const page = usePage<InertiaPageProps & PageProps>();
     const summary: Summary = (page?.props?.summary ?? {}) as Summary;
     const sessions: SessionItem[] = (page?.props?.sessions ??
@@ -84,11 +85,8 @@ export default function SecurityIndex() {
     }, [tab]);
 
     return (
-        <AuthLayout
-            pageTitle={t('security.title')}
-            pageDescription={t('security.desc')}
-        >
-            <Head title={t('security.title')} />
+        <AuthLayout pageTitle={tSecurity('title')} pageDescription={tSecurity('desc')}>
+            <Head title={tSecurity('title')} />
 
             {/* Summary */}
             <div className="mb-6 grid gap-4 md:grid-cols-3">
@@ -96,10 +94,10 @@ export default function SecurityIndex() {
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
                             <MailCheck className="h-4 w-4" />{' '}
-                            {t('security.email.title')}
+                            {tSecurity('email.title')}
                         </CardTitle>
                         <CardDescription>
-                            {t('security.email.desc')}
+                            {tSecurity('email.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
@@ -108,9 +106,7 @@ export default function SecurityIndex() {
                                 summary.email_verified ? 'default' : 'secondary'
                             }
                         >
-                            {summary.email_verified
-                                ? t('security.email.verified')
-                                : t('security.email.unverified')}
+                            {summary.email_verified ? tSecurity('email.verified') : tSecurity('email.unverified')}
                         </Badge>
                         {!summary.email_verified && (
                             <Dialog
@@ -123,16 +119,16 @@ export default function SecurityIndex() {
                                         variant="outline"
                                         className="h-8"
                                     >
-                                        {t('security.resend')}
+                                        {tSecurity('resend')}
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="animate-none">
                                     <DialogHeader>
                                         <DialogTitle>
-                                            {t('security.email.resend_title')}
+                                            {tSecurity('email.resend_title')}
                                         </DialogTitle>
                                         <DialogDescription>
-                                            {t('security.email.resend_desc')}
+                                            {tSecurity('email.resend_desc')}
                                         </DialogDescription>
                                     </DialogHeader>
                                     <DialogFooter>
@@ -147,11 +143,7 @@ export default function SecurityIndex() {
                                             onClick={handleResendVerification}
                                             disabled={sending}
                                         >
-                                            {sending
-                                                ? t('security.sending')
-                                                : t(
-                                                      'security.email.resend_button',
-                                                  )}
+                                            {sending ? tSecurity('sending') : tSecurity('email.resend_button')}
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -163,10 +155,10 @@ export default function SecurityIndex() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
-                            {t('security.2fa.title')}
+                            {tSecurity('2fa.title')}
                         </CardTitle>
                         <CardDescription>
-                            {t('security.2fa.desc')}
+                            {tSecurity('2fa.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
@@ -177,9 +169,7 @@ export default function SecurityIndex() {
                                     : 'secondary'
                             }
                         >
-                            {summary.two_factor_enabled
-                                ? t('security.enabled')
-                                : t('security.disabled')}
+                            {summary.two_factor_enabled ? tSecurity('enabled') : tSecurity('disabled')}
                         </Badge>
                         <Button
                             size="sm"
@@ -195,15 +185,15 @@ export default function SecurityIndex() {
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
                             <KeyRound className="h-4 w-4" />{' '}
-                            {t('security.password.title')}
+                            {tSecurity('password.title')}
                         </CardTitle>
                         <CardDescription>
-                            {t('security.password.desc')}
+                            {tSecurity('password.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
                         <div className="text-muted-foreground text-sm">
-                            {t('security.password.last_changed')}{' '}
+                            {tSecurity('password.last_changed')}{' '}
                             {summary.last_password_changed_at
                                 ? summary.last_password_changed_at
                                 : '—'}
@@ -222,13 +212,13 @@ export default function SecurityIndex() {
             >
                 <TabsList className="mb-4">
                     <TabsTrigger value="password">
-                        {t('security.tabs.password')}
+                        {tSecurity('tabs.password')}
                     </TabsTrigger>
                     <TabsTrigger value="2fa">
-                        {t('security.tabs.2fa')}
+                        {tSecurity('tabs.2fa')}
                     </TabsTrigger>
                     <TabsTrigger value="sessions">
-                        {t('security.tabs.sessions')}
+                        {tSecurity('tabs.sessions')}
                     </TabsTrigger>
                 </TabsList>
 

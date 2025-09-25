@@ -43,15 +43,12 @@ export default function MethodSelection({
     onManualAttachment: (f: File | null) => void;
 }) {
     const isManual = bank === 'manual';
-    const { t } = useTranslation();
+    const { t: tInv } = useTranslation('tenant/invoice');
     return (
-        <Section
-            title={t('tenant.invoice.method_section.title')}
-            subtitle={t('tenant.invoice.method_section.subtitle')}
-        >
+        <Section title={tInv('method_section.title')} subtitle={tInv('method_section.subtitle')}>
             <div className="space-y-3">
                 <div className="space-y-1">
-                    <Label>{t('tenant.invoice.method')}</Label>
+                    <Label>{tInv('method')}</Label>
                     <Select value={bank} onValueChange={(v) => setBank(v)}>
                         <SelectTrigger>
                             <SelectValue />
@@ -60,11 +57,11 @@ export default function MethodSelection({
                             {vaBanks.map((b) => (
                                 <SelectItem key={b} value={b}>
                                     {String(b).toUpperCase()}{' '}
-                                    {t('tenant.invoice.va_label')}
+                                    {tInv('va_label')}
                                 </SelectItem>
                             ))}
                             <SelectItem value="manual">
-                                {t('tenant.invoice.method_manual')}
+                                {tInv('method_manual')}
                             </SelectItem>
                         </SelectContent>
                     </Select>
@@ -74,13 +71,11 @@ export default function MethodSelection({
                 {isManual ? (
                     <div className="space-y-2 rounded-lg border p-3">
                         <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            {t('tenant.invoice.manual.title')}
+                            {tInv('manual.title')}
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="space-y-1">
-                                <Label>
-                                    {t('tenant.invoice.manual.dest_account')}
-                                </Label>
+                                <Label>{tInv('manual.dest_account')}</Label>
                                 <Select
                                     value={manualBank}
                                     onValueChange={(v) => setManualBank(v)}
@@ -105,9 +100,7 @@ export default function MethodSelection({
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label>
-                                    {t('tenant.invoice.manual.account_detail')}
-                                </Label>
+                                <Label>{tInv('manual.account_detail')}</Label>
                                 <div className="bg-muted/50 rounded-md border p-2 text-[12px]">
                                     {(() => {
                                         const b = manualBanks.find(
@@ -118,27 +111,15 @@ export default function MethodSelection({
                                         if (!b) return <span>-</span>;
                                         return (
                                             <div className="grid grid-cols-2 gap-1">
-                                                <div>
-                                                    {t(
-                                                        'tenant.invoice.manual.bank',
-                                                    )}
-                                                </div>
+                                                <div>{tInv('manual.bank')}</div>
                                                 <div className="text-right">
                                                     {b.bank}
                                                 </div>
-                                                <div>
-                                                    {t(
-                                                        'tenant.invoice.manual.name',
-                                                    )}
-                                                </div>
+                                                <div>{tInv('manual.name')}</div>
                                                 <div className="text-right">
                                                     {b.holder}
                                                 </div>
-                                                <div>
-                                                    {t(
-                                                        'tenant.invoice.manual.account_no',
-                                                    )}
-                                                </div>
+                                                <div>{tInv('manual.account_no')}</div>
                                                 <div className="flex items-center justify-end gap-1">
                                                     <span className="font-mono">
                                                         {b.account}
@@ -158,7 +139,7 @@ export default function MethodSelection({
                         </div>
 
                         <div className="space-y-1">
-                            <Label>{t('tenant.invoice.manual.proof')}</Label>
+                            <Label>{tInv('manual.proof')}</Label>
                             <Input
                                 type="file"
                                 accept="image/*,application/pdf"
@@ -171,7 +152,7 @@ export default function MethodSelection({
                             />
                             {manualAttachment ? (
                                 <div className="text-muted-foreground text-[12px]">
-                                    {t('tenant.invoice.manual.file')}:{' '}
+                                    {tInv('manual.file')}: 
                                     {manualAttachment.name}
                                 </div>
                             ) : null}
@@ -182,7 +163,7 @@ export default function MethodSelection({
                         </div>
 
                         <div className="space-y-1">
-                            <Label>{t('tenant.invoice.manual.paid_at')}</Label>
+                            <Label>{tInv('manual.paid_at')}</Label>
                             <Input
                                 type="datetime-local"
                                 value={manualPaidAt}
@@ -195,7 +176,7 @@ export default function MethodSelection({
 
                         <div className="space-y-1">
                             <Label>
-                                {t('tenant.invoice.manual.note_label')}
+                                {tInv('manual.note_label')}
                             </Label>
                             <Textarea
                                 rows={3}
@@ -203,15 +184,13 @@ export default function MethodSelection({
                                 onChange={(e) =>
                                     onManualNoteChange(e.target.value)
                                 }
-                                placeholder={t(
-                                    'tenant.invoice.manual.note_placeholder',
-                                )}
+                                placeholder={tInv('manual.note_placeholder')}
                             />
                             <InputError name="note" reserveSpace={false} />
                         </div>
 
                         <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[12px] text-amber-800">
-                            {t('tenant.invoice.manual.info')}
+                            {tInv('manual.info')}
                         </div>
                     </div>
                 ) : null}

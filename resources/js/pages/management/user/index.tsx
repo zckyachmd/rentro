@@ -41,7 +41,8 @@ const computeInitials = (name?: string | null) =>
     (name?.slice(0, 1) ?? '?').toUpperCase();
 
 export default function UsersIndex() {
-    const { t } = useTranslation();
+    const { i18n } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
     const { props } = usePage<InertiaPageProps & PageProps>();
     const roles: Role[] = React.useMemo(() => props.roles ?? [], [props.roles]);
     const paginator = props.users;
@@ -100,28 +101,25 @@ export default function UsersIndex() {
         [rows],
     );
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onManageRoles: (u) => openDialog('role', u),
-                onResetPassword: (u) => openDialog('reset', u),
-                onTwoFARecovery: (u) => openDialog('twofa', u),
-                onRevokeSession: (u) => openDialog('revoke', u),
-            }),
-        [openDialog],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onManageRoles: (u) => openDialog('role', u),
+            onResetPassword: (u) => openDialog('reset', u),
+            onTwoFARecovery: (u) => openDialog('twofa', u),
+            onRevokeSession: (u) => openDialog('revoke', u),
+        });
+    }, [openDialog, lang]);
 
     return (
-        <AuthLayout
-            pageTitle={t('management.user.title')}
-            pageDescription={t('management.user.desc')}
-        >
+        <AuthLayout pageTitle={tUser('title')} pageDescription={tUser('desc')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>{t('management.user.title')}</CardTitle>
+                        <CardTitle>{tUser('title')}</CardTitle>
                         <CardDescription>
-                            {t('management.user.desc')}
+                            {tUser('desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -142,15 +140,11 @@ export default function UsersIndex() {
                                     }
                                 >
                                     <SelectTrigger className="w-[160px]">
-                                        <SelectValue
-                                            placeholder={t(
-                                                'management.user.all_roles',
-                                            )}
-                                        />
+                                        <SelectValue placeholder={tUser('all_roles')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
-                                            {t('management.user.all_roles')}
+                                            {tUser('all_roles')}
                                         </SelectItem>
                                         {rolesOptions}
                                     </SelectContent>
@@ -163,7 +157,7 @@ export default function UsersIndex() {
                                         onClick={() => openDialog('create')}
                                     >
                                         <UserPlus className="mr-2 h-4 w-4" />{' '}
-                                        {t('management.user.add')}
+                                        {tUser('add')}
                                     </Button>
                                 </Can>
                             </div>
@@ -182,15 +176,13 @@ export default function UsersIndex() {
                                 onQueryChange({ page: 1, search: v })
                             }
                             searchKey="email"
-                            searchPlaceholder={t(
-                                'management.user.search_placeholder',
-                            )}
+                            searchPlaceholder={tUser('search_placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText={t('management.user.empty')}
+                            emptyText={tUser('empty')}
                         />
                     </CardContent>
                 </Card>

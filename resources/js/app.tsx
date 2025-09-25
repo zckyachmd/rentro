@@ -3,7 +3,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
-import i18n from '@/lib/i18n';
+import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import '../css/app.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -75,8 +75,7 @@ createInertiaApp({
                     if (i18n.language !== locale) {
                         await i18n.changeLanguage(locale);
                     }
-                    await i18n.reloadResources([locale], ['common']);
-                    await i18n.loadNamespaces(['common']);
+                    await preloadLocaleNamespaces(locale);
                     try {
                         document.documentElement.lang = locale;
                     } catch {

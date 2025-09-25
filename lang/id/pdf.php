@@ -1,0 +1,51 @@
+<?php
+
+return [
+    'printed_at' => 'Dicetak pada :datetime',
+    'invoice' => [
+        'item' => [
+            'rent'         => 'Sewa',
+            'prorata'      => 'Prorata Sewa',
+            'period_range' => ':start s/d :end',
+            'days_summary' => 'Total :days hari; gratis :free hari; ditagih :billed hari.',
+            'qty_line'     => ':price × :qty :unit',
+        ],
+        'unit' => [
+            'day'   => 'hari',
+            'week'  => 'minggu',
+            'month' => 'bulan',
+        ],
+    ],
+    'contract' => [
+        'title'            => 'Kontrak',
+        'status'           => 'Status',
+        'start'            => 'Mulai',
+        'end'              => 'Berakhir',
+        'billing_period'   => 'Periode Tagih',
+        'billing_day_format' => 'tanggal tagih: :day',
+        'tenant'           => 'Penyewa',
+        'room'             => 'Kamar',
+        'building'         => 'Gedung',
+        'floor'            => 'Lantai',
+        'type'             => 'Tipe',
+        'values_and_terms' => 'Nilai & Ketentuan',
+        'rent'             => 'Sewa',
+        'deposit'          => 'Deposit',
+        'notes'            => 'Catatan',
+    ],
+    'receipt' => [
+        'title'            => 'Kwitansi Pembayaran',
+        'invoice'          => 'Invoice',
+        'method'           => 'Metode',
+        'paid_at'          => 'Tanggal Bayar',
+        'reference'        => 'Referensi',
+        'recorded_by'      => 'Dicatat oleh',
+        'tenant'           => 'Penyewa',
+        'room'             => 'Kamar',
+        'total_invoice'    => 'Total Tagihan',
+        'pre_outstanding'  => 'Sisa Sebelum',
+        'current_paid'     => 'Dibayar Saat Ini',
+        'post_outstanding' => 'Sisa Setelah',
+        'footnote'         => 'Dicetak :datetime • Simpan struk ini sebagai bukti pembayaran.',
+    ],
+];

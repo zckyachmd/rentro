@@ -32,6 +32,9 @@ export default function CreateUserDialog({
     autoReload = true,
 }: CreateUserDialogProps) {
     const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tRole } = useTranslation('management/role');
     const nameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
 
@@ -75,16 +78,16 @@ export default function CreateUserDialog({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <UserPlus className="h-5 w-5" />{' '}
-                        {t('user.create.title')}
+                        {tUser('user.create.title')}
                     </DialogTitle>
                     <DialogDescription>
-                        {t('user.create.desc')}
+                        {tUser('user.create.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-2 text-sm">
                     <div className="grid gap-1">
                         <Label htmlFor="name">
-                            {t('profile.contact.fields.name_label')}
+                            {tProfile('contact.fields.name_label')}
                         </Label>
                         <Input
                             id="name"
@@ -113,15 +116,15 @@ export default function CreateUserDialog({
                             id="phone"
                             value={data.phone}
                             onChange={onInput('phone')}
-                            placeholder={t(
-                                'profile.contact.fields.phone_placeholder',
+                            placeholder={tProfile(
+                                'contact.fields.phone_placeholder',
                             )}
                         />
                         <InputError message={errors.phone} />
                     </div>
 
                     <div className="grid gap-1">
-                        <Label>{t('management.role.title')}</Label>
+                        <Label>{tRole('title')}</Label>
                         <Select
                             value=""
                             onValueChange={(v) =>
@@ -138,7 +141,7 @@ export default function CreateUserDialog({
                         >
                             <SelectTrigger>
                                 <SelectValue
-                                    placeholder={t('management.user.all_roles')}
+                                    placeholder={tUser('all_roles')}
                                 />
                             </SelectTrigger>
                             <SelectContent>
@@ -167,10 +170,7 @@ export default function CreateUserDialog({
                                                 ),
                                             )
                                         }
-                                        title={t(
-                                            'user.create.remove_role_title',
-                                            { role: label },
-                                        )}
+                                        title={tUser('user.create.remove_role_title', { role: label })}
                                     >
                                         <span>{label}</span>
                                         <X className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100" />
@@ -189,7 +189,7 @@ export default function CreateUserDialog({
                                     setData('send_verification', Boolean(v))
                                 }
                             />
-                            {t('user.create.send_verification')}
+                            {tUser('user.create.send_verification')}
                         </Label>
                     </div>
                 </div>
@@ -206,7 +206,7 @@ export default function CreateUserDialog({
                         disabled={processing}
                         onClick={submit}
                     >
-                        {t('user.create.submit')}
+                        {tUser('user.create.submit')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

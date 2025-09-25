@@ -1,0 +1,66 @@
+{
+    "title": "Pengguna",
+    "desc": "Kelola akun, peran, keamanan, dan sesi login",
+    "all_roles": "Semua peran",
+    "add": "Tambah Pengguna",
+    "empty": "Tidak ada pengguna.",
+    "search_placeholder": "Cari nama/email/telepon…",
+    "user": {
+        "actions": {
+            "force_logout": "Paksa Keluar",
+            "manage_roles": "Kelola Peran",
+            "reset_password": "Reset Password",
+            "twofa_recovery": "Kode Pemulihan 2FA"
+        },
+        "create": {
+            "desc": "Buat pengguna baru dan atur peran",
+            "remove_role_title": "Hapus peran {{role}}",
+            "send_verification": "Kirim email verifikasi",
+            "submit": "Daftarkan",
+            "title": "Tambah Pengguna"
+        },
+        "force_logout": {
+            "desc": "Paksa keluar dari semua perangkat atau selain perangkat saat ini.",
+            "scope": {
+                "all": "Semua perangkat",
+                "all_except_current": "Semua kecuali perangkat saat ini"
+            },
+            "submit": "Cabut Sesi",
+            "target": "Target",
+            "title": "Cabut Sesi Pengguna"
+        },
+        "reset_password": {
+            "desc": "Kirim atau buat tautan reset password.",
+            "generate": "Generate Tautan Reset",
+            "generated_desc": "Tautan reset berhasil dibuat. Salin tautan di bawah ini dan kirimkan ke pengguna dengan cara yang aman.",
+            "reason_placeholder": "Contoh: Pengguna lupa password dan membutuhkan akses segera",
+            "send": "Kirim Email",
+            "title": "Reset Password"
+        },
+        "table": {
+            "active": "Aktif:",
+            "disabled": "Nonaktif",
+            "enabled": "Aktif",
+            "last_active": "Aktif Terakhir",
+            "no_role": "Tanpa Peran"
+        },
+        "twofa": {
+            "desc": "Kelola recovery codes dan status 2FA.",
+            "disable_aria": "Nonaktifkan two-factor authentication",
+            "disable_desc": "Tindakan ini akan menonaktifkan 2FA untuk pengguna ini. Pengguna dapat mengaktifkannya kembali dengan melakukan setup ulang 2FA melalui menu keamanan.",
+            "disable_now": "Nonaktifkan sekarang",
+            "disable_title": "Nonaktifkan Two-Factor Authentication",
+            "generate_hint": "Klik Generate Kode untuk membuat kode pemulihan baru.",
+            "no_recovery": "Belum ada kode pemulihan",
+            "reason_label": "Alasan tindakan",
+            "reason_placeholder": "Contoh: Pengguna kehilangan perangkat autentikator",
+            "recovery_available": "Kode pemulihan tersedia",
+            "recovery_hint": "Ini adalah salah satu kode pemulihan Anda. Simpan dan rahasiakan kode ini. Jangan bagikan kepada siapa pun.",
+            "view_codes": "Lihat Kode",
+            "view_codes_aria": "Tampilkan kode pemulihan"
+        },
+        "roles": {
+            "dialog_desc": "Pilih atau ubah peran yang dimiliki pengguna ini."
+        }
+    }
+}

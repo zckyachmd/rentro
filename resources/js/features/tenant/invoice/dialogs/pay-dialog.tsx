@@ -179,15 +179,15 @@ export default function TenantInvoicePayDialog({
     const methodLabel = React.useMemo(() => {
         const t = String(displayPending?.payment_type || '').toLowerCase();
         if (!t) return '-';
-        if (t === 'manual') return i18n.t('tenant.invoice.method_manual');
+        if (t === 'manual') return i18n.t('tenant/invoice:method_manual');
         if (t === 'bank_transfer' || t === 'va')
             return displayPending?.bank
-                ? `${String(displayPending.bank).toUpperCase()} ${i18n.t('tenant.invoice.va_label')}`
-                : i18n.t('tenant.invoice.virtual_account');
+                ? `${String(displayPending.bank).toUpperCase()} ${i18n.t('tenant/invoice:va_label')}`
+                : i18n.t('tenant/invoice:virtual_account');
         if (t === 'cstore')
             return displayPending?.store
-                ? `${i18n.t('tenant.invoice.cstore_label')} (${displayPending.store})`
-                : i18n.t('tenant.invoice.cstore_label');
+                ? `${i18n.t('tenant/invoice:cstore_label')} (${displayPending.store})`
+                : i18n.t('tenant/invoice:cstore_label');
         return displayPending?.payment_type || '-';
     }, [
         displayPending?.payment_type,
@@ -288,16 +288,16 @@ export default function TenantInvoicePayDialog({
         void checkNow();
     }, [autoTickSeed, open, canCheckNow, displayPending, checkNow]);
 
-    const { t } = useTranslation();
+    const { t } = useTranslation('tenant/invoice');
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        {t('tenant.invoice.pay.title')}
+                        {t('pay.title')}
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        {t('tenant.invoice.pay.subtitle')}
+                        {t('pay.subtitle')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
@@ -347,7 +347,7 @@ export default function TenantInvoicePayDialog({
                                 disabled={!canCheckNow || checking}
                             >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
-                                {t('tenant.invoice.pay.check_status')}
+                                {t('pay.check_status')}
                             </Button>
                         </>
                     ) : (
@@ -357,14 +357,14 @@ export default function TenantInvoicePayDialog({
                                     onClick={submitManual}
                                     disabled={submitting}
                                 >
-                                    {t('tenant.invoice.pay.submit_proof')}
+                                    {t('pay.submit_proof')}
                                 </Button>
                             ) : (
                                 <Button
                                     onClick={createVA}
                                     disabled={vaGenerating}
                                 >
-                                    {t('tenant.invoice.pay.create_va')}
+                                    {t('pay.create_va')}
                                 </Button>
                             )}
                         </>

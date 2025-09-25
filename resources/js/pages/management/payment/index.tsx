@@ -33,6 +33,7 @@ const currency = (amount: number): string => formatIDR(amount);
 
 export default function PaymentIndex() {
     const { t } = useTranslation();
+    const { t: tPayment } = useTranslation('management/payment');
     const { props } = usePage<InertiaPageProps & PageProps>();
     const paginator = props.payments;
     const rows: PaymentRow[] = React.useMemo(
@@ -94,15 +95,13 @@ export default function PaymentIndex() {
 
     return (
         <AuthLayout
-            pageTitle={t('management.payment.title')}
-            pageDescription={t('management.payment.desc')}
+            pageTitle={tPayment('title')}
+            pageDescription={tPayment('desc')}
         >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>
-                            {t('management.payment.list_title')}
-                        </CardTitle>
+                        <CardTitle>{tPayment('list_title')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -116,22 +115,31 @@ export default function PaymentIndex() {
                                         })
                                     }
                                 >
-                                    <SelectTrigger className="w-[160px]">
-                                        <SelectValue
-                                            placeholder={t(
-                                                'common.all_statuses',
-                                            )}
-                                        />
-                                    </SelectTrigger>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue
+                                    placeholder={t(
+                                        'common.all_statuses',
+                                    )}
+                                />
+                            </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
                                             {t('common.all_statuses')}
                                         </SelectItem>
-                                        {statuses.map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {s}
-                                            </SelectItem>
-                                        ))}
+                                        {statuses.map((s) => {
+                                            const slug = String(s)
+                                                .trim()
+                                                .toLowerCase()
+                                                .replace(/\s+/g, '_');
+                                            return (
+                                                <SelectItem key={s} value={s}>
+                                                    {t(`payment.status.${slug}`, {
+                                                        ns: 'enum',
+                                                        defaultValue: String(s),
+                                                    })}
+                                                </SelectItem>
+                                            );
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -142,7 +150,7 @@ export default function PaymentIndex() {
                                     onClick={() => setOpen(true)}
                                 >
                                     <FilePlus2 className="mr-2 h-4 w-4" />{' '}
-                                    {t('management.payment.add')}
+                                    {tPayment('add')}
                                 </Button>
                             </div>
                         </div>
@@ -184,15 +192,13 @@ export default function PaymentIndex() {
                                 onQueryChange({ page: 1, search: v })
                             }
                             searchKey="invoice"
-                            searchPlaceholder={t(
-                                'management.payment.search_placeholder',
-                            )}
+                            searchPlaceholder={tPayment('search_placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText={t('management.payment.empty')}
+                            emptyText={tPayment('empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
                         />

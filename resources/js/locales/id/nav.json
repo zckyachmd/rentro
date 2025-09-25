@@ -1,0 +1,31 @@
+{
+    "nav": {
+        "billing": "Tagihan",
+        "go": "Go",
+        "help": "Bantuan",
+        "lang": { "en": "Inggris", "id": "Indonesia" },
+        "language": "Bahasa",
+        "logout": "Keluar",
+        "mobile_menu": "Menu seluler",
+        "nav_menu": "Menu Navigasi",
+        "nav_menu_desc": "Akses menu aplikasi",
+        "notifications": {
+            "label": "Notifikasi",
+            "empty": "Belum ada notifikasi."
+        },
+        "open_menu": "Buka menu",
+        "overview": "Ikhtisar",
+        "profile": "Profil",
+        "search": {
+            "label": "Cari",
+            "placeholder": "Cari penyewa, kamar, atau tagihan…"
+        },
+        "settings": "Pengaturan",
+        "sidebar": {
+            "label": "Sidebar",
+            "collapse": "Perkecil sidebar",
+            "expand": "Perbesar sidebar"
+        },
+        "user_menu": "Menu Pengguna"
+    }
+}

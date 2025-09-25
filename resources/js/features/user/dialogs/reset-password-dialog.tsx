@@ -28,6 +28,7 @@ export function ResetPasswordDialog({
     user,
 }: ResetDialogProps) {
     const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
     const [state, setState] = React.useReducer(
         (s: ResetState, a: Partial<ResetState>) => ({ ...s, ...a }),
         {
@@ -99,10 +100,10 @@ export function ResetPasswordDialog({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <KeyRound className="h-5 w-5" />{' '}
-                        {t('user.reset_password.title')}
+                        {tUser('user.reset_password.title')}
                     </DialogTitle>
                     <DialogDescription>
-                        {t('user.reset_password.desc')}
+                        {tUser('user.reset_password.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
@@ -129,7 +130,7 @@ export function ResetPasswordDialog({
                     {generatedUrl ? (
                         <div className="grid gap-3">
                             <p className="text-muted-foreground text-sm">
-                                {t('user.reset_password.generated_desc')}
+                                {tUser('user.reset_password.generated_desc')}
                             </p>
                             <div className="grid grid-cols-[1fr_auto] gap-2">
                                 <input
@@ -156,9 +157,7 @@ export function ResetPasswordDialog({
                                     rows={3}
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
-                                    placeholder={t(
-                                        'user.reset_password.reason_placeholder',
-                                    )}
+                                    placeholder={tUser('user.reset_password.reason_placeholder')}
                                     maxLength={200}
                                 />
                                 <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
@@ -176,7 +175,7 @@ export function ResetPasswordDialog({
                                     disabled={isBusy || !rule.valid}
                                 >
                                     <Mail className="mr-2 h-4 w-4" />{' '}
-                                    {t('user.reset_password.send')}
+                                    {tUser('user.reset_password.send')}
                                 </Button>
 
                                 <Button
@@ -186,7 +185,7 @@ export function ResetPasswordDialog({
                                     disabled={isBusy || !rule.valid}
                                 >
                                     <Link2 className="mr-2 h-4 w-4" />{' '}
-                                    {t('user.reset_password.generate')}
+                                    {tUser('user.reset_password.generate')}
                                 </Button>
                             </div>
                         </>

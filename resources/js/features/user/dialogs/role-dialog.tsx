@@ -29,6 +29,8 @@ export function RoleDialog({
     autoReload = true,
 }: RoleDialogProps) {
     const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
+    const { t: tRole } = useTranslation('management/role');
     const [query, setQuery] = React.useState('');
     const [selected, setSelected] = React.useState<Set<number>>(
         () => new Set((user.roles ?? []).map((r) => r.id)),
@@ -88,10 +90,10 @@ export function RoleDialog({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <ShieldCheck className="h-5 w-5" />{' '}
-                        {t('user.actions.manage_roles')}
+                        {tUser('user.actions.manage_roles')}
                     </DialogTitle>
                     <DialogDescription>
-                        {t('user.roles.dialog_desc')}
+                        {tUser('user.roles.dialog_desc')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -118,9 +120,7 @@ export function RoleDialog({
                     <div className="relative flex-1">
                         <Search className="pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 opacity-50" />
                         <Input
-                            placeholder={t(
-                                'management.role.search_placeholder',
-                            )}
+                            placeholder={tRole('search_placeholder')}
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             className="pl-8"
@@ -142,7 +142,7 @@ export function RoleDialog({
                     <div className="divide-y">
                         {filtered.length === 0 ? (
                             <div className="text-muted-foreground p-4 text-center text-sm">
-                                {t('management.role.empty')}
+                                {tRole('empty')}
                             </div>
                         ) : (
                             filtered.map((role) => {

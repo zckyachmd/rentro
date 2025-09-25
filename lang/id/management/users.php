@@ -30,4 +30,9 @@ return [
         'sent'   => 'Email verifikasi juga telah dikirim.',
         'failed' => 'Email verifikasi tidak terkirim. Pengguna dapat meminta verifikasi dari profil atau Anda dapat mengirim ulang.',
     ],
+    'errors' => [
+        'self_edit_forbidden'      => 'Anda tidak diperbolehkan mengubah peran Anda sendiri. Hubungi administrator.',
+        'cannot_edit_super'        => 'Anda tidak memiliki izin untuk mengubah peran pengguna dengan peran Super Admin.',
+        'cannot_remove_last_super' => 'Tidak dapat menghapus peran Super Admin terakhir. Minimal harus ada satu pengguna dengan peran Super Admin.',
+    ],
 ];

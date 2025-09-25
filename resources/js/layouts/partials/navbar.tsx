@@ -58,7 +58,7 @@ export default function Navbar({
     user,
     activeParentId,
 }: NavbarProps) {
-    const { t, i18n } = useTranslation();
+    const { t: tNav, i18n } = useTranslation('nav');
     const { setLocale } = useLocale();
     const [mobileOpen, setMobileOpen] = React.useState(false);
     const [mobileSection, setMobileSection] = React.useState<string>('');
@@ -95,7 +95,7 @@ export default function Navbar({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                aria-label={t('nav.open_menu')}
+                                aria-label={tNav('nav.open_menu')}
                                 className="size-9 md:hidden"
                             >
                                 <PanelRight className="h-5 w-5" />
@@ -107,9 +107,9 @@ export default function Navbar({
                         >
                             <div className="flex h-full min-h-0 flex-col">
                                 <SheetHeader className="sr-only">
-                                    <SheetTitle>{t('nav.nav_menu')}</SheetTitle>
+                                    <SheetTitle>{tNav('nav.nav_menu')}</SheetTitle>
                                     <SheetDescription>
-                                        {t('nav.nav_menu_desc')}
+                                        {tNav('nav.nav_menu_desc')}
                                     </SheetDescription>
                                 </SheetHeader>
                                 <div className="flex h-14 shrink-0 items-center border-b px-4">
@@ -131,7 +131,7 @@ export default function Navbar({
                                                 onChange={(e) =>
                                                     setQ(e.target.value)
                                                 }
-                                                placeholder={t(
+                                                placeholder={tNav(
                                                     'nav.search.placeholder',
                                                 )}
                                                 className="h-9 pl-8"
@@ -142,7 +142,7 @@ export default function Navbar({
                                             variant="secondary"
                                             className="h-9"
                                         >
-                                            {t('nav.go')}
+                                            {tNav('nav.go')}
                                         </Button>
                                     </form>
 
@@ -162,17 +162,17 @@ export default function Navbar({
                     </Sheet>
 
                     {/* Desktop: collapse/expand sidebar */}
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={onToggleCollapsed}
-                        aria-label={t('nav.sidebar')}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={onToggleCollapsed}
+                        aria-label={tNav('nav.sidebar.label')}
                         className="hidden size-9 md:inline-flex"
                         title={
                             collapsed
-                                ? t('nav.sidebar.expand')
-                                : t('nav.sidebar.collapse')
+                                ? tNav('nav.sidebar.expand')
+                                : tNav('nav.sidebar.collapse')
                         }
                     >
                         {collapsed ? (
@@ -194,12 +194,12 @@ export default function Navbar({
                         <Input
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
-                            placeholder={t('nav.search.placeholder')}
+                            placeholder={tNav('nav.search.placeholder')}
                             className="h-9 pl-8"
                         />
                     </div>
                     <Button type="submit" variant="secondary" className="h-9">
-                        {t('nav.search')}
+                        {tNav('nav.search.label')}
                     </Button>
                 </form>
 
@@ -212,68 +212,48 @@ export default function Navbar({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                aria-label={t('nav.notifications')}
+                                aria-label={tNav('nav.notifications.label')}
                             >
                                 <Bell className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-72">
                             <DropdownMenuLabel>
-                                {t('nav.notifications')}
+                                {tNav('nav.notifications.label')}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-muted-foreground">
-                                {t('nav.notifications.empty')}
+                                {tNav('nav.notifications.empty')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Language switcher */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                aria-label={t('nav.language')}
-                            >
-                                {i18n.language?.toUpperCase() || 'EN'}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuLabel>
-                                {t('nav.language')}
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onSelect={() => {
-                                    setLocale('en');
-                                    void postJson(route('preferences.locale'), {
-                                        locale: 'en',
-                                    }).catch(() => {});
-                                }}
-                            >
-                                {t('nav.lang.en')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onSelect={() => {
-                                    setLocale('id');
-                                    void postJson(route('preferences.locale'), {
-                                        locale: 'id',
-                                    }).catch(() => {});
-                                }}
-                            >
-                                {t('nav.lang.id')}
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {/* Language toggle */}
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-label={tNav('nav.language')}
+                        title={tNav('nav.language')}
+                        onClick={() => {
+                            const next = i18n.language?.toLowerCase().startsWith('id')
+                                ? 'en'
+                                : 'id';
+                            setLocale(next);
+                            void postJson(route('preferences.locale'), {
+                                locale: next,
+                            }).catch(() => {});
+                        }}
+                    >
+                        {i18n.language?.toLowerCase().startsWith('id') ? 'ID' : 'EN'}
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                aria-label={t('nav.user_menu', 'User Menu')}
+                                aria-label={tNav('nav.user_menu', 'User Menu')}
                             >
                                 <User className="h-5 w-5" />
                             </Button>
@@ -285,23 +265,23 @@ export default function Navbar({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href="#">
-                                    {t('nav.overview', 'Overview')}
+                                    {tNav('nav.overview', 'Overview')}
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="#">{t('nav.settings')}</Link>
+                                <Link href="#">{tNav('nav.settings')}</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="#">{t('nav.billing')}</Link>
+                                <Link href="#">{tNav('nav.billing')}</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href={route('profile.index')}>
-                                    {t('nav.profile')}
+                                    {tNav('nav.profile')}
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="#">{t('nav.help')}</Link>
+                                <Link href="#">{tNav('nav.help')}</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
@@ -312,7 +292,7 @@ export default function Navbar({
                                     className="flex w-full items-center gap-2"
                                 >
                                     <LogOut className="h-4 w-4" />{' '}
-                                    {t('nav.logout')}
+                                    {tNav('nav.logout')}
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>

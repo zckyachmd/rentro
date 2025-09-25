@@ -1,0 +1,88 @@
+{
+    "2fa": {
+        "after_add": "Setelah menambahkan, masukkan 6 digit kode OTP di bawah lalu klik Konfirmasi.",
+        "cancelled": "Proses 2FA dibatalkan.",
+        "confirm": "Konfirmasi",
+        "confirmed": "2FA berhasil dikonfirmasi.",
+        "desc": "Amankan akun dengan kode tambahan saat login.",
+        "disable": "Nonaktifkan 2FA",
+        "disabled": "2FA dinonaktifkan.",
+        "enable": "Aktifkan 2FA",
+        "enabled_now": "2FA saat ini aktif.",
+        "guide": "Panduan:",
+        "hide_codes": "Sembunyikan Recovery Codes",
+        "invalid_code": "Kode OTP tidak valid atau kedaluwarsa.",
+        "loading_qr": "Memuat QR…",
+        "long_desc": "Gunakan aplikasi autentikator (Google Authenticator, 1Password, dll) untuk menghasilkan kode OTP saat login.",
+        "none_to_cancel": "Tidak ada proses 2FA yang perlu dibatalkan.",
+        "not_enabled": "2FA belum aktif.",
+        "not_initiated": "2FA belum diinisiasi.",
+        "otp": "Kode OTP",
+        "placeholder_otp": "Masukkan 6 digit kode",
+        "prepare_started": "Persiapan 2FA dimulai. Scan QR & konfirmasi OTP.",
+        "recovery": {
+            "copied": "Recovery codes disalin",
+            "copy": "Copy Recovery Codes",
+            "needs_enabled": "Aktifkan & konfirmasi 2FA terlebih dahulu.",
+            "note": "Simpan kode berikut di tempat aman. Setiap kode hanya dapat digunakan sekali.",
+            "regen": "Regenerate Codes",
+            "updated": "Recovery codes diperbarui."
+        },
+        "scan_qr": "Scan QR ini di aplikasi autentikator Anda:",
+        "show_codes": "Tampilkan Recovery Codes",
+        "step1": "Buka aplikasi autentikator (Google Authenticator, 1Password, dsb.).",
+        "step2": "Pilih tambah akun → scan QR di atas.",
+        "step3": "Jika kamera tidak tersedia, masukkan kode secara manual (aplikasi akan membaca konten QR).",
+        "title": "Autentikasi 2 Langkah",
+        "title_with_totp": "Autentikasi 2 Langkah (TOTP)"
+    },
+    "desc": "Kelola password, autentikasi dua langkah, dan sesi/perangkat yang terhubung.",
+    "disabled": "Nonaktif",
+    "email": {
+        "desc": "Status verifikasi alamat email Anda.",
+        "resend_button": "Kirim email verifikasi",
+        "resend_desc": "Kami akan mengirim email verifikasi ke alamat email akun Anda.",
+        "resend_title": "Kirim ulang email verifikasi?",
+        "title": "Verifikasi Email",
+        "unverified": "Belum diverifikasi",
+        "verified": "Terverifikasi"
+    },
+    "enabled": "Aktif",
+    "password": {
+        "change_desc": "Pastikan password kuat dan unik.",
+        "change_title": "Ubah Password",
+        "confirm": "Konfirmasi Password Baru",
+        "confirm_placeholder": "Konfirmasi password baru",
+        "current": "Password Saat Ini",
+        "current_placeholder": "Masukan password saat ini",
+        "desc": "Ganti password Anda secara berkala.",
+        "last_changed": "Terakhir diubah:",
+        "new": "Password Baru",
+        "new_placeholder": "Masukan password baru",
+        "title": "Password"
+    },
+    "password_updated": "Password berhasil diperbarui.",
+    "resend": "Kirim Ulang",
+    "sending": "Mengirim…",
+    "session": {
+        "logged_out": "Sesi berhasil di-logout."
+    },
+    "sessions": {
+        "cannot_logout_current": "Anda tidak dapat logout sesi saat ini dari sini.",
+        "count": "{{count}} sesi aktif terdaftar",
+        "current": "Aktif Saat Ini",
+        "desc": "Lihat sesi aktif dan cabut akses perangkat lain.",
+        "device": "Perangkat",
+        "empty": "Belum ada data sesi yang ditampilkan.",
+        "ip_active": "IP {{ip}} • Aktif {{last_active}}",
+        "not_found_or_not_owned": "Sesi tidak ditemukan atau bukan milik Anda.",
+        "revoke_others": "Logout dari semua sesi lain",
+        "revoked_others": "Berhasil logout dari semua sesi lain."
+    },
+    "tabs": {
+        "2fa": "2FA",
+        "password": "Password",
+        "sessions": "Sesi & Perangkat"
+    },
+    "title": "Keamanan Akun"
+}

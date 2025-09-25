@@ -17,7 +17,7 @@ function uniq<T>(arr: T[]): T[] {
     return Array.from(new Set(arr));
 }
 
-function discoverNamespacesFor(lang: string): string[] {
+export function discoverNamespacesFor(lang: string): string[] {
     const prefix = `../locales/${lang.toLowerCase()}/`;
     const suffix = '.json';
 
@@ -134,14 +134,28 @@ const dynamicBackend = {
     },
 };
 
+export async function preloadLocaleNamespaces(locale?: string) {
+    const active = (locale || i18n.language || fallbackSetting).toLowerCase();
+    const base = active.split('-')[0];
+    const core = (i18n.options?.ns as string[]) || ['common'];
+    const discovered = uniq([
+        ...discoverNamespacesFor(active),
+        ...(base !== active ? discoverNamespacesFor(base) : []),
+    ]);
+    const all = uniq([...core, ...discovered]);
+    // Ensure resources are fetched for all namespaces
+    await i18n.reloadResources([active], all);
+    await i18n.loadNamespaces(all);
+}
+
 if (!i18n.isInitialized) {
     void i18n
         .use(dynamicBackend as unknown as import('i18next').Module)
         .use(initReactI18next)
         .init({
-            ns: ['common'],
+            ns: ['common', 'menu', 'validation', 'nav', 'auth'],
             defaultNS: 'common',
-            fallbackNS: 'common',
+            fallbackNS: ['common', 'menu', 'validation', 'nav', 'auth'],
             supportedLngs: supported,
             lng: 'en',
             fallbackLng: (code?: string) => {
@@ -190,17 +204,16 @@ if (!i18n.isInitialized) {
                     : String(env.DEV ?? '').toLowerCase() === 'true';
             const preloadAll = devFlag || envPreload;
 
-            if (!preloadAll) {
-                return;
-            }
-
-            const candidates = uniq([
-                ...discoverNamespacesFor(active),
-                ...(base !== active ? discoverNamespacesFor(base) : []),
-            ]);
-
-            if (candidates.length > 0) {
-                return i18n.loadNamespaces(candidates);
+            if (preloadAll) {
+                const core = (i18n.options?.ns as string[]) || ['common'];
+                const candidates = uniq([
+                    ...core,
+                    ...discoverNamespacesFor(active),
+                    ...(base !== active ? discoverNamespacesFor(base) : []),
+                ]);
+                if (candidates.length > 0) {
+                    return i18n.loadNamespaces(candidates);
+                }
             }
         });
 }

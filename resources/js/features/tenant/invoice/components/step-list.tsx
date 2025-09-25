@@ -17,51 +17,48 @@ function Step({ n, title, desc }: { n: number; title: string; desc: string }) {
 }
 
 export default function StepList({ isManualFlow }: { isManualFlow: boolean }) {
-    const { t } = useTranslation();
+    const { t: tInv } = useTranslation('tenant/invoice');
     return (
-        <Section
-            title={t('tenant.invoice.steps.title')}
-            subtitle={t('tenant.invoice.steps.subtitle')}
-        >
+        <Section title={tInv('steps.title')} subtitle={tInv('steps.subtitle')}>
             {isManualFlow ? (
                 <div className="space-y-2">
                     <Step
                         n={1}
-                        title={t('tenant.invoice.steps.manual.1.title')}
-                        desc={t('tenant.invoice.steps.manual.1.desc')}
+                        title={tInv('steps.manual.1.title')}
+                        desc={tInv('steps.manual.1.desc')}
                     />
                     <Step
                         n={2}
-                        title={t('tenant.invoice.steps.manual.2.title')}
-                        desc={t('tenant.invoice.steps.manual.2.desc')}
+                        title={tInv('steps.manual.2.title')}
+                        desc={tInv('steps.manual.2.desc')}
                     />
                     <Step
                         n={3}
-                        title={t('tenant.invoice.steps.manual.3.title')}
-                        desc={t('tenant.invoice.steps.manual.3.desc')}
+                        title={tInv('steps.manual.3.title')}
+                        desc={tInv('steps.manual.3.desc')}
                     />
                     <Step
                         n={4}
-                        title={t('tenant.invoice.steps.manual.4.title')}
-                        desc={t('tenant.invoice.steps.manual.4.desc')}
+                        title={tInv('steps.manual.4.title')}
+                        desc={tInv('steps.manual.4.desc')}
                     />
                 </div>
             ) : (
                 <div className="space-y-2">
                     <Step
                         n={1}
-                        title={t('tenant.invoice.steps.va.1.title')}
-                        desc={t('tenant.invoice.steps.va.1.desc')}
+                        title={tInv('steps.va.1.title')}
+                        desc={tInv('steps.va.1.desc')}
                     />
                     <Step
                         n={2}
-                        title={t('tenant.invoice.steps.va.2.title')}
-                        desc={t('tenant.invoice.steps.va.2.desc')}
+                        title={tInv('steps.va.2.title')}
+                        desc={tInv('steps.va.2.desc')}
                     />
                     <Step
                         n={3}
-                        title={t('tenant.invoice.steps.va.3.title')}
-                        desc={t('tenant.invoice.steps.va.3.desc')}
+                        title={tInv('steps.va.3.title')}
+                        desc={tInv('steps.va.3.desc')}
                     />
                 </div>
             )}

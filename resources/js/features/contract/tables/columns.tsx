@@ -370,9 +370,7 @@ export const createColumns = (
                                     }
                                 >
                                     <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t(
-                                        'management/contract:autorenew.stop_action',
-                                    )}
+                                    {i18n.t('contract.autorenew.stop_action')}
                                 </DropdownMenuItem>
                             )}
                             {!row.original.auto_renew && canStartRenew && (
@@ -382,9 +380,7 @@ export const createColumns = (
                                     }
                                 >
                                     <RefreshCw className="mr-2 h-4 w-4" />{' '}
-                                    {i18n.t(
-                                        'management/contract:autorenew.start_action',
-                                    )}
+                                    {i18n.t('contract.autorenew.start_action')}
                                 </DropdownMenuItem>
                             )}
 

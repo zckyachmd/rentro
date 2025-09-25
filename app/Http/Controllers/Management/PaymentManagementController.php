@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Enum\InvoiceStatus;
 use App\Enum\PaymentMethod;
 use App\Enum\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\Payment\AckRequest as PaymentAckRequest;
 use App\Http\Requests\Management\Payment\StorePaymentRequest;
 use App\Http\Requests\Management\Payment\VoidRequest as PaymentVoidRequest;
+use App\Models\AppSetting;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Contracts\InvoiceServiceInterface;
@@ -85,15 +87,15 @@ class PaymentManagementController extends Controller
         $payload = $this->tablePaginate($page);
 
         // Load manual bank accounts for admin manual transfer input
-        $manualBanks = \App\Models\AppSetting::config('payments.manual_bank_accounts', []);
+        $manualBanks = AppSetting::config('payments.manual_bank_accounts', []);
 
-        $invoiceCandidates = \App\Models\Invoice::query()
+        $invoiceCandidates = Invoice::query()
             ->with(['contract:id,user_id,room_id', 'contract.tenant:id,name', 'contract.room:id,number'])
-            ->whereIn('status', [\App\Enum\InvoiceStatus::PENDING->value, \App\Enum\InvoiceStatus::OVERDUE->value])
+            ->whereIn('status', [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value])
             ->orderByDesc('id')
             ->limit(50)
             ->get()
-            ->map(function (\App\Models\Invoice $inv) {
+            ->map(function (Invoice $inv) {
                 $contract = $inv->contract;
                 $tenant   = $contract?->tenant;
                 $room     = $contract?->room;
@@ -151,13 +153,13 @@ class PaymentManagementController extends Controller
         $outstanding = (int) $totals['outstanding'];
 
         if ($outstanding <= 0) {
-            return back()->with('error', __('management.payments.invoice_already_paid'));
+            return back()->with('error', __('management/payments.invoice_already_paid'));
         }
         if ((int) $data['amount_cents'] <= 0) {
-            return back()->with('error', __('management.payments.amount_positive'));
+            return back()->with('error', __('management/payments.amount_positive'));
         }
         if ((int) $data['amount_cents'] > $outstanding) {
-            return back()->with('error', __('management.payments.amount_exceeds_outstanding'));
+            return back()->with('error', __('management/payments.amount_exceeds_outstanding'));
         }
 
         $payment = $this->payments->createPayment(
@@ -179,14 +181,14 @@ class PaymentManagementController extends Controller
             ],
         );
 
-        return back()->with('success', __('management.payments.created'));
+        return back()->with('success', __('management/payments.created'));
     }
 
     public function void(PaymentVoidRequest $request, Payment $payment)
     {
         $request->validated();
         if ($payment->status === PaymentStatus::CANCELLED) {
-            return back()->with('success', __('management.payments.void.already'));
+            return back()->with('success', __('management/payments.void.already'));
         }
 
         $this->payments->voidPayment($payment, (string) $request->string('reason'), $request->user());
@@ -201,7 +203,7 @@ class PaymentManagementController extends Controller
             ],
         );
 
-        return back()->with('success', __('management.payments.void.success'));
+        return back()->with('success', __('management/payments.void.success'));
     }
 
     public function show(Request $request, Payment $payment)
@@ -424,7 +426,7 @@ class PaymentManagementController extends Controller
             !in_array($payment->status->value, [PaymentStatus::REVIEW->value, PaymentStatus::PENDING->value], true)
             || (string) $payment->method->value !== PaymentMethod::TRANSFER->value
         ) {
-            return back()->with('error', __('management.payments.ack.invalid_state'));
+            return back()->with('error', __('management/payments.ack.invalid_state'));
         }
         // No admin attachments during review per latest requirements
 
@@ -457,7 +459,7 @@ class PaymentManagementController extends Controller
                 $this->payments->recalculateInvoice($inv);
             }
 
-            return back()->with('success', __('management.payments.ack.confirmed'));
+            return back()->with('success', __('management/payments.ack.confirmed'));
         }
 
         // Reject path requires reason
@@ -472,6 +474,6 @@ class PaymentManagementController extends Controller
             'meta'   => $meta,
         ]);
 
-        return back()->with('success', __('management.payments.ack.rejected'));
+        return back()->with('success', __('management/payments.ack.rejected'));
     }
 }

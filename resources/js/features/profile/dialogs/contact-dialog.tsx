@@ -53,6 +53,8 @@ export default function ContactDialog({
     onSubmit,
 }: ContactDialogProps) {
     const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tEnum } = useTranslation('enum');
     const setField = <K extends keyof ContactValues>(
         key: K,
         v: ContactValues[K],
@@ -64,18 +66,18 @@ export default function ContactDialog({
                 <DialogHeader>
                     <DialogTitle>
                         {mode === 'create'
-                            ? t('profile.contact.dialog.create_title')
-                            : t('profile.contact.dialog.edit_title')}
+                            ? tProfile('contact.dialog.create_title')
+                            : tProfile('contact.dialog.edit_title')}
                     </DialogTitle>
                     <p className="text-muted-foreground mt-2 text-sm">
-                        {t('profile.contact.dialog.desc')}
+                        {tProfile('contact.dialog.desc')}
                     </p>
                 </DialogHeader>
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="space-y-1.5">
                             <Label htmlFor="c-name">
-                                {t('profile.contact.fields.name_label')}{' '}
+                                {tProfile('contact.fields.name_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Input
@@ -85,8 +87,8 @@ export default function ContactDialog({
                                     setField('name', e.target.value)
                                 }
                                 required
-                                placeholder={t(
-                                    'profile.contact.fields.name_placeholder',
+                                placeholder={tProfile(
+                                    'contact.fields.name_placeholder',
                                 )}
                             />
 
@@ -101,13 +103,13 @@ export default function ContactDialog({
                                 />
                             ) : (
                                 <p className="text-muted-foreground text-xs">
-                                    {t('profile.contact.fields.name_hint')}
+                                    {tProfile('contact.fields.name_hint')}
                                 </p>
                             )}
                         </div>
                         <div className="space-y-1.5">
                             <Label htmlFor="c-phone">
-                                {t('profile.contact.fields.phone_label')}{' '}
+                                {tProfile('contact.fields.phone_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Input
@@ -118,8 +120,8 @@ export default function ContactDialog({
                                     setField('phone', e.target.value)
                                 }
                                 required
-                                placeholder={t(
-                                    'profile.contact.fields.phone_placeholder',
+                                placeholder={tProfile(
+                                    'contact.fields.phone_placeholder',
                                 )}
                                 autoComplete="tel"
                             />
@@ -130,7 +132,7 @@ export default function ContactDialog({
                                 />
                             ) : (
                                 <p className="text-muted-foreground text-xs">
-                                    {t('profile.contact.fields.phone_hint')}
+                                    {tProfile('contact.fields.phone_hint')}
                                 </p>
                             )}
                         </div>
@@ -139,7 +141,7 @@ export default function ContactDialog({
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="space-y-1.5">
                             <Label htmlFor="c-rel">
-                                {t('profile.contact.fields.relationship_label')}{' '}
+                                {tProfile('contact.fields.relationship_label')}{' '}
                                 <span className="text-destructive">*</span>
                             </Label>
                             <Select
@@ -150,15 +152,18 @@ export default function ContactDialog({
                             >
                                 <SelectTrigger>
                                     <SelectValue
-                                        placeholder={t(
-                                            'profile.contact.fields.pick_relationship',
+                                        placeholder={tProfile(
+                                            'contact.fields.pick_relationship',
                                         )}
                                     />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {relationshipOptions.map((r) => (
                                         <SelectItem key={r} value={r}>
-                                            {r}
+                                            {tEnum(
+                                                `emergency_relationship.${r}`,
+                                                { defaultValue: r },
+                                            )}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -181,8 +186,8 @@ export default function ContactDialog({
                                 onChange={(e) =>
                                     setField('email', e.target.value)
                                 }
-                                placeholder={t(
-                                    'profile.contact.fields.email_placeholder',
+                                placeholder={tProfile(
+                                    'contact.fields.email_placeholder',
                                 )}
                             />
                             <InputError name="email" />
@@ -190,9 +195,7 @@ export default function ContactDialog({
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="c-address">
-                            {t('profile.address.label')}
-                        </Label>
+                            <Label htmlFor="c-address">{tProfile('address.label')}</Label>
                         <Textarea
                             id="c-address"
                             value={values.address_line || ''}
@@ -200,12 +203,12 @@ export default function ContactDialog({
                                 setField('address_line', e.target.value)
                             }
                             rows={3}
-                            placeholder={t(
-                                'profile.contact.fields.address_placeholder',
+                            placeholder={tProfile(
+                                'contact.fields.address_placeholder',
                             )}
                         />
                         <p className="text-muted-foreground text-xs">
-                            {t('profile.contact.fields.address_hint')}
+                            {tProfile('contact.fields.address_hint')}
                         </p>
                         <InputError name="address_line" />
                     </div>

@@ -41,10 +41,7 @@ export default function InvoiceLookup({
                 emptyText={
                     options.length
                         ? t('ui.select.no_results')
-                        : t(
-                              'payment.lookup.empty_candidates',
-                              'No candidate invoices yet',
-                          )
+                        : t('payment.lookup.empty_candidates', 'No candidate invoices yet')
                 }
             />
             <InputError message={errorMessage} />

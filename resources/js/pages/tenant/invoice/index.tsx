@@ -32,7 +32,8 @@ import type {
 } from '@/types/tenant';
 
 export default function TenantInvoiceIndex(props: PageProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const { t: tInv } = useTranslation('tenant/invoice');
     const { invoices: paginator, query = {}, options = {} } = props;
     const rows: TenantInvoiceItem[] = React.useMemo(
         () => paginator?.data ?? [],
@@ -120,16 +121,14 @@ export default function TenantInvoiceIndex(props: PageProps) {
     const [pay, setPay] = React.useState<null | { id: string; number: string }>(
         null,
     );
-    const columns = React.useMemo(
-        () =>
-            createColumns({
-                onPay: (row: TenantInvoiceItem) =>
-                    setPay({ id: row.id, number: row.number }),
-                onShowDetail: (row: TenantInvoiceItem) =>
-                    setDetail({ id: row.id, number: row.number }),
-            }),
-        [],
-    );
+    const lang = i18n.language;
+    const columns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onPay: (row: TenantInvoiceItem) => setPay({ id: row.id, number: row.number }),
+            onShowDetail: (row: TenantInvoiceItem) => setDetail({ id: row.id, number: row.number }),
+        });
+    }, [lang]);
 
     React.useEffect(() => {
         const handler = () => {
@@ -145,23 +144,20 @@ export default function TenantInvoiceIndex(props: PageProps) {
     }, []);
 
     return (
-        <AuthLayout
-            pageTitle={t('tenant.invoice.title')}
-            pageDescription={t('tenant.invoice.desc')}
-        >
+        <AuthLayout pageTitle={tInv('title')} pageDescription={tInv('desc')}>
             <div className="space-y-6">
                 {/* Filter */}
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                            {t('tenant.invoice.filter')}
+                            {tInv('filter')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="grid items-end gap-3 md:grid-cols-2">
                             <div>
                                 <Label htmlFor="invoice-search">
-                                    {t('tenant.invoice.search')}
+                                    {tInv('search')}
                                 </Label>
                                 <div className="relative">
                                     <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
@@ -178,10 +174,8 @@ export default function TenantInvoiceIndex(props: PageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder={t(
-                                            'tenant.invoice.search_placeholder',
-                                        )}
-                                        aria-label={t('tenant.invoice.search')}
+                                        placeholder={tInv('search_placeholder')}
+                                        aria-label={tInv('search')}
                                     />
                                 </div>
                             </div>

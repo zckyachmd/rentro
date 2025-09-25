@@ -38,6 +38,7 @@ export default function RoleUpsertDialog({
     guards = [],
 }: RoleUpsertDialogProps & { guards?: string[] }) {
     const { t } = useTranslation();
+    const { t: tRole } = useTranslation('role');
     const guardOptions = React.useMemo(
         () => Array.from(new Set((guards || []).filter(Boolean))),
         [guards],
@@ -94,10 +95,10 @@ export default function RoleUpsertDialog({
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEdit ? t('role.edit_title') : t('role.create_title')}
+                        {isEdit ? tRole('edit_title') : tRole('create_title')}
                     </DialogTitle>
                     <DialogDescription>
-                        {isEdit ? t('role.edit_desc') : t('role.create_desc')}
+                        {isEdit ? tRole('edit_desc') : tRole('create_desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-2">
@@ -107,26 +108,24 @@ export default function RoleUpsertDialog({
                             disabled={saving}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder={t('role.name_placeholder')}
+                            placeholder={tRole('name_placeholder')}
                             className="h-10 w-full text-sm"
                         />
                         <InputError name="name" />
                     </div>
                     <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 whitespace-nowrap">
-                            <Label>Guard</Label>
+                            <Label>{tRole('guard')}</Label>
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Info
                                             className="text-muted-foreground h-4 w-4 shrink-0"
-                                            aria-label={t('role.guard_info')}
+                                            aria-label={tRole('guard_info')}
                                         />
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p className="max-w-[240px] text-xs">
-                                            {t('role.guard_hint')}
-                                        </p>
+                                        <p className="max-w-[240px] text-xs">{tRole('guard_hint')}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -137,12 +136,10 @@ export default function RoleUpsertDialog({
                             onValueChange={(v) => setGuardName(v)}
                         >
                             <SelectTrigger
-                                aria-label={t('role.pick_guard')}
+                                aria-label={tRole('pick_guard')}
                                 className="h-10 w-full justify-between text-sm"
                             >
-                                <SelectValue
-                                    placeholder={t('role.pick_guard')}
-                                />
+                                <SelectValue placeholder={tRole('pick_guard')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {guardOptions.map((g) => (
@@ -156,9 +153,7 @@ export default function RoleUpsertDialog({
                     </div>
 
                     {!isEdit && (
-                        <p className="text-muted-foreground mt-1 text-xs">
-                            {t('role.permissions_hint')}
-                        </p>
+                        <p className="text-muted-foreground mt-1 text-xs">{tRole('permissions_hint')}</p>
                     )}
                 </div>
                 <DialogFooter>

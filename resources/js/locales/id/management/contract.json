@@ -5,8 +5,6 @@
     "paid_in_full": "Lunas Penuh",
     "costs": "Biaya",
     "tenant_room_title": "Penyewa & Kamar",
-    "billing_period": "Periode Tagihan",
-    "billing_day": "Tanggal Penagihan",
     "select_period": "Pilih periode",
     "duration": {
         "months_label": "Durasi (bulan)",
@@ -126,9 +124,7 @@
         "stop_desc": "Kontrak tidak akan diperpanjang otomatis di akhir periode.",
         "start_desc": "Kontrak akan diperpanjang otomatis di akhir periode.",
         "reason_label": "Alasan penghentian",
-        "reason_placeholder": "Contoh: permintaan tenant, penyesuaian kontrak, dll.",
-        "stop_action": "Hentikan perpanjangan otomatis",
-        "start_action": "Nyalakan perpanjangan otomatis"
+        "reason_placeholder": "Contoh: permintaan tenant, penyesuaian kontrak, dll."
     },
     "table": {
         "view_detail_title": "Lihat kontrak {{number}}",

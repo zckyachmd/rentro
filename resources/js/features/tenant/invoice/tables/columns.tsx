@@ -92,7 +92,7 @@ export const createColumns = (opts?: {
     }),
     makeColumn<TenantInvoiceItem>({
         id: 'outstanding_cents',
-        title: i18n.t('tenant.invoice.outstanding'),
+        title: i18n.t('tenant/invoice:outstanding'),
         className: COL.outstanding,
         sortable: true,
         cell: ({ row }) => (
@@ -118,7 +118,7 @@ export const createColumns = (opts?: {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`${i18n.t('tenant.invoice.actions_for', { number: inv.number })}`}
+                                aria-label={`${i18n.t('tenant/invoice:actions_for', { number: inv.number })}`}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>

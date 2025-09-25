@@ -134,7 +134,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
     }),
     makeColumn<T>({
         id: 'outstanding',
-        title: i18n.t('invoice.outstanding'),
+        title: i18n.t('table.columns.outstanding', { ns: 'management/invoice' }),
         className: COL.outstanding,
         cell: ({ row }) => (
             <div className={COL.outstanding}>
@@ -156,7 +156,8 @@ export const createColumns = <T extends BaseInvoiceRow>(
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={t('invoice.actions_for', {
+                                aria-label={t('table.actions_for', {
+                                    ns: 'management/invoice',
                                     number: inv.number,
                                 })}
                             >
@@ -178,7 +179,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                 <DropdownMenuItem asChild>
                                     <Link href={inv.ticket_url} target="_blank">
                                         <Receipt className="mr-2 h-4 w-4" />
-                                        {t('invoice.view_ticket')}
+                                        {t('table.view_ticket', { ns: 'management/invoice' })}
                                     </Link>
                                 </DropdownMenuItem>
                             ) : null}
@@ -193,7 +194,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                     onClick={() => opts?.onExtendDue?.(inv)}
                                 >
                                     <Clock3 className="mr-2 h-4 w-4" />{' '}
-                                    {t('invoice.extend_due.action')}
+                                    {t('extend_due.action', { ns: 'management/invoice' })}
                                 </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuItem

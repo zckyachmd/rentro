@@ -1,0 +1,88 @@
+{
+    "2fa": {
+        "after_add": "After adding, enter the 6-digit OTP below and click Confirm.",
+        "cancelled": "2FA process cancelled.",
+        "confirm": "Confirm",
+        "confirmed": "2FA confirmed successfully.",
+        "desc": "Secure your account with an extra code during login.",
+        "disable": "Disable 2FA",
+        "disabled": "2FA disabled.",
+        "enable": "Enable 2FA",
+        "enabled_now": "2FA is currently enabled.",
+        "guide": "Guide:",
+        "hide_codes": "Hide Recovery Codes",
+        "invalid_code": "Invalid or expired OTP code.",
+        "loading_qr": "Loading QR…",
+        "long_desc": "Use an authenticator app (Google Authenticator, 1Password, etc.) to generate OTP codes when logging in.",
+        "none_to_cancel": "There is no 2FA process to cancel.",
+        "not_enabled": "2FA is not enabled.",
+        "not_initiated": "2FA has not been initiated.",
+        "otp": "OTP Code",
+        "placeholder_otp": "Enter 6-digit code",
+        "prepare_started": "2FA setup started. Scan QR & confirm OTP.",
+        "recovery": {
+            "copied": "Recovery codes copied",
+            "copy": "Copy Recovery Codes",
+            "needs_enabled": "Enable & confirm 2FA first.",
+            "note": "Keep these codes safe. Each code can be used once.",
+            "regen": "Regenerate Codes",
+            "updated": "Recovery codes updated."
+        },
+        "scan_qr": "Scan this QR code in your authenticator app:",
+        "show_codes": "Show Recovery Codes",
+        "step1": "Open an authenticator app (Google Authenticator, 1Password, etc.).",
+        "step2": "Add an account → scan the QR above.",
+        "step3": "If camera is unavailable, enter the code manually (the app can read the QR content).",
+        "title": "Two-Factor Authentication",
+        "title_with_totp": "Two-Factor Authentication (TOTP)"
+    },
+    "desc": "Manage passwords, two-factor authentication, and sessions/devices.",
+    "disabled": "Disabled",
+    "email": {
+        "desc": "Status of your account email verification.",
+        "resend_button": "Send verification email",
+        "resend_desc": "We will send a verification email to your account address.",
+        "resend_title": "Resend verification email?",
+        "title": "Email Verification",
+        "unverified": "Unverified",
+        "verified": "Verified"
+    },
+    "enabled": "Enabled",
+    "password": {
+        "change_desc": "Ensure your password is strong and unique.",
+        "change_title": "Change Password",
+        "confirm": "Confirm New Password",
+        "confirm_placeholder": "Confirm new password",
+        "current": "Current Password",
+        "current_placeholder": "Enter current password",
+        "desc": "Change your password regularly.",
+        "last_changed": "Last changed:",
+        "new": "New Password",
+        "new_placeholder": "Enter new password",
+        "title": "Password"
+    },
+    "password_updated": "Password updated successfully.",
+    "resend": "Resend",
+    "sending": "Sending…",
+    "session": {
+        "logged_out": "Session has been logged out."
+    },
+    "sessions": {
+        "cannot_logout_current": "You cannot log out the current session here.",
+        "count": "{{count}} active session(s) listed",
+        "current": "Active Now",
+        "desc": "View active sessions and revoke access for other devices.",
+        "device": "Device",
+        "empty": "No session data to display yet.",
+        "ip_active": "IP {{ip}} • Active {{last_active}}",
+        "not_found_or_not_owned": "Session not found or not owned by you.",
+        "revoke_others": "Log out from all other sessions",
+        "revoked_others": "Logged out from all other sessions successfully."
+    },
+    "tabs": {
+        "2fa": "2FA",
+        "password": "Password",
+        "sessions": "Sessions & Devices"
+    },
+    "title": "Account Security"
+}

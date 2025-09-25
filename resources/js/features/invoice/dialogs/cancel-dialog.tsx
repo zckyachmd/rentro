@@ -32,18 +32,19 @@ export default function CancelInvoiceDialog({
     }, [open]);
     const rule = useLengthRule(reason, { min: 20, max: 200, required: true });
     const { t } = useTranslation();
+    const { t: tInvoice } = useTranslation('management/invoice');
 
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>
-                        {t('invoice.cancel.title')}
+                        {tInvoice('cancel.title')}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                         {target ? (
                             <>
-                                {t('invoice.cancel.desc', {
+                                {tInvoice('cancel.desc', {
                                     number: target.number,
                                 })}
                             </>
@@ -51,11 +52,11 @@ export default function CancelInvoiceDialog({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
-                    <Label>{t('invoice.cancel.reason_label')}</Label>
+                    <Label>{tInvoice('cancel.reason_label')}</Label>
                     <Textarea
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        placeholder={t('invoice.cancel.reason_placeholder')}
+                        placeholder={tInvoice('cancel.reason_placeholder')}
                         required
                         rows={3}
                         autoFocus
@@ -74,7 +75,7 @@ export default function CancelInvoiceDialog({
                         disabled={!rule.valid}
                         onClick={() => onConfirm(reason)}
                     >
-                        {t('invoice.cancel_now')}
+                        {tInvoice('cancel.confirm')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
