@@ -1,0 +1,20 @@
+{
+    "title": "Gedung",
+    "desc": "Kelola master data gedung.",
+    "add": "Tambah Gedung",
+    "search_placeholder": "Cari gedung...",
+    "empty": "Belum ada gedung.",
+    "create_title": "Tambah Gedung",
+    "edit_title": "Ubah Gedung",
+    "form": {
+        "save": "Simpan"
+    },
+    "delete": {
+        "title": "Hapus Gedung",
+        "confirm": "Hapus gedung ini? Tindakan ini tidak dapat dibatalkan.",
+        "confirm_named": "Hapus gedung \"{{name}}\"? Tindakan ini tidak dapat dibatalkan."
+    },
+    "created": "Gedung berhasil ditambahkan.",
+    "updated": "Gedung berhasil diperbarui.",
+    "deleted": "Gedung berhasil dihapus."
+}

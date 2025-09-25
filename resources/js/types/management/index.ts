@@ -164,3 +164,13 @@ export type {
     RoomTypePaginator as ManagementRoomTypePaginator,
     RoomTypesPageProps,
 } from './room-type';
+
+// Building
+export type {
+    BuildingItem,
+    BuildingPaginator,
+    BuildingsPageProps,
+} from './building';
+
+// Floor
+export type { FloorItem, FloorPaginator, FloorsPageProps } from './floor';

@@ -65,8 +65,18 @@ class MenuSeeder extends Seeder
                         'label' => 'menu.structure',
                         'icon'  => 'Building2',
                         'children' => [
-                            ['label' => 'menu.buildings', 'href' => '#', 'icon' => 'Building2'],
-                            ['label' => 'menu.floors', 'href' => '#', 'icon' => 'Layers'],
+                            [
+                                'label' => 'menu.buildings',
+                                'href' => "" . route('management.buildings.index') . "",
+                                'icon' => 'Building2',
+                                'permission' => PermissionName::BUILDING_VIEW,
+                            ],
+                            [
+                                'label' => 'menu.floors',
+                                'href' => "" . route('management.floors.index') . "",
+                                'icon' => 'Layers',
+                                'permission' => PermissionName::FLOOR_VIEW,
+                            ],
                         ],
                     ],
                 ],
