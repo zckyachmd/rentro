@@ -35,7 +35,7 @@ import {
 import UpsertAmenityDialog from '@/features/amenity/dialogs/upsert-amenity-dialog';
 import { createColumns } from '@/features/amenity/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type { AmenitiesPageProps, AmenityItem } from '@/types/management';
 
 type PageProps = AmenitiesPageProps;

@@ -23,7 +23,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type { PageProps, SessionItem, Summary, TabKey } from '@/types/security';
 import { TAB_KEYS } from '@/types/security';
 

@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import { yesterdayISO } from '@/lib/date';
 import type { EditForm, EditPageProps } from '@/types/profile';
 

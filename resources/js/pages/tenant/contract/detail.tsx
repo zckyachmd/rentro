@@ -28,7 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useLengthRule } from '@/hooks/use-length-rule';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import { createAbort, getJson } from '@/lib/api';
 import { formatDate, formatIDR } from '@/lib/format';
 import {

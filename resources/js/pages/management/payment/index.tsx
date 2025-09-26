@@ -24,7 +24,7 @@ import PaymentReviewDialog from '@/features/payment/dialogs/review-dialog';
 import VoidPaymentDialog from '@/features/payment/dialogs/void-dialog';
 import { createColumns } from '@/features/payment/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import { formatIDR } from '@/lib/format';
 import type {
     PaymentIndexPageProps as PageProps,

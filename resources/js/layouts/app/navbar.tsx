@@ -10,7 +10,7 @@ import {
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useLocale } from '@/components/locale-provider';
+import LocaleToggle from '@/components/locale-toggle';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,10 +30,8 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { postJson } from '@/lib/api';
-
-import type { MenuGroup } from './menu';
-import { MenuGroups } from './menu';
+import { MenuGroups } from '@/layouts/app/menu';
+import type { MenuGroup } from '@/types/navigation';
 
 type NavbarProps = {
     collapsed: boolean;
@@ -58,8 +56,7 @@ export default function Navbar({
     user,
     activeParentId,
 }: NavbarProps) {
-    const { t: tNav, i18n } = useTranslation('nav');
-    const { setLocale } = useLocale();
+    const { t: tNav } = useTranslation('nav');
     const [mobileOpen, setMobileOpen] = React.useState(false);
     const [mobileSection, setMobileSection] = React.useState<string>('');
     const handleMobileSectionChange = React.useCallback(
@@ -231,28 +228,7 @@ export default function Navbar({
                     </DropdownMenu>
 
                     {/* Language toggle */}
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        aria-label={tNav('nav.language')}
-                        title={tNav('nav.language')}
-                        onClick={() => {
-                            const next = i18n.language
-                                ?.toLowerCase()
-                                .startsWith('id')
-                                ? 'en'
-                                : 'id';
-                            setLocale(next);
-                            void postJson(route('preferences.locale'), {
-                                locale: next,
-                            }).catch(() => {});
-                        }}
-                    >
-                        {i18n.language?.toLowerCase().startsWith('id')
-                            ? 'ID'
-                            : 'EN'}
-                    </Button>
+                    <LocaleToggle />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button

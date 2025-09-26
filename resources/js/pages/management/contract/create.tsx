@@ -27,7 +27,7 @@ import TenantRoomSelect from '@/features/contract/components/tenant-room-select'
 import ContractPreviewDialog from '@/features/contract/dialogs/contact-create-preview-dialog';
 import ContractGuideDialog from '@/features/contract/dialogs/contract-create-guide-dialog';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import { formatIDR } from '@/lib/format';
 import type {
     ContractCreateForm,

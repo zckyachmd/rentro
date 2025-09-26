@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enum\CacheKey;
 use App\Models\Menu;
 use App\Models\MenuGroup;
+use App\Models\PublicMenu;
 use App\Models\User;
 use App\Services\Contracts\MenuServiceInterface;
 use Illuminate\Support\Collection;
@@ -124,5 +125,82 @@ class MenuService implements MenuServiceInterface
         }
 
         return true;
+    }
+
+    /**
+     * Build localized public menu tree, cached per-locale.
+     *
+     * @return array<int, array{label:string,href:?string,icon:?string,target:?string,rel:?string,children:?array}>
+     */
+    public function publicForLocale(?string $locale = null, string $placement = 'header'): array
+    {
+        $loc = $this->normalizeLocale($locale ?? (string) app()->getLocale());
+        $key = CacheKey::PublicMenuForLocale->forLocale($loc . ':' . $placement);
+
+        return Cache::remember($key, 3600, function () use ($loc, $placement) {
+            $all = PublicMenu::query()
+                ->where('is_active', true)
+                ->where('placement', $placement)
+                ->orderBy('sort')
+                ->orderBy('id')
+                ->get([
+                    'id', 'parent_id', 'placement', 'label', 'label_i18n', 'href', 'icon', 'target', 'rel', 'sort',
+                ]);
+
+            $byParent = [];
+            foreach ($all as $item) {
+                $byParent[$item->parent_id ?? 0][] = $item;
+            }
+
+            $resolveLabel = function ($rawLabel, $rawI18n) use ($loc) {
+                try {
+                    $mapRaw = is_string($rawI18n) ? $rawI18n : json_encode($rawI18n ?? [], JSON_UNESCAPED_UNICODE);
+                    $map    = (array) json_decode($mapRaw ?: '[]', true);
+                    $full   = $map[$loc] ?? null;
+                    if (is_string($full) && $full !== '') {
+                        return $full;
+                    }
+                    $base  = explode('-', $loc)[0] ?? $loc;
+                    $baseV = $map[$base] ?? null;
+                    if (is_string($baseV) && $baseV !== '') {
+                        return $baseV;
+                    }
+                } catch (\Throwable) {
+                    // ignore;
+                }
+
+                return is_string($rawLabel) ? $rawLabel : null;
+            };
+
+            $toArr = function (PublicMenu $m) use (&$toArr, &$byParent, $resolveLabel) {
+                $children = $byParent[$m->id] ?? [];
+
+                return [
+                    'label'    => $resolveLabel($m->getRawOriginal('label'), $m->getRawOriginal('label_i18n')),
+                    'href'     => $m->href ?: null,
+                    'icon'     => $m->icon ?: null,
+                    'target'   => $m->target ?: null,
+                    'rel'      => $m->rel ?: null,
+                    'children' => array_map(
+                        fn (PublicMenu $c) => $toArr($c),
+                        $children,
+                    ) ?: null,
+                ];
+            };
+
+            $roots = $byParent[0] ?? [];
+            if ($placement === 'footer') {
+                $roots = array_slice($roots, 0, 2);
+            }
+
+            return array_map(fn (PublicMenu $r) => $toArr($r), $roots);
+        });
+    }
+
+    private function normalizeLocale(string $locale): string
+    {
+        $l = strtolower(trim($locale));
+
+        return explode('-', $l)[0] ?: $l;
     }
 }

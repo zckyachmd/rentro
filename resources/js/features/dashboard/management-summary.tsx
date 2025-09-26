@@ -48,7 +48,7 @@ import type {
     ManagementPayload,
     PaymentRecent,
     UpcomingItem,
-} from '@/pages/types/dashboard';
+} from '@/types/dashboard';
 
 const RevenueTooltipContent = ({
     active,

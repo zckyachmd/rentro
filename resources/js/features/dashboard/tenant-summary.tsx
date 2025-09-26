@@ -15,7 +15,7 @@ import type {
     PaymentRecent,
     TenantInvoiceListItem,
     TenantPayload,
-} from '@/pages/types/dashboard';
+} from '@/types/dashboard';
 
 export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
     const { t } = useTranslation();
@@ -160,8 +160,7 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                                 <div className="text-right">
                                                     <div className="font-medium">
                                                         {formatIDR(
-                                                            inv.amount_idr ||
-                                                                0,
+                                                            inv.amount_idr || 0,
                                                         )}
                                                     </div>
                                                     {(inv.outstanding_idr ??

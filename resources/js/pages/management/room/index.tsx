@@ -31,7 +31,7 @@ import {
 import RoomDetailDialog from '@/features/room/dialogs/detail-dialog';
 import { createColumns } from '@/features/room/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type {
     RoomFilters as Filters,
     RoomQueryInit as QueryInit,

@@ -28,7 +28,7 @@ import { DataTableServer } from '@/components/ui/data-table-server';
 import UpsertRoomTypeDialog from '@/features/room-type/dialogs/upsert-room-type-dialog';
 import { createColumns } from '@/features/room-type/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type {
     ManagementRoomTypeItem,
     RoomTypesPageProps,

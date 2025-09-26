@@ -27,7 +27,7 @@ import PermissionsDialog from '@/features/role/dialogs/permissions-dialog';
 import RoleUpsertDialog from '@/features/role/dialogs/roles-dialog';
 import { createColumns } from '@/features/role/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type {
     RoleDialogKey as DialogKey,
     RolePageProps as PageProps,

@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +14,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import type { IconComponent, MenuChild, MenuGroup } from '@/types/navigation';
 
 function isRouteActive(name?: string): boolean {
     try {
@@ -27,23 +27,6 @@ function isRouteActive(name?: string): boolean {
         return false;
     }
 }
-
-export type MenuChild = {
-    label: string;
-    href?: string;
-    name?: string;
-    icon?: LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;
-};
-
-export type MenuItem = {
-    label: string;
-    href?: string;
-    name?: string;
-    icon?: LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;
-    children?: MenuChild[];
-};
-
-export type MenuGroup = { id: string; label: string; items: MenuItem[] };
 
 function getIsActive(href?: string, name?: string): boolean {
     if (name && isRouteActive(name)) return true;
@@ -61,7 +44,7 @@ function IconOrFallback({
     icon,
     className,
 }: {
-    icon?: LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    icon?: IconComponent;
     className?: string;
 }) {
     const Comp =

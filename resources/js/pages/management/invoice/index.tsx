@@ -23,7 +23,7 @@ import ExtendDueDialog from '@/features/invoice/dialogs/extend-due-dialog';
 import GenerateInvoiceDialog from '@/features/invoice/dialogs/generate-dialog';
 import { createColumns } from '@/features/invoice/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import { formatIDR } from '@/lib/format';
 import type {
     ManagementCancelState as CancelState,

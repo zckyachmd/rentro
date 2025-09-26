@@ -1,9 +1,8 @@
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-import type { MenuItem } from './menu';
-import { MenuGroups } from './menu';
+import { MenuGroups } from '@/layouts/app/menu';
+import type { MenuItem } from '@/types/navigation';
 
 export type SidebarProps = {
     collapsed: boolean;

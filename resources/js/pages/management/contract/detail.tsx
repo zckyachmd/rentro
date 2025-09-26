@@ -25,7 +25,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import HandoverRoomSection from '@/features/contract/components/handover-room';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
 import type {
@@ -413,9 +413,7 @@ export default function ContractDetailPage(props: {
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {formatIDR(
-                                                        inv.amount_idr,
-                                                    )}
+                                                    {formatIDR(inv.amount_idr)}
                                                 </TableCell>
                                             </TableRow>
                                         ))

@@ -48,9 +48,6 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'i18n' => [
-                'supported' => $supportedLocales,
-            ],
             'auth' => (function () use ($request) {
                 $user = $request->user();
 
@@ -80,8 +77,10 @@ class HandleInertiaRequests extends Middleware
             'menus' => function () use ($request) {
                 return $this->menus->forUser($request->user());
             },
-            'ziggy' => fn () => $this->ziggy->forRequest($request),
-            'alert' => [
+            'publicMenus'       => fn () => $this->menus->publicForLocale((string) app()->getLocale(), 'header'),
+            'publicFooterMenus' => fn () => $this->menus->publicForLocale((string) app()->getLocale(), 'footer'),
+            'ziggy'             => fn () => $this->ziggy->forRequest($request),
+            'alert'             => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
                 'warning' => fn () => $request->session()->get('warning'),

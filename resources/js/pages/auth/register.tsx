@@ -9,7 +9,7 @@ import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import PasswordInput from '@/components/ui/password-input';
 import { Separator } from '@/components/ui/separator';
-import AuthLayout from '@/layouts/auth-layout';
+import { AuthLayout } from '@/layouts';
 import type { RegisterForm } from '@/types/auth';
 
 export default function Register() {

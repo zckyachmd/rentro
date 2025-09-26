@@ -26,7 +26,7 @@ import HandoverCreate from '@/features/contract/dialogs/handover-create-dialog';
 import ToggleAutoRenewDialog from '@/features/contract/dialogs/toggle-autorenew-dialog';
 import { createColumns } from '@/features/contract/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type {
     ContractItem,
     ContractsPageProps,

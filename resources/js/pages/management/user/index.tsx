@@ -28,7 +28,7 @@ import { RoleDialog } from '@/features/user/dialogs/role-dialog';
 import { TwoFADialog } from '@/features/user/dialogs/two-factor-dialog';
 import { createColumns } from '@/features/user/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type {
     UserDialogKind as DialogKind,
     UserDialogState as DialogState,

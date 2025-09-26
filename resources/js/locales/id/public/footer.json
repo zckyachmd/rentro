@@ -1,0 +1,29 @@
+{
+    "brand": {
+        "description": "Platform manajemen penyewaan kamar yang modern dan mudah."
+    },
+    "contact": {
+        "title": "Kontak",
+        "address_line1": "Jl. Contoh No. 123, Jakarta",
+        "address_line2": "Indonesia 12345"
+    },
+    "newsletter": {
+        "title": "Newsletter",
+        "help": "Masukkan email untuk menerima kabar terbaru.",
+        "placeholder": "Email kamu",
+        "submit": "Langganan",
+        "submitting": "Melanggan…",
+        "aria_email": "Email"
+    },
+    "social": {
+        "instagram": "Instagram",
+        "twitter": "Twitter",
+        "facebook": "Facebook",
+        "linkedin": "LinkedIn"
+    },
+    "baseline": {
+        "copyright_suffix": "All rights reserved.",
+        "developed_by": "Dikembangkan oleh",
+        "developer_website": "Situs pengembang"
+    }
+}

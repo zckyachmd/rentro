@@ -14,13 +14,13 @@ import FlashToaster from '@/components/flash-toaster';
 import { LocaleProvider } from '@/components/locale-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
+import Footer from '@/layouts/app/footer';
+import { hasChildren } from '@/layouts/app/menu';
+import Navbar from '@/layouts/app/navbar';
+import Sidebar from '@/layouts/app/sidebar';
 import { getAppName } from '@/lib/env';
 import type { PageProps as InertiaPageProps } from '@/types';
-
-import Footer from './partials/footer';
-import { hasChildren, MenuGroup } from './partials/menu';
-import Navbar from './partials/navbar';
-import Sidebar from './partials/sidebar';
+import type { MenuGroup } from '@/types/navigation';
 
 const LS_SIDEBAR = 'rentro:sidebar:collapsed';
 

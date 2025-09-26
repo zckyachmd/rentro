@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import OtpInput from '@/components/ui/otp-input';
-import AuthLayout from '@/layouts/auth-layout';
+import { AuthLayout } from '@/layouts';
 
 export default function TwoFactorChallenge() {
     const form = useForm<{ token: string }>({ token: '' });

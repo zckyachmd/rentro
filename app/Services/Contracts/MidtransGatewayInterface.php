@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Midtrans\Contracts;
+namespace App\Services\Contracts;
 
 use App\Models\Invoice;
 use App\Models\Payment;

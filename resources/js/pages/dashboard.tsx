@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Can } from '@/components/acl';
 import ManagementSummary from '@/features/dashboard/management-summary';
 import TenantSummary from '@/features/dashboard/tenant-summary';
-import AppLayout from '@/layouts/app-layout';
-import type { DashboardProps } from '@/pages/types/dashboard';
+import { AppLayout } from '@/layouts';
 import type { PageProps } from '@/types';
+import type { DashboardProps } from '@/types/dashboard';
 
 export default function Dashboard() {
     const { t } = useTranslation();

@@ -13,7 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import RoomUpsertForm from '@/pages/management/room/form';
 import type { RoomEditPageProps as PageProps } from '@/types/management';
 

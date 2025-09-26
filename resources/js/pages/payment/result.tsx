@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type { PaymentResultPageProps as PageProps } from '@/types/payment';
 
 export default function PaymentResult(props: PageProps) {

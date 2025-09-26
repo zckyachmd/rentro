@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import PasswordInput from '@/components/ui/password-input';
-import AuthLayout from '@/layouts/auth-layout';
+import { AuthLayout } from '@/layouts';
 
 export default function ResetPassword({
     email,

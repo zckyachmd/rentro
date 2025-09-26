@@ -1,0 +1,29 @@
+{
+    "brand": {
+        "description": "A modern and easy room rental management platform."
+    },
+    "contact": {
+        "title": "Contact",
+        "address_line1": "123 Example St, Jakarta",
+        "address_line2": "Indonesia 12345"
+    },
+    "newsletter": {
+        "title": "Newsletter",
+        "help": "Enter your email to receive updates.",
+        "placeholder": "Your email",
+        "submit": "Subscribe",
+        "submitting": "Subscribing…",
+        "aria_email": "Email"
+    },
+    "social": {
+        "instagram": "Instagram",
+        "twitter": "Twitter",
+        "facebook": "Facebook",
+        "linkedin": "LinkedIn"
+    },
+    "baseline": {
+        "copyright_suffix": "All rights reserved.",
+        "developed_by": "Developed by",
+        "developer_website": "Developer website"
+    }
+}

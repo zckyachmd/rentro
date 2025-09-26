@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             AppSettingSeeder::class,
             PermissionSeeder::class,
             MenuSeeder::class,
+            PublicMenuSeeder::class,
             UserSeeder::class,
             AmenitySeeder::class,
             RoomTypeSeeder::class,

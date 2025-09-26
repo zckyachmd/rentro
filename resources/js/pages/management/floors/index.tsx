@@ -28,7 +28,7 @@ import { DataTableServer } from '@/components/ui/data-table-server';
 import UpsertFloorDialog from '@/features/floor/dialogs/upsert-floor-dialog';
 import { createColumns } from '@/features/floor/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type { FloorItem, FloorsPageProps } from '@/types/management';
 
 type PageProps = FloorsPageProps;

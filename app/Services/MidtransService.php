@@ -8,7 +8,7 @@ use App\Enum\MidtransBank;
 use App\Enum\PaymentStatus;
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
+use App\Services\Contracts\MidtransGatewayInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Config;

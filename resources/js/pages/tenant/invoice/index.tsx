@@ -22,7 +22,7 @@ import TenantInvoiceDetailDialog from '@/features/tenant/invoice/dialogs/detail-
 import TenantInvoicePayDialog from '@/features/tenant/invoice/dialogs/pay-dialog';
 import { createColumns } from '@/features/tenant/invoice/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type {
     TenantInvoiceIndexPageProps as PageProps,
     TenantInvoiceQueryInit as QueryInit,

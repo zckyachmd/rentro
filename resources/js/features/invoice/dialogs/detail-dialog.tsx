@@ -239,7 +239,7 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                                     </div>
                                     {hasBreakdown && (
                                         <div className="text-muted-foreground text-xs">
-                        {`${formatIDR(unitPriceCents)} × ${qty} ${unit}`}
+                                            {`${formatIDR(unitPriceCents)} × ${qty} ${unit}`}
                                         </div>
                                     )}
                                 </div>

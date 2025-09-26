@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import ShowMore from '@/components/ui/show-more';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type { ShowPageProps } from '@/types/profile';
 
 import ContactSection from './contact';

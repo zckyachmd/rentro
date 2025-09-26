@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Services\Contracts\MidtransGatewayInterface;
 use App\Services\Contracts\PaymentServiceInterface;
-use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use App\Traits\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;

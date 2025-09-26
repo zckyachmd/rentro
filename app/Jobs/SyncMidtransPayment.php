@@ -3,8 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\Payment;
+use App\Services\Contracts\MidtransGatewayInterface;
 use App\Services\Contracts\PaymentServiceInterface;
-use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

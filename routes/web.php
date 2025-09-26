@@ -2,6 +2,8 @@
 
 use App\Enum\RoleName;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
@@ -18,7 +20,24 @@ use App\Http\Controllers\Webhook\MidtransWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->route('dashboard'));
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::prefix('')->name('public.')->group(function (): void {
+    Route::get('/catalog', [HomeController::class, 'catalog'])->name('catalog');
+    Route::get('/promos', [HomeController::class, 'promos'])->name('promos');
+    Route::get('/blog', [HomeController::class, 'blogIndex'])->name('blog.index');
+    Route::get('/blog/{slug}', [HomeController::class, 'blogShow'])->name('blog.show');
+    Route::get('/help', [HomeController::class, 'help'])->name('help');
+    Route::get('/about', [HomeController::class, 'about'])->name('about');
+    Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
+    Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
+    Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+
+    // Newsletter
+    Route::post('/newsletter', [NewsletterController::class, 'subscribe'])
+        ->middleware('throttle:ui-preferences')
+        ->name('newsletter.subscribe');
+});
 
 // Preferences (visual + language)
 Route::prefix('preferences')

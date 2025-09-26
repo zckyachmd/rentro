@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/select';
 import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import { getJson } from '@/lib/api';
 import type {
     TenantContractsPageProps as ContractsPageProps,

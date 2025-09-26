@@ -122,9 +122,9 @@ export default function TenantInvoiceDetailDialog({
                                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
                                             <Label>{t('common.total')}</Label>
                                             <div>
-                                        {formatIDR(
-                                            data.invoice.amount_idr,
-                                        )}
+                                                {formatIDR(
+                                                    data.invoice.amount_idr,
+                                                )}
                                             </div>
                                             <Label>{tInv('outstanding')}</Label>
                                             <div>
@@ -156,7 +156,7 @@ export default function TenantInvoiceDetailDialog({
                                                             </div>
                                                             <div className="shrink-0 font-medium">
                                                                 {formatIDR(
-                                                it.amount_idr,
+                                                                    it.amount_idr,
                                                                 )}
                                                             </div>
                                                         </div>

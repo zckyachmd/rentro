@@ -33,7 +33,8 @@ class UserDocumentFactory extends Factory
             DocumentType::NPWP->value     => fake()->numerify('##.###.###.#-###.###'),
             DocumentType::SIM->value,
             DocumentType::PASSPORT->value => fake()->bothify('??######'),
-            DocumentType::OTHER->value    => null,
+            // Ensure non-null for OTHER to satisfy NOT NULL constraint
+            DocumentType::OTHER->value    => fake()->bothify('DOC-########'),
         };
 
         $issuedAt  = fake()->date();

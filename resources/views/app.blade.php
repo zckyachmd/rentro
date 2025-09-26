@@ -12,6 +12,25 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+    <!-- Icons & Manifest -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/favicon.svg" color="#0b0b0b">
+
+    <!-- Theme & Color Scheme -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0b0b">
+    <meta name="color-scheme" content="light dark">
+
+    <!-- Basic SEO Defaults (can be overridden per-page) -->
+    <meta name="application-name" content="{{ config('app.name', 'Laravel') }}">
+    <meta property="og:site_name" content="{{ config('app.name', 'Laravel') }}">
+    @if (env('VITE_TWITTER_HANDLE'))
+        <meta name="twitter:site" content="{{ env('VITE_TWITTER_HANDLE') }}">
+    @endif
+
     <!-- Scripts -->
     <script>
         (function () {

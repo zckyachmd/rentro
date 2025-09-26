@@ -17,7 +17,7 @@ import {
 import AuditDetailDialog from '@/features/audit/dialogs/detail-dialog';
 import { createColumns } from '@/features/audit/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AppLayout from '@/layouts/app-layout';
+import { AppLayout } from '@/layouts';
 import type {
     ActivityItem,
     AuditNextShape as NextShape,

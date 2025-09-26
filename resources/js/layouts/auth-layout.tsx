@@ -14,7 +14,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Toaster } from '@/components/ui/sonner';
-import Footer from '@/layouts/partials/footer';
+import Footer from '@/layouts/app/footer';
 import { getAppName } from '@/lib/env';
 
 type AuthLayoutProps = {
