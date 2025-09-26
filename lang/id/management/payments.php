@@ -54,4 +54,8 @@ return [
         'ack'              => 'Konfirmasi',
         'reason'           => 'Alasan',
     ],
+    'summary' => [
+        'completed' => 'Lunas',
+        'all'       => 'Semua',
+    ],
 ];

@@ -54,4 +54,8 @@ return [
         'ack'              => 'Acknowledge',
         'reason'           => 'Reason',
     ],
+    'summary' => [
+        'completed' => 'Completed',
+        'all'       => 'All',
+    ],
 ];

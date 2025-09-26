@@ -51,5 +51,12 @@
         "outstanding": "Sisa",
         "items": "Item",
         "error": "Gagal memuat invoice"
+    },
+    "summary": {
+        "pending": "Menunggu",
+        "overdue": "Terlambat",
+        "paid": "Lunas",
+        "outstanding": "Piutang",
+        "amount": "Jumlah"
     }
 }

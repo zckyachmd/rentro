@@ -64,6 +64,22 @@ class InvoiceManagementController extends Controller
                 'status' => function ($q, $status) {
                     $q->where('status', $status);
                 },
+                'start' => function ($q, $start) {
+                    try {
+                        $d = Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                    } catch (\Throwable) {
+                        return;
+                    }
+                    $q->whereDate('due_date', '>=', $d);
+                },
+                'end' => function ($q, $end) {
+                    try {
+                        $d = Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                    } catch (\Throwable) {
+                        return;
+                    }
+                    $q->whereDate('due_date', '<=', $d);
+                },
             ],
         ];
 
@@ -114,11 +130,31 @@ class InvoiceManagementController extends Controller
 
         $statusOptions = collect(InvoiceStatus::cases())->map(fn ($s) => $s->value);
 
+        // Summary for header (respect filters)
+        $sumBase = Invoice::query();
+        $this->applyRequestFilters($sumBase, $request);
+        $countAll       = (int) $sumBase->count('id');
+        $countPending   = (int) (clone $sumBase)->where('status', InvoiceStatus::PENDING->value)->count('id');
+        $countOverdue   = (int) (clone $sumBase)->where('status', InvoiceStatus::OVERDUE->value)->count('id');
+        $countPaid      = (int) (clone $sumBase)->where('status', InvoiceStatus::PAID->value)->count('id');
+        $sumAmount      = (int) (clone $sumBase)->sum('amount_cents');
+        $sumOutstanding = (int) (clone $sumBase)
+            ->whereIn('status', [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value])
+            ->sum('outstanding_cents');
+
         return Inertia::render('management/invoice/index', [
             'invoices' => $invoicesPayload,
             'options'  => [
                 'statuses'  => $statusOptions,
                 'contracts' => $contracts,
+            ],
+            'summary' => [
+                'count'           => $countAll,
+                'count_pending'   => $countPending,
+                'count_overdue'   => $countOverdue,
+                'count_paid'      => $countPaid,
+                'sum_amount'      => $sumAmount,
+                'sum_outstanding' => $sumOutstanding,
             ],
             'query' => [
                 'page'    => $invoicesPayload['current_page'],
@@ -127,8 +163,73 @@ class InvoiceManagementController extends Controller
                 'dir'     => $request->query('dir'),
                 'search'  => $request->query('search'),
                 'status'  => $request->query('status'),
+                'start'   => $request->query('start'),
+                'end'     => $request->query('end'),
             ],
         ]);
+    }
+
+    /** Export invoices as CSV using current filters. */
+    public function export(Request $request)
+    {
+        $q = Invoice::query()->with([
+            'contract:id,user_id,room_id,number',
+            'contract.tenant:id,name',
+            'contract.room:id,number,name',
+        ]);
+        $this->applyRequestFilters($q, $request);
+        $q->orderByDesc('due_date')->orderByDesc('id');
+
+        $filename = 'invoices_' . now()->format('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($q): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Number', 'Due Date', 'Status', 'Amount (cents)', 'Outstanding (cents)', 'Tenant', 'Room']);
+            $q->chunk(1000, function ($rows) use ($out) {
+                foreach ($rows as $inv) {
+                    /** @var Invoice $inv */
+                    $c = $inv->contract;
+                    fputcsv($out, [
+                        $inv->number,
+                        $inv->due_date->toDateString(),
+                        (string) $inv->status->value,
+                        (int) $inv->amount_cents,
+                        (int) ($inv->outstanding_cents ?? 0),
+                        $c?->tenant?->name,
+                        optional($c?->room)->number ?? optional($c?->room)->name,
+                    ]);
+                }
+            });
+            fclose($out);
+        }, $filename, [
+            'Content-Type'        => 'text/csv',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    protected function applyRequestFilters(\Illuminate\Database\Eloquent\Builder $q, Request $request): void
+    {
+        $status = (string) $request->query('status', '');
+        if ($status !== '') {
+            $q->where('status', $status);
+        }
+        $start = $request->query('start');
+        $end   = $request->query('end');
+        if ($start) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                $q->whereDate('due_date', '>=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        if ($end) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                $q->whereDate('due_date', '<=', $d);
+            } catch (\Throwable) {
+            }
+        }
     }
 
     public function show(Request $request, Invoice $invoice)

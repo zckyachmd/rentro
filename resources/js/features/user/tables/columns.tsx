@@ -128,7 +128,7 @@ export const createColumns = (
                             variant="icon"
                             size="xs"
                             className="ml-0.5"
-                            aria-label={i18n.t('common.copy_to_clipboard')}
+                            aria-label={i18n.t('common.copy')}
                         />
                     </div>
                 </div>

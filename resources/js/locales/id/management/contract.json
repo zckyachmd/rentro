@@ -143,6 +143,12 @@
         "desc": "Kelola kontrak penyewa dan status perpanjangan.",
         "filter": "Filter"
     },
+    "summary": {
+        "active": "Aktif",
+        "booked": "Booking",
+        "pending_payment": "Menunggu",
+        "overdue": "Terlambat"
+    },
     "detail": {
         "title": "Detail Kontrak",
         "title_format": "Kontrak #{{number}}",

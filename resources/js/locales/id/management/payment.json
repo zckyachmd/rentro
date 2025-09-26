@@ -4,5 +4,9 @@
     "list_title": "Daftar Pembayaran",
     "search_placeholder": "Cari invoice/penyewa…",
     "add": "Tambah Pembayaran",
-    "empty": "Tidak ada pembayaran."
+    "empty": "Tidak ada pembayaran.",
+    "summary": {
+        "completed": "Total (lunas)",
+        "all": "Total (semua)"
+    }
 }

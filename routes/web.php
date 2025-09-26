@@ -1,7 +1,7 @@
 <?php
 
-use App\Enum\PermissionName;
 use App\Enum\RoleName;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
@@ -17,7 +17,6 @@ use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 
@@ -31,7 +30,7 @@ Route::prefix('preferences')
     });
 
 Route::middleware('auth')->group(function (): void {
-    Route::get('/dashboard', fn () => Inertia::render('dashboard'))
+    Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     // Profile
@@ -100,71 +99,61 @@ Route::middleware('auth')->group(function (): void {
         // Contracts
         Route::prefix('contracts')->name('contracts.')->group(function (): void {
             Route::get('/', [TenantContractController::class, 'index'])
-                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
                 ->name('index');
             Route::get('/{contract}', [TenantContractController::class, 'show'])
-                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
                 ->name('show');
             Route::get('/{contract}/print', [TenantContractController::class, 'print'])
-                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
                 ->name('print');
             Route::post('/{contract}/stop-auto-renew', [TenantContractController::class, 'stopAutoRenew'])
-                ->middleware('can:' . PermissionName::CONTRACT_RENEW->value)
                 ->name('stopAutoRenew');
             Route::get('/{contract}/handovers', [TenantHandoverController::class, 'index'])
-                ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
                 ->name('handovers.index');
         });
 
-        // Tenant Handover Attachments (private)
-        Route::get('/handovers/{handover}/attachments/{path}', [TenantHandoverController::class, 'attachmentGeneral'])
-            ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
-            ->where('path', '.*')
-            ->name('handovers.attachment.general');
-
-        // Tenant handover acknowledge/dispute
-        Route::post('/handovers/{handover}/ack', [TenantHandoverController::class, 'acknowledge'])
-            ->middleware('can:' . PermissionName::HANDOVER_UPDATE->value)
-            ->name('handovers.ack');
-        Route::post('/handovers/{handover}/dispute', [TenantHandoverController::class, 'dispute'])
-            ->middleware('can:' . PermissionName::HANDOVER_UPDATE->value)
-            ->name('handovers.dispute');
+        // Tenant Handovers
+        Route::prefix('handovers')->name('handovers.')->group(function (): void {
+            Route::get('/{handover}/attachments/{path}', [TenantHandoverController::class, 'attachmentGeneral'])
+                ->where('path', '.*')
+                ->whereNumber('handover')
+                ->name('attachments.general');
+            Route::post('/{handover}/ack', [TenantHandoverController::class, 'acknowledge'])
+                ->whereNumber('handover')
+                ->name('ack');
+            Route::post('/{handover}/dispute', [TenantHandoverController::class, 'dispute'])
+                ->whereNumber('handover')
+                ->name('dispute');
+        });
 
         // Invoices
         Route::prefix('invoices')->name('invoices.')->group(function (): void {
             Route::get('/', [TenantInvoiceController::class, 'index'])
-                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
                 ->name('index');
             Route::get('/{invoice}', [TenantInvoiceController::class, 'show'])
-                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
                 ->whereNumber('invoice')
                 ->name('show');
             Route::get('/{invoice}/print', [TenantInvoiceController::class, 'print'])
-                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
                 ->whereNumber('invoice')
                 ->name('print');
             Route::get('/{invoice}/pay/status', [TenantMidtransController::class, 'status'])
-                ->middleware(['can:' . PermissionName::INVOICE_VIEW->value, 'throttle:secure-tenant-status'])
+                ->middleware(['throttle:secure-tenant-status'])
                 ->whereNumber('invoice')
                 ->name('pay.status');
             Route::post('/{invoice}/pay/cancel', [TenantMidtransController::class, 'cancelPending'])
-                ->middleware(['can:' . PermissionName::PAYMENT_UPDATE->value, 'throttle:secure-tenant-pay'])
+                ->middleware(['throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
                 ->name('pay.cancel');
             Route::post('/{invoice}/pay/midtrans/va', [TenantMidtransController::class, 'payVa'])
-                ->middleware(['can:' . PermissionName::PAYMENT_CREATE->value, 'throttle:secure-tenant-pay'])
+                ->middleware(['throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
                 ->name('pay.midtrans.va');
             Route::post('/{invoice}/pay/manual', [TenantPaymentController::class, 'payManual'])
-                ->middleware(['can:' . PermissionName::PAYMENT_CREATE->value, 'throttle:secure-tenant-pay'])
+                ->middleware(['throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
                 ->name('pay.manual');
             Route::get('/payments/{payment}', [TenantPaymentController::class, 'show'])
-                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
                 ->whereNumber('payment')
                 ->name('payments.show');
             Route::get('/payments/{payment}/attachment', [TenantPaymentController::class, 'attachment'])
-                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
                 ->whereNumber('payment')
                 ->name('payments.attachment');
         });

@@ -80,6 +80,9 @@ Route::prefix('management')->name('management.')->group(function (): void {
         Route::get('/', [ContractManagementController::class, 'index'])
             ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
             ->name('index');
+        Route::get('/export', [ContractManagementController::class, 'export'])
+            ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
+            ->name('export');
         Route::get('/create', [ContractManagementController::class, 'create'])
             ->middleware('can:' . PermissionName::CONTRACT_CREATE->value)
             ->name('create');
@@ -122,6 +125,9 @@ Route::prefix('management')->name('management.')->group(function (): void {
         Route::get('/', [InvoiceManagementController::class, 'index'])
             ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
             ->name('index');
+        Route::get('/export', [InvoiceManagementController::class, 'export'])
+            ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
+            ->name('export');
         Route::get('/{invoice}', [InvoiceManagementController::class, 'show'])
             ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
             ->whereNumber('invoice')
@@ -151,6 +157,9 @@ Route::prefix('management')->name('management.')->group(function (): void {
         Route::get('/', [PaymentManagementController::class, 'index'])
             ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
             ->name('index');
+        Route::get('/export', [PaymentManagementController::class, 'export'])
+            ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
+            ->name('export');
         Route::get('/{payment}', [PaymentManagementController::class, 'show'])
             ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
             ->name('show');

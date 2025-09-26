@@ -4,5 +4,9 @@
     "list_title": "Payment List",
     "search_placeholder": "Search invoice/tenant…",
     "add": "Add Payment",
-    "empty": "No payments."
+    "empty": "No payments.",
+    "summary": {
+        "completed": "Sum (completed)",
+        "all": "Sum (all)"
+    }
 }

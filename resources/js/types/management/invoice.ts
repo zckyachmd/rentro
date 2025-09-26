@@ -37,6 +37,14 @@ export type ManagementInvoicePageProps = {
     options?: { statuses: string[]; contracts: ContractOption[] };
     filters?: { status?: string | null };
     query?: QueryBag & Record<string, unknown>;
+    summary?: {
+        count: number;
+        count_pending: number;
+        count_overdue: number;
+        count_paid: number;
+        sum_amount: number;
+        sum_outstanding: number;
+    };
 };
 
 export type InvoiceDetailTarget = { id: string; number: string } | null;

@@ -143,6 +143,12 @@
         "desc": "Manage tenant contracts and renewal status.",
         "filter": "Filter"
     },
+    "summary": {
+        "active": "Active",
+        "booked": "Booked",
+        "pending_payment": "Pending",
+        "overdue": "Overdue"
+    },
     "detail": {
         "title": "Contract Detail",
         "title_format": "Contract #{{number}}",

@@ -89,7 +89,7 @@ export function CopyInline({
         onClick,
         onKeyDown,
         className: [base, sizeClass, className].filter(Boolean).join(' '),
-        'aria-label': t('common.copy_to_clipboard'),
+        'aria-label': t('common.copy'),
         'data-copied': copied ? '1' : undefined,
         ...rest,
     } as React.HTMLAttributes<HTMLElement>;

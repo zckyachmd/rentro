@@ -19,7 +19,6 @@ import {
     DataTableServer,
     type QueryBag,
 } from '@/components/ui/data-table-server';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -67,11 +66,7 @@ export default function RoomIndex(props: RoomsPageProps) {
         q: String(query.q ?? ''),
     });
 
-    const updateFilter = React.useCallback(
-        (key: keyof Filters, value: string) =>
-            setFilters((f) => ({ ...f, [key]: value })),
-        [],
-    );
+    // filter setters are inline where used; removed unused updateFilter helper
     const filteredFloors = React.useMemo(
         () =>
             floors.filter(
@@ -364,26 +359,6 @@ export default function RoomIndex(props: RoomsPageProps) {
                         </CardHeader>
                         <CardContent className="grid gap-3 md:grid-cols-12">
                             <div className="md:col-span-4">
-                                <Label htmlFor="room-search">
-                                    {tRoom('search_label')}
-                                </Label>
-                                <Input
-                                    id="room-search"
-                                    className="h-9"
-                                    value={filters.q}
-                                    onChange={(e) =>
-                                        updateFilter('q', e.target.value)
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            applyFilters();
-                                        }
-                                    }}
-                                    placeholder={tRoom('search_placeholder')}
-                                />
-                            </div>
-                            <div className="md:col-span-4">
                                 <Label>{tRoom('period_label')}</Label>
                                 <Select
                                     value={pricePeriod}
@@ -630,18 +605,30 @@ export default function RoomIndex(props: RoomsPageProps) {
 
                     {/* Table */}
                     <Card>
-                        <CardContent>
+                        <CardContent className="pt-6">
                             <DataTableServer<RoomItem, unknown>
                                 columns={tableColumns}
                                 rows={rooms}
                                 paginator={paginator ?? null}
+                                search={
+                                    ((q as QueryBag & { q?: string | null })
+                                        .q ?? '') as string
+                                }
+                                onSearchChange={(v) =>
+                                    safeOnQueryChange({
+                                        page: 1,
+                                        q: v || null,
+                                    } as SafePayload)
+                                }
+                                searchKey="number"
+                                searchPlaceholder={tRoom('search_placeholder')}
                                 sort={q.sort}
                                 dir={q.dir}
                                 onSortChange={handleSortChange}
                                 onQueryChange={safeOnQueryChange}
                                 loading={processing}
                                 emptyText={tRoom('empty')}
-                                showColumn={false}
+                                showColumn
                             />
                         </CardContent>
                     </Card>

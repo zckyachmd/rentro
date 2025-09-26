@@ -18,6 +18,7 @@ use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -60,6 +61,32 @@ class PaymentManagementController extends Controller
                 },
                 'method' => function ($q, $method) {
                     $q->where('method', $method);
+                },
+                'start' => function ($q, $start) {
+                    try {
+                        $d = Carbon::createFromFormat('Y-m-d', (string) $start)->startOfDay()->toDateString();
+                    } catch (\Throwable) {
+                        return;
+                    }
+                    $q->where(function ($qq) use ($d) {
+                        $qq->whereNotNull('paid_at')->whereDate('paid_at', '>=', $d)
+                            ->orWhere(function ($q2) use ($d) {
+                                $q2->whereNull('paid_at')->whereDate('created_at', '>=', $d);
+                            });
+                    });
+                },
+                'end' => function ($q, $end) {
+                    try {
+                        $d = Carbon::createFromFormat('Y-m-d', (string) $end)->endOfDay()->toDateString();
+                    } catch (\Throwable) {
+                        return;
+                    }
+                    $q->where(function ($qq) use ($d) {
+                        $qq->whereNotNull('paid_at')->whereDate('paid_at', '<=', $d)
+                            ->orWhere(function ($q2) use ($d) {
+                                $q2->whereNull('paid_at')->whereDate('created_at', '<=', $d);
+                            });
+                    });
                 },
             ],
         ];
@@ -118,11 +145,20 @@ class PaymentManagementController extends Controller
                 ];
             });
 
+        // Summary (filtered)
+        $sumBase = Payment::query();
+        $this->applyRequestFilters($sumBase, $request);
+        $totalItems   = (int) $sumBase->count('id');
+        $sumAll       = (int) (clone $sumBase)->sum('amount_cents');
+        $sumCompleted = (int) (clone $sumBase)->where('status', PaymentStatus::COMPLETED->value)->sum('amount_cents');
+
         return Inertia::render('management/payment/index', [
             'payments' => $payload,
             'filters'  => [
                 'status' => $request->query('status'),
                 'method' => $request->query('method'),
+                'start'  => $request->query('start'),
+                'end'    => $request->query('end'),
             ],
             'options' => [
                 'methods'  => PaymentMethod::options(true),
@@ -132,6 +168,11 @@ class PaymentManagementController extends Controller
             'paymentsExtra'     => [
                 'manual_banks' => is_array($manualBanks) ? array_values($manualBanks) : [],
             ],
+            'summary' => [
+                'count'         => $totalItems,
+                'sum_all'       => $sumAll,
+                'sum_completed' => $sumCompleted,
+            ],
             'query' => [
                 'page'    => $payload['current_page'],
                 'perPage' => $payload['per_page'],
@@ -140,7 +181,89 @@ class PaymentManagementController extends Controller
                 'search'  => $request->query('search'),
                 'status'  => $request->query('status'),
                 'method'  => $request->query('method'),
+                'start'   => $request->query('start'),
+                'end'     => $request->query('end'),
             ],
+        ]);
+    }
+
+    /** Apply common request filters for payments to a query. */
+    protected function applyRequestFilters(Builder $q, Request $request): void
+    {
+        $status = (string) $request->query('status', '');
+        $method = (string) $request->query('method', '');
+        $start  = $request->query('start');
+        $end    = $request->query('end');
+
+        if ($status !== '') {
+            $q->where('status', $status);
+        }
+        if ($method !== '') {
+            $q->where('method', $method);
+        }
+        if ($start) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $start)->startOfDay()->toDateString();
+                $q->where(function ($qq) use ($d) {
+                    $qq->whereNotNull('paid_at')->whereDate('paid_at', '>=', $d)
+                        ->orWhere(function ($q2) use ($d) {
+                            $q2->whereNull('paid_at')->whereDate('created_at', '>=', $d);
+                        });
+                });
+            } catch (\Throwable) {
+                // ignore invalid start
+            }
+        }
+        if ($end) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $end)->endOfDay()->toDateString();
+                $q->where(function ($qq) use ($d) {
+                    $qq->whereNotNull('paid_at')->whereDate('paid_at', '<=', $d)
+                        ->orWhere(function ($q2) use ($d) {
+                            $q2->whereNull('paid_at')->whereDate('created_at', '<=', $d);
+                        });
+                });
+            } catch (\Throwable) {
+                // ignore invalid end
+            }
+        }
+    }
+
+    /** Export payments as CSV using current filters. */
+    public function export(Request $request)
+    {
+        $q = Payment::query()
+            ->with(['invoice:id,number,contract_id', 'invoice.contract:id,user_id,room_id', 'invoice.contract.tenant:id,name']);
+        $this->applyRequestFilters($q, $request);
+        $q->orderByDesc('paid_at')->orderByDesc('id');
+
+        $filename = 'payments_' . now()->format('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($q): void {
+            $out = fopen('php://output', 'w');
+            // Header
+            fputcsv($out, ['Paid At', 'Created At', 'Method', 'Status', 'Amount (cents)', 'Invoice', 'Tenant']);
+            $q->chunk(1000, function ($rows) use ($out) {
+                foreach ($rows as $p) {
+                    /** @var Payment $p */
+                    $inv    = $p->invoice;
+                    $tenant = $inv?->contract?->tenant;
+                    fputcsv($out, [
+                        $p->paid_at?->toDateTimeString(),
+                        $p->created_at?->toDateTimeString(),
+                        (string) $p->method->value,
+                        (string) $p->status->value,
+                        (int) $p->amount_cents,
+                        $inv?->number,
+                        $tenant?->name,
+                    ]);
+                }
+            });
+            fclose($out);
+        }, $filename, [
+            'Content-Type'        => 'text/csv',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 

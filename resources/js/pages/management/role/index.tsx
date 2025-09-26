@@ -99,7 +99,7 @@ export default function RolesIndex() {
             pageTitle={t('management.role.title')}
             pageDescription={t('management.role.desc')}
         >
-            <div className="space-y-3">
+            <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle>{t('management.role.list_title')}</CardTitle>
