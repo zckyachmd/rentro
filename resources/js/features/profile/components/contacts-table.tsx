@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
 import {
@@ -19,17 +21,24 @@ export default function ContactsTable({
     onEdit?: (c: ContactDTO) => void;
     onDelete?: (c: ContactDTO) => void;
 }) {
+    const { t } = useTranslation();
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tEnum } = useTranslation('enum');
     return (
         <div className="rounded-md border">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Nama</TableHead>
-                        <TableHead>Hubungan</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Telepon</TableHead>
+                        <TableHead>{tProfile('contact.table.name')}</TableHead>
+                        <TableHead>
+                            {tProfile('contact.table.relationship')}
+                        </TableHead>
+                        <TableHead>{t('common.email')}</TableHead>
+                        <TableHead>{t('common.phone')}</TableHead>
                         {onEdit || onDelete ? (
-                            <TableHead className="text-right">Aksi</TableHead>
+                            <TableHead className="text-right">
+                                {t('common.actions')}
+                            </TableHead>
                         ) : null}
                     </TableRow>
                 </TableHeader>
@@ -39,14 +48,23 @@ export default function ContactsTable({
                             <TableCell className="font-medium">
                                 {c.name}
                             </TableCell>
-                            <TableCell>{c.relationship}</TableCell>
+                            <TableCell>
+                                {c.relationship
+                                    ? tEnum(
+                                          `emergency_relationship.${c.relationship}`,
+                                          { defaultValue: c.relationship },
+                                      )
+                                    : '-'}
+                            </TableCell>
                             <TableCell>
                                 {c.email ? (
                                     <CopyInline
                                         value={c.email}
                                         variant="link"
                                         className="text-xs sm:text-sm"
-                                        successMessage="Email disalin"
+                                        successMessage={tProfile(
+                                            'email_copied',
+                                        )}
                                     >
                                         {c.email}
                                     </CopyInline>
@@ -60,7 +78,9 @@ export default function ContactsTable({
                                         value={c.phone}
                                         variant="link"
                                         className="font-mono text-xs sm:text-sm"
-                                        successMessage="Nomor disalin"
+                                        successMessage={tProfile(
+                                            'phone_copied',
+                                        )}
                                     >
                                         {c.phone}
                                     </CopyInline>
@@ -78,7 +98,7 @@ export default function ContactsTable({
                                                 variant="outline"
                                                 onClick={() => onEdit(c)}
                                             >
-                                                Edit
+                                                {tProfile('contact.edit')}
                                             </Button>
                                         ) : null}
                                         {onDelete ? (
@@ -88,7 +108,7 @@ export default function ContactsTable({
                                                 variant="destructive"
                                                 onClick={() => onDelete(c)}
                                             >
-                                                Hapus
+                                                {tProfile('contact.delete')}
                                             </Button>
                                         ) : null}
                                     </div>

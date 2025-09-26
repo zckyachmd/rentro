@@ -1,0 +1,51 @@
+<?php
+
+return [
+    'printed_at' => 'Printed at :datetime',
+    'invoice' => [
+        'item' => [
+            'rent'         => 'Rent',
+            'prorata'      => 'Prorated Rent',
+            'period_range' => ':start to :end',
+            'days_summary' => 'Total :days days; free :free days; billed :billed days.',
+            'qty_line'     => ':price × :qty :unit',
+        ],
+        'unit' => [
+            'day'   => 'day',
+            'week'  => 'week',
+            'month' => 'month',
+        ],
+    ],
+    'contract' => [
+        'title'            => 'Contract',
+        'status'           => 'Status',
+        'start'            => 'Start',
+        'end'              => 'End',
+        'billing_period'   => 'Billing Period',
+        'billing_day_format' => 'billing day: :day',
+        'tenant'           => 'Tenant',
+        'room'             => 'Room',
+        'building'         => 'Building',
+        'floor'            => 'Floor',
+        'type'             => 'Type',
+        'values_and_terms' => 'Values & Terms',
+        'rent'             => 'Rent',
+        'deposit'          => 'Deposit',
+        'notes'            => 'Notes',
+    ],
+    'receipt' => [
+        'title'            => 'Payment Receipt',
+        'invoice'          => 'Invoice',
+        'method'           => 'Method',
+        'paid_at'          => 'Paid At',
+        'reference'        => 'Reference',
+        'recorded_by'      => 'Recorded By',
+        'tenant'           => 'Tenant',
+        'room'             => 'Room',
+        'total_invoice'    => 'Total Invoice',
+        'pre_outstanding'  => 'Outstanding Before',
+        'current_paid'     => 'Paid This Transaction',
+        'post_outstanding' => 'Outstanding After',
+        'footnote'         => 'Printed at :datetime • Please keep this receipt as proof of payment.',
+    ],
+];

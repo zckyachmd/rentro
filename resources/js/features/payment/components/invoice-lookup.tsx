@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import InputError from '@/components/ui/input-error';
 import SearchSelect, { type SearchOption } from '@/components/ui/search-select';
 
@@ -28,17 +30,21 @@ export default function InvoiceLookup({
     resolved: ResolvedInvoice;
     currency: (n: number) => string;
 }) {
+    const { t } = useTranslation();
     return (
         <div className="space-y-1">
             <SearchSelect
                 options={options}
                 value={value || undefined}
                 onChange={(v, opt) => onChange(v || '', opt)}
-                placeholder="Cari invoice…"
+                placeholder={t('payment.lookup.placeholder')}
                 emptyText={
                     options.length
-                        ? 'Tidak ada hasil'
-                        : 'Belum ada kandidat invoice'
+                        ? t('ui.select.no_results')
+                        : t(
+                              'payment.lookup.empty_candidates',
+                              'No candidate invoices yet',
+                          )
                 }
             />
             <InputError message={errorMessage} />
@@ -48,23 +54,23 @@ export default function InvoiceLookup({
             {resolved ? (
                 <div
                     className={
-                        'rounded-md border bg-muted/30 p-2 text-[12px] ' +
+                        'bg-muted/30 rounded-md border p-2 text-[12px] ' +
                         (errorMessage ? 'mt-1' : 'mt-0')
                     }
                 >
                     <div className="text-muted-foreground">
-                        Nilai: {currency(resolved.amount)} · Sisa:{' '}
-                        {currency(resolved.outstanding ?? 0)}
-                        {resolved.tenant_name
-                            ? ` · Penyewa: ${resolved.tenant_name}`
-                            : ''}
+                        {t('payment.lookup.summary', {
+                            amount: currency(resolved.amount),
+                            outstanding: currency(resolved.outstanding ?? 0),
+                            tenant_optional: resolved.tenant_name
+                                ? ` · ${t('common.tenant')}: ${resolved.tenant_name}`
+                                : '',
+                        })}
                     </div>
                     {!resolved.eligible ? (
                         <InputError
                             className="mt-0.5"
-                            message={
-                                'Invoice tidak dapat dibayar (sudah lunas atau status tidak valid)'
-                            }
+                            message={t('payment.lookup.ineligible')}
                         />
                     ) : null}
                 </div>
@@ -72,10 +78,10 @@ export default function InvoiceLookup({
                 <div
                     className={
                         (errorMessage ? 'mt-0.5 ' : 'mt-0 ') +
-                        'text-xs text-muted-foreground'
+                        'text-muted-foreground text-xs'
                     }
                 >
-                    Pilih invoice terlebih dahulu untuk melanjutkan.
+                    {t('payment.lookup.pick_first')}
                 </div>
             )}
         </div>

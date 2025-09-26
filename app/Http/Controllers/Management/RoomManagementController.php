@@ -101,21 +101,15 @@ class RoomManagementController extends Controller
             $priceDailyCents   = $r->effectivePriceCents(BillingPeriod::DAILY->value);
 
             return [
-                'id'                 => (string) $r->id,
-                'number'             => $r->number,
-                'name'               => $r->name,
-                'status'             => $r->status->value,
-                'max_occupancy'      => (int) $r->max_occupancy,
-                'price_daily_rupiah' => $priceDailyCents === null
-                    ? null
-                    : ('Rp ' . number_format((int) round(((int) $priceDailyCents) / 100), 0, ',', '.')),
-                'price_weekly_rupiah' => $priceWeeklyCents === null
-                    ? null
-                    : ('Rp ' . number_format((int) round(((int) $priceWeeklyCents) / 100), 0, ',', '.')),
-                'price_monthly_rupiah' => $priceMonthlyCents === null
-                    ? null
-                    : ('Rp ' . number_format((int) round(((int) $priceMonthlyCents) / 100), 0, ',', '.')),
-                'building' => $building ? [
+                'id'                   => (string) $r->id,
+                'number'               => $r->number,
+                'name'                 => $r->name,
+                'status'               => $r->status->value,
+                'max_occupancy'        => (int) $r->max_occupancy,
+                'price_daily_rupiah'   => $priceDailyCents === null ? null : ('Rp ' . number_format((int) $priceDailyCents, 0, ',', '.')),
+                'price_weekly_rupiah'  => $priceWeeklyCents === null ? null : ('Rp ' . number_format((int) $priceWeeklyCents, 0, ',', '.')),
+                'price_monthly_rupiah' => $priceMonthlyCents === null ? null : ('Rp ' . number_format((int) $priceMonthlyCents, 0, ',', '.')),
+                'building'             => $building ? [
                     'id'   => $building->id,
                     'name' => $building->name,
                 ] : null,
@@ -176,7 +170,7 @@ class RoomManagementController extends Controller
             }),
             'statuses'        => RoomStatus::options(),
             'gender_policies' => GenderPolicyEnum::options(),
-            'amenities'       => Amenity::query()->select('id', 'name')->orderBy('name')->get(),
+            'amenities'       => Amenity::query()->select('id', 'name', 'name_i18n')->orderBy('name')->get(),
         ];
 
         return Inertia::render('management/room/create', [
@@ -206,7 +200,7 @@ class RoomManagementController extends Controller
             : null;
         foreach ($periodMap as $key => $field) {
             $v = array_key_exists($field, $data) && $data[$field] !== null
-                ? (int) round(((float) $data[$field]) * 100)
+                ? (int) round(((float) $data[$field]))
                 : null;
             $base = $typeForCmp && is_array($typeForCmp->prices) ? ($typeForCmp->prices[$key] ?? null) : null;
             if ($v !== null && (int) $v !== (int) ($base ?? -1)) {
@@ -215,7 +209,7 @@ class RoomManagementController extends Controller
         }
         foreach ($depMap as $key => $field) {
             $v = array_key_exists($field, $data) && $data[$field] !== null
-                ? (int) round(((float) $data[$field]) * 100)
+                ? (int) round(((float) $data[$field]))
                 : null;
             $base = $typeForCmp && is_array($typeForCmp->deposits) ? ($typeForCmp->deposits[$key] ?? null) : null;
             if ($v !== null && (int) $v !== (int) ($base ?? -1)) {
@@ -255,6 +249,17 @@ class RoomManagementController extends Controller
                     ->all();
                 if (!empty($amenityIds)) {
                     $room->amenities()->sync($amenityIds);
+                    $this->logEvent(
+                        event: 'room_amenities_synced',
+                        causer: request()->user(),
+                        subject: $room,
+                        properties: [
+                            'room_id'     => (string) $room->id,
+                            'amenity_ids' => $amenityIds,
+                            'count'       => count($amenityIds),
+                        ],
+                        logName: 'room',
+                    );
                 }
             }
 
@@ -282,6 +287,19 @@ class RoomManagementController extends Controller
                         $hasCover = true;
                     }
                 }
+
+                if (!empty($paths)) {
+                    $this->logEvent(
+                        event: 'room_photos_added',
+                        causer: request()->user(),
+                        subject: $room,
+                        properties: [
+                            'room_id' => (string) $room->id,
+                            'count'   => count($paths),
+                        ],
+                        logName: 'room',
+                    );
+                }
             }
 
             return $room;
@@ -289,7 +307,7 @@ class RoomManagementController extends Controller
 
         return redirect()
             ->route('management.rooms.edit', $room)
-            ->with('success', 'Kamar berhasil dibuat.');
+            ->with('success', __('management/rooms.created'));
     }
 
     public function show(Room $room)
@@ -299,7 +317,7 @@ class RoomManagementController extends Controller
             'floor:id,building_id,level',
             'type:id,name,prices,deposits',
             'photos:id,room_id,path,is_cover,ordering',
-            'amenities:id,name',
+            'amenities:id,name,name_i18n',
         ]);
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
@@ -312,34 +330,34 @@ class RoomManagementController extends Controller
             'status'               => $room->status->value,
             'max_occupancy'        => (int) $room->max_occupancy,
             'price_monthly_rupiah' => (function () use ($room) {
-                $cents = $room->effectivePriceCents(BillingPeriod::MONTHLY->value);
+                $v = $room->effectivePriceCents(BillingPeriod::MONTHLY->value);
 
-                return $cents === null ? null : ('Rp ' . number_format((int) round(((int) $cents) / 100), 0, ',', '.'));
+                return $v === null ? null : ('Rp ' . number_format((int) $v, 0, ',', '.'));
             })(),
             'price_weekly_rupiah' => (function () use ($room) {
-                $cents = $room->effectivePriceCents(BillingPeriod::WEEKLY->value);
+                $v = $room->effectivePriceCents(BillingPeriod::WEEKLY->value);
 
-                return $cents === null ? null : ('Rp ' . number_format((int) round(((int) $cents) / 100), 0, ',', '.'));
+                return $v === null ? null : ('Rp ' . number_format((int) $v, 0, ',', '.'));
             })(),
             'price_daily_rupiah' => (function () use ($room) {
-                $cents = $room->effectivePriceCents(BillingPeriod::DAILY->value);
+                $v = $room->effectivePriceCents(BillingPeriod::DAILY->value);
 
-                return $cents === null ? null : ('Rp ' . number_format((int) round(((int) $cents) / 100), 0, ',', '.'));
+                return $v === null ? null : ('Rp ' . number_format((int) $v, 0, ',', '.'));
             })(),
             'deposit_monthly_rupiah' => (function () use ($room) {
-                $cents = $room->effectiveDepositCents(BillingPeriod::MONTHLY->value);
+                $v = $room->effectiveDepositCents(BillingPeriod::MONTHLY->value);
 
-                return $cents === null ? null : ('Rp ' . number_format((int) round(((int) $cents) / 100), 0, ',', '.'));
+                return $v === null ? null : ('Rp ' . number_format((int) $v, 0, ',', '.'));
             })(),
             'deposit_weekly_rupiah' => (function () use ($room) {
-                $cents = $room->effectiveDepositCents(BillingPeriod::WEEKLY->value);
+                $v = $room->effectiveDepositCents(BillingPeriod::WEEKLY->value);
 
-                return $cents === null ? null : ('Rp ' . number_format((int) round(((int) $cents) / 100), 0, ',', '.'));
+                return $v === null ? null : ('Rp ' . number_format((int) $v, 0, ',', '.'));
             })(),
             'deposit_daily_rupiah' => (function () use ($room) {
-                $cents = $room->effectiveDepositCents(BillingPeriod::DAILY->value);
+                $v = $room->effectiveDepositCents(BillingPeriod::DAILY->value);
 
-                return $cents === null ? null : ('Rp ' . number_format((int) round(((int) $cents) / 100), 0, ',', '.'));
+                return $v === null ? null : ('Rp ' . number_format((int) $v, 0, ',', '.'));
             })(),
             'area_sqm'      => $room->size_m2 !== null ? (float) $room->size_m2 : null,
             'gender_policy' => $room->gender_policy->value,
@@ -393,7 +411,7 @@ class RoomManagementController extends Controller
             }),
             'statuses'        => RoomStatus::options(),
             'gender_policies' => GenderPolicyEnum::options(),
-            'amenities'       => Amenity::query()->select('id', 'name')->orderBy('name')->get(),
+            'amenities'       => Amenity::query()->select('id', 'name', 'name_i18n')->orderBy('name')->get(),
         ];
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
@@ -409,34 +427,34 @@ class RoomManagementController extends Controller
             'status'        => $room->status->value,
             'max_occupancy' => (int) $room->max_occupancy,
             'price_rupiah'  => (function () use ($room) {
-                $cents = $room->effectivePriceCents(BillingPeriod::MONTHLY->value);
+                $v = $room->effectivePriceCents(BillingPeriod::MONTHLY->value);
 
-                return $cents === null ? null : (int) round(((int) $cents) / 100);
+                return $v === null ? null : (int) $v;
             })(),
             'price_weekly_rupiah' => (function () use ($room) {
-                $cents = $room->effectivePriceCents(BillingPeriod::WEEKLY->value);
+                $v = $room->effectivePriceCents(BillingPeriod::WEEKLY->value);
 
-                return $cents === null ? null : (int) round(((int) $cents) / 100);
+                return $v === null ? null : (int) $v;
             })(),
             'price_daily_rupiah' => (function () use ($room) {
-                $cents = $room->effectivePriceCents(BillingPeriod::DAILY->value);
+                $v = $room->effectivePriceCents(BillingPeriod::DAILY->value);
 
-                return $cents === null ? null : (int) round(((int) $cents) / 100);
+                return $v === null ? null : (int) $v;
             })(),
             'deposit_rupiah' => (function () use ($room) {
-                $cents = $room->effectiveDepositCents(BillingPeriod::MONTHLY->value);
+                $v = $room->effectiveDepositCents(BillingPeriod::MONTHLY->value);
 
-                return $cents === null ? null : (int) round(((int) $cents) / 100);
+                return $v === null ? null : (int) $v;
             })(),
             'deposit_weekly_rupiah' => (function () use ($room) {
-                $cents = $room->effectiveDepositCents(BillingPeriod::WEEKLY->value);
+                $v = $room->effectiveDepositCents(BillingPeriod::WEEKLY->value);
 
-                return $cents === null ? null : (int) round(((int) $cents) / 100);
+                return $v === null ? null : (int) $v;
             })(),
             'deposit_daily_rupiah' => (function () use ($room) {
-                $cents = $room->effectiveDepositCents(BillingPeriod::DAILY->value);
+                $v = $room->effectiveDepositCents(BillingPeriod::DAILY->value);
 
-                return $cents === null ? null : (int) round(((int) $cents) / 100);
+                return $v === null ? null : (int) $v;
             })(),
             'size_m2'       => $room->size_m2 === null ? null : (float) $room->size_m2,
             'gender_policy' => $room->gender_policy->value,
@@ -488,7 +506,7 @@ class RoomManagementController extends Controller
             : null;
         foreach ($periodMap as $key => $field) {
             $v = array_key_exists($field, $data) && $data[$field] !== null
-                ? (int) round(((float) $data[$field]) * 100)
+                ? (int) round(((float) $data[$field]))
                 : null;
             $base = $typeForCmp && is_array($typeForCmp->prices) ? ($typeForCmp->prices[$key] ?? null) : null;
             if ($v !== null && (int) $v !== (int) ($base ?? -1)) {
@@ -497,7 +515,7 @@ class RoomManagementController extends Controller
         }
         foreach ($depMap as $key => $field) {
             $v = array_key_exists($field, $data) && $data[$field] !== null
-                ? (int) round(((float) $data[$field]) * 100)
+                ? (int) round(((float) $data[$field]))
                 : null;
             $base = $typeForCmp && is_array($typeForCmp->deposits) ? ($typeForCmp->deposits[$key] ?? null) : null;
             if ($v !== null && (int) $v !== (int) ($base ?? -1)) {
@@ -535,6 +553,18 @@ class RoomManagementController extends Controller
                     ->map(fn ($v) => (int) $v)
                     ->all();
                 $room->amenities()->sync($amenityIds);
+
+                $this->logEvent(
+                    event: 'room_amenities_synced',
+                    causer: request()->user(),
+                    subject: $room,
+                    properties: [
+                        'room_id'     => (string) $room->id,
+                        'amenity_ids' => $amenityIds,
+                        'count'       => count($amenityIds),
+                    ],
+                    logName: 'room',
+                );
             }
 
             if (request()->hasFile('photos')) {
@@ -561,24 +591,52 @@ class RoomManagementController extends Controller
                         $hasCover = true;
                     }
                 }
+
+                if (!empty($paths)) {
+                    $this->logEvent(
+                        event: 'room_photos_added',
+                        causer: request()->user(),
+                        subject: $room,
+                        properties: [
+                            'room_id' => (string) $room->id,
+                            'count'   => count($paths),
+                        ],
+                        logName: 'room',
+                    );
+                }
             }
         });
 
-        return back()->with('success', 'Kamar berhasil diperbarui.');
+        return back()->with('success', __('management/rooms.updated'));
     }
 
     public function destroy(Room $room)
     {
-        DB::transaction(function () use ($room) {
+        $deletedCount = 0;
+        DB::transaction(function () use ($room, &$deletedCount) {
             foreach ($room->photos as $photo) {
                 Storage::disk('public')->delete($photo->path);
             }
 
+            $deletedCount = (int) $room->photos()->count('id');
             $room->photos()->delete();
             $room->amenities()->detach();
             $room->delete();
         });
 
-        return back()->with('success', 'Kamar dan semua fotonya berhasil dihapus.');
+        if ($deletedCount > 0) {
+            $this->logEvent(
+                event: 'room_photos_purged',
+                causer: request()->user(),
+                subject: $room,
+                properties: [
+                    'room_id'       => (string) $room->id,
+                    'deleted_count' => $deletedCount,
+                ],
+                logName: 'room',
+            );
+        }
+
+        return back()->with('success', __('management/rooms.deleted'));
     }
 }

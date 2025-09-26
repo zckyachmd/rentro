@@ -1,0 +1,16 @@
+{
+    "title": "Log Audit",
+    "desc": "Catatan aktivitas sistem untuk audit dan troubleshooting.",
+    "list_title": "Log Audit",
+    "search_placeholder": "Cari aktivitas…",
+    "empty": "Tidak ada log audit.",
+    "detail_title": "Detail Aktivitas",
+    "detail_desc": "Informasi detail tentang aktivitas ini.",
+    "event": "Peristiwa",
+    "subject": "Subjek",
+    "log_name": "Nama Log",
+    "properties": "Properti",
+    "properties_copied": "Properti disalin ke clipboard",
+    "copy_properties": "Salin properti",
+    "linked": "terkait"
+}

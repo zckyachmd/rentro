@@ -6,12 +6,14 @@ import {
     XCircle,
 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { MidtransResultPageProps as PageProps } from '@/types/payment';
 
 export default function MidtransResultPage(props: PageProps) {
+    const { t } = useTranslation();
     const {
         variant,
         order_id,
@@ -26,55 +28,61 @@ export default function MidtransResultPage(props: PageProps) {
         switch (variant) {
             case 'finish':
                 return {
-                    title: 'Pembayaran Berhasil',
-                    desc: 'Terima kasih, transaksi Anda telah diproses.',
+                    title: t('payment.midtrans.finish.title'),
+                    desc: t('payment.midtrans.finish.desc'),
                     icon: <CheckCircle2 className="h-6 w-6 text-green-600" />,
                 };
             case 'unfinish':
                 return {
-                    title: 'Transaksi Belum Selesai',
-                    desc: 'Anda dapat melanjutkan pembayaran kapan saja.',
+                    title: t('payment.midtrans.unfinish.title'),
+                    desc: t('payment.midtrans.unfinish.desc'),
                     icon: <AlertTriangle className="h-6 w-6 text-amber-600" />,
                 };
             default:
                 return {
-                    title: 'Terjadi Kesalahan',
-                    desc: 'Maaf, terdapat kendala saat memproses transaksi.',
+                    title: t('payment.midtrans.error.title'),
+                    desc: t('payment.midtrans.error.desc'),
                     icon: <XCircle className="h-6 w-6 text-red-600" />,
                 };
         }
-    }, [variant]);
+    }, [variant, t]);
 
     return (
         <div className="mx-auto max-w-3xl p-4">
             <div className="mb-6 flex items-center gap-3">
                 {meta.icon}
                 <div>
-                    <h1 className="text-xl font-semibold leading-tight">
+                    <h1 className="text-xl leading-tight font-semibold">
                         {meta.title}
                     </h1>
-                    <p className="text-sm text-muted-foreground">{meta.desc}</p>
+                    <p className="text-muted-foreground text-sm">{meta.desc}</p>
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Ringkasan Transaksi</CardTitle>
+                    <CardTitle>{t('payment.midtrans.summary.title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-2 text-sm sm:grid-cols-2">
-                        <InfoRow label="Order ID" value={order_id || '-'} />
                         <InfoRow
-                            label="Status Kode"
+                            label={t('payment.midtrans.fields.order_id')}
+                            value={order_id || '-'}
+                        />
+                        <InfoRow
+                            label={t('payment.midtrans.fields.status_code')}
                             value={status_code || '-'}
                         />
                         <InfoRow
-                            label="Transaksi"
+                            label={t('payment.midtrans.fields.transaction')}
                             value={transaction_status || '-'}
                         />
-                        <InfoRow label="Fraud" value={fraud_status || '-'} />
                         <InfoRow
-                            label="Jumlah"
+                            label={t('payment.midtrans.fields.fraud')}
+                            value={fraud_status || '-'}
+                        />
+                        <InfoRow
+                            label={t('payment.midtrans.fields.amount')}
                             value={
                                 gross_amount
                                     ? `Rp ${Number(gross_amount).toLocaleString('id-ID')}`
@@ -86,7 +94,7 @@ export default function MidtransResultPage(props: PageProps) {
                         <Button asChild>
                             <Link href={return_to}>
                                 <ExternalLink className="mr-2 h-4 w-4" />{' '}
-                                Kembali ke Tagihan
+                                {t('payment.midtrans.back_to_billing')}
                             </Link>
                         </Button>
                     </div>
@@ -100,7 +108,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     return (
         <div className="flex items-center justify-between gap-3">
             <div className="text-muted-foreground">{label}</div>
-            <div className="break-all text-right font-medium">{value}</div>
+            <div className="text-right font-medium break-all">{value}</div>
         </div>
     );
 }

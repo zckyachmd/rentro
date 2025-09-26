@@ -36,7 +36,9 @@ class TwoFactorLoginController extends Controller
             : $this->useRecoveryCodeToken($user, $token);
 
         if (!$ok) {
-            return back()->withErrors(['token' => $isOtp ? 'Kode OTP tidak valid' : 'Recovery code tidak valid']);
+            return back()->withErrors([
+                'token' => $isOtp ? __('auth.2fa.invalid_otp') : __('auth.2fa.invalid_recovery'),
+            ]);
         }
 
         $remember = (bool) Session::pull('2fa:remember', false);

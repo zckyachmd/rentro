@@ -26,7 +26,7 @@ return new class extends Migration
             $table->json('attachments')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
-            $table->softDeletes();
+            // No soft deletes for payments; keep historical integrity via status
 
             $table->unique(['reference']);
             $table->index(['invoice_id', 'status']);

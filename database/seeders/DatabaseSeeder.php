@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             MenuSeeder::class,
             UserSeeder::class,
+            AmenitySeeder::class,
             RoomTypeSeeder::class,
             RoomSeeder::class,
         ]);

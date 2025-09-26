@@ -4,15 +4,20 @@ namespace App\Enum;
 
 enum EmergencyRelationship: string
 {
-    case PARENT    = 'Orang Tua';
-    case SIBLING   = 'Saudara Kandung';
-    case RELATIVE  = 'Keluarga Lain';
-    case SPOUSE    = 'Pasangan';
-    case FRIEND    = 'Teman Dekat';
-    case GUARDIAN  = 'Wali';
-    case ROOMMATE  = 'Teman Sekamar';
-    case COLLEAGUE = 'Rekan Kerja';
-    case NEIGHBOR  = 'Tetangga';
+    case PARENT    = 'parent';
+    case SIBLING   = 'sibling';
+    case RELATIVE  = 'relative';
+    case SPOUSE    = 'spouse';
+    case FRIEND    = 'friend';
+    case GUARDIAN  = 'guardian';
+    case ROOMMATE  = 'roommate';
+    case COLLEAGUE = 'colleague';
+    case NEIGHBOR  = 'neighbor';
+
+    public function label(): string
+    {
+        return __('enum.emergency_relationship.' . strtolower($this->name));
+    }
 
     public static function values(): array
     {

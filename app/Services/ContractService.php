@@ -71,7 +71,7 @@ class ContractService implements ContractServiceInterface
                     })
                     ->exists();
                 if ($hasOverlap) {
-                    throw new \RuntimeException('Jadwal kamar bentrok dengan kontrak lain.');
+                    throw new \RuntimeException(__('management/contracts.errors.schedule_conflict'));
                 }
 
                 $activeNow = Contract::query()
@@ -84,16 +84,16 @@ class ContractService implements ContractServiceInterface
                     $renewOff  = !$activeNow->auto_renew || !empty($activeNow->renewal_cancelled_at);
 
                     if (!$activeEnd) {
-                        throw new \RuntimeException('Tidak dapat memesan: kontrak aktif tidak memiliki tanggal berakhir.');
+                        throw new \RuntimeException(__('management/contracts.errors.active_missing_end_date'));
                     }
 
                     if (!$start->greaterThan($activeEnd)) {
-                        throw new \RuntimeException('Tanggal mulai harus setelah tanggal berakhir kontrak saat ini.');
+                        throw new \RuntimeException(__('management/contracts.errors.start_must_be_after_active_end'));
                     }
 
                     $withinWindow = $activeEnd->lessThanOrEqualTo($today->copy()->addDays(max(1, $leadDays)));
                     if (!$renewOff || !$withinWindow) {
-                        throw new \RuntimeException('Kamar belum dapat dipesan saat ini. Hanya dapat dipesan 7 hari sebelum kontrak berakhir jika auto‑renew nonaktif.');
+                        throw new \RuntimeException(__('management/contracts.errors.cannot_prebook_yet', ['days' => (int) $leadDays]));
                     }
 
                     $hasFutureHolder = Contract::query()
@@ -106,7 +106,7 @@ class ContractService implements ContractServiceInterface
                         ->whereDate('start_date', '>', $today->toDateString())
                         ->exists();
                     if ($hasFutureHolder) {
-                        throw new \RuntimeException('Kamar sudah memiliki pemesanan berikutnya.');
+                        throw new \RuntimeException(__('management/contracts.errors.future_booking_exists'));
                     }
                 }
 
@@ -135,8 +135,8 @@ class ContractService implements ContractServiceInterface
                 $payloadDeposit         = isset($data['deposit_cents']) ? (int) $data['deposit_cents'] : 0;
                 $effectiveRoomRentCents = (int) ($room->effectivePriceCents($period) ?? 0);
                 $effectiveRoomDepCents  = (int) ($room->effectiveDepositCents($period) ?? 0);
-                $fallbackRentRupiah     = (int) round($effectiveRoomRentCents / 100);
-                $fallbackDepositRupiah  = (int) round($effectiveRoomDepCents / 100);
+                $fallbackRentRupiah     = (int) $effectiveRoomRentCents;
+                $fallbackDepositRupiah  = (int) $effectiveRoomDepCents;
                 $finalRent              = $payloadRent > 0 ? $payloadRent : $fallbackRentRupiah;
                 $finalDeposit           = $payloadDeposit > 0 ? $payloadDeposit : $fallbackDepositRupiah;
 

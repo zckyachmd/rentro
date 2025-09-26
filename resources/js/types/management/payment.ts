@@ -23,6 +23,11 @@ export type PaymentIndexPageProps = {
         string,
         unknown
     >;
+    summary?: {
+        count: number;
+        sum_all: number;
+        sum_completed: number;
+    };
     invoiceCandidates?: Array<{
         id: string;
         number: string;

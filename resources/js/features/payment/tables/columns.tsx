@@ -9,6 +9,7 @@ import {
     XCircle,
 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -20,6 +21,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import i18n from '@/lib/i18n';
 import { variantForPaymentStatus } from '@/lib/status';
 import type { PaymentRow } from '@/types/management';
 
@@ -43,12 +45,14 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'paid_at',
         accessorKey: 'paid_at',
-        title: 'Tanggal',
+        title: i18n.t('payment.form.paid_at'),
         className: COL.date,
         sortable: true,
         cell: ({ row }) => {
             const p = row.original;
-            const clickable = p.status === 'Completed' && !!p.paid_at;
+            const clickable =
+                (p.status || '').trim().toLowerCase() === 'completed' &&
+                !!p.paid_at;
             if (!clickable) {
                 return <div className={COL.date}>{p.paid_at ?? '—'}</div>;
             }
@@ -56,8 +60,8 @@ export const createColumns = (opts?: {
                 <button
                     type="button"
                     onClick={() => opts?.onShowDetail?.(p)}
-                    className={`${COL.date} truncate text-left text-primary hover:underline`}
-                    title="Lihat detail pembayaran"
+                    className={`${COL.date} text-primary truncate text-left hover:underline`}
+                    title={i18n.t('common.view_detail')}
                 >
                     {p.paid_at}
                 </button>
@@ -67,7 +71,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'invoice',
         accessorKey: 'invoice',
-        title: 'Invoice',
+        title: i18n.t('invoice.number_label'),
         className: COL.invoice,
         cell: ({ row }) => (
             <div className={`${COL.invoice} truncate`}>
@@ -78,7 +82,7 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'tenant',
         accessorKey: 'tenant',
-        title: 'Penyewa',
+        title: i18n.t('common.tenant'),
         className: COL.tenant,
         cell: ({ row }) => (
             <div className={`${COL.tenant} truncate`}>
@@ -89,28 +93,45 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'method',
         accessorKey: 'method',
-        title: 'Metode',
+        title: i18n.t('payment.form.method'),
         className: COL.method,
         sortable: true,
+        cell: ({ row }) => {
+            const raw = row.original.method || '';
+            const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
+            const label = i18n.t(`payment.method.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return <div className={COL.method}>{label}</div>;
+        },
     }),
     makeColumn<PaymentRow>({
         id: 'status',
         accessorKey: 'status',
-        title: 'Status',
+        title: i18n.t('common.status'),
         className: COL.status,
         sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge variant={variantForPaymentStatus(row.original.status)}>
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const raw = row.original.status || '';
+            const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
+            const label = i18n.t(`payment.status.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return (
+                <div className={COL.status}>
+                    <Badge variant={variantForPaymentStatus(raw)}>
+                        {label}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<PaymentRow>({
         id: 'amount_cents',
         accessorKey: 'amount_cents',
-        title: 'Nominal',
+        title: i18n.t('common.amount'),
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
@@ -123,8 +144,8 @@ export const createColumns = (opts?: {
     }),
     makeColumn<PaymentRow>({
         id: 'actions',
-        title: 'Aksi',
-        className: COL.actions,
+        title: i18n.t('common.actions'),
+        className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const p = row.original;
             return (
@@ -134,21 +155,28 @@ export const createColumns = (opts?: {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`Aksi pembayaran ${p.invoice ?? ''}`}
+                                aria-label={i18n.t('payment.actions_for', {
+                                    invoice: p.invoice ?? '',
+                                })}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
                             <DropdownMenuItem
                                 onClick={() => opts?.onShowDetail?.(p)}
                             >
-                                <Eye className="mr-2 h-4 w-4" /> Lihat Detail
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
-                            {p.method === 'Transfer' &&
-                            p.status === 'Review' ? (
-                                <>
+                            {(p.method || '').trim().toLowerCase() ===
+                                'transfer' &&
+                            (p.status || '').trim().toLowerCase() ===
+                                'review' ? (
+                                <Can all={['payment.update']}>
                                     <DropdownMenuItem
                                         onClick={() =>
                                             opts?.onReview
@@ -157,26 +185,31 @@ export const createColumns = (opts?: {
                                         }
                                     >
                                         <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
-                                        Review
+                                        {i18n.t('payment.review.action')}
                                     </DropdownMenuItem>
-                                </>
+                                </Can>
                             ) : null}
-                            {p.status === 'Completed' ? (
+                            {(p.status || '').trim().toLowerCase() ===
+                            'completed' ? (
                                 <>
-                                    <DropdownMenuItem
-                                        onClick={() => opts?.onPrint?.(p)}
-                                    >
-                                        <Printer className="mr-2 h-4 w-4" />{' '}
-                                        Cetak Kwitansi
-                                    </DropdownMenuItem>
+                                    <Can all={['payment.view']}>
+                                        <DropdownMenuItem
+                                            onClick={() => opts?.onPrint?.(p)}
+                                        >
+                                            <Printer className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('payment.print_receipt')}
+                                        </DropdownMenuItem>
+                                    </Can>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive"
-                                        onClick={() => opts?.onVoid?.(p)}
-                                    >
-                                        <XCircle className="mr-2 h-4 w-4" />{' '}
-                                        Batalkan
-                                    </DropdownMenuItem>
+                                    <Can all={['payment.update']}>
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={() => opts?.onVoid?.(p)}
+                                        >
+                                            <XCircle className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('payment.void.title')}
+                                        </DropdownMenuItem>
+                                    </Can>
                                 </>
                             ) : null}
                         </DropdownMenuContent>

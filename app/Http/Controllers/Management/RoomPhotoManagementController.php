@@ -37,7 +37,21 @@ class RoomPhotoManagementController extends Controller
             $stored[] = $room->photos()->create(['path' => $path]);
         }
 
-        return back()->with('success', 'Foto berhasil ditambahkan.');
+        if (!empty($stored)) {
+            $this->logEvent(
+                event: 'room_photo_added',
+                causer: $request->user(),
+                subject: $room,
+                properties: [
+                    'room_id'   => (string) $room->id,
+                    'count'     => count($stored),
+                    'photo_ids' => collect($stored)->pluck('id')->map(fn ($v) => (string) $v)->values()->all(),
+                ],
+                logName: 'room',
+            );
+        }
+
+        return back()->with('success', __('management/rooms.photos.added'));
     }
 
     public function destroy(Room $room, RoomPhoto $photo)
@@ -45,7 +59,8 @@ class RoomPhotoManagementController extends Controller
         if ((int) $photo->room_id !== (int) $room->id) {
             abort(404);
         }
-
+        $photoId  = (string) $photo->id;
+        $wasCover = (bool) $photo->is_cover;
         DB::transaction(function () use ($room, $photo): void {
             $path     = $photo->path;
             $wasCover = (bool) $photo->is_cover;
@@ -69,7 +84,19 @@ class RoomPhotoManagementController extends Controller
             }
         });
 
-        return back()->with('success', 'Foto berhasil dihapus.');
+        $this->logEvent(
+            event: 'room_photo_deleted',
+            causer: request()->user(),
+            subject: $room,
+            properties: [
+                'room_id'   => (string) $room->id,
+                'photo_id'  => $photoId,
+                'was_cover' => $wasCover,
+            ],
+            logName: 'room',
+        );
+
+        return back()->with('success', __('management/rooms.photos.deleted'));
     }
 
     public function batch(BatchRoomPhotoRequest $request, Room $room)
@@ -109,9 +136,22 @@ class RoomPhotoManagementController extends Controller
                 }
             });
 
-            return back()->with('success', 'Perubahan foto berhasil disimpan.');
+            $this->logEvent(
+                event: 'room_photo_batch_updated',
+                causer: request()->user(),
+                subject: $room,
+                properties: [
+                    'room_id'     => (string) $room->id,
+                    'deleted_ids' => collect($data['deleted_ids'] ?? [])->map(fn ($v) => (int) $v)->values()->all(),
+                    'ordered_ids' => collect($data['ordered_ids'] ?? [])->map(fn ($v) => (int) $v)->values()->all(),
+                    'cover_id'    => isset($data['cover_id']) ? (int) $data['cover_id'] : null,
+                ],
+                logName: 'room',
+            );
+
+            return back()->with('success', __('management/rooms.photos.batch.saved'));
         } catch (\Throwable $e) {
-            return back()->with('error', 'Gagal menyimpan perubahan foto.');
+            return back()->with('error', __('management/rooms.photos.batch.failed'));
         }
     }
 }

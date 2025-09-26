@@ -5,7 +5,7 @@ export type BaseInvoiceRow = {
     amount_cents: number;
     outstanding?: number;
     ticket_url?: string | null;
-    status: 'Pending' | 'Overdue' | 'Paid' | 'Cancelled' | string;
+    status: string; // e.g., 'pending' | 'overdue' | 'paid' | 'cancelled'
     tenant?: string | null;
     room_number?: string | null;
 };
@@ -22,7 +22,7 @@ export type InvoiceRow = BaseInvoiceRow;
 export type ContractOption = {
     id: string;
     name: string;
-    period?: 'Monthly' | 'Weekly' | 'Daily' | string;
+    period?: 'monthly' | 'weekly' | 'daily' | string;
     start_date?: string | null;
     end_date?: string | null;
 };
@@ -37,6 +37,14 @@ export type ManagementInvoicePageProps = {
     options?: { statuses: string[]; contracts: ContractOption[] };
     filters?: { status?: string | null };
     query?: QueryBag & Record<string, unknown>;
+    summary?: {
+        count: number;
+        count_pending: number;
+        count_overdue: number;
+        count_paid: number;
+        sum_amount: number;
+        sum_outstanding: number;
+    };
 };
 
 export type InvoiceDetailTarget = { id: string; number: string } | null;

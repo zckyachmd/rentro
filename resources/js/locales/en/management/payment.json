@@ -1,0 +1,12 @@
+{
+    "title": "Payments",
+    "desc": "Manage manual payments (cash/transfer), including partial installments and print receipts.",
+    "list_title": "Payment List",
+    "search_placeholder": "Search invoice/tenant…",
+    "add": "Add Payment",
+    "empty": "No payments.",
+    "summary": {
+        "completed": "Sum (completed)",
+        "all": "Sum (all)"
+    }
+}

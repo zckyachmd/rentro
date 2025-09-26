@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,20 +30,25 @@ export default function DetailDialog({
     onOpenChange: (open: boolean) => void;
     item: ActivityItem | null;
 }) {
+    const { t, i18n } = useTranslation();
+    const { t: tAudit } = useTranslation('management/audit');
     const createdAt = React.useMemo(() => {
         try {
-            return new Date(item?.created_at || '').toLocaleString('id-ID', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            });
+            return new Date(item?.created_at || '').toLocaleString(
+                i18n.language,
+                {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                },
+            );
         } catch {
             return item?.created_at ?? '-';
         }
-    }, [item?.created_at]);
+    }, [item?.created_at, i18n.language]);
 
     const textToCopy = React.useMemo(
         () =>
@@ -55,12 +61,12 @@ export default function DetailDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[95vw] p-0 sm:max-w-2xl">
-                <DialogHeader className="px-6 pb-2 pt-6">
+                <DialogHeader className="px-6 pt-6 pb-2">
                     <DialogTitle className="text-base sm:text-lg">
-                        Detail Audit Log
+                        {tAudit('detail_title')}
                     </DialogTitle>
                     <DialogDescription className="text-xs sm:text-sm">
-                        Ringkasan aktivitas dan properti perubahan.
+                        {tAudit('detail_desc')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -68,16 +74,16 @@ export default function DetailDialog({
                     <div className="min-w-0 space-y-4 px-6 py-4">
                         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-1">
-                                <dt className="text-xs text-muted-foreground">
-                                    Waktu
+                                <dt className="text-muted-foreground text-xs">
+                                    {t('common.time')}
                                 </dt>
                                 <dd className="text-sm font-medium">
                                     {createdAt}
                                 </dd>
                             </div>
                             <div className="space-y-1">
-                                <dt className="text-xs text-muted-foreground">
-                                    Event
+                                <dt className="text-muted-foreground text-xs">
+                                    {tAudit('event')}
                                 </dt>
                                 <dd>
                                     <Badge variant="secondary">
@@ -86,8 +92,8 @@ export default function DetailDialog({
                                 </dd>
                             </div>
                             <div className="space-y-1">
-                                <dt className="text-xs text-muted-foreground">
-                                    Pengguna
+                                <dt className="text-muted-foreground text-xs">
+                                    {t('common.user')}
                                 </dt>
                                 <dd className="text-sm">
                                     {item.causer?.name ? (
@@ -95,14 +101,17 @@ export default function DetailDialog({
                                             <div className="font-medium">
                                                 {item.causer.name}
                                             </div>
-                                            <div className="text-xs text-muted-foreground">
+                                            <div className="text-muted-foreground text-xs">
                                                 {item.causer.email ? (
                                                     <CopyInline
                                                         value={
                                                             item.causer.email
                                                         }
                                                         variant="link"
-                                                        successMessage="Email disalin"
+                                                        successMessage={t(
+                                                            'email_copied',
+                                                            { ns: 'profile' },
+                                                        )}
                                                     >
                                                         {item.causer.email}
                                                     </CopyInline>
@@ -117,8 +126,8 @@ export default function DetailDialog({
                                 </dd>
                             </div>
                             <div className="space-y-1">
-                                <dt className="text-xs text-muted-foreground">
-                                    Subject
+                                <dt className="text-muted-foreground text-xs">
+                                    {tAudit('subject')}
                                 </dt>
                                 <dd className="text-sm">
                                     {subjectLabel(
@@ -128,16 +137,16 @@ export default function DetailDialog({
                                 </dd>
                             </div>
                             <div className="space-y-1 sm:col-span-2">
-                                <dt className="text-xs text-muted-foreground">
-                                    Log Name
+                                <dt className="text-muted-foreground text-xs">
+                                    {tAudit('log_name')}
                                 </dt>
                                 <dd className="text-sm">
                                     {item.log_name ?? '-'}
                                 </dd>
                             </div>
                             <div className="space-y-1 sm:col-span-2">
-                                <dt className="text-xs text-muted-foreground">
-                                    Deskripsi
+                                <dt className="text-muted-foreground text-xs">
+                                    {t('common.description')}
                                 </dt>
                                 <dd className="text-sm">
                                     {item.description ?? '-'}
@@ -148,16 +157,16 @@ export default function DetailDialog({
                         <div className="min-w-0 space-y-2">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm font-medium">
-                                    Properties
+                                    {tAudit('properties')}
                                 </div>
                                 <CopyInline
                                     as="button"
                                     value={textToCopy}
-                                    className="inline-flex items-center gap-1 rounded-md border bg-background p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                    successMessage="Properties disalin"
+                                    className="bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-1 rounded-md border p-1"
+                                    successMessage={tAudit('properties_copied')}
                                 >
                                     <span className="sr-only">
-                                        Copy Properties
+                                        {tAudit('copy_properties')}
                                     </span>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -182,7 +191,7 @@ export default function DetailDialog({
 
                 <DialogFooter className="px-6 py-4">
                     <Button type="button" onClick={() => onOpenChange(false)}>
-                        Tutup
+                        {t('common.close')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

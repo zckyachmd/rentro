@@ -126,6 +126,14 @@ class RateLimitServiceProvider extends ServiceProvider
                 Limit::perMinute(12)->by('ip:' . $request->ip()),
             ];
         });
+
+        // UI Preferences (theme, locale, etc.)
+        RateLimiter::for('ui-preferences', function (Request $request) use ($makeKey) {
+            return [
+                Limit::perMinute(20)->by($makeKey($request, 'ui-pref')),
+                Limit::perHour(200)->by('ip:' . $request->ip()),
+            ];
+        });
         RateLimiter::for('secure-tenant-status', function (Request $request) use ($makeKey) {
             return [
                 Limit::perMinute(30)->by($makeKey($request, 'tenant-status', (string) $request->route('invoice'))),

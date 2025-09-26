@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | Semantic version for app assets/signatures. Used to namespace caches and
+    | client payloads. Configure via APP_VERSION in your environment.
+    |
+    */
+
+    'version' => env('APP_VERSION', '0.0.0'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

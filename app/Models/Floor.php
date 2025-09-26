@@ -23,12 +23,12 @@ class Floor extends Model
         'name',
     ];
 
-    public function building()
+    public function building(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Building::class);
     }
 
-    public function rooms()
+    public function rooms(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Room::class);
     }

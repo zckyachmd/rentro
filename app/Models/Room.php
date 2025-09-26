@@ -65,7 +65,7 @@ class Room extends Model
         if ($cents === null) {
             return null;
         }
-        $amount = (int) round(((int) $cents) / 100);
+        $amount = (int) $cents;
 
         return 'Rp ' . number_format($amount, 0, ',', '.');
     }

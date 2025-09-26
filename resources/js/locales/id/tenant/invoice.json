@@ -1,0 +1,114 @@
+{
+    "actions_for": "Aksi invoice {{number}}",
+    "amounts": "Nilai",
+    "cstore_label": "Gerai",
+    "deadline": "Batas Waktu",
+    "desc": "Daftar tagihan dan pembayaran.",
+    "detail": {
+        "admin_note": "Catatan Admin",
+        "cancelled_note": "Tagihan dibatalkan. Pembayaran baru tidak tersedia, riwayat pembayaran tetap tercatat.",
+        "info": "Info Invoice",
+        "items": "Rincian Item",
+        "note": "Catatan",
+        "payment_history": "Riwayat Pembayaran",
+        "receiver_bank": "Rek. Penerima",
+        "reference": "Referensi",
+        "rejected": "Ditolak",
+        "reviewed_by": "Diproses oleh",
+        "subtitle": "Ringkasan tagihan",
+        "title": "Detail Invoice"
+    },
+    "filter": "Filter",
+    "manual": {
+        "account_detail": "Detail Rekening",
+        "account_no": "No. Rekening",
+        "bank": "Bank",
+        "dest_account": "Rekening Tujuan",
+        "file": "File",
+        "info": "Setelah mengirim bukti, status akan menjadi menunggu review admin.",
+        "name": "Nama",
+        "note_label": "Catatan (opsional)",
+        "note_placeholder": "Contoh: Sudah transfer dari bank X",
+        "paid_at": "Tanggal Bayar",
+        "proof": "Bukti Transfer",
+        "title": "Transfer Manual"
+    },
+    "method": "Metode",
+    "method_manual": "Manual",
+    "method_section": {
+        "subtitle": "Pilih metode dan lengkapi detail",
+        "title": "Metode Pembayaran"
+    },
+    "outstanding": "Sisa",
+    "pay": {
+        "check_status": "Cek Status",
+        "create_va": "Buat VA",
+        "submit_proof": "Kirim Bukti",
+        "subtitle": "Pilih metode pembayaran dan ikuti petunjuk.",
+        "title": "Bayar Invoice"
+    },
+    "pay_again": "Bayar Ulang",
+    "payment_detail": {
+        "attachments_desc": "Pratinjau bukti pembayaran.",
+        "attachments_title": "Lampiran Pembayaran",
+        "info": "Info Pembayaran",
+        "receiver_section": "Rekening Penerima",
+        "review_title": "Hasil Review",
+        "subtitle": "Ringkasan pembayaran dan hasil review",
+        "title": "Detail Pembayaran",
+        "view_proof": "Lihat Bukti"
+    },
+    "pending": {
+        "info": "Harap selesaikan pembayaran sesuai instruksi.",
+        "manual_note": "Bukti transfer sudah dikirim dan sedang menunggu review admin.",
+        "subtitle": "Selesaikan sebelum waktu habis",
+        "title": "Pembayaran Berjalan"
+    },
+    "search": "Cari",
+    "search_placeholder": "Cari nomor invoice/kamar…",
+    "steps": {
+        "manual": {
+            "1": {
+                "desc": "Pilih salah satu rekening admin yang tersedia.",
+                "title": "Pilih rekening tujuan"
+            },
+            "2": {
+                "desc": "Transfer ke rekening terpilih; sertakan nomor invoice pada berita/notes bila diminta.",
+                "title": "Transfer sesuai instruksi"
+            },
+            "3": {
+                "desc": "Unggah bukti pada form lalu kirim.",
+                "title": "Unggah bukti transfer"
+            },
+            "4": {
+                "desc": "Admin akan memverifikasi pembayaran; status akan diperbarui.",
+                "title": "Menunggu review admin"
+            }
+        },
+        "subtitle": "Petunjuk singkat",
+        "title": "Cara Bayar",
+        "va": {
+            "1": {
+                "desc": "Pilih bank VA lalu buat nomor VA.",
+                "title": "Buat VA"
+            },
+            "2": {
+                "desc": "Bayar ke nomor VA sebelum batas waktu.",
+                "title": "Lakukan pembayaran"
+            },
+            "3": {
+                "desc": "Sistem akan mengecek status secara berkala.",
+                "title": "Konfirmasi otomatis"
+            }
+        }
+    },
+    "summary": {
+        "subtitle": "Informasi invoice",
+        "title": "Ringkasan"
+    },
+    "title": "Tagihan Saya",
+    "va_copied": "Nomor VA disalin",
+    "va_label": "VA",
+    "va_number": "Nomor VA",
+    "virtual_account": "Virtual Account"
+}

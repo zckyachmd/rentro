@@ -3,6 +3,7 @@
 import { router, useForm } from '@inertiajs/react';
 import { AlertTriangle } from 'lucide-react';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ export default function ForceLogoutDialog({
     onOpenChange,
     user,
 }: ForceLogoutDialogProps) {
+    const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
     const [submitting, setSubmitting] = React.useState(false);
     const { data, setData, reset } = useForm<{
         scope: 'all' | 'all_except_current';
@@ -54,10 +57,11 @@ export default function ForceLogoutDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Cabut Sesi Pengguna</DialogTitle>
+                    <DialogTitle>
+                        {tUser('user.force_logout.title')}
+                    </DialogTitle>
                     <DialogDescription>
-                        Paksa keluar dari semua perangkat atau selain perangkat
-                        saat ini.
+                        {tUser('user.force_logout.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -76,13 +80,13 @@ export default function ForceLogoutDialog({
                             <div className="truncate font-medium">
                                 {user.name}
                             </div>
-                            <div className="truncate text-xs text-muted-foreground">
+                            <div className="text-muted-foreground truncate text-xs">
                                 {user.email}
                             </div>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label>Target</Label>
+                        <Label>{tUser('user.force_logout.target')}</Label>
                         <RadioGroup
                             value={data.scope}
                             onValueChange={(v: 'all' | 'all_except_current') =>
@@ -91,27 +95,31 @@ export default function ForceLogoutDialog({
                         >
                             <label className="flex items-center gap-2">
                                 <RadioGroupItem value="all" />
-                                <span className="text-sm">Semua perangkat</span>
+                                <span className="text-sm">
+                                    {tUser('user.force_logout.scope.all')}
+                                </span>
                             </label>
                             <label className="flex items-center gap-2">
                                 <RadioGroupItem value="all_except_current" />
                                 <span className="text-sm">
-                                    Semua kecuali perangkat saat ini
+                                    {tUser(
+                                        'user.force_logout.scope.all_except_current',
+                                    )}
                                 </span>
                             </label>
                         </RadioGroup>
                     </div>
                     <div className="space-y-2">
-                        <Label>Alasan</Label>
+                        <Label>{t('invoice.reason')}</Label>
                         <Textarea
                             rows={3}
                             value={data.reason}
                             onChange={(e) => setData('reason', e.target.value)}
-                            placeholder="Opsional"
+                            placeholder={t('payment.form.note_placeholder')}
                         />
                         <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
                             <AlertTriangle className="mr-1 inline-block h-4 w-4" />{' '}
-                            Tindakan ini tidak dapat dibatalkan.
+                            {t('common.irreversible')}
                         </div>
                     </div>
                 </div>
@@ -121,7 +129,7 @@ export default function ForceLogoutDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Batal
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         type="button"
@@ -129,7 +137,7 @@ export default function ForceLogoutDialog({
                         disabled={submitting}
                         onClick={onSubmit}
                     >
-                        Cabut Sesi
+                        {tUser('user.force_logout.submit')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

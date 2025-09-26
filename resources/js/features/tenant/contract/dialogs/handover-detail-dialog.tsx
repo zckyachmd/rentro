@@ -2,6 +2,7 @@
 
 import { router } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,8 @@ export default function TenantHandoverDetailDialog({
     onRefetch?: () => void | Promise<void>;
 }) {
     const currentHandover = handover;
+    const { t } = useTranslation('management/contract');
+    const { t: tTenant } = useTranslation('tenant/handover');
     const [lightbox, setLightbox] = React.useState<{
         open: boolean;
         index: number;
@@ -152,12 +155,21 @@ export default function TenantHandoverDetailDialog({
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-[calc(100%-1.5rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
-                    <DialogHeader className="px-5 pb-4 pt-6 sm:px-6">
-                        <DialogTitle>Detail Serah Terima</DialogTitle>
+                    <DialogHeader className="px-5 pt-6 pb-4 sm:px-6">
+                        <DialogTitle>{t('handover.detail_title')}</DialogTitle>
                         <DialogDescription>
                             {currentHandover
-                                ? `Ringkasan ${currentHandover.type} — ${formatDate(currentHandover.recorded_at, true)}`
-                                : 'Ringkasan entri serah terima.'}
+                                ? t('handover.summary', {
+                                      type:
+                                          currentHandover.type === 'checkin'
+                                              ? t('handover.menu.checkin')
+                                              : t('handover.menu.checkout'),
+                                      date: formatDate(
+                                          currentHandover.recorded_at,
+                                          true,
+                                      ),
+                                  })
+                                : t('handover.detail_desc')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -167,19 +179,19 @@ export default function TenantHandoverDetailDialog({
                         <div className="flex-1 overflow-auto overscroll-contain">
                             <div className="space-y-5 px-5 py-5 sm:px-6">
                                 {/* Meta + Status */}
-                                <section className="rounded-xl border bg-muted/10">
+                                <section className="bg-muted/10 rounded-xl border">
                                     <div className="grid grid-cols-2 gap-3 p-4 text-sm sm:grid-cols-3 sm:gap-4 sm:p-5">
                                         <div className="space-y-1">
-                                            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
-                                                Jenis
+                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">
+                                                {t('common.type')}
                                             </div>
                                             <div className="text-base font-semibold capitalize">
                                                 {currentHandover.type}
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
-                                                Waktu
+                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">
+                                                {t('common.time')}
                                             </div>
                                             <div className="text-base font-semibold">
                                                 {formatDate(
@@ -189,8 +201,8 @@ export default function TenantHandoverDetailDialog({
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
-                                                Status
+                                            <div className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase sm:text-xs">
+                                                {t('common.status')}
                                             </div>
                                             <div>
                                                 <Badge variant="outline">
@@ -202,10 +214,10 @@ export default function TenantHandoverDetailDialog({
 
                                     {/* Ringkas status tanggapan */}
                                     {currentHandover.disputed ? (
-                                        <div className="mx-4 mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 sm:mx-5 sm:mb-5 sm:p-4">
+                                        <div className="border-destructive/30 bg-destructive/5 mx-4 mb-4 rounded-lg border p-3 sm:mx-5 sm:mb-5 sm:p-4">
                                             <div className="flex items-center gap-2 text-sm">
                                                 <Badge variant="destructive">
-                                                    Disanggah
+                                                    {t('handover.disputed')}
                                                 </Badge>
                                                 {!disputeSameAsRecorded && (
                                                     <span className="text-destructive">
@@ -217,7 +229,7 @@ export default function TenantHandoverDetailDialog({
                                                 )}
                                             </div>
                                             {currentHandover.dispute_note ? (
-                                                <p className="mt-2 whitespace-pre-wrap text-sm text-destructive">
+                                                <p className="text-destructive mt-2 text-sm whitespace-pre-wrap">
                                                     {
                                                         currentHandover.dispute_note
                                                     }
@@ -225,10 +237,10 @@ export default function TenantHandoverDetailDialog({
                                             ) : null}
                                         </div>
                                     ) : currentHandover.acknowledged ? (
-                                        <div className="mx-4 mb-4 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-900/40 dark:bg-emerald-900/15 sm:mx-5 sm:mb-5 sm:p-4">
+                                        <div className="mx-4 mb-4 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 sm:mx-5 sm:mb-5 sm:p-4 dark:border-emerald-900/40 dark:bg-emerald-900/15">
                                             <div className="flex items-center gap-2 text-sm">
                                                 <Badge variant="outline">
-                                                    Dikonfirmasi
+                                                    {t('handover.confirmed')}
                                                 </Badge>
                                                 {!ackSameAsRecorded && (
                                                     <span className="text-muted-foreground">
@@ -240,7 +252,7 @@ export default function TenantHandoverDetailDialog({
                                                 )}
                                             </div>
                                             {currentHandover.acknowledge_note ? (
-                                                <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                                                <p className="text-muted-foreground mt-2 text-sm whitespace-pre-wrap">
                                                     {
                                                         currentHandover.acknowledge_note
                                                     }
@@ -252,13 +264,13 @@ export default function TenantHandoverDetailDialog({
 
                                 {/* Catatan (tampil hanya jika ada) */}
                                 {currentHandover.notes ? (
-                                    <section className="rounded-xl border bg-muted/10">
+                                    <section className="bg-muted/10 rounded-xl border">
                                         <div className="flex min-w-0 flex-col gap-3 p-4 sm:p-5">
-                                            <div className="text-sm font-semibold text-foreground">
-                                                Catatan
+                                            <div className="text-foreground text-sm font-semibold">
+                                                {t('common.note')}
                                             </div>
-                                            <ScrollArea className="max-h-48 min-h-[84px] overflow-auto rounded-lg border bg-background/80">
-                                                <div className="max-w-full whitespace-pre-wrap break-words p-4 text-sm leading-relaxed wrap-anywhere">
+                                            <ScrollArea className="bg-background/80 max-h-48 min-h-[84px] overflow-auto rounded-lg border">
+                                                <div className="max-w-full p-4 text-sm leading-relaxed break-words wrap-anywhere whitespace-pre-wrap">
                                                     {String(
                                                         currentHandover.notes,
                                                     )}
@@ -269,23 +281,22 @@ export default function TenantHandoverDetailDialog({
                                     </section>
                                 ) : null}
 
-                                {/* Lampiran (sembunyikan jika kosong) */}
+                                {/* Attachments (hide if empty) */}
                                 {currentHandover.attachments.length ? (
-                                    <section className="rounded-xl border bg-muted/10">
+                                    <section className="bg-muted/10 rounded-xl border">
                                         <div className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-5">
                                             <div className="flex items-center justify-between">
-                                                <div className="text-sm font-semibold text-foreground">
-                                                    Lampiran
+                                                <div className="text-foreground text-sm font-semibold">
+                                                    {t('common.attachments')}
                                                 </div>
-                                                <span className="text-xs text-muted-foreground">
-                                                    {
-                                                        currentHandover
-                                                            .attachments.length
-                                                    }{' '}
-                                                    file
+                                                <span className="text-muted-foreground text-xs">
+                                                    {t('common.files', {
+                                                        count: currentHandover
+                                                            .attachments.length,
+                                                    })}
                                                 </span>
                                             </div>
-                                            <ScrollArea className="max-h-[280px] rounded-lg border border-dashed bg-background/40">
+                                            <ScrollArea className="bg-background/40 max-h-[280px] rounded-lg border border-dashed">
                                                 <div className="grid gap-3 p-3 sm:grid-cols-3 sm:p-4 md:grid-cols-4 md:p-5">
                                                     {(showAllAttachments
                                                         ? currentHandover.attachments
@@ -315,7 +326,7 @@ export default function TenantHandoverDetailDialog({
                                                                 <button
                                                                     key={ff}
                                                                     type="button"
-                                                                    className="group relative overflow-hidden rounded-lg border bg-background transition hover:border-primary"
+                                                                    className="group bg-background hover:border-primary relative overflow-hidden rounded-lg border transition"
                                                                     onClick={() =>
                                                                         setLightbox(
                                                                             {
@@ -372,7 +383,7 @@ export default function TenantHandoverDetailDialog({
                                                 {currentHandover.attachments
                                                     .length > 8 &&
                                                 !showAllAttachments ? (
-                                                    <div className="border-t bg-background/60 p-2 text-center">
+                                                    <div className="bg-background/60 border-t p-2 text-center">
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
@@ -401,12 +412,12 @@ export default function TenantHandoverDetailDialog({
                             </div>
                         </div>
                     ) : (
-                        <div className="px-6 py-10 text-center text-sm text-muted-foreground">
+                        <div className="text-muted-foreground px-6 py-10 text-center text-sm">
                             Data serah terima tidak ditemukan.
                         </div>
                     )}
 
-                    <DialogFooter className="border-t bg-background/95 px-6 py-4">
+                    <DialogFooter className="bg-background/95 border-t px-6 py-4">
                         <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <Button
                                 type="button"
@@ -414,29 +425,30 @@ export default function TenantHandoverDetailDialog({
                                 className="w-full sm:w-auto"
                                 onClick={dismiss}
                             >
-                                Tutup
+                                {t('common.close')}
                             </Button>
 
                             {currentHandover && canRespond ? (
                                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                                     {disputeMode ? (
                                         <div className="flex w-full flex-col gap-2 sm:w-[360px]">
-                                            <div className="text-xs font-medium text-muted-foreground">
-                                                Alasan Sanggahan (min. 5
-                                                karakter)
+                                            <div className="text-muted-foreground text-xs font-medium">
+                                                {tTenant('dispute_label')}
                                             </div>
                                             <textarea
                                                 rows={3}
-                                                className="w-full resize-y rounded-md border bg-background p-2 text-sm"
+                                                className="bg-background w-full resize-y rounded-md border p-2 text-sm"
                                                 value={disputeNote}
                                                 onChange={(e) =>
                                                     setDisputeNote(
                                                         e.target.value,
                                                     )
                                                 }
-                                                placeholder="Contoh: terdapat kerusakan yang belum dicatat"
+                                                placeholder={tTenant(
+                                                    'dispute_placeholder',
+                                                )}
                                             />
-                                            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                            <div className="text-muted-foreground flex items-center justify-between text-[11px]">
                                                 <span>
                                                     {disputeNote.trim().length}
                                                     /5
@@ -452,7 +464,7 @@ export default function TenantHandoverDetailDialog({
                                                             )
                                                         }
                                                     >
-                                                        Batal
+                                                        {t('common.cancel')}
                                                     </Button>
                                                     <Button
                                                         type="button"
@@ -465,8 +477,12 @@ export default function TenantHandoverDetailDialog({
                                                         onClick={doDispute}
                                                     >
                                                         {disputeSaving
-                                                            ? 'Mengirim…'
-                                                            : 'Kirim Sanggahan'}
+                                                            ? t(
+                                                                  'common.sending',
+                                                              )
+                                                            : tTenant(
+                                                                  'submit_dispute',
+                                                              )}
                                                     </Button>
                                                 </div>
                                             </div>
@@ -481,7 +497,7 @@ export default function TenantHandoverDetailDialog({
                                                     setDisputeMode(true)
                                                 }
                                             >
-                                                Sanggah
+                                                {tTenant('dispute')}
                                             </Button>
                                             <Button
                                                 type="button"
@@ -490,8 +506,8 @@ export default function TenantHandoverDetailDialog({
                                                 onClick={doAcknowledge}
                                             >
                                                 {ackSaving
-                                                    ? 'Menyimpan…'
-                                                    : 'Konfirmasi'}
+                                                    ? t('common.saving')
+                                                    : tTenant('confirm')}
                                             </Button>
                                         </>
                                     )}

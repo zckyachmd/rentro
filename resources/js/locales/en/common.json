@@ -1,0 +1,452 @@
+{
+    "common": {
+        "active": "Active",
+        "actions": "Actions",
+        "all": "All",
+        "all_statuses": "All statuses",
+        "all_methods": "All methods",
+        "amenities": "Amenities",
+        "amount": "Amount",
+        "apply": "Apply",
+        "back": "Back",
+        "billed_to": "Billed To",
+        "building": "Building",
+        "cancel": "Cancel",
+        "cancelled_invoice": "This invoice has been cancelled.",
+        "change": "Change",
+        "click_to_preview": "Click to preview",
+        "close": "Close",
+        "contract": "Contract",
+        "copy": "Copy",
+        "copy_link": "Copy Link",
+        "daily": "Daily",
+        "days": "{{count}} days",
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days",
+        "delete": "Delete",
+        "description": "Description",
+        "due_date": "Due Date",
+        "edit": "Edit",
+        "email": "Email",
+        "end": "End",
+        "floor": "Floor",
+        "hide_password": "Hide password",
+        "irreversible": "This action cannot be undone.",
+        "issue_date": "Issue Date",
+        "last_updated": "Last updated:",
+        "link_copied": "Link copied",
+        "loading": "Loading…",
+        "manage": "Manage",
+        "monthly": "Monthly",
+        "name": "Name",
+        "icon": "Icon",
+        "no": "No",
+        "no_amenities": "No amenities",
+        "note": "Note",
+        "number": "Number",
+        "others": "others",
+        "paid_on": "Paid on {{date}}. Thank you.",
+        "pay": "Pay",
+        "period": "Period",
+        "period_sep": " to ",
+        "permissions": "Permissions",
+        "phone": "Phone",
+        "photos": "Room Photos",
+        "photos_hint": "Upload room photos for easier identification (min. 1 photo).",
+        "please_pay_before_due": "Please complete the payment before the due date.",
+        "price": "Price",
+        "print": "Print",
+        "printed_at": "Printed at {{datetime}}",
+        "processing": "Processing...",
+        "qty": "Qty",
+        "reset": "Reset",
+        "room": "Room",
+        "save": "Save",
+        "saving": "Saving…",
+        "sending": "Sending…",
+        "show_password": "Show password",
+        "start": "Start",
+        "status": "Status",
+        "subtotal": "Subtotal",
+        "tenant": "Tenant",
+        "time": "Time",
+        "total": "Total",
+        "type": "Type",
+        "unit_price": "Unit Price",
+        "unsaved_changes": "Unsaved changes",
+        "user": "User",
+        "users": "Users",
+        "view_detail": "View detail",
+        "weekly": "Weekly",
+        "yes": "Yes",
+        "max": "Maximum",
+        "open": "Open",
+        "fetch_failed": "Failed to fetch data",
+        "copy_success": "Copied to clipboard",
+        "copy_error": "Copy failed",
+        "export_csv": "Export CSV",
+        "billing_period": "Billing Period",
+        "billing_day": "Billing Day",
+        "attachments": "Attachments",
+        "files": "{{count}} files",
+        "filter": "Filters",
+        "view_all_attachments": "View all attachments",
+        "more": "more",
+        "reference": "Reference",
+        "recorded_by": "Recorded By",
+        "submit": "Submit",
+        "confirm": "Confirm",
+        "optional": "optional",
+        "selected": "Selected",
+        "clear_all": "Clear all",
+        "photo": "Photo",
+        "review": "Review",
+        "rent": "Rent",
+        "deposit": "Deposit",
+        "auto_renew": "Auto‑Renew",
+        "days_left": "Days Left",
+        "expired": "Expired"
+    },
+    "dashboard": {
+        "desc": "Daily summary, occupancy status, and key metrics.",
+        "title": "Dashboard",
+        "filters": {
+            "title": "Filters",
+            "desc": "Adjust the date range for revenue and lists.",
+            "start": "Start date",
+            "end": "End date",
+            "apply": "Apply",
+            "quick": "Quick",
+            "mtd": "MTD",
+            "wtd": "WTD",
+            "qtd": "QTD",
+            "ytd": "YTD"
+        },
+        "metrics": {
+            "occupancy": "Occupancy",
+            "occupancy_hint": "{{used}} of {{avail}} rooms used",
+            "rooms_available": "Vacant Rooms",
+            "rooms_hint": "{{occupied}} occupied of {{total}} total",
+            "occupied": "Occupied",
+            "reserved": "Reserved",
+            "vacant": "Vacant",
+            "contracts_active": "Active Contracts",
+            "contracts_hint": "{{booked}} booked · {{pending}} pending",
+            "invoices_unpaid": "Unpaid Invoices",
+            "invoices_overdue": "{{count}} overdue",
+            "revenue_mtd": "Revenue (MTD)",
+            "revenue": "Revenue",
+            "revenue_trend": "Revenue Trend",
+            "revenue_range": "In range: {{amount}}",
+            "revenue_7d": "Last 7 days: {{amount}}",
+            "outstanding_total": "Outstanding Total",
+            "revenue_today": "Today: {{amount}}",
+            "contracts_inactive": "Inactive: {{count}}",
+            "recent_payments": "Recent Payments",
+            "recent_payments_desc": "Latest completed payments",
+            "no_recent_payments": "No recent payments",
+            "recent_invoices": "Latest Invoices",
+            "recent_invoices_desc": "Your most recent invoices",
+            "no_recent_invoices": "No recent invoices",
+            "issued": "Issued",
+            "paid": "Paid",
+            "invoices_trend": "Invoice Counts",
+            "invoices_trend_desc": "Issued vs paid per day"
+        },
+        "hints": {
+            "occupancy": "Occupancy = (Occupied + Reserved) / Available Rooms. 'Maintenance' and 'Inactive' are excluded.",
+            "rooms_available": "Number of rooms with 'Vacant' status.",
+            "contracts_active": "Total contracts currently active.",
+            "invoices_unpaid": "Invoices with 'Pending' + 'Overdue' status. Not affected by date filter.",
+            "revenue_mtd": "Revenue (completed payments) from start of month to today.",
+            "outstanding_total": "Total outstanding balance across all active invoices. Not affected by date filter."
+        },
+        "actions": {
+            "view_rooms": "View rooms",
+            "view_contracts": "View contracts",
+            "view_pending": "Pending",
+            "view_overdue": "Overdue",
+            "view_all": "View all"
+        },
+
+        "upcoming": {
+            "checkins": "Upcoming Check-ins",
+            "checkouts": "Upcoming Check-outs",
+            "within_7d": "Within the next 7 days",
+            "empty": "No upcoming items"
+        },
+        "wip": {
+            "billing": "Invoices & Payments",
+            "contract": "Tenants & Contracts",
+            "desc": "We are polishing summaries, charts, and insights.",
+            "hint": "Meanwhile, manage data through the navigation menu.",
+            "room": "Room Management",
+            "title": "Dashboard is under development"
+        }
+    },
+    "datatable": {
+        "auto_refresh": "Auto Refresh",
+        "columns": "Columns",
+        "columns_visibility": "Columns Visibility",
+        "hide_all": "Hide all",
+        "loading": "Loading…",
+        "minutes": "{{count}} minutes",
+        "next": "Next",
+        "no_data": "No data.",
+        "off": "Off",
+        "page_indicator": "Page {{current}} / {{total}}",
+        "per_page": "Per page",
+        "prev": "Prev",
+        "reset_default": "Reset (default)",
+        "search": "Search",
+        "search_placeholder": "Search …",
+        "seconds": "{{count}} seconds",
+        "select_all": "Select all",
+        "select_row": "Select row",
+        "show_all": "Show all",
+        "showing": "Showing {{from}}–{{to}} of {{total}} items",
+        "sort": {
+            "asc": "ascending",
+            "desc": "descending",
+            "label": "Sort {{title}} {{direction}}"
+        }
+    },
+    "attachment": {
+        "loading": "Loading preview…",
+        "image_alt": "Attachment",
+        "file_type": "File type",
+        "size": "Size",
+        "preview_not_available": "Preview not available",
+        "unknown": "unknown"
+    },
+    "form": {
+        "placeholder": {
+            "email": "Enter email address",
+            "fullname": "Enter full name",
+            "number": "Enter number",
+            "phone": "Enter phone number",
+            "pick_date": "Pick date",
+            "pick_dob": "Pick date of birth",
+            "pick_gender": "Select gender",
+            "pick_type": "Select type",
+            "username": "Enter username",
+            "currency_example": "e.g. 1,200,000",
+            "currency_optional_example": "e.g. 500,000 (optional)"
+        },
+        "required": "Required.",
+        "required_hint": "Fields marked with * are required.",
+        "invalid_inputs": "Please check invalid inputs."
+    },
+    "invoice": {
+        "copy_number": "Copy invoice number",
+        "empty": "No invoices.",
+        "reason": "Reason",
+        "title": "Invoices",
+        "number_label": "Invoice Number"
+    },
+    "contract": {
+        "autorenew": {
+            "stop_action": "Stop auto‑renew",
+            "start_action": "Start auto‑renew"
+        },
+        "title": "My Contracts",
+        "title_with_number": "Contract #{{number}}",
+        "desc": "List of your room contracts.",
+        "detail_desc": "Details of your contract.",
+        "filter": "Filter",
+        "search": {
+            "aria": "Search contract or room number",
+            "placeholder": "Search contract/room number…"
+        },
+        "empty": "No contracts.",
+        "expired": "Expired",
+        "days_left": "Days Left",
+        "period": "Period",
+        "rent": "Rent",
+        "deposit": "Deposit",
+        "auto_renew": "Auto-Renew",
+        "billing_period": "Billing Period",
+        "billing_day": "Billing Day",
+        "room_info": {
+            "title": "Room Information",
+            "room_price": "Room Price"
+        },
+        "info": {
+            "title": "Contract Information"
+        },
+        "no_checkin": "No check-in data yet.",
+        "no_checkout": "No check-out data yet.",
+        "breadcrumb": {
+            "contracts": "Contracts",
+            "detail": "Contract Detail"
+        },
+        "actions_for": "Contract actions {{id}}",
+        "view_checkin": "View Check-in",
+        "view_checkout": "View Check-out",
+        "handover": {
+            "confirm_button": "Confirm",
+            "title": "Handovers",
+            "actions_aria": "Handover actions",
+            "confirm_title": "Confirm Handover",
+            "confirm_desc": "Make sure you have reviewed notes & attachments. This action marks the handover as confirmed by you.",
+            "confirm_note_prefix": "After confirmation, you can still file a dispute via admin if needed, but the initial status will be",
+            "confirmed": "Confirmed",
+            "dispute_title": "Dispute Handover",
+            "dispute_desc": "Explain the reason for your dispute.",
+            "dispute_placeholder": "Example: there is damage that has not been recorded",
+            "dispute_hint": "Write the reason briefly and clearly (min. 5 characters).",
+            "dispute_submit": "Submit Dispute",
+            "empty": "No handover history yet."
+        },
+        "stop": {
+            "title": "Disable Auto-Renew",
+            "desc": "Are you sure you want to disable auto-renew for this contract? If disabled, it will not be automatically renewed after it ends. To re-enable auto-renew, please contact the admin.",
+            "disable_button": "Disable",
+            "confirm_ack": "I have read and understand the information above.",
+            "summary": {
+                "end_date": "End date",
+                "days_left": "Days left",
+                "forfeit_limit": "Deposit penalty threshold"
+            },
+            "notice": {
+                "title": "Things to note:",
+                "no_guarantee": "No guarantee of renewal if the room has been booked by another tenant.",
+                "forfeit_now": "Since it is less than {{days}} days before the end date, your deposit will be forfeited as per policy.",
+                "forfeit_cond": "If stopping less than {{days}} days before the end date, the deposit will be forfeited as per policy."
+            }
+        },
+        "copy_number": "Copy contract number",
+        "actions": {
+            "print": "Print contract",
+            "view_invoice": "View invoice",
+            "view_invoices": "View invoices",
+            "view_invoices_page": "View on Invoices page"
+        },
+        "cancel_now": "Yes, Cancel"
+    },
+
+    "room": { "max_occupancy": "Max Occupancy" },
+    "status": {
+        "approved": "Approved",
+        "pending": "Pending",
+        "rejected": "Rejected"
+    },
+    "ui": {
+        "select": {
+            "no_results": "No results",
+            "placeholder": "Select…",
+            "search_placeholder": "Search…"
+        }
+    },
+    "payment": {
+        "manual": {
+            "title": "Manual Payment",
+            "desc": "Enter manual payment quickly."
+        },
+        "cancel_reason": "Cancellation reason",
+        "cancel_reason_placeholder": "Example: wrong input, transfer cancelled, etc.",
+        "form": {
+            "account_no": "Account No.",
+            "amount": "Payment Amount",
+            "attachment_label": "Attachment (Transfer Proof)",
+            "bank": "Bank",
+            "fill_max_title": "Fill maximum (Paid in full)",
+            "method": "Method",
+            "name": "Name",
+            "note_placeholder": "Optional",
+            "paid_at": "Paid At",
+            "pay_full_short": "(Paid in full)",
+            "preview": "Preview:",
+            "receiver_bank": "Receiver Account"
+        },
+        "lookup": {
+            "empty_candidates": "No candidate invoices yet",
+            "ineligible": "Invoice cannot be paid (already paid or invalid status)",
+            "pick_first": "Select an invoice first to proceed.",
+            "placeholder": "Search invoice…",
+            "summary": "Amount: {{amount}} · Outstanding: {{outstanding}}{{tenant_optional}}"
+        },
+        "midtrans": {
+            "back_to_billing": "Back to Billing",
+            "error": {
+                "desc": "Sorry, there was a problem processing the transaction.",
+                "title": "An Error Occurred"
+            },
+            "fields": {
+                "amount": "Amount",
+                "fraud": "Fraud",
+                "order_id": "Order ID",
+                "status_code": "Status Code",
+                "transaction": "Transaction"
+            },
+            "finish": {
+                "desc": "Thank you, your transaction has been processed.",
+                "title": "Payment Successful"
+            },
+            "summary": {
+                "title": "Transaction Summary"
+            },
+            "unfinish": {
+                "desc": "You can continue the payment anytime.",
+                "title": "Transaction Not Completed"
+            }
+        },
+        "result": {
+            "error": {
+                "action": "Back to Payment",
+                "desc": "Payment failed to process. Please try again from the payment page.",
+                "title": "Something Went Wrong"
+            },
+            "finish": {
+                "action": "Back to Payment",
+                "desc": "Thank you. Your payment has been processed.",
+                "title": "Payment Successful"
+            },
+            "page_desc": "Payment redirect summary",
+            "provider_label": "Provider:",
+            "unfinish": {
+                "action": "Back to Payment",
+                "desc": "You can continue the payment from the payment page.",
+                "title": "Payment Not Completed"
+            }
+        },
+        "void": {
+            "desc": "You are about to void payment for invoice {{number}}. Amount {{amount}}.",
+            "title": "Void Payment"
+        },
+        "void_now": "Void Now",
+        "attachments_title": "Payment Attachments",
+        "attachments_desc": "Preview payment proof.",
+        "print_receipt": "Print Receipt",
+        "review": {
+            "action": "Review",
+            "decision_required": "Choose decision: Approve or Reject.",
+            "title": "Transfer Payment Review",
+            "desc": "Pick a decision and verify data before submitting.",
+            "check_hint": "Check data before confirming/rejecting.",
+            "view_proof": "View Attachment",
+            "sender_note": "Sender Note",
+            "decision": "Decision",
+            "approve": "Approve",
+            "reject": "Reject",
+            "note_required_hint": "(required when rejecting)",
+            "note_placeholder_required": "Required — explain the rejection reason.",
+            "ack": "I confirm the payment details are correct."
+        },
+        "actions_for": "Payment actions {{invoice}}",
+        "detail": {
+            "info": "Payment Info"
+        },
+        "no_invoice": "Not linked to any invoice"
+    },
+    "management": {
+        "role": {
+            "title": "Roles",
+            "desc": "Manage user roles and permissions.",
+            "list_title": "Roles",
+            "add": "Add Role",
+            "empty": "No roles.",
+            "delete_title": "Delete Role"
+        }
+    }
+}

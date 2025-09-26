@@ -181,18 +181,18 @@ class UserManagementController extends Controller
         $messages = [];
         $status   = 'success';
 
-        $messages[] = 'Pengguna berhasil dibuat.';
+        $messages[] = __('management/users.created');
         if ($inviteOk) {
-            $messages[] = 'Email undangan akun telah dikirim (berisi username & password sementara serta tautan ubah password).';
+            $messages[] = __('management/users.invite.sent');
         } else {
-            $messages[] = 'PERHATIAN: Email undangan akun gagal dikirim. Anda dapat mengirim secara manual dari halaman reset password.';
+            $messages[] = __('management/users.invite.failed');
             $status     = 'warning';
         }
         if ($verificationRequested) {
             if ($verifyOk) {
-                $messages[] = 'Email verifikasi juga telah dikirim.';
+                $messages[] = __('management/users.verify.sent');
             } else {
-                $messages[] = 'Email verifikasi tidak terkirim. Pengguna dapat meminta verifikasi dari profil atau Anda dapat mengirim ulang.';
+                $messages[] = __('management/users.verify.failed');
                 if ($status === 'success') {
                     $status = 'warning';
                 }
@@ -221,22 +221,22 @@ class UserManagementController extends Controller
         sort($targetIds);
 
         if ($currentIds === $targetIds) {
-            return back()->with('success', 'Tidak ada perubahan peran.');
+            return back()->with('success', __('management/users.roles.no_changes'));
         }
 
         $user->syncRoles($roles);
 
-        return back()->with('success', 'Peran pengguna berhasil diperbarui.');
+        return back()->with('success', __('management/users.roles.updated'));
     }
 
     public function resetPasswordLink(ResetPasswordRequest $request, User $user)
     {
         if (!$user->email) {
             if ($request->input('mode') === 'generate') {
-                return response()->json(['message' => 'Pengguna tidak memiliki email.'], 400);
+                return response()->json(['message' => __('management/users.email_missing')], 400);
             }
 
-            return back()->with('error', 'Pengguna tidak memiliki email.');
+            return back()->with('error', __('management/users.email_missing'));
         }
 
         $validated = $request->validated();
@@ -266,7 +266,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message'   => 'Tautan reset berhasil digenerate.',
+                    'message'   => __('management/users.reset_link_generated'),
                     'reset_url' => $resetUrl,
                 ]);
             })(),
@@ -287,7 +287,7 @@ class UserManagementController extends Controller
                         ],
                     );
 
-                    return back()->with('success', 'Tautan reset dikirim ke email pengguna.');
+                    return back()->with('success', __('management/users.reset_link_sent'));
                 }
 
                 $this->logEvent(
@@ -319,11 +319,11 @@ class UserManagementController extends Controller
                 // If FE sent JSON (e.g., for generate), return JSON error
                 if ($request->input('mode') === 'generate') {
                     return response()->json([
-                        'message' => 'Invalid mode for reset password link.',
+                        'message' => __('management/users.reset_mode_invalid'),
                     ], 400);
                 }
 
-                return back()->with('error', 'Invalid mode for reset password link.');
+                return back()->with('error', __('management/users.reset_mode_invalid'));
             })(),
         };
     }
@@ -350,7 +350,7 @@ class UserManagementController extends Controller
                     ],
                 );
 
-                return back()->with('success', 'Two-factor authentication has been disabled.');
+                return back()->with('success', __('management/users.2fa.disabled'));
             })(),
 
             'recovery_show' => (function () use ($user, $request) {
@@ -367,7 +367,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message' => 'Recovery codes retrieved successfully.',
+                    'message' => __('management/users.recovery.retrieved'),
                     'codes'   => $codes,
                 ]);
             })(),
@@ -387,7 +387,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message' => 'Recovery codes have been regenerated.',
+                    'message' => __('management/users.recovery.regenerated'),
                     'codes'   => $newCodes,
                 ]);
             })(),
@@ -403,7 +403,7 @@ class UserManagementController extends Controller
                 );
 
                 return response()->json([
-                    'message' => 'Invalid mode.',
+                    'message' => __('management/users.invalid_mode'),
                 ], 400);
             })(),
         };
@@ -427,7 +427,7 @@ class UserManagementController extends Controller
 
         $ids = $query->pluck('id');
         if ($ids->isEmpty()) {
-            return back()->with('success', 'Tidak ada sesi yang perlu dihapus.');
+            return back()->with('success', __('management/users.sessions.none'));
         }
 
         Session::query()->whereIn('id', $ids)->delete();
@@ -443,6 +443,6 @@ class UserManagementController extends Controller
             ],
         );
 
-        return back()->with('success', sprintf('Berhasil menghapus %d sesi pengguna.', $ids->count()));
+        return back()->with('success', __('management/users.sessions.deleted_count', ['count' => $ids->count()]));
     }
 }

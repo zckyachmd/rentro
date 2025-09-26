@@ -1,6 +1,8 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Head, router, usePage } from '@inertiajs/react';
 import { KeyRound, MailCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,7 +46,9 @@ function setTabInUrl(value: TabKey) {
 }
 
 export default function SecurityIndex() {
-    const page = usePage<PageProps>();
+    const { t } = useTranslation();
+    const { t: tSecurity } = useTranslation('security');
+    const page = usePage<InertiaPageProps & PageProps>();
     const summary: Summary = (page?.props?.summary ?? {}) as Summary;
     const sessions: SessionItem[] = (page?.props?.sessions ??
         []) as SessionItem[];
@@ -82,20 +86,21 @@ export default function SecurityIndex() {
 
     return (
         <AuthLayout
-            pageTitle="Keamanan Akun"
-            pageDescription="Kelola password, autentikasi dua langkah, dan sesi/perangkat yang terhubung."
+            pageTitle={tSecurity('title')}
+            pageDescription={tSecurity('desc')}
         >
-            <Head title="Keamanan Akun" />
+            <Head title={tSecurity('title')} />
 
             {/* Summary */}
             <div className="mb-6 grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
-                            <MailCheck className="h-4 w-4" /> Verifikasi Email
+                            <MailCheck className="h-4 w-4" />{' '}
+                            {tSecurity('email.title')}
                         </CardTitle>
                         <CardDescription>
-                            Status verifikasi alamat email Anda.
+                            {tSecurity('email.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
@@ -105,8 +110,8 @@ export default function SecurityIndex() {
                             }
                         >
                             {summary.email_verified
-                                ? 'Terverifikasi'
-                                : 'Belum diverifikasi'}
+                                ? tSecurity('email.verified')
+                                : tSecurity('email.unverified')}
                         </Badge>
                         {!summary.email_verified && (
                             <Dialog
@@ -119,17 +124,16 @@ export default function SecurityIndex() {
                                         variant="outline"
                                         className="h-8"
                                     >
-                                        Kirim Ulang
+                                        {tSecurity('resend')}
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="animate-none">
                                     <DialogHeader>
                                         <DialogTitle>
-                                            Kirim ulang email verifikasi?
+                                            {tSecurity('email.resend_title')}
                                         </DialogTitle>
                                         <DialogDescription>
-                                            Kami akan mengirim email verifikasi
-                                            ke alamat email akun Anda.
+                                            {tSecurity('email.resend_desc')}
                                         </DialogDescription>
                                     </DialogHeader>
                                     <DialogFooter>
@@ -138,15 +142,17 @@ export default function SecurityIndex() {
                                             onClick={() => setVerifyOpen(false)}
                                             disabled={sending}
                                         >
-                                            Batal
+                                            {t('common.cancel')}
                                         </Button>
                                         <Button
                                             onClick={handleResendVerification}
                                             disabled={sending}
                                         >
                                             {sending
-                                                ? 'Mengirim…'
-                                                : 'Kirim email verifikasi'}
+                                                ? tSecurity('sending')
+                                                : tSecurity(
+                                                      'email.resend_button',
+                                                  )}
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -158,10 +164,10 @@ export default function SecurityIndex() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
-                            Autentikasi 2 Langkah
+                            {tSecurity('2fa.title')}
                         </CardTitle>
                         <CardDescription>
-                            Amankan akun dengan kode tambahan saat login.
+                            {tSecurity('2fa.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
@@ -172,14 +178,16 @@ export default function SecurityIndex() {
                                     : 'secondary'
                             }
                         >
-                            {summary.two_factor_enabled ? 'Aktif' : 'Nonaktif'}
+                            {summary.two_factor_enabled
+                                ? tSecurity('enabled')
+                                : tSecurity('disabled')}
                         </Badge>
                         <Button
                             size="sm"
                             variant="outline"
                             onClick={() => setTab('2fa')}
                         >
-                            Kelola
+                            {t('common.manage')}
                         </Button>
                     </CardContent>
                 </Card>
@@ -187,21 +195,22 @@ export default function SecurityIndex() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
-                            <KeyRound className="h-4 w-4" /> Password
+                            <KeyRound className="h-4 w-4" />{' '}
+                            {tSecurity('password.title')}
                         </CardTitle>
                         <CardDescription>
-                            Ganti password Anda secara berkala.
+                            {tSecurity('password.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between">
-                        <div className="text-sm text-muted-foreground">
-                            Terakhir diubah:{' '}
+                        <div className="text-muted-foreground text-sm">
+                            {tSecurity('password.last_changed')}{' '}
                             {summary.last_password_changed_at
                                 ? summary.last_password_changed_at
                                 : '—'}
                         </div>
                         <Button size="sm" onClick={() => setTab('password')}>
-                            Ubah
+                            {t('common.change')}
                         </Button>
                     </CardContent>
                 </Card>
@@ -213,9 +222,15 @@ export default function SecurityIndex() {
                 className="w-full"
             >
                 <TabsList className="mb-4">
-                    <TabsTrigger value="password">Password</TabsTrigger>
-                    <TabsTrigger value="2fa">2FA</TabsTrigger>
-                    <TabsTrigger value="sessions">Sesi & Perangkat</TabsTrigger>
+                    <TabsTrigger value="password">
+                        {tSecurity('tabs.password')}
+                    </TabsTrigger>
+                    <TabsTrigger value="2fa">
+                        {tSecurity('tabs.2fa')}
+                    </TabsTrigger>
+                    <TabsTrigger value="sessions">
+                        {tSecurity('tabs.sessions')}
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* Password Tab */}

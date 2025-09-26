@@ -144,6 +144,11 @@ trait HasRoles
     {
         if ($this->exists) {
             Cache::forget(CacheKey::MenuForUser->forUser($this->id));
+            try {
+                Cache::increment(CacheKey::ZiggyUserBump->forUser($this->id));
+            } catch (\Throwable) {
+                // ignore cache errors
+            }
         }
     }
 }

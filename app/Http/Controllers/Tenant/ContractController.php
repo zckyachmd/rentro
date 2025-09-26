@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Tenant;
 
+use App\Enum\BillingPeriod;
 use App\Enum\ContractStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StopAutoRenewRequest;
@@ -144,7 +145,7 @@ class ContractController extends Controller
                     'id'          => (string) $r->id,
                     'number'      => (string) $r->number,
                     'name'        => (string) ($r->name ?? ''),
-                    'price_cents' => (int) ($r->effectivePriceCents('Monthly') ?? 0),
+                    'price_cents' => (int) ($r->effectivePriceCents(BillingPeriod::MONTHLY->value) ?? 0),
                     'building'    => $r->building ? [
                         'id'   => (string) $r->building->id,
                         'name' => (string) ($r->building->name ?? ''),
@@ -247,11 +248,11 @@ class ContractController extends Controller
     public function stopAutoRenew(StopAutoRenewRequest $request, Contract $contract)
     {
         if (!$contract->auto_renew) {
-            return back()->with('success', 'Perpanjangan otomatis sudah nonaktif.');
+            return back()->with('success', __('tenant/contract.autorenew.already_disabled'));
         }
 
         if ($contract->status !== ContractStatus::ACTIVE) {
-            return back()->with('error', 'Hanya kontrak berstatus Active yang dapat menghentikan perpanjangan otomatis.');
+            return back()->with('error', __('tenant/contract.autorenew.only_active'));
         }
 
         $request->validated();
@@ -264,9 +265,9 @@ class ContractController extends Controller
         $contract->forceFill(['auto_renew' => false, 'renewal_cancelled_at' => now()])->save();
 
         if ($daysLeft !== null && $daysLeft < $forfeitDays) {
-            return back()->with('success', "Perpanjangan otomatis dihentikan. Sesuai kebijakan, deposit akan hangus karena kurang dari {$forfeitDays} hari dari tanggal berakhir.");
+            return back()->with('success', __('tenant/contract.autorenew.stopped_with_forfeit', ['days' => $forfeitDays]));
         }
 
-        return back()->with('success', 'Perpanjangan otomatis telah dihentikan.');
+        return back()->with('success', __('tenant/contract.autorenew.stopped'));
     }
 }

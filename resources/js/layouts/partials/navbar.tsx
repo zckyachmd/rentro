@@ -8,7 +8,9 @@ import {
     User,
 } from 'lucide-react';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
+import { useLocale } from '@/components/locale-provider';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +30,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import { postJson } from '@/lib/api';
 
 import type { MenuGroup } from './menu';
 import { MenuGroups } from './menu';
@@ -55,6 +58,8 @@ export default function Navbar({
     user,
     activeParentId,
 }: NavbarProps) {
+    const { t: tNav, i18n } = useTranslation('nav');
+    const { setLocale } = useLocale();
     const [mobileOpen, setMobileOpen] = React.useState(false);
     const [mobileSection, setMobileSection] = React.useState<string>('');
     const handleMobileSectionChange = React.useCallback(
@@ -76,7 +81,7 @@ export default function Navbar({
     }, [mobileOpen, activeParentId]);
 
     return (
-        <header className="sticky top-0 z-50 h-14 w-full border-b bg-background/80 backdrop-blur-md">
+        <header className="bg-background/80 sticky top-0 z-50 h-14 w-full border-b backdrop-blur-md">
             <div className="flex h-14 w-full items-center justify-between px-2 sm:px-3 md:px-4">
                 {/* Left controls: mobile menu trigger + desktop sidebar toggle */}
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -90,7 +95,7 @@ export default function Navbar({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                aria-label="Open menu"
+                                aria-label={tNav('nav.open_menu')}
                                 className="size-9 md:hidden"
                             >
                                 <PanelRight className="h-5 w-5" />
@@ -102,9 +107,11 @@ export default function Navbar({
                         >
                             <div className="flex h-full min-h-0 flex-col">
                                 <SheetHeader className="sr-only">
-                                    <SheetTitle>Menu Navigasi</SheetTitle>
+                                    <SheetTitle>
+                                        {tNav('nav.nav_menu')}
+                                    </SheetTitle>
                                     <SheetDescription>
-                                        Akses menu aplikasi
+                                        {tNav('nav.nav_menu_desc')}
                                     </SheetDescription>
                                 </SheetHeader>
                                 <div className="flex h-14 shrink-0 items-center border-b px-4">
@@ -112,7 +119,7 @@ export default function Navbar({
                                         {brandLabel}
                                     </span>
                                 </div>
-                                <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden p-4 pt-3">
+                                <div className="flex-1 space-y-3 overflow-x-hidden overflow-y-auto p-4 pt-3">
                                     {/* Mobile search */}
                                     <form
                                         onSubmit={onSearchSubmit}
@@ -120,13 +127,15 @@ export default function Navbar({
                                         className="flex items-center gap-2"
                                     >
                                         <div className="relative w-full">
-                                            <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                                             <Input
                                                 value={q}
                                                 onChange={(e) =>
                                                     setQ(e.target.value)
                                                 }
-                                                placeholder="Cari…"
+                                                placeholder={tNav(
+                                                    'nav.search.placeholder',
+                                                )}
                                                 className="h-9 pl-8"
                                             />
                                         </div>
@@ -135,7 +144,7 @@ export default function Navbar({
                                             variant="secondary"
                                             className="h-9"
                                         >
-                                            Go
+                                            {tNav('nav.go')}
                                         </Button>
                                     </form>
 
@@ -160,10 +169,12 @@ export default function Navbar({
                         variant="ghost"
                         size="icon"
                         onClick={onToggleCollapsed}
-                        aria-label="Toggle sidebar"
+                        aria-label={tNav('nav.sidebar.label')}
                         className="hidden size-9 md:inline-flex"
                         title={
-                            collapsed ? 'Perbesar sidebar' : 'Perkecil sidebar'
+                            collapsed
+                                ? tNav('nav.sidebar.expand')
+                                : tNav('nav.sidebar.collapse')
                         }
                     >
                         {collapsed ? (
@@ -181,16 +192,16 @@ export default function Navbar({
                     className="mx-auto hidden w-full max-w-xl items-center gap-2 md:flex"
                 >
                     <div className="relative w-full">
-                        <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                         <Input
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
-                            placeholder="Cari penyewa, kamar, atau tagihan…"
+                            placeholder={tNav('nav.search.placeholder')}
                             className="h-9 pl-8"
                         />
                     </div>
                     <Button type="submit" variant="secondary" className="h-9">
-                        Search
+                        {tNav('nav.search.label')}
                     </Button>
                 </form>
 
@@ -203,26 +214,52 @@ export default function Navbar({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                aria-label="Notifications"
+                                aria-label={tNav('nav.notifications.label')}
                             >
                                 <Bell className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-72">
-                            <DropdownMenuLabel>Notifikasi</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {tNav('nav.notifications.label')}
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-muted-foreground">
-                                Belum ada notifikasi.
+                                {tNav('nav.notifications.empty')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+
+                    {/* Language toggle */}
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-label={tNav('nav.language')}
+                        title={tNav('nav.language')}
+                        onClick={() => {
+                            const next = i18n.language
+                                ?.toLowerCase()
+                                .startsWith('id')
+                                ? 'en'
+                                : 'id';
+                            setLocale(next);
+                            void postJson(route('preferences.locale'), {
+                                locale: next,
+                            }).catch(() => {});
+                        }}
+                    >
+                        {i18n.language?.toLowerCase().startsWith('id')
+                            ? 'ID'
+                            : 'EN'}
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                aria-label="User menu"
+                                aria-label={tNav('nav.user_menu', 'User Menu')}
                             >
                                 <User className="h-5 w-5" />
                             </Button>
@@ -233,22 +270,24 @@ export default function Navbar({
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                                <Link href="#">Overview</Link>
+                                <Link href="#">
+                                    {tNav('nav.overview', 'Overview')}
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="#">Settings</Link>
+                                <Link href="#">{tNav('nav.settings')}</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="#">Billing</Link>
+                                <Link href="#">{tNav('nav.billing')}</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href={route('profile.index')}>
-                                    Profile
+                                    {tNav('nav.profile')}
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <Link href="#">Help</Link>
+                                <Link href="#">{tNav('nav.help')}</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
@@ -258,7 +297,8 @@ export default function Navbar({
                                     as="button"
                                     className="flex w-full items-center gap-2"
                                 >
-                                    <LogOut className="h-4 w-4" /> Log Out
+                                    <LogOut className="h-4 w-4" />{' '}
+                                    {tNav('nav.logout')}
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>

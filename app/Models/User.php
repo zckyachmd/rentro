@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 
 /**
  * @property array<int, string>|null $two_factor_recovery_codes
+ * @property array<string, mixed>|null $preferences
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Session> $sessions
  * @property-read Session|null $latestSession
  * @property-read \Illuminate\Database\Eloquent\Collection<int, UserAddress> $addresses

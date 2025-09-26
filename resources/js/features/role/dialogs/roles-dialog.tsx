@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Info } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +37,8 @@ export default function RoleUpsertDialog({
     onSuccess,
     guards = [],
 }: RoleUpsertDialogProps & { guards?: string[] }) {
+    const { t } = useTranslation();
+    const { t: tRole } = useTranslation('role');
     const guardOptions = React.useMemo(
         () => Array.from(new Set((guards || []).filter(Boolean))),
         [guards],
@@ -92,41 +95,38 @@ export default function RoleUpsertDialog({
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEdit ? 'Edit Role' : 'Tambah Role'}
+                        {isEdit ? tRole('edit_title') : tRole('create_title')}
                     </DialogTitle>
                     <DialogDescription>
-                        {isEdit
-                            ? 'Ubah nama role.'
-                            : 'Tambah role baru untuk pengelompokan akses.'}
+                        {isEdit ? tRole('edit_desc') : tRole('create_desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-2">
                     <div className="min-w-0 space-y-0.5">
-                        <Label>Nama</Label>
+                        <Label>{t('common.name')}</Label>
                         <Input
                             disabled={saving}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="cth. Admin Kasir"
+                            placeholder={tRole('name_placeholder')}
                             className="h-10 w-full text-sm"
                         />
                         <InputError name="name" />
                     </div>
                     <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 whitespace-nowrap">
-                            <Label>Guard</Label>
+                            <Label>{tRole('guard')}</Label>
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Info
-                                            className="h-4 w-4 shrink-0 text-muted-foreground"
-                                            aria-label="Info guard"
+                                            className="text-muted-foreground h-4 w-4 shrink-0"
+                                            aria-label={tRole('guard_info')}
                                         />
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p className="max-w-[240px] text-xs">
-                                            Pilih konteks autentikasi yang
-                                            disediakan oleh server.
+                                            {tRole('guard_hint')}
                                         </p>
                                     </TooltipContent>
                                 </Tooltip>
@@ -138,10 +138,12 @@ export default function RoleUpsertDialog({
                             onValueChange={(v) => setGuardName(v)}
                         >
                             <SelectTrigger
-                                aria-label="Pilih guard"
+                                aria-label={tRole('pick_guard')}
                                 className="h-10 w-full justify-between text-sm"
                             >
-                                <SelectValue placeholder="Pilih guard" />
+                                <SelectValue
+                                    placeholder={tRole('pick_guard')}
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 {guardOptions.map((g) => (
@@ -155,18 +157,17 @@ export default function RoleUpsertDialog({
                     </div>
 
                     {!isEdit && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                            Setelah role berhasil dibuat, permissions dapat
-                            diatur melalui <b>kolom Aksi</b> pada daftar role.
+                        <p className="text-muted-foreground mt-1 text-xs">
+                            {tRole('permissions_hint')}
                         </p>
                     )}
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={close}>
-                        Batal
+                        {t('common.cancel')}
                     </Button>
                     <Button disabled={!canSubmit} onClick={submit}>
-                        {saving ? 'Menyimpan…' : 'Simpan'}
+                        {saving ? t('common.processing') : t('common.save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

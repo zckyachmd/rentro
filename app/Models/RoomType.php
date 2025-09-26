@@ -7,6 +7,7 @@ use App\Models\Concerns\HasSnowflakeId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Room> $rooms
@@ -37,6 +38,18 @@ class RoomType extends Model
         'deposits'  => 'array',
         'is_active' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $slug = (string) ($model->slug ?? '');
+            if ($slug !== '') {
+                $model->slug = Str::slug($slug);
+            } elseif (!empty($model->name)) {
+                $model->slug = Str::slug((string) $model->name);
+            }
+        });
+    }
 
     public function rooms()
     {

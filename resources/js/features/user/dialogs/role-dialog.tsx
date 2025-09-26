@@ -3,6 +3,7 @@
 import { router } from '@inertiajs/react';
 import { Loader2, Search, ShieldCheck } from 'lucide-react';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,9 @@ export function RoleDialog({
     roles,
     autoReload = true,
 }: RoleDialogProps) {
+    const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
+    const { t: tRole } = useTranslation('management/role');
     const [query, setQuery] = React.useState('');
     const [selected, setSelected] = React.useState<Set<number>>(
         () => new Set((user.roles ?? []).map((r) => r.id)),
@@ -85,10 +89,11 @@ export function RoleDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <ShieldCheck className="h-5 w-5" /> Kelola Peran
+                        <ShieldCheck className="h-5 w-5" />{' '}
+                        {tUser('user.actions.manage_roles')}
                     </DialogTitle>
                     <DialogDescription>
-                        Pilih atau ubah peran yang dimiliki pengguna ini.
+                        {tUser('user.roles.dialog_desc')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -105,7 +110,7 @@ export function RoleDialog({
                     </Avatar>
                     <div className="min-w-0">
                         <div className="truncate font-medium">{user.name}</div>
-                        <div className="truncate text-xs text-muted-foreground">
+                        <div className="text-muted-foreground truncate text-xs">
                             {user.email}
                         </div>
                     </div>
@@ -113,9 +118,9 @@ export function RoleDialog({
 
                 <div className="mb-2 flex items-center gap-2">
                     <div className="relative flex-1">
-                        <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+                        <Search className="pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 opacity-50" />
                         <Input
-                            placeholder="Cari peran…"
+                            placeholder={tRole('search_placeholder')}
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             className="pl-8"
@@ -128,16 +133,16 @@ export function RoleDialog({
                         onClick={handleToggleAll}
                     >
                         {selected.size === roles.length
-                            ? 'Hapus semua'
-                            : 'Pilih semua'}
+                            ? t('common.clear_all')
+                            : t('datatable.select_all')}
                     </Button>
                 </div>
 
                 <div className="max-h-72 rounded-md border">
                     <div className="divide-y">
                         {filtered.length === 0 ? (
-                            <div className="p-4 text-center text-sm text-muted-foreground">
-                                Tidak ada peran
+                            <div className="text-muted-foreground p-4 text-center text-sm">
+                                {tRole('empty')}
                             </div>
                         ) : (
                             filtered.map((role) => {
@@ -145,7 +150,7 @@ export function RoleDialog({
                                 return (
                                     <label
                                         key={role.id}
-                                        className="flex cursor-pointer items-center gap-3 p-3 hover:bg-muted/40"
+                                        className="hover:bg-muted/40 flex cursor-pointer items-center gap-3 p-3"
                                     >
                                         <Checkbox
                                             checked={checked}
@@ -159,7 +164,7 @@ export function RoleDialog({
                                             </div>
                                             {checked ? (
                                                 <Badge variant="outline">
-                                                    Dipilih
+                                                    {t('common.selected')}
                                                 </Badge>
                                             ) : null}
                                         </div>
@@ -171,10 +176,10 @@ export function RoleDialog({
                 </div>
 
                 <DialogFooter>
-                    <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
+                    <div className="text-muted-foreground flex w-full items-center justify-between text-xs">
                         <span>
-                            Terpilih:{' '}
-                            <span className="font-medium text-foreground">
+                            {t('common.selected')}:{' '}
+                            <span className="text-foreground font-medium">
                                 {countSelected}
                             </span>
                         </span>
@@ -184,7 +189,7 @@ export function RoleDialog({
                                 variant="outline"
                                 onClick={() => onOpenChange(false)}
                             >
-                                Batal
+                                {t('common.cancel')}
                             </Button>
                             <Button
                                 type="button"
@@ -194,10 +199,10 @@ export function RoleDialog({
                                 {saving ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
-                                        Simpan…
+                                        {t('common.saving')}
                                     </>
                                 ) : (
-                                    'Simpan'
+                                    t('common.save')
                                 )}
                             </Button>
                         </div>

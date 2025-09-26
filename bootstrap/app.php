@@ -1,17 +1,18 @@
 <?php
 
+use Illuminate\Http\Request;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
+use App\Providers\RateLimitServiceProvider;
 use App\Http\Middleware\HandleInertiaRequests;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Http\Exceptions\ThrottleRequestsException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Configuration\Middleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
-use App\Providers\RateLimitServiceProvider;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,11 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
+            SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        $middleware->encryptCookies(except: ['sidebar_state', 'theme', 'locale']);
     })
     ->withProviders([
         RateLimitServiceProvider::class,
@@ -41,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($e instanceof ThrottleRequestsException || $e instanceof TooManyRequestsHttpException) {
                 $headers = (array) $e->getHeaders();
                 $retry   = $headers['Retry-After'] ?? null;
-                $msg     = $retry ? __('Terlalu banyak permintaan. Coba lagi dalam :sec detik.', ['sec' => $retry]) : __('Terlalu banyak permintaan. Coba lagi beberapa saat lagi.');
+                $msg     = $retry ? __('system.throttle.retry', ['sec' => $retry]) : __('system.throttle.soon');
 
                 if ($request->header('X-Inertia')) {
                     $response = redirect()->back()->withErrors(['message' => $msg])->with('error', $msg);

@@ -4,6 +4,8 @@ import { usePage } from '@inertiajs/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import type { PageProps } from '@/types';
+
 export type FlashBag = {
     success?: string;
     error?: string;
@@ -15,15 +17,8 @@ export type FlashBag = {
 
 export type ToastKey = Exclude<keyof FlashBag, 'data'>;
 
-export type CallbackBag = {
-    success?: string;
-    error?: string;
-    data?: unknown;
-};
-
 type PageShared = {
-    flash?: FlashBag;
-    cb?: CallbackBag;
+    alert?: FlashBag;
 };
 
 export type FlashToasterProps = {
@@ -48,13 +43,81 @@ export default function FlashToaster({
     dedupe = true,
     toastDuration = 4000,
 }: FlashToasterProps) {
-    const { props } = usePage<PageShared>();
+    const { props } = usePage<PageProps<PageShared>>();
 
     const activeRef = React.useRef<Set<string>>(new Set());
+    const storeKey = 'rentro:alert:consumed:v1';
+
+    const readConsumed = React.useCallback((): Record<string, number> => {
+        try {
+            const raw = sessionStorage.getItem(storeKey);
+            if (!raw) return {};
+            const obj = JSON.parse(raw) as Record<string, number>;
+            return obj && typeof obj === 'object' ? obj : {};
+        } catch {
+            return {};
+        }
+    }, []);
+
+    const writeConsumed = React.useCallback((obj: Record<string, number>) => {
+        try {
+            const now = Date.now();
+            const pruned: Record<string, number> = {};
+            const entries = Object.entries(obj)
+                .filter(([, ts]) => now - ts < 30 * 60 * 1000)
+                .slice(-100);
+            for (const [k, v] of entries) pruned[k] = v;
+            sessionStorage.setItem(storeKey, JSON.stringify(pruned));
+        } catch {
+            // ignore
+        }
+    }, []);
+
+    type HistoryState = { __alertConsumed?: Record<string, boolean> } & Record<
+        string,
+        unknown
+    >;
+
+    const historyConsumed = React.useCallback((type: ToastKey): boolean => {
+        try {
+            const raw = (window.history && window.history.state) || {};
+            const st: HistoryState =
+                typeof raw === 'object' && raw !== null
+                    ? (raw as Record<string, unknown>)
+                    : {};
+            const consumed = (st as HistoryState).__alertConsumed;
+            return Boolean(consumed && consumed[type]);
+        } catch {
+            return false;
+        }
+    }, []);
+
+    const markHistoryConsumed = React.useCallback((type: ToastKey) => {
+        try {
+            const raw = (window.history && window.history.state) || {};
+            const st: HistoryState =
+                typeof raw === 'object' && raw !== null
+                    ? (raw as Record<string, unknown>)
+                    : {};
+            const consumed = {
+                ...((st.__alertConsumed as
+                    | Record<string, boolean>
+                    | undefined) ?? {}),
+                [type]: true,
+            };
+            const next = { ...st, __alertConsumed: consumed } as HistoryState;
+            window.history.replaceState(
+                next as unknown as object,
+                '',
+                window.location.href,
+            );
+        } catch {
+            // ignore
+        }
+    }, []);
 
     React.useEffect(() => {
-        const f = props.flash || {};
-        const c = props.cb || {};
+        const f = props.alert || {};
 
         const show = (type: ToastKey, message: string) => {
             const sig = `${type}|${message}`;
@@ -119,14 +182,23 @@ export default function FlashToaster({
         };
 
         for (const k of priority) {
-            const val: string | undefined =
-                (f[k as ToastKey] as string | undefined) ??
-                (k === 'success'
-                    ? c.success
-                    : k === 'error'
-                      ? c.error
-                      : undefined);
+            const val: string | undefined = f[k as ToastKey] as
+                | string
+                | undefined;
             if (!val) continue;
+
+            if (dedupe && historyConsumed(k as ToastKey)) {
+                return;
+            }
+            markHistoryConsumed(k as ToastKey);
+
+            const path =
+                (typeof window !== 'undefined' && window.location?.pathname) ||
+                '';
+            const token = `path:${path}|type:${k}`;
+            const consumed = readConsumed();
+            consumed[token] = Date.now();
+            writeConsumed(consumed);
             switch (k) {
                 case 'success':
                     show('success', String(val));
@@ -145,7 +217,16 @@ export default function FlashToaster({
                     return;
             }
         }
-    }, [props.flash, props.cb, dedupe, priority, toastDuration]);
+    }, [
+        props.alert,
+        dedupe,
+        priority,
+        toastDuration,
+        readConsumed,
+        writeConsumed,
+        historyConsumed,
+        markHistoryConsumed,
+    ]);
 
     return null;
 }

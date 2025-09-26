@@ -7,12 +7,15 @@ import React, {
     useCallback,
     useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Breadcrumbs, { Crumb } from '@/components/breadcrumbs';
 import FlashToaster from '@/components/flash-toaster';
+import { LocaleProvider } from '@/components/locale-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { getAppName } from '@/lib/env';
+import type { PageProps as InertiaPageProps } from '@/types';
 
 import Footer from './partials/footer';
 import { hasChildren, MenuGroup } from './partials/menu';
@@ -47,11 +50,9 @@ type AuthLayoutProps = PropsWithChildren<{
     titleIcon?: ReactNode | string;
 }>;
 
-interface AppPageProps {
-    [key: string]: unknown;
-    auth?: { user?: { name: string; email: string } };
-    menuGroups?: ServerMenuGroup[];
-}
+type AppPageProps = InertiaPageProps<{
+    menus?: ServerMenuGroup[];
+}>;
 
 export default function AuthLayout({
     header,
@@ -62,10 +63,10 @@ export default function AuthLayout({
     actions,
     titleIcon,
 }: AuthLayoutProps) {
+    const { t } = useTranslation();
     const brandLabel = getAppName();
 
-    const { auth, menuGroups: serverMenuGroups } =
-        usePage<AppPageProps>().props;
+    const { auth, menus: serverMenus } = usePage<AppPageProps>().props;
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
 
     const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -93,7 +94,7 @@ export default function AuthLayout({
     };
 
     const menuGroups: MenuGroup[] = React.useMemo(() => {
-        const groups = serverMenuGroups ?? [];
+        const groups = serverMenus ?? [];
         return groups.map((g) => ({
             id: g.id,
             label: g.label,
@@ -108,7 +109,7 @@ export default function AuthLayout({
                 })),
             })),
         }));
-    }, [serverMenuGroups]);
+    }, [serverMenus]);
 
     const effectiveBreadcrumbs: Crumb[] = React.useMemo(() => {
         if (breadcrumbs && breadcrumbs.length) return breadcrumbs;
@@ -139,125 +140,132 @@ export default function AuthLayout({
     }, [menuGroups]);
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="bg-background text-foreground min-h-screen">
             <Head title={pageTitle} />
 
             <ThemeProvider>
-                <div className="flex min-h-screen">
-                    <Sidebar
-                        collapsed={collapsed}
-                        brandLabel={brandLabel}
-                        user={user}
-                        menuGroups={menuGroups}
-                        activeParentId={activeParentId}
-                    />
-
-                    <div className="flex min-w-0 flex-1 flex-col">
-                        <Navbar
+                <LocaleProvider>
+                    <div className="flex min-h-screen">
+                        <Sidebar
                             collapsed={collapsed}
-                            onToggleCollapsed={toggleCollapsed}
                             brandLabel={brandLabel}
-                            q={q}
-                            setQ={setQ}
-                            onSearchSubmit={onSearchSubmit}
                             user={user}
                             menuGroups={menuGroups}
                             activeParentId={activeParentId}
                         />
 
-                        {(header ||
-                            actions ||
-                            titleIcon ||
-                            effectiveBreadcrumbs.length > 0 ||
-                            pageTitle ||
-                            pageDescription) && (
-                            <div className="border-b bg-background">
-                                <div className="container mx-auto space-y-2 px-4 py-3 md:py-4">
-                                    {(pageTitle ||
-                                        pageDescription ||
-                                        header ||
-                                        actions ||
-                                        titleIcon) && (
-                                        <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-                                            <div className="min-w-0">
-                                                <div
-                                                    className={
-                                                        titleIcon
-                                                            ? 'grid grid-cols-[auto_1fr] items-center gap-3'
-                                                            : ''
-                                                    }
-                                                >
-                                                    {titleIcon && (
-                                                        <div className="h-6 w-6 place-self-center">
-                                                            {typeof titleIcon !==
-                                                            'string'
-                                                                ? titleIcon
-                                                                : (() => {
-                                                                      const DynIcon =
-                                                                          getIconByName(
-                                                                              titleIcon,
-                                                                          );
-                                                                      return DynIcon ? (
-                                                                          <DynIcon className="h-6 w-6" />
-                                                                      ) : null;
-                                                                  })()}
+                        <div className="flex min-w-0 flex-1 flex-col">
+                            <Navbar
+                                collapsed={collapsed}
+                                onToggleCollapsed={toggleCollapsed}
+                                brandLabel={brandLabel}
+                                q={q}
+                                setQ={setQ}
+                                onSearchSubmit={onSearchSubmit}
+                                user={user}
+                                menuGroups={menuGroups}
+                                activeParentId={activeParentId}
+                            />
+
+                            {(header ||
+                                actions ||
+                                titleIcon ||
+                                effectiveBreadcrumbs.length > 0 ||
+                                pageTitle ||
+                                pageDescription) && (
+                                <div className="bg-background border-b">
+                                    <div className="container mx-auto space-y-2 px-4 py-3 md:py-4">
+                                        {(pageTitle ||
+                                            pageDescription ||
+                                            header ||
+                                            actions ||
+                                            titleIcon) && (
+                                            <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+                                                <div className="min-w-0">
+                                                    <div
+                                                        className={
+                                                            titleIcon
+                                                                ? 'grid grid-cols-[auto_1fr] items-center gap-3'
+                                                                : ''
+                                                        }
+                                                    >
+                                                        {titleIcon && (
+                                                            <div className="h-6 w-6 place-self-center">
+                                                                {typeof titleIcon !==
+                                                                'string'
+                                                                    ? titleIcon
+                                                                    : (() => {
+                                                                          const DynIcon =
+                                                                              getIconByName(
+                                                                                  titleIcon,
+                                                                              );
+                                                                          return DynIcon ? (
+                                                                              <DynIcon className="h-6 w-6" />
+                                                                          ) : null;
+                                                                      })()}
+                                                            </div>
+                                                        )}
+                                                        <div className="min-w-0 space-y-1">
+                                                            {pageTitle && (
+                                                                <h1 className="truncate text-xl leading-tight font-semibold tracking-tight">
+                                                                    {pageTitle ===
+                                                                    'Dashboard'
+                                                                        ? t(
+                                                                              'dashboard.title',
+                                                                          )
+                                                                        : pageTitle}
+                                                                </h1>
+                                                            )}
+                                                            {pageDescription && (
+                                                                <p className="text-muted-foreground text-sm">
+                                                                    {
+                                                                        pageDescription
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                            {header}
+                                                        </div>
+                                                    </div>
+                                                    {effectiveBreadcrumbs.length >
+                                                        0 && (
+                                                        <div className="mt-1">
+                                                            <Breadcrumbs
+                                                                items={
+                                                                    effectiveBreadcrumbs
+                                                                }
+                                                            />
                                                         </div>
                                                     )}
-                                                    <div className="min-w-0 space-y-1">
-                                                        {pageTitle && (
-                                                            <h1 className="truncate text-xl font-semibold leading-tight tracking-tight">
-                                                                {pageTitle}
-                                                            </h1>
-                                                        )}
-                                                        {pageDescription && (
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {
-                                                                    pageDescription
-                                                                }
-                                                            </p>
-                                                        )}
-                                                        {header}
-                                                    </div>
                                                 </div>
-                                                {effectiveBreadcrumbs.length >
-                                                    0 && (
-                                                    <div className="mt-1">
-                                                        <Breadcrumbs
-                                                            items={
-                                                                effectiveBreadcrumbs
-                                                            }
-                                                        />
+
+                                                {actions && (
+                                                    <div className="shrink-0 self-center">
+                                                        {actions}
                                                     </div>
                                                 )}
                                             </div>
-
-                                            {actions && (
-                                                <div className="shrink-0 self-center">
-                                                    {actions}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        <main className="container mx-auto flex-1 px-4 py-6">
-                            {children}
-                        </main>
+                            <main className="container mx-auto flex-1 px-4 py-6">
+                                {children}
+                            </main>
 
-                        <Footer
-                            brandLabel={brandLabel}
-                            fullWidth={false}
-                            variant="between"
-                            heightClass="h-16"
-                            withContainer
-                        />
+                            <Footer
+                                brandLabel={brandLabel}
+                                fullWidth={false}
+                                variant="between"
+                                heightClass="h-16"
+                                withContainer
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <Toaster />
-                <FlashToaster />
+                    <Toaster />
+                    <FlashToaster />
+                </LocaleProvider>
             </ThemeProvider>
         </div>
     );

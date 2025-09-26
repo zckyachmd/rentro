@@ -38,7 +38,7 @@ class StopAutoRenewRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'confirm.accepted' => 'Anda harus menyetujui konsekuensi penghentian perpanjangan otomatis.',
+            'confirm.accepted' => __('tenant/contract.validation.confirm.accepted'),
         ];
     }
 }

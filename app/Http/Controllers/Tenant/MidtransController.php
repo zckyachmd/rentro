@@ -49,13 +49,13 @@ class MidtransController extends Controller
         $this->assertOwnership($invoice, $request);
 
         if (!in_array($invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true)) {
-            return response()->json(['message' => 'Invoice tidak dapat dibayar pada status ini.'], 422);
+            return response()->json(['message' => __('tenant/payment.invoice.cannot_pay_on_status')], 422);
         }
 
         $totals      = $this->invoices->totals($invoice);
         $outstanding = (int) $totals['outstanding'];
         if ($outstanding <= 0) {
-            return response()->json(['message' => 'Invoice sudah lunas.'], 422);
+            return response()->json(['message' => __('tenant/payment.invoice.already_paid')], 422);
         }
 
         $amount = $outstanding;
@@ -125,7 +125,7 @@ class MidtransController extends Controller
         $payment->update($update);
 
         // Flash success for frontend flash-toaster (will show on next Inertia reload)
-        session()->flash('success', 'VA berhasil dibuat.');
+        session()->flash('success', __('tenant/payment.va.created'));
 
         return response()->json([
             'payment_id'  => (string) $payment->id,
@@ -192,6 +192,6 @@ class MidtransController extends Controller
 
         $this->payments->voidPendingPaymentsForInvoice($invoice, 'Midtrans', 'User switched bank from pay-dialog', $request->user());
 
-        return back()->with('success', 'VA sebelumnya dibatalkan.');
+        return back()->with('success', __('tenant/payment.va.cancelled_previous'));
     }
 }

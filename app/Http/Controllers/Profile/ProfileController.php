@@ -243,7 +243,7 @@ class ProfileController extends Controller
             }
         }
 
-        return Redirect::route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
+        return Redirect::route('profile.edit')->with('success', __('tenant/profile.updated'));
     }
 
     /**

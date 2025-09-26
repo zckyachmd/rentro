@@ -1,0 +1,26 @@
+{
+    "title": "Fasilitas",
+    "desc": "Kelola master data fasilitas.",
+    "add": "Tambah Fasilitas",
+    "all_categories": "Semua kategori",
+    "search_placeholder": "Cari fasilitas...",
+    "empty": "Belum ada fasilitas.",
+    "create_title": "Tambah Fasilitas",
+    "edit_title": "Ubah Fasilitas",
+    "form": {
+        "name_locale": "Nama ({{locale}})",
+        "icon": "Ikon",
+        "icon_hint": "Gunakan nama ikon Lucide (mis. AirVent). Lihat lucide.dev/icons.",
+        "category": "Kategori",
+        "save": "Simpan",
+        "cancel": "Batal"
+    },
+    "delete": {
+        "title": "Hapus Fasilitas",
+        "confirm": "Hapus fasilitas ini? Tindakan ini tidak dapat dibatalkan.",
+        "confirm_named": "Hapus fasilitas \"{{name}}\"? Tindakan ini tidak dapat dibatalkan."
+    },
+    "created": "Fasilitas berhasil ditambahkan.",
+    "updated": "Fasilitas berhasil diperbarui.",
+    "deleted": "Fasilitas berhasil dihapus."
+}

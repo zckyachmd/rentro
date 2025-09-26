@@ -24,12 +24,12 @@ class Building extends Model
         'is_active',
     ];
 
-    public function floors()
+    public function floors(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Floor::class);
     }
 
-    public function rooms()
+    public function rooms(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Room::class);
     }

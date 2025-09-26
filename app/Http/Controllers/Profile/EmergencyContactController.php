@@ -18,20 +18,20 @@ class EmergencyContactController extends Controller
 
         $user->emergencyContacts()->create($request->validated());
 
-        return back()->with('success', 'Kontak darurat berhasil ditambahkan.');
+        return back()->with('success', __('tenant/contacts.added'));
     }
 
     public function update(EmergencyContactRequest $request, EmergencyContact $contact): RedirectResponse
     {
         $contact->update($request->validated());
 
-        return back()->with('success', 'Kontak darurat berhasil diperbarui.');
+        return back()->with('success', __('tenant/contacts.updated'));
     }
 
     public function destroy(EmergencyContact $contact): RedirectResponse
     {
         $contact->delete();
 
-        return back()->with('success', 'Kontak darurat berhasil dihapus.');
+        return back()->with('success', __('tenant/contacts.deleted'));
     }
 }

@@ -65,7 +65,23 @@ class ContractManagementController extends Controller
             'default_sort' => ['created_at', 'desc'],
             'filters'      => [
                 'status' => fn ($q, $v) => $q->where('status', $v),
-                'q'      => function ($q, $v) {
+                'start'  => function ($q, $v) {
+                    try {
+                        $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $v)->toDateString();
+                    } catch (\Throwable) {
+                        return;
+                    }
+                    $q->whereDate('start_date', '>=', $d);
+                },
+                'end' => function ($q, $v) {
+                    try {
+                        $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $v)->toDateString();
+                    } catch (\Throwable) {
+                        return;
+                    }
+                    $q->whereDate('start_date', '<=', $d);
+                },
+                'q' => function ($q, $v) {
                     $term = trim((string) $v);
                     if ($term === '') {
                         return;
@@ -170,19 +186,57 @@ class ContractManagementController extends Controller
             'require_checkin_for_activate'    => (bool) AppSetting::config('handover.require_checkin_for_activate', true),
         ];
 
+        // Summary (respect filters)
+        $sumBase = Contract::query();
+        // Apply simple filters
+        $status = (string) $request->query('status', '');
+        if ($status !== '') {
+            $sumBase->where('status', $status);
+        }
+        $start = $request->query('start');
+        $end   = $request->query('end');
+        if ($start) {
+            try {
+                $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                $sumBase->whereDate('start_date', '>=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        if ($end) {
+            try {
+                $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                $sumBase->whereDate('start_date', '<=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        $countAll     = (int) $sumBase->count('id');
+        $countActive  = (int) (clone $sumBase)->where('status', ContractStatus::ACTIVE->value)->count('id');
+        $countBooked  = (int) (clone $sumBase)->where('status', ContractStatus::BOOKED->value)->count('id');
+        $countPending = (int) (clone $sumBase)->where('status', ContractStatus::PENDING_PAYMENT->value)->count('id');
+        $countOverdue = (int) (clone $sumBase)->where('status', ContractStatus::OVERDUE->value)->count('id');
+
         return Inertia::render('management/contract/index', [
             'contracts' => $contractsPayload,
             'options'   => [
                 'statuses' => ContractStatus::options(),
             ],
             'handover' => $handoverSettings,
-            'query'    => [
+            'summary'  => [
+                'count'         => $countAll,
+                'count_active'  => $countActive,
+                'count_booked'  => $countBooked,
+                'count_pending' => $countPending,
+                'count_overdue' => $countOverdue,
+            ],
+            'query' => [
                 'page'    => $contractsPayload['current_page'],
                 'perPage' => $contractsPayload['per_page'],
                 'sort'    => $request->query('sort'),
                 'dir'     => $request->query('dir'),
                 'status'  => $request->query('status'),
                 'q'       => $request->query('q'),
+                'start'   => $request->query('start'),
+                'end'     => $request->query('end'),
             ],
         ]);
     }
@@ -287,6 +341,61 @@ class ContractManagementController extends Controller
         ]);
     }
 
+    /** Export contracts as CSV using current filters. */
+    public function export(Request $request)
+    {
+        $q = Contract::query()->with(['tenant:id,name', 'room:id,number,name']);
+
+        $status = (string) $request->query('status', '');
+        if ($status !== '') {
+            $q->where('status', $status);
+        }
+        $start = $request->query('start');
+        $end   = $request->query('end');
+        if ($start) {
+            try {
+                $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                $q->whereDate('start_date', '>=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        if ($end) {
+            try {
+                $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                $q->whereDate('start_date', '<=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        $q->orderByDesc('created_at')->orderByDesc('id');
+
+        $filename = 'contracts_' . now()->format('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($q): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Number', 'Start Date', 'End Date', 'Status', 'Rent (cents)', 'Auto Renew', 'Tenant', 'Room']);
+            $q->chunk(1000, function ($rows) use ($out) {
+                foreach ($rows as $c) {
+                    /* @var Contract $c */
+                    fputcsv($out, [
+                        (string) ($c->number ?? ''),
+                        $c->start_date->toDateString(),
+                        $c->end_date?->toDateString(),
+                        (string) $c->status->value,
+                        (int) ($c->rent_cents ?? 0),
+                        $c->auto_renew ? 'yes' : 'no',
+                        $c->tenant?->name,
+                        optional($c->room)->number ?? optional($c->room)->name,
+                    ]);
+                }
+            });
+            fclose($out);
+        }, $filename, [
+            'Content-Type'        => 'text/csv',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     public function store(StoreContractRequest $request)
     {
         $data = $request->validated();
@@ -310,7 +419,7 @@ class ContractManagementController extends Controller
             ],
         );
 
-        return redirect()->route('management.contracts.index')->with('success', 'Kontrak berhasil dibuat.');
+        return redirect()->route('management.contracts.index')->with('success', __('management/contracts.created'));
     }
 
     public function show(Contract $contract)
@@ -420,7 +529,7 @@ class ContractManagementController extends Controller
     public function cancel(ReasonRequest $request, Contract $contract)
     {
         if (!in_array($contract->status, [ContractStatus::PENDING_PAYMENT, ContractStatus::BOOKED], true)) {
-            return back()->with('error', 'Kontrak tidak dapat dibatalkan. Hanya kontrak Pending Payment atau Booked yang dapat dibatalkan.');
+            return back()->with('error', __('management/contracts.cancel.not_allowed'));
         }
 
         $hasPaidInvoice = $contract->invoices()
@@ -434,7 +543,7 @@ class ContractManagementController extends Controller
             ->exists();
 
         if ($hasPaidInvoice || $hasCompletedPayment) {
-            return back()->with('error', 'Kontrak tidak dapat dibatalkan karena terdapat pembayaran yang sudah selesai atau invoice yang sudah lunas.');
+            return back()->with('error', __('management/contracts.cancel.not_allowed_due_payments'));
         }
 
         $data   = $request->validated();
@@ -453,10 +562,10 @@ class ContractManagementController extends Controller
                 ],
             );
 
-            return back()->with('success', 'Kontrak dibatalkan.');
+            return back()->with('success', __('management/contracts.cancelled'));
         }
 
-        return back()->with('error', 'Kontrak tidak dapat dibatalkan.');
+        return back()->with('error', __('management/contracts.cancel.failed'));
     }
 
     public function setAutoRenew(SetAutoRenewRequest $request, Contract $contract)
@@ -465,7 +574,7 @@ class ContractManagementController extends Controller
         $enabled = (bool) $data['auto_renew'];
 
         if (!$enabled && $contract->status !== ContractStatus::ACTIVE) {
-            return back()->with('error', 'Hanya kontrak berstatus Active yang dapat menghentikan perpanjangan otomatis.');
+            return back()->with('error', __('management/contracts.autorenew.only_active'));
         }
 
         $this->contracts->setAutoRenew($contract, $enabled);
@@ -479,7 +588,7 @@ class ContractManagementController extends Controller
             ],
         );
 
-        return back()->with('success', $enabled ? 'Auto‑renew dinyalakan.' : 'Auto‑renew dihentikan.');
+        return back()->with('success', $enabled ? __('management/contracts.autorenew.enabled') : __('management/contracts.autorenew.disabled'));
     }
 
     public function print(Contract $contract)

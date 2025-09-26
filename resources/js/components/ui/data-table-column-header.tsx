@@ -3,6 +3,7 @@
 
 import type { Column, ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { useTranslation } from 'react-i18next'
 
 import { Button } from "@/components/ui/button"
 
@@ -14,6 +15,7 @@ type Props = {
 }
 
 export function DataTableColumnHeader({ column, title }: Props) {
+  const { t } = useTranslation()
   const sorted = column.getIsSorted()
   const canSort = column.getCanSort?.() ?? false
 
@@ -31,6 +33,7 @@ export function DataTableColumnHeader({ column, title }: Props) {
   const isAsc = sorted === "asc"
   const isDesc = sorted === "desc"
   const nextDir = isAsc ? "desc" : "asc"
+  const dirLabel = nextDir === 'asc' ? t('datatable.sort.asc') : t('datatable.sort.desc')
 
   return (
     <Button
@@ -38,7 +41,7 @@ export function DataTableColumnHeader({ column, title }: Props) {
       variant="ghost"
       onClick={() => column.toggleSorting(isAsc)}
       className="h-8 px-0"
-      aria-label={`Urutkan ${title} ${nextDir}`}
+      aria-label={t('datatable.sort.label', { title, direction: dirLabel })}
       aria-sort={isAsc ? "ascending" : isDesc ? "descending" : "none"}
       data-state={sorted || "none"}
     >

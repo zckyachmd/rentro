@@ -1,0 +1,9 @@
+{
+    "title": "Role Management",
+    "desc": "Manage roles, delete, and set permissions for app access.",
+    "list_title": "Roles",
+    "add": "Add Role",
+    "delete_title": "Delete Role",
+    "search_placeholder": "Search roles…",
+    "empty": "No roles"
+}

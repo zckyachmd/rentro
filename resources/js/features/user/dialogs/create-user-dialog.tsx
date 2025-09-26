@@ -1,6 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import { UserPlus, X } from 'lucide-react';
 import React, { useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -30,6 +31,10 @@ export default function CreateUserDialog({
     roles,
     autoReload = true,
 }: CreateUserDialogProps) {
+    const { t } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tRole } = useTranslation('management/role');
     const nameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
 
@@ -72,49 +77,54 @@ export default function CreateUserDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <UserPlus className="h-5 w-5" /> Tambah Pengguna
+                        <UserPlus className="h-5 w-5" />{' '}
+                        {tUser('user.create.title')}
                     </DialogTitle>
                     <DialogDescription>
-                        Buat pengguna baru dan atur peran
+                        {tUser('user.create.desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-2 text-sm">
                     <div className="grid gap-1">
-                        <Label htmlFor="name">Nama</Label>
+                        <Label htmlFor="name">
+                            {tProfile('contact.fields.name_label')}
+                        </Label>
                         <Input
                             id="name"
                             ref={nameRef}
                             value={data.name}
                             onChange={onInput('name')}
-                            placeholder="Nama lengkap"
+                            placeholder={t('form.placeholder.fullname')}
                         />
                         <InputError message={errors.name} />
                     </div>
                     <div className="grid gap-1">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t('common.email')}</Label>
                         <Input
                             id="email"
                             type="email"
                             ref={emailRef}
                             value={data.email}
                             onChange={onInput('email')}
-                            placeholder="email@contoh.com"
+                            placeholder={t('form.placeholder.email')}
                         />
                         <InputError message={errors.email} />
                     </div>
                     <div className="grid gap-1">
-                        <Label htmlFor="phone">Telepon</Label>
+                        <Label htmlFor="phone">{t('common.phone')}</Label>
                         <Input
                             id="phone"
                             value={data.phone}
                             onChange={onInput('phone')}
-                            placeholder="08xxxxxxxxxx"
+                            placeholder={tProfile(
+                                'contact.fields.phone_placeholder',
+                            )}
                         />
                         <InputError message={errors.phone} />
                     </div>
 
                     <div className="grid gap-1">
-                        <Label>Peran</Label>
+                        <Label>{tRole('title')}</Label>
                         <Select
                             value=""
                             onValueChange={(v) =>
@@ -130,7 +140,7 @@ export default function CreateUserDialog({
                             }
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Pilih peran" />
+                                <SelectValue placeholder={tUser('all_roles')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {roles.map((r) => (
@@ -149,7 +159,7 @@ export default function CreateUserDialog({
                                     <button
                                         key={rid}
                                         type="button"
-                                        className="group inline-flex items-center gap-1 rounded border bg-muted/30 px-2 py-1 hover:bg-muted"
+                                        className="group bg-muted/30 hover:bg-muted inline-flex items-center gap-1 rounded border px-2 py-1"
                                         onClick={() =>
                                             setData(
                                                 'roles',
@@ -158,7 +168,10 @@ export default function CreateUserDialog({
                                                 ),
                                             )
                                         }
-                                        title={`Hapus peran ${label}`}
+                                        title={tUser(
+                                            'user.create.remove_role_title',
+                                            { role: label },
+                                        )}
                                     >
                                         <span>{label}</span>
                                         <X className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100" />
@@ -177,7 +190,7 @@ export default function CreateUserDialog({
                                     setData('send_verification', Boolean(v))
                                 }
                             />
-                            Kirim email verifikasi
+                            {tUser('user.create.send_verification')}
                         </Label>
                     </div>
                 </div>
@@ -187,14 +200,14 @@ export default function CreateUserDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Batal
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         type="button"
                         disabled={processing}
                         onClick={submit}
                     >
-                        Daftarkan
+                        {tUser('user.create.submit')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

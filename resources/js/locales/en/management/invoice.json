@@ -1,0 +1,62 @@
+{
+    "title": "Invoices",
+    "list": {
+        "title": "Invoice List",
+        "empty": "No invoices."
+    },
+    "table": {
+        "actions_for": "Invoice actions {{number}}",
+        "view_ticket": "View Ticket",
+        "columns": {
+            "outstanding": "Outstanding"
+        }
+    },
+    "cancel": {
+        "title": "Cancel Invoice",
+        "desc": "You are about to cancel invoice {{number}}. This action cannot be undone.",
+        "reason_label": "Cancellation reason",
+        "reason_placeholder": "Example: duplicate invoice, wrong amount, etc.",
+        "confirm": "Cancel Now"
+    },
+    "extend_due": {
+        "title": "Extend Due Date",
+        "desc": "Set a new due date and the reason.",
+        "new_due_date": "New Due Date",
+        "reason": "Reason",
+        "reason_placeholder": "Example: Billing as per contract",
+        "action": "Extend Due Date"
+    },
+    "generate": {
+        "title": "Generate Invoice",
+        "desc": "Create invoice based on selected contract.",
+        "mode": {
+            "title": "Mode",
+            "per_month": "Per Month",
+            "full": "Full"
+        },
+        "month": "Month",
+        "reason": "Reason",
+        "reason_placeholder": "Example: Billing as per contract",
+        "search_contract": "Search contract…",
+        "action": "Generate"
+    },
+    "detail": {
+        "desc": "Invoice summary & items.",
+        "info": "Invoice Info",
+        "contract_no": "Contract No.",
+        "release_day": "Release Day",
+        "release_day_value": "Every day {{day}}",
+        "amounts": "Amounts",
+        "paid": "Paid",
+        "outstanding": "Outstanding",
+        "items": "Items",
+        "error": "Failed to load invoice"
+    },
+    "summary": {
+        "pending": "Pending",
+        "overdue": "Overdue",
+        "paid": "Paid",
+        "outstanding": "Outstanding",
+        "amount": "Amount"
+    }
+}

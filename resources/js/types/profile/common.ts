@@ -26,7 +26,7 @@ export type AddressDTO = {
 
 export type DocumentDTO = {
     id?: number;
-    type?: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | '' | null;
+    type?: 'ktp' | 'sim' | 'passport' | 'npwp' | 'other' | '' | null;
     number?: string | null;
     status?: 'pending' | 'approved' | 'rejected' | null;
     has_file?: boolean | null;

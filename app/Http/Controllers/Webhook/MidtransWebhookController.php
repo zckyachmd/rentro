@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Services\Contracts\PaymentServiceInterface;
 use App\Services\Midtrans\Contracts\MidtransGatewayInterface;
+use App\Traits\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class MidtransWebhookController extends Controller
 {
+    use LogActivity;
+
     public function __construct(
         private readonly MidtransGatewayInterface $midtrans,
         private readonly PaymentServiceInterface $payments,
@@ -70,9 +73,7 @@ class MidtransWebhookController extends Controller
             $updates['va_expired_at'] = $va['expiry_time'];
         }
 
-        // Merge meta for audit
-        $md = (array) (($payment->meta['midtrans'] ?? []));
-        // Extract instruction fields for better UX on frontend
+        $md                      = (array) (($payment->meta['midtrans'] ?? []));
         $md['instructions']      = $this->midtrans->extractInstructionMetaFromPayload($payload);
         $md['last_notification'] = $payload;
 
@@ -88,7 +89,20 @@ class MidtransWebhookController extends Controller
             $this->payments->recalculateInvoice($invOwn);
         }
 
-        // Return acknowledgment per Midtrans expectation
+        try {
+            $this->logEvent(
+                event: 'midtrans_webhook_handled',
+                subject: $payment,
+                properties: [
+                    'order_id' => $orderId,
+                    'status'   => $mapped['status'] ?? null,
+                ],
+                logName: 'payment',
+            );
+        } catch (\Throwable $e) {
+            // ignore logging failure
+        }
+
         return response()->json(['message' => 'OK']);
     }
 }

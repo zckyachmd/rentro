@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
@@ -17,12 +16,43 @@
     <script>
         (function () {
             try {
-                var KEY = 'vite-ui-theme';
-                var theme = localStorage.getItem(KEY) || 'system';
-                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
                 var root = document.documentElement;
-                if (isDark) root.classList.add('dark'); else root.classList.remove('dark');
+                var THEME = 'system';
+                var PREF_KEY = 'rentro:preferences';
+                try { localStorage.removeItem('rentro-theme'); } catch (e) {}
+                try {
+                    var raw = localStorage.getItem(PREF_KEY);
+                    if (raw) {
+                        if (raw === 'dark' || raw === 'light' || raw === 'system') {
+                            THEME = raw;
+                        } else {
+                            var obj = JSON.parse(raw);
+                            var t = obj && typeof obj === 'object' ? obj.theme : undefined;
+                            if (t === 'dark' || t === 'light' || t === 'system') THEME = t;
+                        }
+                    }
+                } catch (e) {}
+
+                // 2) Cookie fallback
+                if (!THEME || THEME === 'system') {
+                    var m = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
+                    var fromCookie = m && m[1];
+                    if (fromCookie === 'dark' || fromCookie === 'light' || fromCookie === 'system') {
+                        THEME = fromCookie;
+                        try {
+                            var base2 = localStorage.getItem(PREF_KEY);
+                            var baseObj2 = base2 && base2 !== 'dark' && base2 !== 'light' && base2 !== 'system' ? JSON.parse(base2) : {};
+                            localStorage.setItem(PREF_KEY, JSON.stringify({ ...(baseObj2 && typeof baseObj2 === 'object' ? baseObj2 : {}), theme: THEME }));
+                        } catch (e) {}
+                    }
+                }
+
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = THEME === 'dark' || (THEME === 'system' && prefersDark);
+
+                root.dataset.theme = THEME;
+                root.dataset.themeResolved = isDark ? 'dark' : 'light';
+                root.classList.toggle('dark', isDark);
                 root.style.colorScheme = isDark ? 'dark' : 'light';
             } catch (e) {
                 // ignore

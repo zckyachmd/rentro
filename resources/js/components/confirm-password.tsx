@@ -76,7 +76,7 @@ export function ConfirmPasswordDialog({
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setShow((s) => !s)}
-                                className="absolute right-0 top-0 h-full border-0 px-3 hover:bg-transparent focus-visible:outline-none focus-visible:ring-0"
+                                className="absolute top-0 right-0 h-full border-0 px-3 hover:bg-transparent focus-visible:ring-0 focus-visible:outline-none"
                                 tabIndex={-1}
                                 aria-label={
                                     show ? 'Hide password' : 'Show password'
@@ -91,7 +91,7 @@ export function ConfirmPasswordDialog({
                         </div>
                         {confirmForm.errors.password && (
                             <p
-                                className="text-sm text-destructive"
+                                className="text-destructive text-sm"
                                 role="alert"
                             >
                                 {confirmForm.errors.password}

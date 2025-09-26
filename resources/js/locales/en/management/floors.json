@@ -1,0 +1,20 @@
+{
+    "title": "Floors",
+    "desc": "Manage floor master data.",
+    "add": "Add Floor",
+    "search_placeholder": "Search floor...",
+    "empty": "No floors yet.",
+    "create_title": "Create Floor",
+    "edit_title": "Edit Floor",
+    "form": {
+        "save": "Save"
+    },
+    "delete": {
+        "title": "Delete Floor",
+        "confirm": "Delete this floor? This action cannot be undone.",
+        "confirm_named": "Delete floor \"{{name}}\"? This action cannot be undone."
+    },
+    "created": "Floor created.",
+    "updated": "Floor updated.",
+    "deleted": "Floor deleted."
+}

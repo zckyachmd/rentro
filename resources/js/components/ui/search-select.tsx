@@ -2,7 +2,6 @@
 
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import * as React from 'react';
-
 const { useMemo, useState, useCallback, memo, useDeferredValue } = React as unknown as {
   useMemo: typeof React.useMemo,
   useState: typeof React.useState,
@@ -10,6 +9,7 @@ const { useMemo, useState, useCallback, memo, useDeferredValue } = React as unkn
   memo: typeof React.memo,
   useDeferredValue: typeof React.useDeferredValue,
 };
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,7 +72,8 @@ const OptionsList = memo(function OptionsList({ items, value, onSelect, emptyTex
   );
 });
 
-export default function SearchSelect({ value, onChange, options, placeholder = 'Pilih…', emptyText = 'Tidak ada hasil', className, disabled }: Props) {
+export default function SearchSelect({ value, onChange, options, placeholder, emptyText, className, disabled }: Props) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
 
@@ -113,7 +114,7 @@ export default function SearchSelect({ value, onChange, options, placeholder = '
           className={cn('w-full justify-between h-9 text-[13px] md:text-sm', className)}
           disabled={disabled}
         >
-          <span className={cn('truncate text-[13px] md:text-sm', !selected && 'text-muted-foreground')}>{selected ? selected.label : placeholder}</span>
+          <span className={cn('truncate text-[13px] md:text-sm', !selected && 'text-muted-foreground')}>{selected ? selected.label : (placeholder ?? t('ui.select.placeholder'))}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -121,15 +122,15 @@ export default function SearchSelect({ value, onChange, options, placeholder = '
         <div className="p-2 border-b">
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 text-muted-foreground" />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari…" className="h-8 text-[13px] md:text-sm placeholder:text-[13px] md:placeholder:text-sm" />
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('ui.select.search_placeholder')} className="h-8 text-[13px] md:text-sm placeholder:text-[13px] md:placeholder:text-sm" />
           </div>
         </div>
         {shouldScroll ? (
           <ScrollArea className="h-[50vh] md:h-64">
-            <OptionsList items={filtered} value={value} onSelect={handleSelect} emptyText={emptyText} />
+            <OptionsList items={filtered} value={value} onSelect={handleSelect} emptyText={emptyText ?? t('ui.select.no_results')} />
           </ScrollArea>
         ) : (
-          <OptionsList items={filtered} value={value} onSelect={handleSelect} emptyText={emptyText} />
+          <OptionsList items={filtered} value={value} onSelect={handleSelect} emptyText={emptyText ?? t('ui.select.no_results')} />
         )}
       </PopoverContent>
     </Popover>

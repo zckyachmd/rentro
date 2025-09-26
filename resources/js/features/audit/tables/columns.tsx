@@ -6,6 +6,7 @@ import { Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
+import i18n from '@/lib/i18n';
 import type { ActivityItem } from '@/types/management';
 
 const COL = {
@@ -34,19 +35,21 @@ export function createColumns(
         makeColumn<ActivityItem>({
             id: 'created_at',
             accessorKey: 'created_at',
-            title: 'Waktu',
+            title: i18n.t('common.time'),
             className: COL.time,
             sortable: true,
             cell: ({ row }) => (
                 <div className={COL.time + ' whitespace-nowrap'}>
-                    {new Date(row.original.created_at).toLocaleString('id-ID')}
+                    {new Date(row.original.created_at).toLocaleString(
+                        i18n.language,
+                    )}
                 </div>
             ),
         }),
         makeColumn<ActivityItem>({
             id: 'user',
             accessorKey: 'user',
-            title: 'Pengguna',
+            title: i18n.t('common.user'),
             className: COL.user,
             cell: ({ row }) => {
                 const u = row.original.causer;
@@ -57,12 +60,12 @@ export function createColumns(
                                 <div className="max-w-[180px] truncate font-medium">
                                     {u.name}
                                 </div>
-                                <div className="max-w-[200px] truncate text-xs text-muted-foreground">
+                                <div className="text-muted-foreground max-w-[200px] truncate text-xs">
                                     {u.email}
                                 </div>
                             </>
                         ) : (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-muted-foreground text-xs">
                                 -
                             </span>
                         )}
@@ -72,7 +75,7 @@ export function createColumns(
         }),
         makeColumn<ActivityItem>({
             id: 'subject',
-            title: 'Subject',
+            title: i18n.t('subject', { ns: 'management/audit' }),
             className: COL.subject,
             cell: ({ row }) => (
                 <div className={COL.subject + ' leading-tight'}>
@@ -83,8 +86,11 @@ export function createColumns(
                         )}
                     </div>
                     {row.original.subject ? (
-                        <div className="text-xs text-muted-foreground">
-                            linked
+                        <div className="text-muted-foreground text-xs">
+                            {i18n.t('linked', {
+                                ns: 'management/audit',
+                                defaultValue: 'linked',
+                            })}
                         </div>
                     ) : null}
                 </div>
@@ -92,7 +98,7 @@ export function createColumns(
         }),
         makeColumn<ActivityItem>({
             id: 'event',
-            title: 'Event',
+            title: i18n.t('event', { ns: 'management/audit' }),
             className: COL.event,
             sortable: true,
             cell: ({ row }) => (
@@ -101,7 +107,7 @@ export function createColumns(
         }),
         makeColumn<ActivityItem>({
             id: 'description',
-            title: 'Deskripsi',
+            title: i18n.t('common.description'),
             className: COL.desc,
             cell: ({ row }) => (
                 <div
@@ -114,7 +120,7 @@ export function createColumns(
         }),
         makeColumn<ActivityItem>({
             id: 'actions',
-            title: 'Aksi',
+            title: i18n.t('common.actions'),
             className: COL.actions + ' flex justify-end items-center',
             cell: ({ row }) => (
                 <div className={COL.actions + ' flex items-center justify-end'}>
@@ -126,7 +132,7 @@ export function createColumns(
                         className="flex items-center gap-1"
                     >
                         <Eye className="h-4 w-4" />
-                        Detail
+                        {i18n.t('common.view_detail')}
                     </Button>
                 </div>
             ),

@@ -1,17 +1,19 @@
 import { Form } from '@inertiajs/react';
 import { Loader2, Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import PasswordInput from '@/components/form/password-input';
 import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
+import PasswordInput from '@/components/ui/password-input';
 import GuestLayout from '@/layouts/guest-layout';
 
 export default function ConfirmPassword() {
+    const { t } = useTranslation();
     return (
         <GuestLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
+            title={t('auth.confirm.title')}
+            description={t('auth.confirm.desc')}
             content={
                 <Form
                     method="post"
@@ -21,16 +23,18 @@ export default function ConfirmPassword() {
                     {({ processing, errors }) => (
                         <div className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password">
+                                    {t('auth.password')}
+                                </Label>
                                 <PasswordInput
                                     id="password"
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder={t('auth.password_placeholder')}
                                     autoComplete="current-password"
                                     autoFocus
                                     className="pl-9"
                                     leftAdornment={
-                                        <Lock className="h-4 w-4 text-muted-foreground" />
+                                        <Lock className="text-muted-foreground h-4 w-4" />
                                     }
                                 />
                                 <InputError message={errors.password} />
@@ -44,7 +48,7 @@ export default function ConfirmPassword() {
                                     {processing && (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
-                                    Confirm password
+                                    {t('auth.confirm.submit')}
                                 </Button>
                             </div>
                         </div>
@@ -57,7 +61,7 @@ export default function ConfirmPassword() {
                     type="button"
                     onClick={() => window.history.back()}
                 >
-                    Back
+                    {t('common.back')}
                 </Button>
             }
             fullWidthFooter={false}

@@ -19,6 +19,13 @@ export interface ContractsPageProps {
     query?: QueryBag & { status?: string | null; q?: string | null };
     options?: { statuses?: { value: string; label: string }[] };
     handover?: HandoverOptions;
+    summary?: {
+        count: number;
+        count_active: number;
+        count_booked: number;
+        count_pending: number;
+        count_overdue: number;
+    };
 }
 
 export type QueryInit = Partial<{

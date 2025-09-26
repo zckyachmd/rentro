@@ -67,13 +67,13 @@ class UpdateRolesRequest extends FormRequest
             $actor = $this->user();
 
             if ($this->isNonSuperEditingSelf($actor, $target)) {
-                $validator->errors()->add('roles', 'Anda tidak diperbolehkan mengubah peran Anda sendiri. Hubungi administrator.');
+                $validator->errors()->add('roles', __('management/users.errors.self_edit_forbidden'));
 
                 return;
             }
 
             if ($this->isNonSuperEditingASuper($actor, $target)) {
-                $validator->errors()->add('roles', 'Anda tidak memiliki izin untuk mengubah peran pengguna dengan peran Super Admin.');
+                $validator->errors()->add('roles', __('management/users.errors.cannot_edit_super'));
 
                 return;
             }
@@ -91,7 +91,7 @@ class UpdateRolesRequest extends FormRequest
             if ($currentlyHasSuper && !$willHaveSuper) {
                 $totalSuperAdmins = User::role($super->name)->count();
                 if ($totalSuperAdmins <= 1) {
-                    $validator->errors()->add('roles', 'Tidak dapat menghapus peran Super Admin terakhir. Minimal harus ada satu pengguna dengan peran Super Admin.');
+                    $validator->errors()->add('roles', __('management/users.errors.cannot_remove_last_super'));
                 }
             }
         });

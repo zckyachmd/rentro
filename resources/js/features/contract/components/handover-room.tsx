@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { MoreHorizontal } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +41,7 @@ export default function HandoverRoomSection({
     contract: ContractDTO;
     handover?: HandoverOptions;
 }) {
+    const { t } = useTranslation('management/contract');
     const requireCheckinForActivate = Boolean(
         handover?.require_checkin_for_activate ?? true,
     );
@@ -101,7 +103,7 @@ export default function HandoverRoomSection({
             <Card className="mt-6">
                 <CardHeader className="pb-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <CardTitle>Serah Terima</CardTitle>
+                        <CardTitle>{t('handover.title')}</CardTitle>
                     </div>
 
                     {(() => {
@@ -129,7 +131,6 @@ export default function HandoverRoomSection({
                         );
                         const hasPendingCheckin = lastIn === 'pending';
 
-                        // Normal check‑in (first time, not pending)
                         const canNormalCheckin =
                             !hasPendingCheckin &&
                             !hasConfirmedCheckin &&
@@ -137,7 +138,6 @@ export default function HandoverRoomSection({
                                 (!requireCheckinForActivate &&
                                     statusNow === 'active'));
 
-                        // Redo check‑in if last one was disputed, even if require_checkin_for_activate is true
                         const canRedoCheckin =
                             !hasPendingCheckin &&
                             lastIn === 'disputed' &&
@@ -164,8 +164,10 @@ export default function HandoverRoomSection({
                                             onClick={() => setCheckinOpen(true)}
                                         >
                                             {lastIn === 'disputed'
-                                                ? 'Ulangi Check‑in'
-                                                : 'Check‑in'}
+                                                ? t(
+                                                      'handover.menu.redo_checkin',
+                                                  )
+                                                : t('handover.menu.checkin')}
                                         </Button>
                                     ) : null}
                                     {canCheckout ? (
@@ -176,7 +178,7 @@ export default function HandoverRoomSection({
                                                 setCheckoutOpen(true)
                                             }
                                         >
-                                            Check‑out
+                                            {t('handover.menu.checkout')}
                                         </Button>
                                     ) : null}
                                 </div>
@@ -187,19 +189,19 @@ export default function HandoverRoomSection({
                 <CardContent className="space-y-6">
                     <div className="overflow-x-auto rounded-md border">
                         <Table>
-                            <TableHeader className="sticky top-0 z-10 bg-background">
+                            <TableHeader className="bg-background sticky top-0 z-10">
                                 <TableRow className="align-middle">
                                     <TableHead className="min-w-[120px] px-4 py-3 text-left align-middle">
-                                        Jenis
+                                        {t('common.type')}
                                     </TableHead>
                                     <TableHead className="min-w-[180px] px-4 py-3 text-left align-middle">
-                                        Waktu
+                                        {t('common.time')}
                                     </TableHead>
                                     <TableHead className="min-w-[140px] px-4 py-3 text-left align-middle">
-                                        Status
+                                        {t('common.status')}
                                     </TableHead>
                                     <TableHead className="min-w-[140px] px-4 py-3 text-right align-middle">
-                                        Aksi
+                                        {t('common.actions')}
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -209,16 +211,16 @@ export default function HandoverRoomSection({
                                         {[0, 1, 2].map((i) => (
                                             <TableRow key={`sk-${i}`}>
                                                 <TableCell>
-                                                    <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+                                                    <div className="bg-muted h-4 w-16 animate-pulse rounded" />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+                                                    <div className="bg-muted h-4 w-40 animate-pulse rounded" />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+                                                    <div className="bg-muted h-5 w-16 animate-pulse rounded" />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="h-7 w-24 animate-pulse rounded bg-muted" />
+                                                    <div className="bg-muted h-7 w-24 animate-pulse rounded" />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -255,7 +257,9 @@ export default function HandoverRoomSection({
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-8 w-8"
-                                                                    aria-label="Aksi Serah Terima"
+                                                                    aria-label={t(
+                                                                        'handover.actions',
+                                                                    )}
                                                                 >
                                                                     <MoreHorizontal className="h-4 w-4" />
                                                                 </Button>
@@ -265,7 +269,9 @@ export default function HandoverRoomSection({
                                                                 className="w-56"
                                                             >
                                                                 <DropdownMenuLabel>
-                                                                    Aksi
+                                                                    {t(
+                                                                        'common.actions',
+                                                                    )}
                                                                 </DropdownMenuLabel>
                                                                 <DropdownMenuSeparator />
                                                                 <DropdownMenuItem
@@ -275,7 +281,9 @@ export default function HandoverRoomSection({
                                                                         )
                                                                     }
                                                                 >
-                                                                    Lihat detail
+                                                                    {t(
+                                                                        'common.view_detail',
+                                                                    )}
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
@@ -288,9 +296,9 @@ export default function HandoverRoomSection({
                                     <TableRow className="align-middle">
                                         <TableCell
                                             colSpan={4}
-                                            className="px-4 py-8 text-center align-middle text-sm text-muted-foreground"
+                                            className="text-muted-foreground px-4 py-8 text-center align-middle text-sm"
                                         >
-                                            Belum ada riwayat serah terima.
+                                            {t('handover.empty')}
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -311,7 +319,9 @@ export default function HandoverRoomSection({
                     const latestOut = handoverList.find(
                         (h) => h.type === 'checkout',
                     );
-                    const lastOut = String(latestOut?.status || '').toLowerCase();
+                    const lastOut = String(
+                        latestOut?.status || '',
+                    ).toLowerCase();
                     return lastOut === 'disputed';
                 })()}
                 onSaved={async () => {

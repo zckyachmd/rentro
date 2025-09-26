@@ -1,4 +1,5 @@
 import { Copy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { CopyInline } from '@/components/ui/copy-inline';
 import KVP from '@/features/tenant/invoice/components/kvp';
@@ -16,31 +17,28 @@ export default function PendingSection({
     remaining: string | null;
     isVaPending: boolean;
 }) {
+    const { t } = useTranslation('tenant/invoice');
     return (
-        <Section
-            title="Pembayaran Berjalan"
-            subtitle="Selesaikan sebelum waktu habis"
-        >
+        <Section title={t('pending.title')} subtitle={t('pending.subtitle')}>
             <div className="grid gap-3 sm:grid-cols-2">
-                <KVP label="Metode" value={methodLabel} />
-                <KVP label="Batas Waktu" value={`${remaining ?? '-'}`} />
+                <KVP label={t('method')} value={methodLabel} />
+                <KVP label={t('deadline')} value={`${remaining ?? '-'}`} />
                 {String(pending.payment_type || '').toLowerCase() ===
                 'manual' ? (
-                    <div className="text-xs text-muted-foreground sm:col-span-2">
-                        Bukti transfer sudah dikirim dan sedang menunggu review
-                        admin.
+                    <div className="text-muted-foreground text-xs sm:col-span-2">
+                        {t('pending.manual_note')}
                     </div>
                 ) : null}
                 {isVaPending ? (
                     <KVP
-                        label="Nomor VA"
+                        label={t('va_number')}
                         value={
                             <div className="flex items-center gap-2">
                                 <CopyInline
                                     value={String(pending.va_number || '')}
                                     variant="link"
                                     className="inline-flex items-center gap-1 font-mono text-sm decoration-dotted underline-offset-2"
-                                    successMessage="Nomor VA disalin"
+                                    successMessage={t('va_copied')}
                                 >
                                     <span>{pending.va_number}</span>
                                     <Copy className="h-3 w-3 opacity-70" />
@@ -51,7 +49,7 @@ export default function PendingSection({
                 ) : null}
             </div>
             <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-                Harap selesaikan pembayaran sesuai instruksi.
+                {t('pending.info')}
             </div>
         </Section>
     );

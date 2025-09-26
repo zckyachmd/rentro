@@ -130,7 +130,6 @@ class PermissionSeeder extends Seeder
                 PermissionName::HANDOVER_CREATE,
                 PermissionName::HANDOVER_UPDATE,
             ],
-            RoleName::TENANT->value => [],
         ];
 
         foreach ($rolesWithPermissions as $roleName => $permissions) {

@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Shield } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     Accordion,
@@ -31,6 +32,8 @@ export default function PermissionsDialog({
     onSuccess,
     preselected = [],
 }: PermissionsDialogProps & { onOpenChange: (open: boolean) => void }) {
+    const { t } = useTranslation();
+    const { t: tRole } = useTranslation('role');
     const [search, setSearch] = React.useState('');
     const [saving, setSaving] = React.useState(false);
     const [selected, setSelected] = React.useState<Set<number>>(new Set());
@@ -131,38 +134,37 @@ export default function PermissionsDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <div className="flex items-center justify-between">
-                        <DialogTitle>Atur Permissions</DialogTitle>
+                        <DialogTitle>{tRole('permissions.title')}</DialogTitle>
                     </div>
                     <DialogDescription>
-                        Pilih permissions yang akan dimiliki oleh role ini.
-                        Centang pada grup untuk memilih semua di dalamnya.
+                        {tRole('permissions.desc')}
                     </DialogDescription>
                 </DialogHeader>
 
                 {role && (
-                    <div className="mb-1 rounded-lg border bg-card px-4 py-3 shadow-sm">
+                    <div className="bg-card mb-1 rounded-lg border px-4 py-3 shadow-sm">
                         <div className="grid gap-6 sm:grid-cols-2">
                             {/* Role */}
                             <div className="flex flex-col">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Shield className="h-4 w-4 text-primary" />
-                                    <span className="text-[12px] font-medium uppercase tracking-wide">
-                                        Role
+                                <div className="text-muted-foreground flex items-center gap-2">
+                                    <Shield className="text-primary h-4 w-4" />
+                                    <span className="text-[12px] font-medium tracking-wide uppercase">
+                                        {tRole('label')}
                                     </span>
                                 </div>
-                                <span className="mt-1 break-words text-base font-semibold text-foreground">
+                                <span className="text-foreground mt-1 text-base font-semibold break-words">
                                     {role.name}
                                 </span>
                             </div>
 
                             {/* Guard */}
                             <div className="flex flex-col sm:items-end">
-                                <span className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+                                <span className="text-muted-foreground text-[12px] font-medium tracking-wide uppercase">
                                     Guard
                                 </span>
                                 <Badge
                                     variant="secondary"
-                                    className="mt-1 w-fit uppercase tracking-wide"
+                                    className="mt-1 w-fit tracking-wide uppercase"
                                 >
                                     {role.guard_name}
                                 </Badge>
@@ -176,7 +178,9 @@ export default function PermissionsDialog({
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Cari permission…"
+                            placeholder={tRole(
+                                'permissions.search_placeholder',
+                            )}
                             className="h-9"
                         />
                         <Button
@@ -186,14 +190,14 @@ export default function PermissionsDialog({
                             className="h-8"
                             onClick={handleToggleAll}
                         >
-                            Pilih semua
+                            {tRole('permissions.select_all')}
                         </Button>
                     </div>
                     <ScrollArea className="h-[30vh] rounded-md border">
                         <div className="divide-y">
                             {grouped.length === 0 ? (
-                                <div className="p-4 text-center text-sm text-muted-foreground">
-                                    Tidak ada permission
+                                <div className="text-muted-foreground p-4 text-center text-sm">
+                                    {tRole('permissions.empty')}
                                 </div>
                             ) : (
                                 grouped.map(([group, items]) => (
@@ -203,54 +207,57 @@ export default function PermissionsDialog({
                                         collapsible
                                     >
                                         <AccordionItem value={`group-${group}`}>
-                                            <AccordionTrigger className="px-3 py-2 hover:no-underline">
-                                                <div className="flex w-full items-center justify-between gap-3">
-                                                    <div className="flex items-center gap-2">
-                                                        {(() => {
-                                                            const all =
-                                                                isGroupAllSelected(
-                                                                    items,
-                                                                );
-                                                            const some =
-                                                                items.some(
-                                                                    (p) =>
-                                                                        selected.has(
-                                                                            p.id,
-                                                                        ),
-                                                                );
-                                                            const state:
-                                                                | boolean
-                                                                | 'indeterminate' =
-                                                                all
-                                                                    ? true
-                                                                    : some
-                                                                      ? 'indeterminate'
-                                                                      : false;
-                                                            return (
-                                                                <Checkbox
-                                                                    checked={
-                                                                        state
-                                                                    }
-                                                                    onCheckedChange={() =>
-                                                                        toggleGroup(
-                                                                            items,
-                                                                        )
-                                                                    }
-                                                                    aria-label={`Pilih semua ${group}`}
-                                                                    onClick={(
-                                                                        e,
-                                                                    ) =>
-                                                                        e.stopPropagation()
-                                                                    }
-                                                                />
+                                            {/* Header row: checkbox (outside trigger) + trigger chevron */}
+                                            <div className="flex items-center justify-between px-3 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    {(() => {
+                                                        const all =
+                                                            isGroupAllSelected(
+                                                                items,
                                                             );
-                                                        })()}
-                                                        <span className="text-sm font-medium capitalize no-underline">
-                                                            {group}
-                                                        </span>
-                                                    </div>
+                                                        const some = items.some(
+                                                            (p) =>
+                                                                selected.has(
+                                                                    p.id,
+                                                                ),
+                                                        );
+                                                        const state:
+                                                            | boolean
+                                                            | 'indeterminate' =
+                                                            all
+                                                                ? true
+                                                                : some
+                                                                  ? 'indeterminate'
+                                                                  : false;
+                                                        return (
+                                                            <Checkbox
+                                                                checked={state}
+                                                                onCheckedChange={() =>
+                                                                    toggleGroup(
+                                                                        items,
+                                                                    )
+                                                                }
+                                                                aria-label={tRole(
+                                                                    'permissions.select_group',
+                                                                    { group },
+                                                                )}
+                                                            />
+                                                        );
+                                                    })()}
+                                                    <span className="text-sm font-medium capitalize">
+                                                        {group}
+                                                    </span>
                                                 </div>
-                                            </AccordionTrigger>
+                                                <AccordionTrigger
+                                                    className="w-auto flex-none px-0 py-0 hover:no-underline"
+                                                    aria-label={`Toggle ${group}`}
+                                                >
+                                                    {/* Only chevron is rendered when no children */}
+                                                    <span className="sr-only">
+                                                        Toggle
+                                                    </span>
+                                                </AccordionTrigger>
+                                            </div>
                                             <AccordionContent>
                                                 <div className="px-3 pb-3">
                                                     <div className="grid gap-2 pt-2 sm:grid-cols-2">
@@ -273,7 +280,12 @@ export default function PermissionsDialog({
                                                                                 p.id,
                                                                             )
                                                                         }
-                                                                        aria-label={`Pilih permission ${p.name}`}
+                                                                        aria-label={tRole(
+                                                                            'permissions.select_permission',
+                                                                            {
+                                                                                name: p.name,
+                                                                            },
+                                                                        )}
                                                                     />
                                                                     <span className="text-sm">
                                                                         {p.name}
@@ -296,10 +308,10 @@ export default function PermissionsDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Tutup
+                        {t('common.close')}
                     </Button>
                     <Button onClick={submit} disabled={saving}>
-                        Simpan
+                        {t('common.save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

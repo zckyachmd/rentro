@@ -1,5 +1,5 @@
 export type DocumentFormValue = {
-    type: 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other' | '';
+    type: 'ktp' | 'sim' | 'passport' | 'npwp' | 'other' | '';
     number: string;
     issued_at: string;
     expires_at: string;

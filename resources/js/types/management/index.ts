@@ -150,3 +150,27 @@ export type {
     UserItem,
     UsersPaginator,
 } from './user';
+
+// Amenity
+export type {
+    AmenitiesPageProps,
+    AmenityItem,
+    AmenityPaginator,
+} from './amenity';
+
+// Room Type
+export type {
+    RoomTypeItem as ManagementRoomTypeItem,
+    RoomTypePaginator as ManagementRoomTypePaginator,
+    RoomTypesPageProps,
+} from './room-type';
+
+// Building
+export type {
+    BuildingItem,
+    BuildingPaginator,
+    BuildingsPageProps,
+} from './building';
+
+// Floor
+export type { FloorItem, FloorPaginator, FloorsPageProps } from './floor';

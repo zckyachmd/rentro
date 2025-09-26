@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +43,7 @@ export default function HandoverCreate({
     onSaved?: () => void | Promise<void>;
     redo?: boolean;
 }) {
+    const { t } = useTranslation('management/contract');
     const isAllowedErrorKey = (k: string): k is ErrorKey =>
         k === 'notes' ||
         k === 'files.general' ||
@@ -91,32 +93,32 @@ export default function HandoverCreate({
 
     const title = isCheckin
         ? redo
-            ? 'Ulangi Check‑in'
-            : 'Check‑in'
+            ? t('handover.submit.redo_checkin')
+            : t('handover.submit.checkin')
         : redo
-        ? 'Ulangi Check‑out'
-        : 'Check‑out';
-    const notesLabel = isCheckin ? 'Catatan Check‑in' : 'Catatan Check‑out';
+          ? t('handover.submit.redo_checkout')
+          : t('handover.submit.checkout');
+    const notesLabel = isCheckin
+        ? t('handover.notes_label.checkin')
+        : t('handover.notes_label.checkout');
     const notesPlaceholder = isCheckin
-        ? 'Tulis ringkasan kondisi kamar, meteran listrik/air, lampu, dan kunci yang diserahkan.'
-        : 'Tulis ringkasan bahwa kondisi saat serah terima kembali sama seperti saat masuk (kunci, meteran, lampu, dll).';
-    const photoLabel = isCheckin
-        ? `Foto bukti${minPhotosRequired > 0 ? ` (min ${minPhotosRequired})` : ''}`
-        : `Foto bukti${minPhotosRequired > 0 ? ` (min ${minPhotosRequired})` : ' (opsional)'}`;
+        ? t('handover.notes_placeholder.checkin')
+        : t('handover.notes_placeholder.checkout');
+    const photoLabel = `${t('handover.photo_label')}${
+        minPhotosRequired > 0
+            ? ` (${t('handover.min_photos', { count: minPhotosRequired })})`
+            : ` (${t('common.optional')})`
+    }`;
     const notesHelper = isCheckin
-        ? 'Ringkas kondisi awal, perlengkapan, dan angka meter.'
-        : 'Ringkas pengembalian perlengkapan & kondisi akhir.';
+        ? t('handover.notes_helper.checkin')
+        : t('handover.notes_helper.checkout');
     const photoHelper =
         minPhotosRequired > 0
-            ? `Unggah bukti singkat. Min ${minPhotosRequired}, maks 5 foto.`
-            : 'Unggah bukti singkat (maks 5 foto).';
-    const submitText = isCheckin
-        ? redo
-            ? 'Simpan Ulangi Check‑in'
-            : 'Simpan Check‑in'
-        : redo
-        ? 'Simpan Ulangi Check‑out'
-        : 'Simpan Check‑out';
+            ? t('handover.photo_helper_min', {
+                  count: minPhotosRequired,
+              })
+            : t('handover.photo_helper');
+    const submitText = title;
     const routeName:
         | 'management.contracts.handovers.checkin'
         | 'management.contracts.handovers.checkout' = isCheckin
@@ -127,7 +129,7 @@ export default function HandoverCreate({
         <Dialog open={open} onOpenChange={(o) => (o ? void 0 : close())}>
             <DialogContent className="p-0 sm:max-w-2xl">
                 <div className="flex flex-col">
-                    <DialogHeader className="px-6 pb-4 pt-6">
+                    <DialogHeader className="px-6 pt-6 pb-4">
                         <DialogTitle>{title}</DialogTitle>
                         <DialogDescription>
                             Catat serah terima secara ringkas dan jelas.
@@ -137,7 +139,7 @@ export default function HandoverCreate({
                     <Separator />
 
                     <div className="space-y-5 px-6 py-5 pr-8">
-                        <section className="rounded-xl border bg-muted/10">
+                        <section className="bg-muted/10 rounded-xl border">
                             <div className="flex flex-col gap-4 p-4 sm:p-5">
                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                     <div className="space-y-1">
@@ -147,11 +149,11 @@ export default function HandoverCreate({
                                         >
                                             {notesLabel}
                                         </Label>
-                                        <p className="max-w-[48ch] text-sm text-muted-foreground">
+                                        <p className="text-muted-foreground max-w-[48ch] text-sm">
                                             {notesHelper}
                                         </p>
                                     </div>
-                                    <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                                    <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-xs font-medium">
                                         {noteRule.length}/20
                                         {noteRule.length < 20 ? '*' : ''}
                                     </span>
@@ -173,18 +175,18 @@ export default function HandoverCreate({
                             </div>
                         </section>
 
-                        <section className="rounded-xl border bg-muted/10">
+                        <section className="bg-muted/10 rounded-xl border">
                             <div className="flex flex-col gap-4 p-4 sm:p-5">
                                 <div className="space-y-1">
-                                    <p className="text-sm font-semibold text-foreground">
+                                    <p className="text-foreground text-sm font-semibold">
                                         {photoLabel}
                                     </p>
-                                    <p className="max-w-[52ch] text-sm text-muted-foreground">
+                                    <p className="text-muted-foreground max-w-[52ch] text-sm">
                                         {photoHelper}
                                     </p>
                                 </div>
 
-                                <ScrollArea className="max-h-[280px] rounded-lg border border-dashed bg-background/40">
+                                <ScrollArea className="bg-background/40 max-h-[280px] rounded-lg border border-dashed">
                                     <div className="p-4 pr-6 sm:p-6">
                                         <ImageDropzone
                                             files={filesArr}
@@ -214,12 +216,15 @@ export default function HandoverCreate({
                                     </div>
                                 </ScrollArea>
                                 {minPhotosRequired > 0 && (
-                                    <div className="text-right text-xs text-muted-foreground">
-                                        {photoCount}/{minPhotosRequired} foto
+                                    <div className="text-muted-foreground text-right text-xs">
+                                        {t('handover.photos_counter', {
+                                            current: photoCount,
+                                            min: minPhotosRequired,
+                                        })}
                                     </div>
                                 )}
                                 {fileErrors.length > 0 && (
-                                    <div className="space-y-1 text-right text-xs text-destructive">
+                                    <div className="text-destructive space-y-1 text-right text-xs">
                                         {fileErrors.map((err, idx) => (
                                             <p key={idx}>{err}</p>
                                         ))}
@@ -229,14 +234,14 @@ export default function HandoverCreate({
                         </section>
                     </div>
 
-                    <DialogFooter className="border-t bg-background/95 px-6 py-4">
+                    <DialogFooter className="bg-background/95 border-t px-6 py-4">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={close}
                             className="w-full sm:w-auto"
                         >
-                            Batal
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             type="button"

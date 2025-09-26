@@ -1,6 +1,7 @@
 "use client"
 
 import type { Table } from "@tanstack/react-table"
+import { useTranslation } from 'react-i18next'
 
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -31,6 +32,7 @@ export function DataTablePagination<TData>({
   showPageIndicator = true,
   serverMeta,
 }: Props<TData>) {
+  const { t } = useTranslation()
   const useServer = !!serverMeta
 
   const canPrev = table.getCanPreviousPage()
@@ -54,7 +56,7 @@ export function DataTablePagination<TData>({
 
   const PageSize = () => (
     <div className="hidden items-center gap-2 md:flex">
-      <span className="hidden text-sm text-muted-foreground md:inline">Per halaman</span>
+      <span className="hidden text-sm text-muted-foreground md:inline">{t('datatable.per_page')}</span>
       <Select value={String(displayPageSize)} onValueChange={(v) => {
         const n = Number(v)
         if (useServer && serverMeta?.onPageSizeChange) {
@@ -63,8 +65,8 @@ export function DataTablePagination<TData>({
           table.setPageSize(n)
         }
       }}>
-        <SelectTrigger aria-label="Per halaman" className="w-[84px] justify-between">
-          <SelectValue placeholder="Per halaman" />
+        <SelectTrigger aria-label={t('datatable.per_page')} className="w-[84px] justify-between">
+          <SelectValue placeholder={t('datatable.per_page')} />
         </SelectTrigger>
         <SelectContent>
           {pageSizeOptions.map((n) => (
@@ -80,14 +82,14 @@ export function DataTablePagination<TData>({
   return (
     <div className={`flex flex-col gap-2 py-2 md:flex-row md:items-center md:justify-between ${className ?? ""}`}>
       <div className="text-sm text-muted-foreground">
-        Menampilkan {sFrom}–{sTo} dari {sTotal} data
+        {t('datatable.showing', { from: sFrom, to: sTo, total: sTotal })}
       </div>
 
       <div className="flex flex-col items-stretch gap-2 md:flex-row md:items-center">
         <div className="flex items-center gap-2">
           {showPageIndicator && (
             <div className="px-2 text-sm tabular-nums">
-              Hal {sPageIndex + 1} / {Math.max(1, sPageCount)}
+              {t('datatable.page_indicator', { current: sPageIndex + 1, total: Math.max(1, sPageCount) })}
             </div>
           )}
           <Button
@@ -96,7 +98,7 @@ export function DataTablePagination<TData>({
             onClick={() => (useServer ? serverMeta!.onPageChange(serverMeta!.currentPage - 1) : table.previousPage())}
             disabled={!sCanPrev}
           >
-            Prev
+            {t('datatable.prev')}
           </Button>
           <Button
             variant="outline"
@@ -104,7 +106,7 @@ export function DataTablePagination<TData>({
             onClick={() => (useServer ? serverMeta!.onPageChange(serverMeta!.currentPage + 1) : table.nextPage())}
             disabled={!sCanNext}
           >
-            Next
+            {t('datatable.next')}
           </Button>
         </div>
         <div className="hidden h-6 w-px bg-border md:mx-3 md:block" />
