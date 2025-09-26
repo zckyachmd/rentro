@@ -22,7 +22,7 @@ export default function SummarySection({ data }: { data: TenantInvoiceDTO }) {
                 />
                 <KVP
                     label={t('common.amount')}
-                    value={formatIDR(data.invoice.amount_cents)}
+                    value={formatIDR(data.invoice.amount_idr)}
                 />
                 <KVP label={t('common.status')} value={data.invoice.status} />
             </div>

@@ -16,8 +16,8 @@ return new class extends Migration
             $table->date('period_start')->nullable();
             $table->date('period_end')->nullable();
             $table->timestamp('due_date');
-            $table->unsignedBigInteger('amount_cents');
-            $table->unsignedBigInteger('outstanding_cents')->default(0);
+            $table->unsignedBigInteger('amount_idr');
+            $table->unsignedBigInteger('outstanding_idr')->default(0);
             $table->json('items')->nullable();
             $table->string('status', 20)->default(InvoiceStatus::PENDING->value)->index();
             $table->timestamp('paid_at')->nullable();

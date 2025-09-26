@@ -32,22 +32,22 @@ class Invoice extends Model
         'period_start',
         'period_end',
         'due_date',
-        'amount_cents',
-        'outstanding_cents',
+        'amount_idr',
+        'outstanding_idr',
         'items',
         'status',
         'paid_at',
     ];
 
     protected $casts = [
-        'period_start'      => 'date',
-        'period_end'        => 'date',
-        'due_date'          => 'date',
-        'paid_at'           => 'datetime',
-        'amount_cents'      => 'integer',
-        'outstanding_cents' => 'integer',
-        'items'             => 'array',
-        'status'            => InvoiceStatus::class,
+        'period_start'    => 'date',
+        'period_end'      => 'date',
+        'due_date'        => 'date',
+        'paid_at'         => 'datetime',
+        'amount_idr'      => 'integer',
+        'outstanding_idr' => 'integer',
+        'items'           => 'array',
+        'status'          => InvoiceStatus::class,
     ];
 
     public function contract(): BelongsTo
@@ -65,16 +65,16 @@ class Invoice extends Model
      *
      * @param string $code Short code (e.g., PRORATA, RENT, DEPOSIT)
      * @param string $label Human readable label
-     * @param int $amountCents Amount in cents (>= 0)
-     * @param array|null $meta Optional meta, e.g. ['unit' => 'bulan','qty' => 6,'unit_price_cents' => 90000000]
-     * @return array{code:string,label:string,amount_cents:int,meta?:array}
+     * @param int $amountIdr Amount in rupiah (>= 0)
+     * @param array|null $meta Optional meta, e.g. ['unit' => 'bulan','qty' => 6,'unit_price_idr' => 900000]
+     * @return array{code:string,label:string,amount_idr:int,meta?:array}
      */
-    public static function makeItem(string $code, string $label, int $amountCents, ?array $meta = null): array
+    public static function makeItem(string $code, string $label, int $amountIdr, ?array $meta = null): array
     {
         $item = [
-            'code'         => $code,
-            'label'        => $label,
-            'amount_cents' => $amountCents,
+            'code'       => $code,
+            'label'      => $label,
+            'amount_idr' => $amountIdr,
         ];
         if ($meta) {
             $item['meta'] = $meta;
@@ -84,14 +84,14 @@ class Invoice extends Model
     }
 
     /**
-     * Sum amount_cents from invoice items array.
+     * Sum amount_idr from invoice items array.
      *
-     * @param array<int, array{amount_cents:int}> $items
+     * @param array<int, array{amount_idr:int}> $items
      */
     public static function sumItems(array $items): int
     {
         return array_reduce($items, static function (int $carry, array $it): int {
-            return $carry + (int) $it['amount_cents'];
+            return $carry + (int) $it['amount_idr'];
         }, 0);
     }
 

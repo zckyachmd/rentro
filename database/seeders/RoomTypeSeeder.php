@@ -14,20 +14,20 @@ class RoomTypeSeeder extends Seeder
             [
                 'name'     => 'Standard',
                 'capacity' => 1,
-                'prices'   => ['daily' => 50_000 * 100, 'weekly' => 300_000 * 100, 'monthly' => 1_000_000 * 100],
-                'deposits' => ['daily' => 50_000 * 100, 'weekly' => 150_000 * 100, 'monthly' => 500_000 * 100],
+                'prices'   => ['daily' => 50_000, 'weekly' => 300_000, 'monthly' => 1_000_000],
+                'deposits' => ['daily' => 50_000, 'weekly' => 150_000, 'monthly' => 500_000],
             ],
             [
                 'name'     => 'Deluxe',
                 'capacity' => 2,
-                'prices'   => ['daily' => 75_000 * 100, 'weekly' => 450_000 * 100, 'monthly' => 1_500_000 * 100],
-                'deposits' => ['daily' => 70_000 * 100, 'weekly' => 200_000 * 100, 'monthly' => 700_000 * 100],
+                'prices'   => ['daily' => 75_000, 'weekly' => 450_000, 'monthly' => 1_500_000],
+                'deposits' => ['daily' => 70_000, 'weekly' => 200_000, 'monthly' => 700_000],
             ],
             [
                 'name'     => 'Suite',
                 'capacity' => 2,
-                'prices'   => ['daily' => 100_000 * 100, 'weekly' => 650_000 * 100, 'monthly' => 2_000_000 * 100],
-                'deposits' => ['daily' => 100_000 * 100, 'weekly' => 300_000 * 100, 'monthly' => 1_000_000 * 100],
+                'prices'   => ['daily' => 100_000, 'weekly' => 650_000, 'monthly' => 2_000_000],
+                'deposits' => ['daily' => 100_000, 'weekly' => 300_000, 'monthly' => 1_000_000],
             ],
         ];
 
@@ -55,4 +55,3 @@ class RoomTypeSeeder extends Seeder
         }
     }
 }
-

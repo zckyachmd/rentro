@@ -23,7 +23,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { PageProps, SessionItem, Summary, TabKey } from '@/types/security';
 import { TAB_KEYS } from '@/types/security';
 
@@ -85,7 +85,7 @@ export default function SecurityIndex() {
     }, [tab]);
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={tSecurity('title')}
             pageDescription={tSecurity('desc')}
         >
@@ -248,6 +248,6 @@ export default function SecurityIndex() {
                     <SessionsTab sessions={sessions} />
                 </TabsContent>
             </Tabs>
-        </AuthLayout>
+        </AppLayout>
     );
 }

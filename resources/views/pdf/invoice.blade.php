@@ -255,7 +255,7 @@
         $issuedAt   = !empty($invoice['issued_at']) ? (string) $invoice['issued_at'] : null;
         $dueAt      = !empty($invoice['due_date']) ? (string) $invoice['due_date'] : null;
         $period     = [($invoice['period_start'] ?? null), ($invoice['period_end'] ?? null)];
-        $grandTotal = (int) ($invoice['amount_cents'] ?? 0);
+        $grandTotal = (int) ($invoice['amount_idr'] ?? 0);
         $tenant     = $invoice['tenant'] ?? null;
         $room       = $invoice['room'] ?? null;
         $releaseDay = (int) \App\Models\AppSetting::config('billing.release_day_of_month', 1);
@@ -348,8 +348,8 @@
                 @php($qty = is_numeric($meta['qty'] ?? null) ? (int) $meta['qty'] : ($daysFromRange ?? 1))
                 @php($totalDays = is_numeric($meta['days'] ?? null) ? (int) $meta['days'] : null)
                 @php($freeDays = is_numeric($meta['free_days'] ?? null) ? (int) $meta['free_days'] : null)
-                @php($amount = (int) ($item['amount_cents'] ?? 0))
-                @php($unitPrice = is_numeric($meta['unit_price_cents'] ?? null) ? (int) $meta['unit_price_cents'] :
+                @php($amount = (int) ($item['amount_idr'] ?? 0))
+                @php($unitPrice = is_numeric($meta['unit_price_idr'] ?? null) ? (int) $meta['unit_price_idr'] :
                 (int) round($amount / max(1, $qty)))
                 @php($isProrata = $code === 'PRORATA' || preg_match('/prorata/i', (string) ($item['label'] ?? '')))
                 <tr>

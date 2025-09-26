@@ -130,6 +130,8 @@ class PermissionSeeder extends Seeder
                 PermissionName::HANDOVER_CREATE,
                 PermissionName::HANDOVER_UPDATE,
             ],
+            // Tenant role exists for assigning to app users, with no management permissions.
+            RoleName::TENANT->value => [],
         ];
 
         foreach ($rolesWithPermissions as $roleName => $permissions) {

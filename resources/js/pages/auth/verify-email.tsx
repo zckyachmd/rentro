@@ -3,12 +3,12 @@ import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
-import GuestLayout from '@/layouts/guest-layout';
+import AuthLayout from '@/layouts/auth-layout';
 
 export default function VerifyEmail() {
     const { t } = useTranslation();
     return (
-        <GuestLayout
+        <AuthLayout
             title={t('auth.verify.title')}
             description={t('auth.verify.desc')}
             content={

@@ -54,10 +54,10 @@ class InvoiceManagementController extends Controller
                 },
             ],
             'sortable' => [
-                'number'       => 'number',
-                'due_date'     => 'due_date',
-                'amount_cents' => 'amount_cents',
-                'status'       => 'status',
+                'number'     => 'number',
+                'due_date'   => 'due_date',
+                'amount_idr' => 'amount_idr',
+                'status'     => 'status',
             ],
             'default_sort' => ['due_date', 'desc'],
             'filters'      => [
@@ -91,17 +91,17 @@ class InvoiceManagementController extends Controller
             $tenant   = $contract?->tenant;
             $room     = $contract?->room;
 
-            $outstanding = (int) ($inv->outstanding_cents ?? 0);
+            $outstanding = (int) ($inv->outstanding_idr ?? 0);
 
             return [
-                'id'           => (string) $inv->id,
-                'number'       => $inv->number,
-                'due_date'     => $inv->due_date->format('Y-m-d'),
-                'amount_cents' => (int) $inv->amount_cents,
-                'status'       => $inv->status->value,
-                'tenant'       => $tenant?->name,
-                'room_number'  => $room?->number,
-                'outstanding'  => $outstanding,
+                'id'          => (string) $inv->id,
+                'number'      => $inv->number,
+                'due_date'    => $inv->due_date->format('Y-m-d'),
+                'amount_idr'  => (int) $inv->amount_idr,
+                'status'      => $inv->status->value,
+                'tenant'      => $tenant?->name,
+                'room_number' => $room?->number,
+                'outstanding' => $outstanding,
             ];
         });
         $page->setCollection($mapped);
@@ -137,10 +137,10 @@ class InvoiceManagementController extends Controller
         $countPending   = (int) (clone $sumBase)->where('status', InvoiceStatus::PENDING->value)->count('id');
         $countOverdue   = (int) (clone $sumBase)->where('status', InvoiceStatus::OVERDUE->value)->count('id');
         $countPaid      = (int) (clone $sumBase)->where('status', InvoiceStatus::PAID->value)->count('id');
-        $sumAmount      = (int) (clone $sumBase)->sum('amount_cents');
+        $sumAmount      = (int) (clone $sumBase)->sum('amount_idr');
         $sumOutstanding = (int) (clone $sumBase)
             ->whereIn('status', [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value])
-            ->sum('outstanding_cents');
+            ->sum('outstanding_idr');
 
         return Inertia::render('management/invoice/index', [
             'invoices' => $invoicesPayload,
@@ -193,8 +193,8 @@ class InvoiceManagementController extends Controller
                         $inv->number,
                         $inv->due_date->toDateString(),
                         (string) $inv->status->value,
-                        (int) $inv->amount_cents,
-                        (int) ($inv->outstanding_cents ?? 0),
+                        (int) $inv->amount_idr,
+                        (int) ($inv->outstanding_idr ?? 0),
                         $c?->tenant?->name,
                         optional($c?->room)->number ?? optional($c?->room)->name,
                     ]);
@@ -238,7 +238,7 @@ class InvoiceManagementController extends Controller
             'contract:id,user_id,room_id,number,billing_period,start_date,end_date',
             'contract.tenant:id,name,email,phone',
             'contract.room:id,number,name',
-            'payments:id,invoice_id,method,status,amount_cents,paid_at,reference,provider',
+            'payments:id,invoice_id,method,status,amount_idr,paid_at,reference,provider',
         ]);
 
         $c      = $invoice->contract;
@@ -252,7 +252,7 @@ class InvoiceManagementController extends Controller
             'due_date'     => $invoice->due_date->toDateString(),
             'period_start' => $invoice->period_start->toDateString(),
             'period_end'   => $invoice->period_end->toDateString(),
-            'amount_cents' => (int) $invoice->amount_cents,
+            'amount_idr'   => (int) $invoice->amount_idr,
             'items'        => (array) ($invoice->items ?? []),
             'paid_at'      => $invoice->paid_at?->toDateTimeString(),
             'created_at'   => $invoice->created_at->toDateTimeString(),
@@ -287,20 +287,20 @@ class InvoiceManagementController extends Controller
             ->values()
             ->map(function (\App\Models\Payment $p) {
                 return [
-                    'id'           => (string) $p->id,
-                    'method'       => (string) $p->method->value,
-                    'status'       => (string) $p->status->value,
-                    'amount_cents' => (int) $p->amount_cents,
-                    'paid_at'      => $p->paid_at?->toDateTimeString(),
-                    'reference'    => $p->reference,
-                    'provider'     => $p->provider,
+                    'id'         => (string) $p->id,
+                    'method'     => (string) $p->method->value,
+                    'status'     => (string) $p->status->value,
+                    'amount_idr' => (int) $p->amount_idr,
+                    'paid_at'    => $p->paid_at?->toDateTimeString(),
+                    'reference'  => $p->reference,
+                    'provider'   => $p->provider,
                 ];
             });
 
         $totals       = $this->invoices->totals($invoice);
         $totalInvoice = (int) $totals['total_invoice'];
         $totalPaid    = (int) $totals['total_paid'];
-        $outstanding  = (int) ($invoice->outstanding_cents ?? $totals['outstanding']);
+        $outstanding  = (int) ($invoice->outstanding_idr ?? $totals['outstanding']);
 
         return response()->json([
             'invoice'         => $dto,
@@ -330,7 +330,7 @@ class InvoiceManagementController extends Controller
         }
 
         $totals      = $this->invoices->totals($invoice);
-        $outstanding = (int) ($invoice->outstanding_cents ?? $totals['outstanding']);
+        $outstanding = (int) ($invoice->outstanding_idr ?? $totals['outstanding']);
 
         $eligibleStatus = in_array((string) $invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true);
 
@@ -340,7 +340,7 @@ class InvoiceManagementController extends Controller
         return response()->json([
             'id'          => (string) $invoice->id,
             'number'      => $invoice->number,
-            'amount'      => (int) $invoice->amount_cents,
+            'amount'      => (int) $invoice->amount_idr,
             'status'      => (string) $invoice->status->value,
             'tenant_name' => $lt?->name,
             'outstanding' => $outstanding,
@@ -488,7 +488,7 @@ class InvoiceManagementController extends Controller
             'due_date'     => $inv->due_date->toDateString(),
             'period_start' => $inv->period_start->toDateString(),
             'period_end'   => $inv->period_end->toDateString(),
-            'amount_cents' => (int) $inv->amount_cents,
+            'amount_idr'   => (int) $inv->amount_idr,
             'items'        => (array) ($inv->items ?? []),
             'tenant'       => $tenant ? [
                 'name'  => $tenant->name,

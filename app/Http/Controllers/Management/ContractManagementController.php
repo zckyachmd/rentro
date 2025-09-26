@@ -45,7 +45,7 @@ class ContractManagementController extends Controller
                 'room_id',
                 'start_date',
                 'end_date',
-                'rent_cents',
+                'rent_idr',
                 'status',
                 'auto_renew',
                 'notes',
@@ -58,7 +58,7 @@ class ContractManagementController extends Controller
             'sortable'     => [
                 'start_date' => 'start_date',
                 'end_date'   => 'end_date',
-                'rent'       => 'rent_cents',
+                'rent'       => 'rent_idr',
                 'status'     => 'status',
                 'created_at' => 'created_at',
             ],
@@ -166,7 +166,7 @@ class ContractManagementController extends Controller
                 'room'                   => $room ? ['id' => (string) $room->id, 'number' => $room->number] : null,
                 'start_date'             => $c->start_date->format('Y-m-d'),
                 'end_date'               => $c->end_date?->format('Y-m-d'),
-                'rent_cents'             => (int) $c->rent_cents,
+                'rent_idr'               => (int) $c->rent_idr,
                 'status'                 => $c->status->value,
                 'auto_renew'             => (bool) $c->auto_renew,
                 'has_checkin'            => (bool) $hasConfirmedCheckin,
@@ -381,7 +381,7 @@ class ContractManagementController extends Controller
                         $c->start_date->toDateString(),
                         $c->end_date?->toDateString(),
                         (string) $c->status->value,
-                        (int) ($c->rent_cents ?? 0),
+                        (int) ($c->rent_idr ?? 0),
                         $c->auto_renew ? 'yes' : 'no',
                         $c->tenant?->name,
                         optional($c->room)->number ?? optional($c->room)->name,
@@ -436,22 +436,22 @@ class ContractManagementController extends Controller
         $room   = $contract->room;
 
         $contractDTO = [
-            'id'                   => (string) $contract->id,
-            'number'               => (string) ($contract->number ?? ''),
-            'start_date'           => $contract->start_date->toDateString(),
-            'end_date'             => $contract->end_date?->toDateString(),
-            'rent_cents'           => (int) $contract->rent_cents,
-            'deposit_cents'        => (int) $contract->deposit_cents,
-            'billing_period'       => $contract->billing_period->value,
-            'billing_day'          => $contract->billing_day,
-            'auto_renew'           => (bool) $contract->auto_renew,
-            'status'               => $contract->status->value,
-            'notes'                => $contract->notes,
-            'paid_in_full_at'      => $contract->paid_in_full_at?->toDateTimeString(),
-            'deposit_refund_cents' => $contract->deposit_refund_cents,
-            'deposit_refunded_at'  => $contract->deposit_refunded_at?->toDateTimeString(),
-            'created_at'           => $contract->created_at->toDateTimeString(),
-            'updated_at'           => $contract->updated_at->toDateTimeString(),
+            'id'                  => (string) $contract->id,
+            'number'              => (string) ($contract->number ?? ''),
+            'start_date'          => $contract->start_date->toDateString(),
+            'end_date'            => $contract->end_date?->toDateString(),
+            'rent_idr'            => (int) $contract->rent_idr,
+            'deposit_idr'         => (int) $contract->deposit_idr,
+            'billing_period'      => $contract->billing_period->value,
+            'billing_day'         => $contract->billing_day,
+            'auto_renew'          => (bool) $contract->auto_renew,
+            'status'              => $contract->status->value,
+            'notes'               => $contract->notes,
+            'paid_in_full_at'     => $contract->paid_in_full_at?->toDateTimeString(),
+            'deposit_refund_idr'  => $contract->deposit_refund_idr,
+            'deposit_refunded_at' => $contract->deposit_refunded_at?->toDateTimeString(),
+            'created_at'          => $contract->created_at->toDateTimeString(),
+            'updated_at'          => $contract->updated_at->toDateTimeString(),
         ];
 
         $tenantDTO = $tenant ? [
@@ -462,16 +462,16 @@ class ContractManagementController extends Controller
         ] : null;
 
         $roomDTO = $room ? [
-            'id'            => (string) $room->id,
-            'number'        => $room->number,
-            'name'          => $room->name,
-            'price_cents'   => $room->effectivePriceCents(BillingPeriod::MONTHLY->value),
-            'deposit_cents' => $room->effectiveDepositCents(BillingPeriod::MONTHLY->value),
-            'type'          => $room->type ? [
-                'id'            => (string) $room->type->id,
-                'name'          => $room->type->name,
-                'deposit_cents' => (int) (($room->type->deposits['monthly'] ?? 0)),
-                'price_cents'   => (int) (($room->type->prices['monthly'] ?? 0)),
+            'id'              => (string) $room->id,
+            'number'          => $room->number,
+            'name'            => $room->name,
+                'price_idr'   => $room->effectivePriceCents(BillingPeriod::MONTHLY->value),
+                'deposit_idr' => $room->effectiveDepositCents(BillingPeriod::MONTHLY->value),
+            'type'            => $room->type ? [
+                'id'          => (string) $room->type->id,
+                'name'        => $room->type->name,
+                'deposit_idr' => (int) (($room->type->deposits['monthly'] ?? 0)),
+                'price_idr'   => (int) (($room->type->prices['monthly'] ?? 0)),
             ] : null,
             'building' => $room->building ? [
                 'id'   => (string) $room->building->id,
@@ -485,7 +485,7 @@ class ContractManagementController extends Controller
         ] : null;
 
         $invoices = $contract->invoices()
-            ->select('id', 'number', 'status', 'due_date', 'period_start', 'period_end', 'amount_cents', 'paid_at')
+            ->select('id', 'number', 'status', 'due_date', 'period_start', 'period_end', 'amount_idr', 'paid_at')
             ->orderByDesc('created_at')
             ->paginate(10);
 
@@ -500,7 +500,7 @@ class ContractManagementController extends Controller
                 'due_date'     => $i->due_date->toDateString(),
                 'period_start' => $i->period_start?->toDateString(),
                 'period_end'   => $i->period_end?->toDateString(),
-                'amount_cents' => (int) $i->amount_cents,
+                'amount_idr'   => (int) $i->amount_idr,
                 'paid_at'      => $i->paid_at?->toDateTimeString(),
             ];
         });
@@ -611,8 +611,8 @@ class ContractManagementController extends Controller
             'end_date'       => $contract->end_date?->toDateString(),
             'billing_period' => (string) $contract->billing_period->value,
             'billing_day'    => $contract->billing_day,
-            'rent_cents'     => (int) $contract->rent_cents,
-            'deposit_cents'  => (int) $contract->deposit_cents,
+            'rent_idr'       => (int) $contract->rent_idr,
+            'deposit_idr'    => (int) $contract->deposit_idr,
             'notes'          => (string) ($contract->notes ?? ''),
             'tenant'         => $tenant ? [
                 'name'  => $tenant->name,

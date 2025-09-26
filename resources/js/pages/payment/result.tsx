@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { PaymentResultPageProps as PageProps } from '@/types/payment';
 
 export default function PaymentResult(props: PageProps) {
@@ -46,7 +46,7 @@ export default function PaymentResult(props: PageProps) {
     }, [variant, t]);
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={meta.title}
             pageDescription={t('payment.result.page_desc')}
         >
@@ -80,6 +80,6 @@ export default function PaymentResult(props: PageProps) {
                     </CopyInline>
                 </div>
             </div>
-        </AuthLayout>
+        </AppLayout>
     );
 }

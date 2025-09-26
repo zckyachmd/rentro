@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import PasswordInput from '@/components/ui/password-input';
-import GuestLayout from '@/layouts/guest-layout';
+import AuthLayout from '@/layouts/auth-layout';
 
 export default function ResetPassword({
     email,
@@ -17,7 +17,7 @@ export default function ResetPassword({
     const { t } = useTranslation();
     return (
         <>
-            <GuestLayout
+            <AuthLayout
                 title={t('auth.reset.title')}
                 description={t('auth.reset.desc')}
                 content={

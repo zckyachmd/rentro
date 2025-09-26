@@ -28,7 +28,7 @@ import { DataTableServer } from '@/components/ui/data-table-server';
 import UpsertFloorDialog from '@/features/floor/dialogs/upsert-floor-dialog';
 import { createColumns } from '@/features/floor/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { FloorItem, FloorsPageProps } from '@/types/management';
 
 type PageProps = FloorsPageProps;
@@ -82,7 +82,7 @@ export default function FloorsIndex() {
     );
 
     return (
-        <AuthLayout pageTitle={tF('title')} pageDescription={tF('desc')}>
+        <AppLayout pageTitle={tF('title')} pageDescription={tF('desc')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
@@ -182,6 +182,6 @@ export default function FloorsIndex() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </AuthLayout>
+        </AppLayout>
     );
 }

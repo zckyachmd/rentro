@@ -10,7 +10,7 @@ import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import PasswordInput from '@/components/ui/password-input';
 import { Separator } from '@/components/ui/separator';
-import GuestLayout from '@/layouts/guest-layout';
+import AuthLayout from '@/layouts/auth-layout';
 import type { LoginForm } from '@/types/auth';
 
 export default function Login({
@@ -39,7 +39,7 @@ export default function Login({
     };
 
     return (
-        <GuestLayout
+        <AuthLayout
             title={t('auth.login.title')}
             description={t('auth.login.desc')}
             content={

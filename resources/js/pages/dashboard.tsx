@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Can } from '@/components/acl';
 import ManagementSummary from '@/features/dashboard/management-summary';
 import TenantSummary from '@/features/dashboard/tenant-summary';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { DashboardProps } from '@/pages/types/dashboard';
 import type { PageProps } from '@/types';
 
@@ -20,7 +20,7 @@ export default function Dashboard() {
     const isTenant = roles.includes('Tenant');
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={t('dashboard.title')}
             pageDescription={t('dashboard.desc')}
         >
@@ -40,6 +40,6 @@ export default function Dashboard() {
                     <TenantSummary tenant={tenant} />
                 </div>
             )}
-        </AuthLayout>
+        </AppLayout>
     );
 }

@@ -145,7 +145,7 @@ export const createColumns = (
         className: COL.rent,
         sortable: true,
         cell: ({ row }) => (
-            <div className={COL.rent}>{formatIDR(row.original.rent_cents)}</div>
+            <div className={COL.rent}>{formatIDR(row.original.rent_idr)}</div>
         ),
     }),
     makeColumn<ContractItem>({

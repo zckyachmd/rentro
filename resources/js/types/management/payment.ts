@@ -2,7 +2,7 @@ export type PaymentRow = {
     id: string;
     method: string;
     status: string;
-    amount_cents: number;
+    amount_idr: number;
     paid_at?: string | null;
     invoice?: string | null;
     tenant?: string | null;
@@ -34,7 +34,7 @@ export type PaymentIndexPageProps = {
         tenant?: string | null;
         room_number?: string | null;
         status: string;
-        amount_cents: number;
+        amount_idr: number;
         outstanding: number;
     }>;
 };
@@ -42,7 +42,7 @@ export type PaymentIndexPageProps = {
 export type ManualPaymentForm = {
     invoice_number: string;
     invoice_id: string;
-    amount_cents: number | '';
+    amount_idr: number | '';
     method: string;
     paid_at: string;
     note: string;
@@ -63,7 +63,7 @@ export type ManualPaymentDialogProps = {
         tenant?: string | null;
         room_number?: string | null;
         status: string;
-        amount_cents: number;
+        amount_idr: number;
         outstanding: number;
     }>;
     manualBanks?: { bank: string; holder: string; account: string }[];
@@ -75,7 +75,7 @@ export type ManagementPaymentDetailDTO = {
         id: string;
         method: string;
         status: string;
-        amount_cents: number;
+        amount_idr: number;
         paid_at?: string | null;
         reference?: string | null;
         provider?: string | null;
@@ -85,7 +85,7 @@ export type ManagementPaymentDetailDTO = {
         attachment_name?: string | null;
         attachment_uploaded_at?: string | null;
         attachments?: string[];
-        pre_outstanding_cents?: number | null;
+        pre_outstanding_idr?: number | null;
         receiver_bank?: string | null;
         receiver_account?: string | null;
         receiver_holder?: string | null;
@@ -93,7 +93,7 @@ export type ManagementPaymentDetailDTO = {
     invoice: {
         id: string;
         number: string;
-        amount_cents: number;
+        amount_idr: number;
         due_date?: string | null;
         status: string;
         paid_at?: string | null;
@@ -112,7 +112,7 @@ export type ManagementPaymentShowDTO = {
         id: string;
         method: string;
         status: string;
-        amount_cents: number;
+        amount_idr: number;
         paid_at?: string | null;
         note?: string | null;
         attachment?: string | null;

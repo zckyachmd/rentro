@@ -102,18 +102,18 @@ class PaymentService implements PaymentServiceInterface
             $shouldSetPaidNow = ($status === PaymentStatus::COMPLETED->value);
 
             $payment = Payment::create([
-                'invoice_id'            => $invoice->id,
-                'method'                => $method,
-                'status'                => $status,
-                'amount_cents'          => (int) $data['amount_cents'],
-                'pre_outstanding_cents' => $preOutstanding,
-                'paid_at'               => $data['paid_at'] ?? ($shouldSetPaidNow ? now() : null),
-                'reference'             => null,
-                'provider'              => $provider,
-                'va_number'             => $data['va_number'] ?? null,
-                'va_expired_at'         => $data['va_expired_at'] ?? null,
-                'meta'                  => $meta ?: null,
-                'note'                  => $data['note'] ?? null,
+                'invoice_id'          => $invoice->id,
+                'method'              => $method,
+                'status'              => $status,
+                'amount_idr'          => (int) $data['amount_idr'],
+                'pre_outstanding_idr' => $preOutstanding,
+                'paid_at'             => $data['paid_at'] ?? ($shouldSetPaidNow ? now() : null),
+                'reference'           => null,
+                'provider'            => $provider,
+                'va_number'           => $data['va_number'] ?? null,
+                'va_expired_at'       => $data['va_expired_at'] ?? null,
+                'meta'                => $meta ?: null,
+                'note'                => $data['note'] ?? null,
             ]);
 
             if (empty($payment->reference)) {
@@ -195,9 +195,9 @@ class PaymentService implements PaymentServiceInterface
                 ->orderByDesc('paid_at')
                 ->value('paid_at');
             $invoice->forceFill([
-                'status'            => InvoiceStatus::PAID,
-                'paid_at'           => $latestPaidAt ?: now(),
-                'outstanding_cents' => 0,
+                'status'          => InvoiceStatus::PAID,
+                'paid_at'         => $latestPaidAt ?: now(),
+                'outstanding_idr' => 0,
             ])->save();
 
             if ($prevStatus !== InvoiceStatus::PAID->value) {
@@ -210,9 +210,9 @@ class PaymentService implements PaymentServiceInterface
                 $new   = $due->lessThan($today) ? InvoiceStatus::OVERDUE : InvoiceStatus::PENDING;
 
                 $invoice->forceFill([
-                    'status'            => $new,
-                    'paid_at'           => null,
-                    'outstanding_cents' => $remaining,
+                    'status'          => $new,
+                    'paid_at'         => null,
+                    'outstanding_idr' => $remaining,
                 ])->save();
 
                 // Fire reopened event when transitioning away from PAID

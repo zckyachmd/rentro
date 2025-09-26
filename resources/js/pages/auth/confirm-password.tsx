@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import PasswordInput from '@/components/ui/password-input';
-import GuestLayout from '@/layouts/guest-layout';
+import AuthLayout from '@/layouts/auth-layout';
 
 export default function ConfirmPassword() {
     const { t } = useTranslation();
     return (
-        <GuestLayout
+        <AuthLayout
             title={t('auth.confirm.title')}
             description={t('auth.confirm.desc')}
             content={

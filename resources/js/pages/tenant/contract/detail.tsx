@@ -28,7 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useLengthRule } from '@/hooks/use-length-rule';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import { createAbort, getJson } from '@/lib/api';
 import { formatDate, formatIDR } from '@/lib/format';
 import {
@@ -116,7 +116,7 @@ export default function TenantContractDetail(props: PageProps) {
     ];
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={t('contract.title_with_number', {
                 number: contract.number ?? contract.id,
             })}
@@ -169,16 +169,16 @@ export default function TenantContractDetail(props: PageProps) {
                                 {t('common.rent')}
                             </div>
                             <div className="font-semibold">
-                                {formatIDR(contract.rent_cents)}
+                                {formatIDR(contract.rent_idr)}
                             </div>
                         </div>
-                        {typeof contract.deposit_cents === 'number' && (
+                        {typeof contract.deposit_idr === 'number' && (
                             <div className="flex items-center justify-between">
                                 <div className="text-muted-foreground">
                                     {t('common.deposit')}
                                 </div>
                                 <div className="font-semibold">
-                                    {formatIDR(contract.deposit_cents || 0)}
+                                    {formatIDR(contract.deposit_idr || 0)}
                                 </div>
                             </div>
                         )}
@@ -256,7 +256,7 @@ export default function TenantContractDetail(props: PageProps) {
                                 {t('contract.room_info.room_price')}
                             </div>
                             <div className="font-semibold">
-                                {formatIDR(contract.room?.price_cents || 0)}
+                                {formatIDR(contract.room?.price_idr || 0)}
                             </div>
                         </div>
                     </CardContent>
@@ -341,7 +341,7 @@ export default function TenantContractDetail(props: PageProps) {
                                                 </Badge>
                                             </td>
                                             <td className="px-4 py-2 text-right">
-                                                {formatIDR(inv.amount_cents)}
+                                                {formatIDR(inv.amount_idr)}
                                             </td>
                                         </tr>
                                     ))
@@ -740,6 +740,6 @@ export default function TenantContractDetail(props: PageProps) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </AuthLayout>
+        </AppLayout>
     );
 }

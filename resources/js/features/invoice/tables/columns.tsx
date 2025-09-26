@@ -123,13 +123,13 @@ export const createColumns = <T extends BaseInvoiceRow>(
         },
     }),
     makeColumn<T>({
-        id: 'amount_cents',
+        id: 'amount_idr',
         title: i18n.t('common.amount'),
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.amount}>
-                {formatIDR(row.original.amount_cents)}
+                {formatIDR(row.original.amount_idr)}
             </div>
         ),
     }),

@@ -78,10 +78,10 @@ class MidtransController extends Controller
         $this->payments->voidPendingPaymentsForInvoice($invoice, 'Midtrans', 'Switch to VA ' . strtoupper($bank), $user);
 
         $payment = $this->payments->createPayment($invoice, [
-            'method'       => PaymentMethod::VIRTUAL_ACCOUNT->value,
-            'status'       => PaymentStatus::PENDING->value,
-            'amount_cents' => $amount,
-            'meta'         => [
+            'method'     => PaymentMethod::VIRTUAL_ACCOUNT->value,
+            'status'     => PaymentStatus::PENDING->value,
+            'amount_idr' => $amount,
+            'meta'       => [
                 'gateway'      => 'midtrans',
                 'channel'      => 'core_api',
                 'payment_type' => 'bank_transfer',

@@ -31,7 +31,7 @@ import {
 import RoomDetailDialog from '@/features/room/dialogs/detail-dialog';
 import { createColumns } from '@/features/room/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type {
     RoomFilters as Filters,
     RoomQueryInit as QueryInit,
@@ -343,7 +343,7 @@ export default function RoomIndex(props: RoomsPageProps) {
 
     return (
         <>
-            <AuthLayout
+            <AppLayout
                 pageTitle={tRoom('title')}
                 pageDescription={tRoom('desc')}
                 titleIcon="BedDouble"
@@ -633,7 +633,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                         </CardContent>
                     </Card>
                 </div>
-            </AuthLayout>
+            </AppLayout>
             {deletingRoom && (
                 <AlertDialog
                     open={!!deletingRoom}

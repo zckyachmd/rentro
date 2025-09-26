@@ -48,11 +48,11 @@ class PaymentManagementController extends Controller
                 ['relation' => 'invoice.contract.tenant', 'column' => 'name'],
             ],
             'sortable' => [
-                'paid_at'      => 'paid_at',
-                'created_at'   => 'created_at',
-                'amount_cents' => 'amount_cents',
-                'status'       => 'status',
-                'method'       => 'method',
+                'paid_at'    => 'paid_at',
+                'created_at' => 'created_at',
+                'amount_idr' => 'amount_idr',
+                'status'     => 'status',
+                'method'     => 'method',
             ],
             'default_sort' => ['created_at', 'desc'],
             'filters'      => [
@@ -100,13 +100,13 @@ class PaymentManagementController extends Controller
             $tenant   = $contract?->tenant;
 
             return [
-                'id'           => (string) $p->id,
-                'method'       => (string) $p->method->value,
-                'status'       => (string) $p->status->value,
-                'amount_cents' => (int) $p->amount_cents,
-                'paid_at'      => $p->paid_at?->toDateTimeString(),
-                'invoice'      => $invoice?->number,
-                'tenant'       => $tenant?->name,
+                'id'         => (string) $p->id,
+                'method'     => (string) $p->method->value,
+                'status'     => (string) $p->status->value,
+                'amount_idr' => (int) $p->amount_idr,
+                'paid_at'    => $p->paid_at?->toDateTimeString(),
+                'invoice'    => $invoice?->number,
+                'tenant'     => $tenant?->name,
             ];
         });
 
@@ -129,19 +129,19 @@ class PaymentManagementController extends Controller
 
                 try {
                     $totals      = $this->invoices->totals($inv);
-                    $outstanding = (int) ($inv->outstanding_cents ?? $totals['outstanding'] ?? 0);
+                    $outstanding = (int) ($inv->outstanding_idr ?? $totals['outstanding'] ?? 0);
                 } catch (\Throwable $e) {
-                    $outstanding = (int) ($inv->outstanding_cents ?? 0);
+                    $outstanding = (int) ($inv->outstanding_idr ?? 0);
                 }
 
                 return [
-                    'id'           => (string) $inv->id,
-                    'number'       => (string) $inv->number,
-                    'tenant'       => $tenant?->name,
-                    'room_number'  => $room?->number,
-                    'status'       => (string) $inv->status->value,
-                    'amount_cents' => (int) $inv->amount_cents,
-                    'outstanding'  => max(0, (int) $outstanding),
+                    'id'          => (string) $inv->id,
+                    'number'      => (string) $inv->number,
+                    'tenant'      => $tenant?->name,
+                    'room_number' => $room?->number,
+                    'status'      => (string) $inv->status->value,
+                    'amount_idr'  => (int) $inv->amount_idr,
+                    'outstanding' => max(0, (int) $outstanding),
                 ];
             });
 
@@ -149,8 +149,8 @@ class PaymentManagementController extends Controller
         $sumBase = Payment::query();
         $this->applyRequestFilters($sumBase, $request);
         $totalItems   = (int) $sumBase->count('id');
-        $sumAll       = (int) (clone $sumBase)->sum('amount_cents');
-        $sumCompleted = (int) (clone $sumBase)->where('status', PaymentStatus::COMPLETED->value)->sum('amount_cents');
+        $sumAll       = (int) (clone $sumBase)->sum('amount_idr');
+        $sumCompleted = (int) (clone $sumBase)->where('status', PaymentStatus::COMPLETED->value)->sum('amount_idr');
 
         return Inertia::render('management/payment/index', [
             'payments' => $payload,
@@ -242,7 +242,7 @@ class PaymentManagementController extends Controller
         return response()->streamDownload(function () use ($q): void {
             $out = fopen('php://output', 'w');
             // Header
-            fputcsv($out, ['Paid At', 'Created At', 'Method', 'Status', 'Amount (cents)', 'Invoice', 'Tenant']);
+            fputcsv($out, ['Paid At', 'Created At', 'Method', 'Status', 'Amount (IDR)', 'Invoice', 'Tenant']);
             $q->chunk(1000, function ($rows) use ($out) {
                 foreach ($rows as $p) {
                     /** @var Payment $p */
@@ -253,7 +253,7 @@ class PaymentManagementController extends Controller
                         $p->created_at?->toDateTimeString(),
                         (string) $p->method->value,
                         (string) $p->status->value,
-                        (int) $p->amount_cents,
+                        (int) $p->amount_idr,
                         $inv?->number,
                         $tenant?->name,
                     ]);
@@ -278,10 +278,10 @@ class PaymentManagementController extends Controller
         if ($outstanding <= 0) {
             return back()->with('error', __('management/payments.invoice_already_paid'));
         }
-        if ((int) $data['amount_cents'] <= 0) {
+        if ((int) $data['amount_idr'] <= 0) {
             return back()->with('error', __('management/payments.amount_positive'));
         }
-        if ((int) $data['amount_cents'] > $outstanding) {
+        if ((int) $data['amount_idr'] > $outstanding) {
             return back()->with('error', __('management/payments.amount_exceeds_outstanding'));
         }
 
@@ -297,10 +297,10 @@ class PaymentManagementController extends Controller
             causer: $request->user(),
             subject: $payment,
             properties: [
-                'invoice_id'   => (string) $invoice->getAttribute('id'),
-                'method'       => (string) $payment->method->value,
-                'status'       => (string) $payment->status->value,
-                'amount_cents' => (int) $payment->amount_cents,
+                'invoice_id' => (string) $invoice->getAttribute('id'),
+                'method'     => (string) $payment->method->value,
+                'status'     => (string) $payment->status->value,
+                'amount_idr' => (int) $payment->amount_idr,
             ],
         );
 
@@ -332,7 +332,7 @@ class PaymentManagementController extends Controller
     public function show(Request $request, Payment $payment)
     {
         $payment->load([
-            'invoice:id,number,contract_id,amount_cents,due_date,status,paid_at',
+            'invoice:id,number,contract_id,amount_idr,due_date,status,paid_at',
             'invoice.contract:id,user_id,room_id,start_date,end_date,status',
             'invoice.contract.tenant:id,name,email,phone',
             'invoice.contract.room:id,number,name',
@@ -353,7 +353,7 @@ class PaymentManagementController extends Controller
                     'id'                     => (string) $payment->id,
                     'method'                 => (string) $payment->method->value,
                     'status'                 => (string) $payment->status->value,
-                    'amount_cents'           => (int) $payment->amount_cents,
+                    'amount_idr'             => (int) $payment->amount_idr,
                     'paid_at'                => $payment->paid_at?->toDateTimeString(),
                     'reference'              => $payment->reference,
                     'provider'               => $payment->provider,
@@ -366,15 +366,15 @@ class PaymentManagementController extends Controller
                     'receiver_bank'          => (string) ($payment->meta['receiver']['bank'] ?? ''),
                     'receiver_account'       => (string) ($payment->meta['receiver']['account'] ?? ''),
                     'receiver_holder'        => (string) ($payment->meta['receiver']['holder'] ?? ''),
-                    'pre_outstanding_cents'  => (int) ($payment->pre_outstanding_cents ?? 0),
+                    'pre_outstanding_idr'    => (int) ($payment->pre_outstanding_idr ?? 0),
                 ],
                 'invoice' => $inv ? [
-                    'id'           => (string) $inv->getAttribute('id'),
-                    'number'       => (string) $inv->getAttribute('number'),
-                    'amount_cents' => (int) $inv->getAttribute('amount_cents'),
-                    'due_date'     => $inv->due_date ? $inv->due_date->toDateString() : null,
-                    'status'       => (string) $inv->status->value,
-                    'paid_at'      => $inv->paid_at?->toDateTimeString(),
+                    'id'         => (string) $inv->getAttribute('id'),
+                    'number'     => (string) $inv->getAttribute('number'),
+                    'amount_idr' => (int) $inv->getAttribute('amount_idr'),
+                    'due_date'   => $inv->due_date ? $inv->due_date->toDateString() : null,
+                    'status'     => (string) $inv->status->value,
+                    'paid_at'    => $inv->paid_at?->toDateTimeString(),
                 ] : null,
                 'tenant' => $tenant ? [
                     'id'    => (string) $tenant->getAttribute('id'),
@@ -395,21 +395,21 @@ class PaymentManagementController extends Controller
 
     public function print(Payment $payment)
     {
-        $payment->load(['invoice:id,number,contract_id,amount_cents', 'invoice.contract:id,user_id,room_id,start_date,end_date', 'invoice.contract.tenant:id,name,email,phone', 'invoice.contract.room:id,number,name']);
+        $payment->load(['invoice:id,number,contract_id,amount_idr', 'invoice.contract:id,user_id,room_id,start_date,end_date', 'invoice.contract.tenant:id,name,email,phone', 'invoice.contract.room:id,number,name']);
 
         // Resolve first attachment via trait (if any)
         $list            = $payment->getAttachments('private');
         $firstAttachment = !empty($list) ? (string) $list[0] : '';
 
         $dto = [
-            'id'           => (string) $payment->id,
-            'method'       => (string) $payment->method->value,
-            'status'       => (string) $payment->status->value,
-            'amount_cents' => (int) $payment->amount_cents,
-            'paid_at'      => $payment->paid_at?->toDateTimeString(),
-            'reference'    => $payment->reference,
-            'note'         => $payment->note,
-            'attachment'   => $firstAttachment,
+            'id'         => (string) $payment->id,
+            'method'     => (string) $payment->method->value,
+            'status'     => (string) $payment->status->value,
+            'amount_idr' => (int) $payment->amount_idr,
+            'paid_at'    => $payment->paid_at?->toDateTimeString(),
+            'reference'  => $payment->reference,
+            'note'       => $payment->note,
+            'attachment' => $firstAttachment,
         ];
 
         $invoice  = $payment->invoice;
@@ -418,11 +418,11 @@ class PaymentManagementController extends Controller
         $room     = $contract?->room;
 
         $items        = $invoice ? (array) ($invoice->items ?? []) : [];
-        $totalInvoice = $invoice ? (int) $invoice->amount_cents : 0;
-        $currentPaid  = (int) $payment->amount_cents;
+        $totalInvoice = $invoice ? (int) $invoice->amount_idr : 0;
+        $currentPaid  = (int) $payment->amount_idr;
 
         if ($invoice) {
-            $preOutstanding = $payment->pre_outstanding_cents;
+            $preOutstanding = $payment->pre_outstanding_idr;
             if ($preOutstanding === null) {
                 $query = $invoice->payments()->where('status', PaymentStatus::COMPLETED->value);
                 if ($payment->paid_at) {
@@ -430,7 +430,7 @@ class PaymentManagementController extends Controller
                 } else {
                     $query->where('id', '<', $payment->id);
                 }
-                $paidBefore     = (int) $query->sum('amount_cents');
+                $paidBefore     = (int) $query->sum('amount_idr');
                 $preOutstanding = max(0, $totalInvoice - $paidBefore);
             }
             $postOutstanding = max(0, $preOutstanding - $currentPaid);
@@ -463,9 +463,9 @@ class PaymentManagementController extends Controller
         $html = view('pdf.receipt', [
             'payment' => $dto,
             'invoice' => $invoice ? [
-                'number'       => (string) $invoice->getAttribute('number'),
-                'amount_cents' => $totalInvoice,
-                'items'        => $items,
+                'number'     => (string) $invoice->getAttribute('number'),
+                'amount_idr' => $totalInvoice,
+                'items'      => $items,
             ] : null,
             'tenant' => $tenant ? [
                 'name'  => (string) $tenant->getAttribute('name'),

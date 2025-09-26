@@ -28,7 +28,7 @@ import { DataTableServer } from '@/components/ui/data-table-server';
 import UpsertBuildingDialog from '@/features/building/dialogs/upsert-building-dialog';
 import { createColumns } from '@/features/building/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { BuildingItem, BuildingsPageProps } from '@/types/management';
 
 type PageProps = BuildingsPageProps;
@@ -82,7 +82,7 @@ export default function BuildingsIndex() {
     );
 
     return (
-        <AuthLayout pageTitle={tB('title')} pageDescription={tB('desc')}>
+        <AppLayout pageTitle={tB('title')} pageDescription={tB('desc')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
@@ -176,6 +176,6 @@ export default function BuildingsIndex() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </AuthLayout>
+        </AppLayout>
     );
 }

@@ -13,7 +13,7 @@
         "ascii": "Kolom {{attribute}} hanya boleh berisi karakter alfanumerik satu-byte dan simbol.",
         "attributes": {
             "address_line": "alamat",
-            "amount_cents": "nominal",
+            "amount_idr": "nominal",
             "attachment": "lampiran",
             "attachments": "lampiran",
             "avatar": "foto profil",

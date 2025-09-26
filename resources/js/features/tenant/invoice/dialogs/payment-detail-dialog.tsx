@@ -20,7 +20,7 @@ type TenantPaymentShowDTO = {
         id: string;
         method: string;
         status: string;
-        amount_cents: number;
+        amount_idr: number;
         paid_at?: string | null;
         reference?: string | null;
         note?: string | null;
@@ -33,7 +33,7 @@ type TenantPaymentShowDTO = {
         review_at?: string | null;
         reject_reason?: string | null;
     };
-    invoice?: { number: string; amount_cents: number } | null;
+    invoice?: { number: string; amount_idr: number } | null;
 };
 
 function useTenantPayment(target: { id: string } | null) {
@@ -111,7 +111,7 @@ export default function TenantPaymentDetailDialog({
                                     <div>{data.payment.status}</div>
                                     <Label>{t('common.amount')}</Label>
                                     <div>
-                                        {formatIDR(data.payment.amount_cents)}
+                                        {formatIDR(data.payment.amount_idr)}
                                     </div>
                                     <Label>{tInv('manual.paid_at')}</Label>
                                     <div>

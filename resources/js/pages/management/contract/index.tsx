@@ -26,7 +26,7 @@ import HandoverCreate from '@/features/contract/dialogs/handover-create-dialog';
 import ToggleAutoRenewDialog from '@/features/contract/dialogs/toggle-autorenew-dialog';
 import { createColumns } from '@/features/contract/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type {
     ContractItem,
     ContractsPageProps,
@@ -223,7 +223,7 @@ export default function ContractIndex(props: ContractsPageProps) {
     }, [handoverSettings.require_checkin_for_activate, lang]);
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={tContract('list.title')}
             pageDescription={tContract('list.desc')}
             titleIcon="ScrollText"
@@ -294,12 +294,13 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     {t('common.status')}
                                 </Label>
                                 <Select
-                                    value={status}
+                                    value={status !== '' ? status : 'all'}
                                     onValueChange={(v) => {
-                                        setStatus(v);
+                                        const next = v === 'all' ? '' : v;
+                                        setStatus(next);
                                         safeOnQueryChange({
                                             page: 1,
-                                            status: v,
+                                            status: v === 'all' ? null : v,
                                         });
                                     }}
                                 >
@@ -313,6 +314,9 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="all">
+                                                {t('common.all_statuses')}
+                                            </SelectItem>
                                             {statuses.map((s) => (
                                                 <SelectItem
                                                     key={s.value}
@@ -597,6 +601,6 @@ export default function ContractIndex(props: ContractsPageProps) {
                     );
                 }}
             />
-        </AuthLayout>
+        </AppLayout>
     );
 }

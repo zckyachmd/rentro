@@ -27,7 +27,7 @@ import TenantRoomSelect from '@/features/contract/components/tenant-room-select'
 import ContractPreviewDialog from '@/features/contract/dialogs/contact-create-preview-dialog';
 import ContractGuideDialog from '@/features/contract/dialogs/contract-create-guide-dialog';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import { formatIDR } from '@/lib/format';
 import type {
     ContractCreateForm,
@@ -289,8 +289,8 @@ export default function ContractCreate() {
             room_id: d.room_id || undefined,
             start_date: d.start_date,
             end_date: d.end_date || undefined,
-            rent_cents: rentCents,
-            deposit_cents: depositCents,
+            rent_idr: rentCents,
+            deposit_idr: depositCents,
             billing_period: d.billing_period,
             billing_day:
                 d.billing_period === 'monthly'
@@ -322,7 +322,7 @@ export default function ContractCreate() {
     ];
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={tContract('create.title')}
             pageDescription={tContract('list.desc')}
             breadcrumbs={BREADCRUMBS}
@@ -533,8 +533,8 @@ export default function ContractCreate() {
                                 onRent={(v) => setData('rent_rupiah', v)}
                                 onDeposit={(v) => setData('deposit_rupiah', v)}
                                 errors={{
-                                    rent_cents: errors.rent_cents,
-                                    deposit_cents: errors.deposit_cents,
+                                    rent_idr: errors.rent_idr,
+                                    deposit_idr: errors.deposit_idr,
                                 }}
                                 billingPeriod={
                                     data.billing_period as
@@ -676,6 +676,6 @@ export default function ContractCreate() {
                 onCancel={guard.cancel}
                 description={<>{tContract('leave.desc')}</>}
             />
-        </AuthLayout>
+        </AppLayout>
     );
 }

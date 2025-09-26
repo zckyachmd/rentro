@@ -35,7 +35,7 @@ import {
 import UpsertAmenityDialog from '@/features/amenity/dialogs/upsert-amenity-dialog';
 import { createColumns } from '@/features/amenity/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { AmenitiesPageProps, AmenityItem } from '@/types/management';
 
 type PageProps = AmenitiesPageProps;
@@ -95,7 +95,7 @@ export default function AmenitiesIndex() {
     );
 
     return (
-        <AuthLayout pageTitle={tAmen('title')} pageDescription={tAmen('desc')}>
+        <AppLayout pageTitle={tAmen('title')} pageDescription={tAmen('desc')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
@@ -221,6 +221,6 @@ export default function AmenitiesIndex() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </AuthLayout>
+        </AppLayout>
     );
 }

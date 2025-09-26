@@ -23,7 +23,7 @@ import ExtendDueDialog from '@/features/invoice/dialogs/extend-due-dialog';
 import GenerateInvoiceDialog from '@/features/invoice/dialogs/generate-dialog';
 import { createColumns } from '@/features/invoice/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import { formatIDR } from '@/lib/format';
 import type {
     ManagementCancelState as CancelState,
@@ -133,8 +133,6 @@ export default function InvoiceIndex() {
         onQueryChange({ page: 1, start: ss, end: ee });
     };
 
-    // CancelState, ExtendState moved to types
-
     const [cancel, setCancel] = React.useState<CancelState>({
         target: null,
         reason: '',
@@ -181,7 +179,7 @@ export default function InvoiceIndex() {
     }, [defaultTomorrow, lang]);
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={tInvoice('title')}
             pageDescription={tInvoice('list.title')}
         >
@@ -519,6 +517,6 @@ export default function InvoiceIndex() {
                     );
                 }}
             />
-        </AuthLayout>
+        </AppLayout>
     );
 }

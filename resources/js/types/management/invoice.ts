@@ -2,7 +2,7 @@ export type BaseInvoiceRow = {
     id: string;
     number: string;
     due_date: string;
-    amount_cents: number;
+    amount_idr: number;
     outstanding?: number;
     ticket_url?: string | null;
     status: string; // e.g., 'pending' | 'overdue' | 'paid' | 'cancelled'
@@ -51,7 +51,7 @@ export type InvoiceDetailTarget = { id: string; number: string } | null;
 export type InvoiceItem = {
     code: string;
     label: string;
-    amount_cents: number;
+    amount_idr: number;
     meta?: Record<string, string | number | boolean | null | undefined>;
 };
 
@@ -63,7 +63,7 @@ export type ManagementInvoiceDetailDTO = {
         due_date?: string | null;
         period_start?: string | null;
         period_end?: string | null;
-        amount_cents: number;
+        amount_idr: number;
         items: InvoiceItem[];
         paid_at?: string | null;
         created_at?: string | null;
@@ -87,7 +87,7 @@ export type ManagementInvoiceDetailDTO = {
         id: string;
         method: string;
         status: string;
-        amount_cents: number;
+        amount_idr: number;
         paid_at?: string | null;
         reference?: string | null;
         provider?: string | null;

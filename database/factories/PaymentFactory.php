@@ -35,7 +35,7 @@ class PaymentFactory extends Factory
             'invoice_id'   => Invoice::factory(),
             'method'       => $method,
             'status'       => $status,
-            'amount_cents' => $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]) * 100,
+            'amount_idr' => $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]),
             'paid_at'      => $paidAt,
             'reference'    => Str::upper(Str::random(10)),
             'provider'     => $method === PaymentMethod::VIRTUAL_ACCOUNT->value ? $this->faker->randomElement(['BCA', 'BNI', 'BRI']) : 'CASHIER',
@@ -45,4 +45,3 @@ class PaymentFactory extends Factory
         ];
     }
 }
-

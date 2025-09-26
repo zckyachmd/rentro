@@ -160,15 +160,15 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                                 <div className="text-right">
                                                     <div className="font-medium">
                                                         {formatIDR(
-                                                            inv.amount_cents ||
+                                                            inv.amount_idr ||
                                                                 0,
                                                         )}
                                                     </div>
-                                                    {(inv.outstanding_cents ??
+                                                    {(inv.outstanding_idr ??
                                                         0) > 0 && (
                                                         <div className="text-muted-foreground text-xs">
                                                             {formatIDR(
-                                                                inv.outstanding_cents,
+                                                                inv.outstanding_idr,
                                                             )}
                                                         </div>
                                                     )}

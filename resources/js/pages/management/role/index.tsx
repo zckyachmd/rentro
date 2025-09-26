@@ -27,7 +27,7 @@ import PermissionsDialog from '@/features/role/dialogs/permissions-dialog';
 import RoleUpsertDialog from '@/features/role/dialogs/roles-dialog';
 import { createColumns } from '@/features/role/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type {
     RoleDialogKey as DialogKey,
     RolePageProps as PageProps,
@@ -95,7 +95,7 @@ export default function RolesIndex() {
     }, [openDialog, lang]);
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={t('management.role.title')}
             pageDescription={t('management.role.desc')}
         >
@@ -215,6 +215,6 @@ export default function RolesIndex() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </AuthLayout>
+        </AppLayout>
     );
 }

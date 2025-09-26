@@ -3,15 +3,15 @@ export type ContractDTO = {
     number?: string | null;
     start_date?: string | null;
     end_date?: string | null;
-    rent_cents: number;
-    deposit_cents: number;
+    rent_idr: number;
+    deposit_idr: number;
     billing_period: string;
     billing_day?: number | null;
     auto_renew: boolean;
     status: string;
     notes?: string | null;
     paid_in_full_at?: string | null;
-    deposit_refund_cents?: number | null;
+    deposit_refund_idr?: number | null;
     deposit_refunded_at?: string | null;
     created_at?: string | null;
     updated_at?: string | null;
@@ -29,12 +29,12 @@ export type RoomDTO = {
     number: string;
     name?: string | null;
     billing_period?: string | null;
-    price_cents?: number | null;
+    price_idr?: number | null;
     type?: {
         id: string;
         name: string;
-        deposit_cents?: number | null;
-        price_cents?: number | null;
+        deposit_idr?: number | null;
+        price_idr?: number | null;
     } | null;
     building?: { id: string; name: string; code?: string | null } | null;
     floor?: { id: string; level: number | string } | null;
@@ -47,7 +47,7 @@ export type InvoiceItem = {
     due_date?: string | null;
     period_start?: string | null;
     period_end?: string | null;
-    amount_cents: number;
+    amount_idr: number;
     paid_at?: string | null;
 };
 

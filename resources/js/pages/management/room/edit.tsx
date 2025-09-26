@@ -13,7 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import RoomUpsertForm from '@/pages/management/room/form';
 import type { RoomEditPageProps as PageProps } from '@/types/management';
 
@@ -84,7 +84,7 @@ export default function RoomEdit() {
     );
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={tRoom('title')}
             pageDescription={tRoom('desc')}
             breadcrumbs={makeBreadcrumbs(tRoom)}
@@ -101,6 +101,6 @@ export default function RoomEdit() {
                     </CardContent>
                 </Card>
             </div>
-        </AuthLayout>
+        </AppLayout>
     );
 }

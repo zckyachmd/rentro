@@ -86,11 +86,11 @@
         <tbody>
             <tr>
                 <th style="width: 40%">{{ __('pdf.contract.rent') }}</th>
-                <td class="mono">Rp {{ number_format((int)($c['rent_cents'] ?? 0), 0, ',', '.') }}</td>
+                <td class="mono">Rp {{ number_format((int)($c['rent_idr'] ?? 0), 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <th>{{ __('pdf.contract.deposit') }}</th>
-                <td class="mono">Rp {{ number_format((int)($c['deposit_cents'] ?? 0), 0, ',', '.') }}</td>
+                <td class="mono">Rp {{ number_format((int)($c['deposit_idr'] ?? 0), 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <th>{{ __('pdf.contract.billing_period') }}</th>

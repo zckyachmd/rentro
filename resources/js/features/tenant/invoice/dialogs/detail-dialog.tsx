@@ -122,9 +122,9 @@ export default function TenantInvoiceDetailDialog({
                                         <div className="grid grid-cols-[1fr_auto] gap-y-1">
                                             <Label>{t('common.total')}</Label>
                                             <div>
-                                                {formatIDR(
-                                                    data.invoice.amount_cents,
-                                                )}
+                                        {formatIDR(
+                                            data.invoice.amount_idr,
+                                        )}
                                             </div>
                                             <Label>{tInv('outstanding')}</Label>
                                             <div>
@@ -156,7 +156,7 @@ export default function TenantInvoiceDetailDialog({
                                                             </div>
                                                             <div className="shrink-0 font-medium">
                                                                 {formatIDR(
-                                                                    it.amount_cents,
+                                                it.amount_idr,
                                                                 )}
                                                             </div>
                                                         </div>
@@ -263,7 +263,7 @@ export default function TenantInvoiceDetailDialog({
                                                             <div className="shrink-0 text-right">
                                                                 <div className="mb-1 font-medium">
                                                                     {formatIDR(
-                                                                        pmt.amount_cents,
+                                                                        pmt.amount_idr,
                                                                     )}
                                                                 </div>
                                                                 <Badge

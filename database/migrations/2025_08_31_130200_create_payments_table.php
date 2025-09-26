@@ -15,8 +15,8 @@ return new class extends Migration
             $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
             $table->string('method', 30)->default(PaymentMethod::CASH->value)->index();
             $table->string('status', 20)->default(PaymentStatus::PENDING->value)->index();
-            $table->unsignedBigInteger('amount_cents');
-            $table->unsignedBigInteger('pre_outstanding_cents')->nullable();
+            $table->unsignedBigInteger('amount_idr');
+            $table->unsignedBigInteger('pre_outstanding_idr')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->string('reference', 100)->nullable();
             $table->string('provider', 50)->nullable();

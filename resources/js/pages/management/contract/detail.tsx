@@ -25,7 +25,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import HandoverRoomSection from '@/features/contract/components/handover-room';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
 import type {
@@ -57,7 +57,7 @@ export default function ContractDetailPage(props: {
     ];
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={tContract('detail.title_format', {
                 number: contract.number ?? contract.id,
             })}
@@ -203,7 +203,7 @@ export default function ContractDetailPage(props: {
                                         {tContract('detail.costs.rent', 'Rent')}
                                     </div>
                                     <div className="text-right">
-                                        {formatIDR(contract.rent_cents)}
+                                        {formatIDR(contract.rent_idr)}
                                     </div>
                                     <div className="text-muted-foreground">
                                         {tContract(
@@ -212,7 +212,7 @@ export default function ContractDetailPage(props: {
                                         )}
                                     </div>
                                     <div className="text-right">
-                                        {formatIDR(contract.deposit_cents)}
+                                        {formatIDR(contract.deposit_idr)}
                                     </div>
                                 </div>
                             </div>
@@ -414,7 +414,7 @@ export default function ContractDetailPage(props: {
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     {formatIDR(
-                                                        inv.amount_cents,
+                                                        inv.amount_idr,
                                                     )}
                                                 </TableCell>
                                             </TableRow>
@@ -437,6 +437,6 @@ export default function ContractDetailPage(props: {
             </Card>
 
             <HandoverRoomSection contract={contract} handover={handover} />
-        </AuthLayout>
+        </AppLayout>
     );
 }

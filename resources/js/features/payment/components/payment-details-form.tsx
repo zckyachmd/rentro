@@ -40,7 +40,7 @@ export default function PaymentDetailsForm({
     amount: number | '';
     note: string;
     errors?: Partial<
-        Record<'method' | 'paid_at' | 'amount_cents' | 'attachment', string>
+        Record<'method' | 'paid_at' | 'amount_idr' | 'attachment', string>
     >;
     isTransfer: boolean;
     maxOutstanding?: number;
@@ -186,7 +186,7 @@ export default function PaymentDetailsForm({
                             onChange={handleAmountChange}
                             className="pr-2"
                         />
-                        <InputError message={errors.amount_cents} />
+                        <InputError message={errors.amount_idr} />
                     </div>
                     <div className="text-muted-foreground mt-0.5 flex items-center justify-between text-xs">
                         <span>

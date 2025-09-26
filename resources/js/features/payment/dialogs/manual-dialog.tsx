@@ -37,7 +37,7 @@ export function ManualPaymentDialog({
         useForm<ManualPaymentForm>({
             invoice_number: initialInvoiceNumber ?? '',
             invoice_id: '',
-            amount_cents: '',
+            amount_idr: '',
             method: methods?.[0]?.value ?? 'cash',
             paid_at: '',
             note: '',
@@ -89,8 +89,8 @@ export function ManualPaymentDialog({
         !processing &&
         data.invoice_id &&
         (resolvedInvoice?.eligible ?? false) &&
-        typeof data.amount_cents === 'number' &&
-        data.amount_cents > 0 &&
+        typeof data.amount_idr === 'number' &&
+        data.amount_idr > 0 &&
         data.paid_at.trim().length > 0 &&
         (!isTransfer || Boolean(data.attachment));
 
@@ -102,7 +102,7 @@ export function ManualPaymentDialog({
     const resetForm = React.useCallback(() => {
         setData('invoice_id', '');
         setData('invoice_number', '');
-        setData('amount_cents', '');
+        setData('amount_idr', '');
         setData('method', defaultMethod);
         setData('paid_at', '');
         setData('note', '');
@@ -195,7 +195,7 @@ export function ManualPaymentDialog({
             setResolvedInvoice({
                 id: match.id,
                 number: match.number,
-                amount: match.amount_cents,
+                amount: match.amount_idr,
                 status: match.status,
                 tenant_name: match.tenant ?? null,
                 outstanding: match.outstanding,
@@ -227,9 +227,9 @@ export function ManualPaymentDialog({
                 delete out.attachment;
             }
             // Ensure integer for amount
-            out.amount_cents =
-                typeof payload.amount_cents === 'number'
-                    ? Math.floor(payload.amount_cents)
+            out.amount_idr =
+                typeof payload.amount_idr === 'number'
+                    ? Math.floor(payload.amount_idr)
                     : '';
             // Add receiver bank meta for transfer method
             if (isTransfer) {
@@ -309,7 +309,7 @@ export function ManualPaymentDialog({
                                     setResolvedInvoice({
                                         id: payload.id,
                                         number: payload.number,
-                                        amount: payload.amount_cents,
+                                        amount: payload.amount_idr,
                                         status: payload.status,
                                         tenant_name: payload.tenant ?? null,
                                         outstanding: payload.outstanding,
@@ -348,12 +348,12 @@ export function ManualPaymentDialog({
                             methods={methods}
                             method={data.method}
                             paidAt={data.paid_at}
-                            amount={data.amount_cents as number | ''}
+                            amount={data.amount_idr as number | ''}
                             note={data.note}
                             errors={{
                                 method: errors.method,
                                 paid_at: errors.paid_at,
-                                amount_cents: errors.amount_cents,
+                                amount_idr: errors.amount_idr,
                                 attachment: errors.attachment,
                             }}
                             isTransfer={isTransfer}
@@ -362,8 +362,8 @@ export function ManualPaymentDialog({
                             onPaidAt={(v) => setData('paid_at', v)}
                             onAmount={(v) =>
                                 setData(
-                                    'amount_cents',
-                                    v as ManualPaymentForm['amount_cents'],
+                                    'amount_idr',
+                                    v as ManualPaymentForm['amount_idr'],
                                 )
                             }
                             onNote={(v) => setData('note', v)}

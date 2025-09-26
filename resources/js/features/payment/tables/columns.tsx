@@ -129,16 +129,16 @@ export const createColumns = (opts?: {
         },
     }),
     makeColumn<PaymentRow>({
-        id: 'amount_cents',
-        accessorKey: 'amount_cents',
+        id: 'amount_idr',
+        accessorKey: 'amount_idr',
         title: i18n.t('common.amount'),
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.amount}>
                 {opts?.currency
-                    ? opts.currency(row.original.amount_cents)
-                    : String(row.original.amount_cents)}
+                    ? opts.currency(row.original.amount_idr)
+                    : String(row.original.amount_idr)}
             </div>
         ),
     }),

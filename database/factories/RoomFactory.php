@@ -34,9 +34,8 @@ class RoomFactory extends Factory
             'price_overrides'    => function (array $attrs) {
                 $type = RoomType::find($attrs['room_type_id']);
                 $prices = is_array($type?->prices) ? $type->prices : [];
-                // 30% chance to override monthly with +50_000 to +200_000
                 if (!empty($prices) && $this->faker->boolean(30)) {
-                    $delta = $this->faker->numberBetween(50_000, 200_000) * 100;
+                    $delta = $this->faker->numberBetween(50_000, 200_000);
                     $base  = (int) ($prices['monthly'] ?? 0);
                     return ['monthly' => max(0, $base + $delta)];
                 }
@@ -46,7 +45,7 @@ class RoomFactory extends Factory
                 $type = RoomType::find($attrs['room_type_id']);
                 $deps = is_array($type?->deposits) ? $type->deposits : [];
                 if (!empty($deps) && $this->faker->boolean(20)) {
-                    $delta = $this->faker->numberBetween(-100_000, 100_000) * 100;
+                    $delta = $this->faker->numberBetween(-100_000, 100_000);
                     $base  = (int) ($deps['monthly'] ?? 0);
                     $val   = max(0, $base + $delta);
                     if ($val !== $base) return ['monthly' => $val];

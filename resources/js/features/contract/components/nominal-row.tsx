@@ -17,7 +17,7 @@ export default function NominalRow({
     deposit: string;
     onRent: (v: string) => void;
     onDeposit: (v: string) => void;
-    errors?: Partial<Record<'rent_cents' | 'deposit_cents', string>>;
+    errors?: Partial<Record<'rent_idr' | 'deposit_idr', string>>;
     billingPeriod?: 'daily' | 'weekly' | 'monthly';
 }) {
     const { t } = useTranslation('management/contract');
@@ -49,7 +49,7 @@ export default function NominalRow({
                     {t('form.preview', { ns: 'management/room' })}{' '}
                     {formatIDR(rent)}
                 </p>
-                <InputError message={errors.rent_cents} />
+                <InputError message={errors.rent_idr} />
             </div>
 
             <div className="space-y-2">
@@ -67,7 +67,7 @@ export default function NominalRow({
                     {t('form.preview', { ns: 'management/room' })}{' '}
                     {formatIDR(deposit)}
                 </p>
-                <InputError message={errors.deposit_cents} />
+                <InputError message={errors.deposit_idr} />
             </div>
         </div>
     );

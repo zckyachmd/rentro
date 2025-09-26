@@ -17,7 +17,7 @@ class StorePaymentRequest extends FormRequest
         return [
             'invoice_id'    => ['required', 'integer', 'exists:invoices,id'],
             'method'        => ['required', 'in:' . collect(PaymentMethod::options(true))->pluck('value')->implode(',')],
-            'amount_cents'  => ['required', 'integer', 'min:1'],
+            'amount_idr'    => ['required', 'integer', 'min:1'],
             'paid_at'       => ['nullable', 'date'],
             'provider'      => ['nullable', 'string', 'max:50'],
             'va_number'     => ['nullable', 'string', 'max:50'],

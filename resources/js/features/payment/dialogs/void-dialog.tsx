@@ -48,7 +48,7 @@ export default function VoidPaymentDialog({
                             <>
                                 {t('payment.void.desc', {
                                     number: target.invoice ?? '-',
-                                    amount: formatIDR(target.amount_cents),
+                                    amount: formatIDR(target.amount_idr),
                                 })}
                             </>
                         ) : null}

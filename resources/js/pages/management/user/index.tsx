@@ -28,7 +28,7 @@ import { RoleDialog } from '@/features/user/dialogs/role-dialog';
 import { TwoFADialog } from '@/features/user/dialogs/two-factor-dialog';
 import { createColumns } from '@/features/user/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type {
     UserDialogKind as DialogKind,
     UserDialogState as DialogState,
@@ -113,7 +113,7 @@ export default function UsersIndex() {
     }, [openDialog, lang]);
 
     return (
-        <AuthLayout pageTitle={tUser('title')} pageDescription={tUser('desc')}>
+        <AppLayout pageTitle={tUser('title')} pageDescription={tUser('desc')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
@@ -228,6 +228,6 @@ export default function UsersIndex() {
                     user={dialog.user}
                 />
             )}
-        </AuthLayout>
+        </AppLayout>
     );
 }

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import ShowMore from '@/components/ui/show-more';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { ShowPageProps } from '@/types/profile';
 
 import ContactSection from './contact';
@@ -72,7 +72,7 @@ export default function ShowProfile() {
     };
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={tProfile('title')}
             pageDescription={tProfile('desc')}
         >
@@ -349,6 +349,6 @@ export default function ShowProfile() {
                 {/* Kontak Darurat */}
                 <ContactSection contacts={contacts} />
             </div>
-        </AuthLayout>
+        </AppLayout>
     );
 }

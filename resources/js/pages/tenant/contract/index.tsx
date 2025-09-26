@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/select';
 import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import { getJson } from '@/lib/api';
 import type {
     TenantContractsPageProps as ContractsPageProps,
@@ -186,7 +186,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
     };
 
     return (
-        <AuthLayout
+        <AppLayout
             pageTitle={t('contract.title')}
             pageDescription={t('contract.desc')}
         >
@@ -471,6 +471,6 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                     handover={handoverDialog.data}
                 />
             </div>
-        </AuthLayout>
+        </AppLayout>
     );
 }

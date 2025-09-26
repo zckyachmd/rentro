@@ -165,7 +165,7 @@ function PaymentDetailBody({
                             )}
                         </div>
                         <Label>{t('common.amount')}</Label>
-                        <div>{formatIDR(p.amount_cents)}</div>
+                        <div>{formatIDR(p.amount_idr)}</div>
                         <Label>{t('payment.form.paid_at')}</Label>
                         <div>{formatDate(p.paid_at, true)}</div>
                         <Label>{t('payment.form.receiver_bank')}</Label>
@@ -214,7 +214,7 @@ function PaymentDetailBody({
                                 )}
                             </div>
                             <Label>{t('common.amount')}</Label>
-                            <div>{formatIDR(inv.amount_cents)}</div>
+                            <div>{formatIDR(inv.amount_idr)}</div>
                         </div>
                     ) : (
                         <div className="text-muted-foreground">
@@ -244,7 +244,7 @@ function PaymentDetailBody({
                 details={[
                     {
                         label: t('common.amount'),
-                        value: formatIDR(p.amount_cents),
+                        value: formatIDR(p.amount_idr),
                     },
                     { label: t('common.tenant'), value: tenant?.name || '-' },
                     {

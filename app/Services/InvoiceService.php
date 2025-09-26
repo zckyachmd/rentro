@@ -46,10 +46,10 @@ class InvoiceService implements InvoiceServiceInterface
      */
     public function totals(Invoice $invoice): array
     {
-        $totalInvoice = (int) $invoice->amount_cents;
+        $totalInvoice = (int) $invoice->amount_idr;
         $totalPaid    = (int) $invoice->payments()
             ->where('status', PaymentStatus::COMPLETED->value)
-            ->sum('amount_cents');
+            ->sum('amount_idr');
         $outstanding = max(0, $totalInvoice - $totalPaid);
 
         return [
@@ -81,7 +81,7 @@ class InvoiceService implements InvoiceServiceInterface
         $dueNonMon        = $now->copy()->addHours(max(1, (int) $dueHours))->toDateString();
         $dueMonthly       = Invoice::nextDueDayFrom($now, max(1, (int) $dueDom));
         $activeStatuses   = [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value, InvoiceStatus::PAID->value];
-        $rentCentsMonthly = (int) $contract->rent_cents;
+        $rentCentsMonthly = (int) $contract->rent_idr;
 
         $latest = $contract->invoices()
             ->where('status', '!=', InvoiceStatus::CANCELLED->value)
@@ -110,11 +110,11 @@ class InvoiceService implements InvoiceServiceInterface
                 $items = $this->makeItems(
                     $period,
                     'per_month',
-                    (int) $contract->rent_cents,
+                    (int) $contract->rent_idr,
                     1,
                     $needsProrata,
                     $start,
-                    (int) $contract->deposit_cents,
+                    (int) $contract->deposit_idr,
                     $releaseDom,
                 );
 
@@ -127,7 +127,7 @@ class InvoiceService implements InvoiceServiceInterface
             if ($this->hasActiveOverlap($contract, $start, $contractEnd->copy(), $activeStatuses)) {
                 throw new \InvalidArgumentException(__('management/invoices.active_overlap_range'));
             }
-            $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $daysOrWeeks, false, $start, (int) $contract->deposit_cents, $releaseDom);
+            $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $daysOrWeeks, false, $start, (int) $contract->deposit_idr, $releaseDom);
 
             return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueNonMon, $items);
         }
@@ -244,7 +244,7 @@ class InvoiceService implements InvoiceServiceInterface
 
             if ($period === BillingPeriod::DAILY->value) {
                 $days  = max(1, (int) $from->diffInDays($to->copy()->addDay()));
-                $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $days, false, $from, 0, $releaseDom);
+                $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $days, false, $from, 0, $releaseDom);
 
                 return $this->createInvoiceRecord($contract, $from, $to, $dueNonMon, $items);
             }
@@ -252,7 +252,7 @@ class InvoiceService implements InvoiceServiceInterface
             // weekly
             $days  = max(1, (int) $from->diffInDays($to->copy()->addDay()));
             $weeks = max(1, (int) ceil($days / 7));
-            $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $weeks, false, $from, 0, $releaseDom);
+            $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $weeks, false, $from, 0, $releaseDom);
 
             return $this->createInvoiceRecord($contract, $from, $to, $dueNonMon, $items);
         }
@@ -299,7 +299,7 @@ class InvoiceService implements InvoiceServiceInterface
                 throw new \InvalidArgumentException(__('management/invoices.period_already_paid'));
             }
             $includeDeposit = !empty($options['include_deposit']);
-            $depositCents   = $includeDeposit ? (int) $contract->deposit_cents : 0;
+            $depositCents   = $includeDeposit ? (int) $contract->deposit_idr : 0;
             $items          = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $anchor, $depositCents, $releaseDom);
 
             return $this->createInvoiceRecord($contract, $anchor, $periodEnd, $dueMonthly, $items);
@@ -311,7 +311,7 @@ class InvoiceService implements InvoiceServiceInterface
         if ($this->hasActiveOverlap($contract, $start, $contractEnd->copy(), $activeStatuses)) {
             throw new \InvalidArgumentException(__('management/invoices.active_overlap_range'));
         }
-        $items = $this->makeItems($period, 'full', (int) $contract->rent_cents, $daysOrWeeks, false, $start, 0, $releaseDom);
+        $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $daysOrWeeks, false, $start, 0, $releaseDom);
 
         return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueNonMon, $items);
     }
@@ -390,7 +390,7 @@ class InvoiceService implements InvoiceServiceInterface
      * @param Carbon $start
      * @param int $deposit deposit cents (>= 0)
      * @param int $releaseDom release day-of-month for billing (1-31)
-     * @return array<int,array{code:string,label:string,amount_cents:int,meta?:array}>
+     * @return array<int,array{code:string,label:string,amount_idr:int,meta?:array}>
      */
     protected function makeItems(string $period, string $plan, int $rent, int $duration, bool $prorata, Carbon $start, int $deposit, int $releaseDom): array
     {
@@ -432,13 +432,13 @@ class InvoiceService implements InvoiceServiceInterface
 
                     if ($totalDays > 0) {
                         $items[] = Invoice::makeItem('PRORATA', 'Prorated Rent', $lineAmt, [
-                            'days'             => $totalDays,
-                            'free_days'        => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
-                            'qty'              => $billableDays,
-                            'unit_price_cents' => $billableDays > 0 ? $perDay : 0,
-                            'unit'             => 'day',
-                            'date_start'       => $pr['from'] ?? $start->toDateString(),
-                            'date_end'         => $pr['to'] ?? $start->toDateString(),
+                            'days'           => $totalDays,
+                            'free_days'      => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
+                            'qty'            => $billableDays,
+                            'unit_price_idr' => $billableDays > 0 ? $perDay : 0,
+                            'unit'           => 'day',
+                            'date_start'     => $pr['from'] ?? $start->toDateString(),
+                            'date_end'       => $pr['to'] ?? $start->toDateString(),
                         ]);
                     }
                 }
@@ -455,13 +455,13 @@ class InvoiceService implements InvoiceServiceInterface
                         'Rent',
                         $rent,
                         [
-                            'unit'             => 'month',
-                            'qty'              => 1,
-                            'unit_price_cents' => $rent,
-                            'month'            => $monthStart->format('Y-m'),
-                            'period_label'     => $labelBulan,
-                            'sequence'         => $i + 1,
-                            'total_months'     => max(1, (int) $duration),
+                            'unit'           => 'month',
+                            'qty'            => 1,
+                            'unit_price_idr' => $rent,
+                            'month'          => $monthStart->format('Y-m'),
+                            'period_label'   => $labelBulan,
+                            'sequence'       => $i + 1,
+                            'total_months'   => max(1, (int) $duration),
                         ],
                     );
                 }
@@ -487,13 +487,13 @@ class InvoiceService implements InvoiceServiceInterface
 
                     if ($totalDays > 0) {
                         $items[] = Invoice::makeItem('PRORATA', 'Prorated Rent', $lineAmt, [
-                            'days'             => $totalDays,
-                            'free_days'        => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
-                            'qty'              => $billableDays,
-                            'unit_price_cents' => $billableDays > 0 ? $perDay : 0,
-                            'unit'             => 'day',
-                            'date_start'       => $pr['from'] ?? $start->toDateString(),
-                            'date_end'         => $pr['to'] ?? $start->toDateString(),
+                            'days'           => $totalDays,
+                            'free_days'      => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
+                            'qty'            => $billableDays,
+                            'unit_price_idr' => $billableDays > 0 ? $perDay : 0,
+                            'unit'           => 'day',
+                            'date_start'     => $pr['from'] ?? $start->toDateString(),
+                            'date_end'       => $pr['to'] ?? $start->toDateString(),
                         ]);
                     }
                 }
@@ -508,11 +508,11 @@ class InvoiceService implements InvoiceServiceInterface
                     'Rent',
                     $rent,
                     [
-                        'unit'             => 'month',
-                        'qty'              => 1,
-                        'unit_price_cents' => $rent,
-                        'month'            => $monthStart->format('Y-m'),
-                        'period_label'     => $labelBulan,
+                        'unit'           => 'month',
+                        'qty'            => 1,
+                        'unit_price_idr' => $rent,
+                        'month'          => $monthStart->format('Y-m'),
+                        'period_label'   => $labelBulan,
                     ],
                 );
             }
@@ -522,7 +522,7 @@ class InvoiceService implements InvoiceServiceInterface
                 'RENT',
                 'Room Rent',
                 $rent * $duration,
-                ['unit' => $unitLabel, 'qty' => (int) $duration, 'unit_price_cents' => $rent],
+                ['unit' => $unitLabel, 'qty' => (int) $duration, 'unit_price_idr' => $rent],
             );
         }
 
@@ -555,16 +555,16 @@ class InvoiceService implements InvoiceServiceInterface
         $amount = Invoice::sumItems($items);
 
         return Invoice::create([
-            'contract_id'       => $contract->id,
-            'number'            => Invoice::makeNumberFor($amount, Carbon::now()),
-            'period_start'      => $periodStart->toDateString(),
-            'period_end'        => $periodEnd->toDateString(),
-            'due_date'          => $dueDateTime,
-            'amount_cents'      => $amount,
-            'outstanding_cents' => $amount,
-            'items'             => $items,
-            'status'            => InvoiceStatus::PENDING->value,
-            'paid_at'           => null,
+            'contract_id'     => $contract->id,
+            'number'          => Invoice::makeNumberFor($amount, Carbon::now()),
+            'period_start'    => $periodStart->toDateString(),
+            'period_end'      => $periodEnd->toDateString(),
+            'due_date'        => $dueDateTime,
+            'amount_idr'      => $amount,
+            'outstanding_idr' => $amount,
+            'items'           => $items,
+            'status'          => InvoiceStatus::PENDING->value,
+            'paid_at'         => null,
         ]);
     }
 

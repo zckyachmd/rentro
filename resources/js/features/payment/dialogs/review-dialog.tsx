@@ -185,7 +185,7 @@ export default function PaymentReviewDialog({
                                 <div className="text-muted-foreground">
                                     {t('common.amount')}
                                 </div>
-                                <div>{formatIDR(p.amount_cents)}</div>
+                                <div>{formatIDR(p.amount_idr)}</div>
                                 <div className="text-muted-foreground">
                                     {t('payment.form.method')}
                                 </div>

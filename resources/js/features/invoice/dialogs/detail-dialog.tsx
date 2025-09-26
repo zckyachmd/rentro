@@ -203,7 +203,7 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                     </div>
                     <div className="grid grid-cols-[1fr_auto] gap-y-1">
                         <Label>{t('common.total')}</Label>
-                        <div>{formatIDR(inv.amount_cents)}</div>
+                        <div>{formatIDR(inv.amount_idr)}</div>
                         <Label>{tInvoice('detail.paid')}</Label>
                         <div>{formatIDR(summary?.total_paid ?? 0)}</div>
                         <Label>{tInvoice('detail.outstanding')}</Label>
@@ -222,7 +222,7 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                             (it.meta?.unit as string | undefined) || '';
                         const qty = Number(it.meta?.qty ?? 0) || undefined;
                         const unitPriceCents = Number(
-                            it.meta?.unit_price_cents ?? 0,
+                            it.meta?.unit_price_idr ?? 0,
                         );
                         const hasBreakdown = Boolean(qty && unitPriceCents > 0);
                         return (
@@ -239,12 +239,12 @@ function InvoiceDetailBody({ data }: { data: InvoiceDetailDTO }) {
                                     </div>
                                     {hasBreakdown && (
                                         <div className="text-muted-foreground text-xs">
-                                            {`${formatIDR(unitPriceCents)} × ${qty} ${unit}`}
+                        {`${formatIDR(unitPriceCents)} × ${qty} ${unit}`}
                                         </div>
                                     )}
                                 </div>
                                 <div className="font-medium">
-                                    {formatIDR(it.amount_cents)}
+                                    {formatIDR(it.amount_idr)}
                                 </div>
                             </div>
                         );

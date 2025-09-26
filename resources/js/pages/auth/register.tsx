@@ -9,7 +9,7 @@ import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import PasswordInput from '@/components/ui/password-input';
 import { Separator } from '@/components/ui/separator';
-import GuestLayout from '@/layouts/guest-layout';
+import AuthLayout from '@/layouts/auth-layout';
 import type { RegisterForm } from '@/types/auth';
 
 export default function Register() {
@@ -34,7 +34,7 @@ export default function Register() {
     };
 
     return (
-        <GuestLayout
+        <AuthLayout
             title={t('auth.register.title')}
             description={t('auth.register.desc')}
             content={

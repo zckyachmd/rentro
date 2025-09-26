@@ -182,7 +182,7 @@ return [
         'room_id'       => 'kamar',
         'contract_id'   => 'kontrak',
         'invoice_id'    => 'invoice',
-        'amount_cents'  => 'nominal',
+        'amount_idr'  => 'nominal',
         'paid_at'       => 'tanggal bayar',
         'bank'          => 'bank',
         'reason'        => 'alasan',

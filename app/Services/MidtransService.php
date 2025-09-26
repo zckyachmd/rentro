@@ -49,19 +49,19 @@ class MidtransService implements MidtransGatewayInterface
     /**
      * Create a Core API Bank Transfer VA charge (bca|bni|bri|permata|cimb).
      */
-    public function createVa(Invoice $invoice, Payment $payment, int $amountCents, string $bank, array $customer = []): array
+    public function createVa(Invoice $invoice, Payment $payment, int $amountIdr, string $bank, array $customer = []): array
     {
         $this->boot();
 
         $this->ensureConfigured();
         $bank = self::assertBank($bank);
-        if ($amountCents <= 0) {
+        if ($amountIdr <= 0) {
             throw new \InvalidArgumentException(__('management/payments.invalid_amount'));
         }
 
         $invoice->loadMissing(['contract.room:id,number']);
         $orderId     = (string) ($payment->reference ?: $invoice->number ?: ('PAY-' . now()->format('Ymd') . '-XXXX'));
-        $gross       = (int) number_format($amountCents, 0, '.', '');
+        $gross       = (int) number_format($amountIdr, 0, '.', '');
         $itemDetails = $this->buildItemDetails($invoice, $gross);
 
         $params = [
@@ -215,10 +215,10 @@ class MidtransService implements MidtransGatewayInterface
         if (!empty($items)) {
             foreach ($items as $idx => $it) {
                 $label  = $this->sanitizeLabel((string) ($it['label'] ?? ('Item ' . ($idx + 1))));
-                $amount = (int) ($it['amount_cents'] ?? 0);
+                $amount = (int) ($it['amount_idr'] ?? 0);
                 $meta   = (array) ($it['meta'] ?? []);
                 $qty    = (int) ($meta['qty'] ?? 1);
-                $unit   = (int) ($meta['unit_price_cents'] ?? 0);
+                $unit   = (int) ($meta['unit_price_idr'] ?? 0);
 
                 if ($qty > 0 && $unit > 0) {
                     $price    = $unit;

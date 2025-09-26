@@ -18,15 +18,15 @@ return new class extends Migration
             $table->foreignId('room_id')->constrained()->restrictOnDelete();
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->unsignedBigInteger('rent_cents');
-            $table->unsignedBigInteger('deposit_cents')->default(0);
+            $table->unsignedBigInteger('rent_idr');
+            $table->unsignedBigInteger('deposit_idr')->default(0);
             $table->string('billing_period', 10)->default(BillingPeriod::MONTHLY->value);
             $table->unsignedTinyInteger('billing_day')->default(1); // 1-31
             $table->string('status', 20)->default(ContractStatus::ACTIVE->value)->index();
             $table->boolean('auto_renew')->default(true)->index();
             $table->timestamp('renewal_cancelled_at')->nullable();
             $table->timestamp('paid_in_full_at')->nullable();
-            $table->unsignedBigInteger('deposit_refund_cents')->nullable();
+            $table->unsignedBigInteger('deposit_refund_idr')->nullable();
             $table->timestamp('deposit_refunded_at')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

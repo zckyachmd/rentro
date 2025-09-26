@@ -2,8 +2,8 @@ export interface TenantInvoiceItem {
     id: string;
     number: string;
     due_date?: string | null;
-    amount_cents: number;
-    outstanding_cents: number;
+    amount_idr: number;
+    outstanding_idr: number;
     status: string;
     room_number?: string | null;
 }
@@ -12,7 +12,7 @@ export type InvoiceItemMeta = {
     qty?: number;
     days?: number;
     free_days?: number;
-    unit_price_cents?: number;
+    unit_price_idr?: number;
     description?: string;
     desc?: string;
     note?: string;
@@ -26,10 +26,10 @@ export type TenantInvoiceDTO = {
         number: string;
         status: string;
         due_date?: string | null;
-        amount_cents: number;
+        amount_idr: number;
         items: Array<{
             label: string;
-            amount_cents: number;
+            amount_idr: number;
             meta?: InvoiceItemMeta;
         }>;
     };
@@ -50,7 +50,7 @@ export type InvoiceDetailTarget = { id: string; number: string } | null;
 export type InvoiceItem = {
     code?: string;
     label: string;
-    amount_cents: number;
+    amount_idr: number;
     meta?: InvoiceItemMeta;
 };
 
@@ -62,7 +62,7 @@ export type TenantInvoiceDetailDTO = {
         due_date?: string | null;
         period_start?: string | null;
         period_end?: string | null;
-        amount_cents: number;
+        amount_idr: number;
         items: InvoiceItem[];
         paid_at?: string | null;
         created_at?: string | null;
@@ -83,7 +83,7 @@ export type TenantInvoiceDetailDTO = {
         id: string;
         method: string;
         status: string;
-        amount_cents: number;
+        amount_idr: number;
         paid_at?: string | null;
         reference?: string | null;
         provider?: string | null;

@@ -58,8 +58,8 @@ class AutoRenewContract implements ShouldQueue
 
         [$period, $duration] = $this->computeTerm($old);
 
-        $deposit   = $rollover ? 0 : (int) ($old->deposit_cents ?? 0);
-        $rentCents = (int) $old->rent_cents;
+        $deposit   = $rollover ? 0 : (int) ($old->deposit_idr ?? 0);
+        $rentCents = (int) $old->rent_idr;
 
         $payload = [
             'user_id'        => $old->user_id,
@@ -67,8 +67,8 @@ class AutoRenewContract implements ShouldQueue
             'start_date'     => $start,
             'billing_period' => $period,
             'duration_count' => $duration,
-            'rent_cents'     => $rentCents,
-            'deposit_cents'  => $deposit,
+            'rent_idr'       => $rentCents,
+            'deposit_idr'    => $deposit,
             'auto_renew'     => true,
             'notes'          => 'Auto-renewal of contract #' . $old->id,
         ];

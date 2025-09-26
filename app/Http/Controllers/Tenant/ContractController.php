@@ -22,7 +22,7 @@ class ContractController extends Controller
         $query = Contract::query()
             ->where('user_id', $request->user()->id)
             ->with(['room:id,number'])
-            ->select(['id', 'number', 'user_id', 'room_id', 'start_date', 'end_date', 'rent_cents', 'status', 'auto_renew']);
+            ->select(['id', 'number', 'user_id', 'room_id', 'start_date', 'end_date', 'rent_idr', 'status', 'auto_renew']);
 
         $options = [
             'search_param' => 'q',
@@ -33,7 +33,7 @@ class ContractController extends Controller
             'sortable' => [
                 'start_date' => 'start_date',
                 'end_date'   => 'end_date',
-                'rent_cents' => 'rent_cents',
+                'rent_idr'   => 'rent_idr',
                 'status'     => 'status',
             ],
             'default_sort' => ['start_date', 'desc'],
@@ -70,7 +70,7 @@ class ContractController extends Controller
                 'room'               => $room ? ['id' => (string) $room->id, 'number' => (string) $room->number] : null,
                 'start_date'         => $c->start_date ? $c->start_date->toDateString() : null,
                 'end_date'           => $c->end_date ? $c->end_date->toDateString() : null,
-                'rent_cents'         => (int) $c->rent_cents,
+                'rent_idr'           => (int) $c->rent_idr,
                 'status'             => (string) $c->status->value,
                 'auto_renew'         => (bool) $c->auto_renew,
                 'needs_ack_checkin'  => $pendingCheckinIds->contains($c->id),
@@ -114,7 +114,7 @@ class ContractController extends Controller
 
         // Invoices for this contract (tenant POV)
         $invPage = $contract->invoices()
-            ->select(['id', 'number', 'period_start', 'period_end', 'due_date', 'amount_cents', 'status', 'paid_at'])
+            ->select(['id', 'number', 'period_start', 'period_end', 'due_date', 'amount_idr', 'status', 'paid_at'])
             ->orderByDesc('due_date')
             ->paginate(20)
             ->through(function (\Illuminate\Database\Eloquent\Model $m): array {
@@ -127,10 +127,10 @@ class ContractController extends Controller
                     'period_start' => $inv->period_start ? $inv->period_start->toDateString() : null,
                     'period_end'   => $inv->period_end ? $inv->period_end->toDateString() : null,
                     // keep non-null string for due_date to satisfy static types
-                    'due_date'     => $inv->due_date ? $inv->due_date->toDateString() : '',
-                    'amount_cents' => (int) $inv->amount_cents,
-                    'status'       => (string) $inv->status->value,
-                    'paid_at'      => $inv->paid_at ? $inv->paid_at->toDateTimeString() : null,
+                    'due_date'   => $inv->due_date ? $inv->due_date->toDateString() : '',
+                    'amount_idr' => (int) $inv->amount_idr,
+                    'status'     => (string) $inv->status->value,
+                    'paid_at'    => $inv->paid_at ? $inv->paid_at->toDateTimeString() : null,
                 ];
             });
 
@@ -142,11 +142,11 @@ class ContractController extends Controller
                 'number'     => (string) ($contract->number ?? ''),
                 'updated_at' => $contract->updated_at?->toDateTimeString(),
                 'room'       => $r ? [
-                    'id'          => (string) $r->id,
-                    'number'      => (string) $r->number,
-                    'name'        => (string) ($r->name ?? ''),
-                    'price_cents' => (int) ($r->effectivePriceCents(BillingPeriod::MONTHLY->value) ?? 0),
-                    'building'    => $r->building ? [
+                    'id'        => (string) $r->id,
+                    'number'    => (string) $r->number,
+                    'name'      => (string) ($r->name ?? ''),
+                    'price_idr' => (int) ($r->effectivePriceCents(BillingPeriod::MONTHLY->value) ?? 0),
+                    'building'  => $r->building ? [
                         'id'   => (string) $r->building->id,
                         'name' => (string) ($r->building->name ?? ''),
                         'code' => (string) ($r->building->code ?? ''),
@@ -156,15 +156,15 @@ class ContractController extends Controller
                         'level' => (string) $r->floor->level,
                     ] : null,
                     'type' => $r->type ? [
-                        'id'          => (string) $r->type->id,
-                        'name'        => (string) ($r->type->name ?? ''),
-                        'price_cents' => (int) (($r->type->prices['monthly'] ?? 0)),
+                        'id'        => (string) $r->type->id,
+                        'name'      => (string) ($r->type->name ?? ''),
+                        'price_idr' => (int) (($r->type->prices['monthly'] ?? 0)),
                     ] : null,
                 ] : null,
                 'start_date'     => $contract->start_date ? $contract->start_date->toDateString() : null,
                 'end_date'       => $contract->end_date ? $contract->end_date->toDateString() : null,
-                'rent_cents'     => (int) $contract->rent_cents,
-                'deposit_cents'  => (int) ($contract->deposit_cents ?? 0),
+                'rent_idr'       => (int) $contract->rent_idr,
+                'deposit_idr'    => (int) ($contract->deposit_idr ?? 0),
                 'billing_period' => (string) ($contract->billing_period ? $contract->billing_period->value : ''),
                 'billing_day'    => $contract->billing_day,
                 'status'         => (string) $contract->status->value,
@@ -205,8 +205,8 @@ class ContractController extends Controller
             'end_date'       => $contract->end_date?->toDateString(),
             'billing_period' => (string) $contract->billing_period->value,
             'billing_day'    => $contract->billing_day,
-            'rent_cents'     => (int) $contract->rent_cents,
-            'deposit_cents'  => (int) $contract->deposit_cents,
+            'rent_idr'       => (int) $contract->rent_idr,
+            'deposit_idr'    => (int) $contract->deposit_idr,
             'notes'          => (string) ($contract->notes ?? ''),
             'tenant'         => [
                 'name'  => $request->user()->name,

@@ -81,8 +81,8 @@ export interface TenantInvoiceListItem {
     number: string;
     status?: string | null;
     due_date?: string | null;
-    amount_cents: number;
-    outstanding_cents: number;
+    amount_idr: number;
+    outstanding_idr: number;
     room_number?: string | null;
 }
 

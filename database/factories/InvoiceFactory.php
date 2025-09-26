@@ -30,7 +30,7 @@ class InvoiceFactory extends Factory
             'period_start' => $start->format('Y-m-d'),
             'period_end'   => $end->format('Y-m-d'),
             'due_date'     => $due->format('Y-m-d'),
-            'amount_cents' => $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]) * 100,
+            'amount_idr' => $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]),
             'status'       => InvoiceStatus::PENDING->value,
             'paid_at'      => null,
         ];
@@ -48,4 +48,3 @@ class InvoiceFactory extends Factory
         return $candidate;
     }
 }
-

@@ -81,24 +81,24 @@ export const createColumns = (opts?: {
         },
     }),
     makeColumn<TenantInvoiceItem>({
-        id: 'amount_cents',
+        id: 'amount_idr',
         title: i18n.t('common.amount'),
         className: COL.amount,
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.amount}>
-                {formatIDR(row.original.amount_cents)}
+                {formatIDR(row.original.amount_idr)}
             </div>
         ),
     }),
     makeColumn<TenantInvoiceItem>({
-        id: 'outstanding_cents',
+        id: 'outstanding_idr',
         title: i18n.t('tenant/invoice:outstanding'),
         className: COL.outstanding,
         sortable: true,
         cell: ({ row }) => (
             <div className={COL.outstanding}>
-                {formatIDR(row.original.outstanding_cents)}
+                {formatIDR(row.original.outstanding_idr)}
             </div>
         ),
     }),
@@ -109,7 +109,7 @@ export const createColumns = (opts?: {
         cell: ({ row }) => {
             const inv = row.original;
             const canPay =
-                (inv.outstanding_cents ?? 0) > 0 &&
+                (inv.outstanding_idr ?? 0) > 0 &&
                 (inv.status || '').trim().toLowerCase().replace(/\s+/g, '_') !==
                     'cancelled';
             return (

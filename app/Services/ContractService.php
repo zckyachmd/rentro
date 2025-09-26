@@ -131,8 +131,8 @@ class ContractService implements ContractServiceInterface
                 $roomPart       = (string) $room->number;
                 $contractNumber = $datePart . '-' . $seqPart . '-' . $roomPart;
 
-                $payloadRent            = isset($data['rent_cents']) ? (int) $data['rent_cents'] : 0;
-                $payloadDeposit         = isset($data['deposit_cents']) ? (int) $data['deposit_cents'] : 0;
+                $payloadRent            = isset($data['rent_idr']) ? (int) $data['rent_idr'] : 0;
+                $payloadDeposit         = isset($data['deposit_idr']) ? (int) $data['deposit_idr'] : 0;
                 $effectiveRoomRentCents = (int) ($room->effectivePriceCents($period) ?? 0);
                 $effectiveRoomDepCents  = (int) ($room->effectiveDepositCents($period) ?? 0);
                 $fallbackRentRupiah     = (int) $effectiveRoomRentCents;
@@ -146,8 +146,8 @@ class ContractService implements ContractServiceInterface
                     'room_id'        => $room->id,
                     'start_date'     => $start->toDateString(),
                     'end_date'       => $end,
-                    'rent_cents'     => $finalRent,
-                    'deposit_cents'  => $finalDeposit,
+                    'rent_idr'       => $finalRent,
+                    'deposit_idr'    => $finalDeposit,
                     'billing_period' => $data['billing_period'],
                     'billing_day'    => $billingDay,
                     'auto_renew'     => $autoRenew,

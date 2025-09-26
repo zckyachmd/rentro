@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import { yesterdayISO } from '@/lib/date';
 import type { EditForm, EditPageProps } from '@/types/profile';
 
@@ -94,7 +94,7 @@ export default function Edit({
     };
 
     return (
-        <AuthLayout pageTitle={tProfile('edit')} breadcrumbs={BREADCRUMBS}>
+        <AppLayout pageTitle={tProfile('edit')} breadcrumbs={BREADCRUMBS}>
             <Head title={tProfile('edit')} />
 
             <div className="mb-4 flex items-center justify-between">
@@ -320,6 +320,6 @@ export default function Edit({
                     </Button>
                 </div>
             </form>
-        </AuthLayout>
+        </AppLayout>
     );
 }

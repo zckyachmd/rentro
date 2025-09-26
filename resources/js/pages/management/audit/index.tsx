@@ -17,7 +17,7 @@ import {
 import AuditDetailDialog from '@/features/audit/dialogs/detail-dialog';
 import { createColumns } from '@/features/audit/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
-import AuthLayout from '@/layouts/auth-layout';
+import AppLayout from '@/layouts/app-layout';
 import type {
     ActivityItem,
     AuditNextShape as NextShape,
@@ -118,10 +118,7 @@ export default function AuditLogIndex() {
     }, [lang]);
 
     return (
-        <AuthLayout
-            pageTitle={tAudit('title')}
-            pageDescription={tAudit('desc')}
-        >
+        <AppLayout pageTitle={tAudit('title')} pageDescription={tAudit('desc')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
@@ -161,6 +158,6 @@ export default function AuditLogIndex() {
                 item={detail.item}
                 onOpenChange={(o) => setDetail((s) => ({ ...s, open: o }))}
             />
-        </AuthLayout>
+        </AppLayout>
     );
 }

@@ -74,7 +74,7 @@ class DashboardController extends Controller
         $invoicesOverdue = (int) Invoice::query()->where('status', InvoiceStatus::OVERDUE->value)->count();
         $outstandingSum  = (int) Invoice::query()
             ->whereNotIn('status', [InvoiceStatus::PAID->value, InvoiceStatus::CANCELLED->value])
-            ->sum('outstanding_cents');
+            ->sum('outstanding_idr');
 
         // Payments summary
         $now          = now();
@@ -86,20 +86,20 @@ class DashboardController extends Controller
 
         $paymentsRange = (int) (clone $paymentsBase)
             ->whereBetween('paid_at', [$startDate, $endDate])
-            ->sum('amount_cents');
+            ->sum('amount_idr');
         $paymentsMtd = (int) (clone $paymentsBase)
             ->whereBetween('paid_at', [$startOfMonth, $now])
-            ->sum('amount_cents');
+            ->sum('amount_idr');
         $payments7d = (int) (clone $paymentsBase)
             ->whereBetween('paid_at', [$startOf7d, $now])
-            ->sum('amount_cents');
+            ->sum('amount_idr');
         $paymentsToday = (int) (clone $paymentsBase)
             ->whereBetween('paid_at', [$startOfToday, $now])
-            ->sum('amount_cents');
+            ->sum('amount_idr');
 
         // Revenue timeseries per day in range
         $series = (clone $paymentsBase)
-            ->selectRaw("DATE(paid_at) as d, SUM(amount_cents) as amt")
+            ->selectRaw("DATE(paid_at) as d, SUM(amount_idr) as amt")
             ->whereBetween('paid_at', [$startDate, $endDate])
             ->groupBy('d')
             ->orderBy('d')
@@ -155,7 +155,7 @@ class DashboardController extends Controller
 
                 return [
                     'id'         => (string) $p->id,
-                    'amount'     => (int) ($p->amount_cents ?? 0),
+                    'amount'     => (int) ($p->amount_idr ?? 0),
                     'paid_at'    => optional($p->paid_at)->toDateTimeString(),
                     'invoice_no' => $inv?->number,
                     'tenant'     => $tenant?->name,
@@ -272,7 +272,7 @@ class DashboardController extends Controller
             ->count();
         $tenantOutstanding = (int) (clone $tenantInvoicesBase)
             ->whereNotIn('status', [InvoiceStatus::PAID->value, InvoiceStatus::CANCELLED->value])
-            ->sum('outstanding_cents');
+            ->sum('outstanding_idr');
 
         $tenantLatestInvoices = (clone $tenantInvoicesBase)
             ->with('contract.room')
@@ -282,13 +282,13 @@ class DashboardController extends Controller
             ->get()
             ->map(function (Invoice $inv) {
                 return [
-                    'id'                => (string) $inv->id,
-                    'number'            => (string) $inv->number,
-                    'status'            => (string) $inv->status->value,
-                    'due_date'          => optional($inv->due_date)->toDateString(),
-                    'amount_cents'      => (int) ($inv->amount_cents ?? 0),
-                    'outstanding_cents' => (int) ($inv->outstanding_cents ?? 0),
-                    'room_number'       => optional($inv->contract?->room)->number ?? optional($inv->contract?->room)->name,
+                    'id'              => (string) $inv->id,
+                    'number'          => (string) $inv->number,
+                    'status'          => (string) $inv->status->value,
+                    'due_date'        => optional($inv->due_date)->toDateString(),
+                    'amount_idr'      => (int) ($inv->amount_idr ?? 0),
+                    'outstanding_idr' => (int) ($inv->outstanding_idr ?? 0),
+                    'room_number'     => optional($inv->contract?->room)->number ?? optional($inv->contract?->room)->name,
                 ];
             });
 
@@ -307,7 +307,7 @@ class DashboardController extends Controller
 
                 return [
                     'id'         => (string) $p->id,
-                    'amount'     => (int) ($p->amount_cents ?? 0),
+                    'amount'     => (int) ($p->amount_idr ?? 0),
                     'paid_at'    => optional($p->paid_at)->toDateTimeString(),
                     'invoice_no' => $inv?->number,
                 ];

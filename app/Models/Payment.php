@@ -28,8 +28,8 @@ class Payment extends Model
         'invoice_id',
         'method',
         'status',
-        'amount_cents',
-        'pre_outstanding_cents',
+        'amount_idr',
+        'pre_outstanding_idr',
         'paid_at',
         'reference',
         'provider',
@@ -41,14 +41,14 @@ class Payment extends Model
     ];
 
     protected $casts = [
-        'amount_cents'          => 'integer',
-        'paid_at'               => 'datetime',
-        'pre_outstanding_cents' => 'integer',
-        'va_expired_at'         => 'datetime',
-        'method'                => PaymentMethod::class,
-        'status'                => PaymentStatus::class,
-        'meta'                  => 'array',
-        'attachments'           => 'array',
+        'amount_idr'          => 'integer',
+        'paid_at'             => 'datetime',
+        'pre_outstanding_idr' => 'integer',
+        'va_expired_at'       => 'datetime',
+        'method'              => PaymentMethod::class,
+        'status'              => PaymentStatus::class,
+        'meta'                => 'array',
+        'attachments'         => 'array',
     ];
 
     public function invoice(): BelongsTo

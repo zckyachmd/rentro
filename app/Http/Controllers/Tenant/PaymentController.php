@@ -85,13 +85,13 @@ class PaymentController extends Controller
         $payment = $this->payments->createPayment(
             invoice: $invoice,
             data: [
-                'method'       => PaymentMethod::TRANSFER->value,
-                'status'       => PaymentStatus::REVIEW->value,
-                'amount_cents' => $outstanding,
-                'provider'     => 'Manual',
-                'meta'         => $meta,
-                'note'         => (string) ($validated['note'] ?? ''),
-                'paid_at'      => (string) $validated['paid_at'],
+                'method'     => PaymentMethod::TRANSFER->value,
+                'status'     => PaymentStatus::REVIEW->value,
+                'amount_idr' => $outstanding,
+                'provider'   => 'Manual',
+                'meta'       => $meta,
+                'note'       => (string) ($validated['note'] ?? ''),
+                'paid_at'    => (string) $validated['paid_at'],
             ],
             user: $request->user(),
             attachment: null,
@@ -129,7 +129,7 @@ class PaymentController extends Controller
                 'id'               => (string) $payment->id,
                 'method'           => (string) $payment->method->value,
                 'status'           => (string) $payment->status->value,
-                'amount_cents'     => (int) $payment->amount_cents,
+                'amount_idr'       => (int) $payment->amount_idr,
                 'paid_at'          => $payment->paid_at?->toDateTimeString(),
                 'reference'        => $payment->reference,
                 'note'             => $payment->note,
@@ -143,8 +143,8 @@ class PaymentController extends Controller
                 'reject_reason'    => (string) ($reviewMeta['reason'] ?? '') ?: null,
             ],
             'invoice' => [
-                'number'       => (string) ($inv->number ?? ''),
-                'amount_cents' => (int) ($inv->amount_cents ?? 0),
+                'number'     => (string) ($inv->number ?? ''),
+                'amount_idr' => (int) ($inv->amount_idr ?? 0),
             ],
         ]);
     }

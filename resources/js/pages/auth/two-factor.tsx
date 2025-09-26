@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import OtpInput from '@/components/ui/otp-input';
-import GuestLayout from '@/layouts/guest-layout';
+import AuthLayout from '@/layouts/auth-layout';
 
 export default function TwoFactorChallenge() {
     const form = useForm<{ token: string }>({ token: '' });
     const { t } = useTranslation();
 
     return (
-        <GuestLayout
+        <AuthLayout
             title={t('auth.twofactor.title')}
             description={t('auth.twofactor.desc')}
             content={

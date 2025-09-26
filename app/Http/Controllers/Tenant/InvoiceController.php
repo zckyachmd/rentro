@@ -26,7 +26,7 @@ class InvoiceController extends Controller
         $query = Invoice::query()
             ->whereHas('contract', fn ($q) => $q->where('user_id', $userId))
             ->with(['contract.room:id,number'])
-            ->select(['id', 'number', 'contract_id', 'due_date', 'amount_cents', 'outstanding_cents', 'status']);
+            ->select(['id', 'number', 'contract_id', 'due_date', 'amount_idr', 'outstanding_idr', 'status']);
 
         $options = [
             'search_param' => 'q',
@@ -40,10 +40,10 @@ class InvoiceController extends Controller
                 },
             ],
             'sortable' => [
-                'due_date'          => 'due_date',
-                'amount_cents'      => 'amount_cents',
-                'outstanding_cents' => 'outstanding_cents',
-                'status'            => 'status',
+                'due_date'        => 'due_date',
+                'amount_idr'      => 'amount_idr',
+                'outstanding_idr' => 'outstanding_idr',
+                'status'          => 'status',
             ],
             'default_sort' => ['due_date', 'desc'],
             'filters'      => [
@@ -61,13 +61,13 @@ class InvoiceController extends Controller
             $room     = $contract?->room;
 
             return [
-                'id'                => (string) $inv->id,
-                'number'            => (string) $inv->number,
-                'due_date'          => $inv->due_date ? $inv->due_date->toDateString() : null,
-                'amount_cents'      => (int) $inv->amount_cents,
-                'outstanding_cents' => (int) ($inv->outstanding_cents ?? 0),
-                'status'            => (string) $inv->status->value,
-                'room_number'       => $room ? $room->number : null,
+                'id'              => (string) $inv->id,
+                'number'          => (string) $inv->number,
+                'due_date'        => $inv->due_date ? $inv->due_date->toDateString() : null,
+                'amount_idr'      => (int) $inv->amount_idr,
+                'outstanding_idr' => (int) ($inv->outstanding_idr ?? 0),
+                'status'          => (string) $inv->status->value,
+                'room_number'     => $room ? $room->number : null,
             ];
         });
         $page->setCollection($mapped);
@@ -116,7 +116,7 @@ class InvoiceController extends Controller
             /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $paymentCollection */
             $paymentCollection = $invoice->payments()
                 ->orderByDesc('paid_at')
-                ->get(['id', 'method', 'status', 'amount_cents', 'paid_at', 'reference', 'provider']);
+                ->get(['id', 'method', 'status', 'amount_idr', 'paid_at', 'reference', 'provider']);
 
             $payments = $paymentCollection->map(function ($p): array {
                 $meta         = (array) ($p->meta ?? []);
@@ -131,7 +131,7 @@ class InvoiceController extends Controller
                     'id'               => (string) $p->id,
                     'method'           => (string) $p->method->value,
                     'status'           => (string) $p->status->value,
-                    'amount_cents'     => (int) $p->amount_cents,
+                    'amount_idr'       => (int) $p->amount_idr,
                     'paid_at'          => $p->paid_at ? $p->paid_at->toDateTimeString() : null,
                     'reference'        => $p->reference,
                     'provider'         => $p->provider,
@@ -157,7 +157,7 @@ class InvoiceController extends Controller
                     'due_date'     => $invoice->due_date ? $invoice->due_date->toDateString() : null,
                     'period_start' => $invoice->period_start ? $invoice->period_start->toDateString() : null,
                     'period_end'   => $invoice->period_end ? $invoice->period_end->toDateString() : null,
-                    'amount_cents' => (int) $invoice->amount_cents,
+                    'amount_idr'   => (int) $invoice->amount_idr,
                     'items'        => (array) ($invoice->items ?? []),
                     'paid_at'      => $invoice->paid_at ? $invoice->paid_at->toDateTimeString() : null,
                     'created_at'   => $invoice->created_at ? $invoice->created_at->toDateTimeString() : null,
@@ -180,7 +180,7 @@ class InvoiceController extends Controller
                 ] : null,
                 'payments'        => $payments,
                 'payment_summary' => [
-                    'total_invoice' => (int) $invoice->amount_cents,
+                    'total_invoice' => (int) $invoice->amount_idr,
                     'total_paid'    => (int) $totalPaid,
                     'outstanding'   => (int) $outstanding,
                 ],
@@ -208,7 +208,7 @@ class InvoiceController extends Controller
             'period_start' => $invoice->period_start ? $invoice->period_start->toDateString() : null,
             'period_end'   => $invoice->period_end ? $invoice->period_end->toDateString() : null,
             'due_date'     => $invoice->due_date ? $invoice->due_date->toDateString() : null,
-            'amount_cents' => (int) $invoice->amount_cents,
+            'amount_idr'   => (int) $invoice->amount_idr,
             'items'        => (array) ($invoice->items ?? []),
             'status'       => (string) $invoice->status->value,
             'paid_at'      => $invoice->paid_at ? $invoice->paid_at->toDateTimeString() : null,

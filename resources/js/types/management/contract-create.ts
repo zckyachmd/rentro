@@ -49,8 +49,8 @@ export type ContractCreateForm = {
     end_date?: string;
     rent_rupiah: string;
     deposit_rupiah: string;
-    rent_cents?: number;
-    deposit_cents?: number;
+    rent_idr?: number;
+    deposit_idr?: number;
     billing_period: string;
     billing_day: string;
     auto_renew: boolean;

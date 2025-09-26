@@ -5,7 +5,7 @@ export interface ContractItem {
     room?: { id: string; number: string } | null;
     start_date?: string | null;
     end_date?: string | null;
-    rent_cents: number;
+    rent_idr: number;
     status: string;
     auto_renew: boolean;
     has_checkin?: boolean;

@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
-import GuestLayout from '@/layouts/guest-layout';
+import AuthLayout from '@/layouts/auth-layout';
 
 export default function ForgotPassword() {
     const { t } = useTranslation();
     return (
-        <GuestLayout
+        <AuthLayout
             title={t('auth.forgot.title')}
             description={t('auth.forgot.desc')}
             content={
