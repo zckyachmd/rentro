@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2] - 2025-09-26
+
+A minor pre-release focusing on a new Amenities module, theme preference persistence, route organization, and assorted i18n and DX refinements.
+
+### Added
+
+- Amenities: translation-ready Amenities module (backend CRUD with `name_i18n` JSON and `AmenityCategory` enum; robust validation and category index).
+- Amenities UI: management page with modular columns and upsert dialog, category filters, and delete confirmation via AlertDialog.
+- i18n: frontend locales for amenities (including enum values) and common.icon; added missing audit translations; consolidated contract translations (admin + tenant).
+- Appearance: user theme preferences persisted to `users.preferences['theme']` and synced via cookie; Inertia share and `useTheme` helper; server-side persistence for mode toggle; throttling via `ui-preferences` and cookie excluded from encryption.
+- Dashboard: tenant dashboard view and role sourcing improvements.
+
+### Changed
+
+- Routing: extracted management routes to `routes/management.php` and enforced permissions consistently across modules.
+- Database migrations: removed separate "drop" migrations and folded changes into the base `create_*` migrations; `create_payments_table` no longer includes soft deletes.
+- Database schema: dropped legacy `users.theme` in favor of `users.preferences['theme']` as the single source of truth.
+- Code quality: applied CS fixes and PHPStan adjustments; improved enum i18n usage; stabilized Midtrans enum mapping.
+- CI/CD: hardened Docker image publishing for `rentro-api` and `rentro-web`; switched lint to npm and standardized auto-formatting.
+
+### Fixed
+
+- Permissions: corrected permission enforcement in management routes.
+- Minor FE/BE tweaks and stability improvements.
+
+### Upgrade notes
+
+- If you previously ran migrations before this release, the consolidation of migrations may require a refresh on development environments. For a clean slate: `php artisan migrate:fresh` (this will drop data). On shared/stable environments, review the diff and apply with care.
+- Ensure `APP_VERSION` is updated to `0.0.2` to bust caches and client payload namespaces as intended.
+
 ## [0.0.1] - 2025-09-21
 
 Initial pre-release providing the application foundation and development environment.
@@ -35,4 +65,5 @@ Initial pre-release providing the application foundation and development environ
 - Global layout background uses Tailwind CSS variables (`bg-background`/`text-foreground`) across Blade and layouts.
 - Documentation: initial README with overview, tech stack, and development instructions.
 - Quality tooling: ESLint/Prettier, PHP-CS-Fixer, PHPStan, GrumPHP.
+[0.0.2]: https://github.com/zckyachmd/rentro/releases/tag/v0.0.2
 [0.0.1]: https://github.com/zckyachmd/rentro/releases/tag/v0.0.1
