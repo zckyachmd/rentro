@@ -82,6 +82,11 @@ class PermissionSeeder extends Seeder
                 PermissionName::HANDOVER_DELETE,
                 // Audit Log
                 PermissionName::AUDIT_LOG_VIEW,
+                // Promotions
+                PermissionName::PROMOTION_VIEW,
+                PermissionName::PROMOTION_CREATE,
+                PermissionName::PROMOTION_UPDATE,
+                PermissionName::PROMOTION_DELETE,
             ],
             RoleName::MANAGER->value => [
                 PermissionName::USER_VIEW,
@@ -129,6 +134,10 @@ class PermissionSeeder extends Seeder
                 PermissionName::HANDOVER_VIEW,
                 PermissionName::HANDOVER_CREATE,
                 PermissionName::HANDOVER_UPDATE,
+                // Promotions (manager can view + edit)
+                PermissionName::PROMOTION_VIEW,
+                PermissionName::PROMOTION_CREATE,
+                PermissionName::PROMOTION_UPDATE,
             ],
             // Tenant role exists for assigning to app users, with no management permissions.
             RoleName::TENANT->value => [],

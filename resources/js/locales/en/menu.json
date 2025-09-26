@@ -46,6 +46,7 @@
         "changelog": "Changelog",
         "payments": "Payments",
         "roles": "Roles",
-        "users": "Users"
+        "users": "Users",
+        "promotions": "Promotions"
     }
 }

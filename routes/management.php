@@ -9,6 +9,7 @@ use App\Http\Controllers\Management\FloorManagementController;
 use App\Http\Controllers\Management\HandoverManagementController;
 use App\Http\Controllers\Management\InvoiceManagementController;
 use App\Http\Controllers\Management\PaymentManagementController;
+use App\Http\Controllers\Management\PromotionManagementController;
 use App\Http\Controllers\Management\RoleManagementController;
 use App\Http\Controllers\Management\RoomManagementController;
 use App\Http\Controllers\Management\RoomPhotoManagementController;
@@ -304,5 +305,90 @@ Route::prefix('management')->name('management.')->group(function (): void {
         Route::delete('/{amenity}', [AmenityManagementController::class, 'destroy'])
             ->middleware('can:' . PermissionName::AMENITY_DELETE->value)
             ->name('destroy');
+    });
+
+    // Promotions
+    Route::prefix('promotions')->name('promotions.')->group(function (): void {
+        Route::get('/', [PromotionManagementController::class, 'index'])
+            ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
+            ->name('index');
+
+        Route::get('/{promotion}', [PromotionManagementController::class, 'show'])
+            ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
+            ->whereNumber('promotion')
+            ->name('show');
+
+        Route::post('/', [PromotionManagementController::class, 'store'])
+            ->middleware('can:' . PermissionName::PROMOTION_CREATE->value)
+            ->name('store');
+
+        Route::put('/{promotion}', [PromotionManagementController::class, 'update'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('update');
+
+        Route::delete('/{promotion}', [PromotionManagementController::class, 'destroy'])
+            ->middleware('can:' . PermissionName::PROMOTION_DELETE->value)
+            ->name('destroy');
+
+        // Scopes
+        Route::post('/{promotion}/scopes', [PromotionManagementController::class, 'storeScope'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('scopes.store');
+        Route::post('/{promotion}/scopes/bulk', [PromotionManagementController::class, 'storeScopesBulk'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('scopes.bulk');
+        Route::put('/scopes/{scope}', [PromotionManagementController::class, 'updateScope'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('scope')
+            ->name('scopes.update');
+        Route::delete('/scopes/{scope}', [PromotionManagementController::class, 'destroyScope'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('scope')
+            ->name('scopes.destroy');
+
+        // Rules
+        Route::post('/{promotion}/rules', [PromotionManagementController::class, 'storeRule'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('rules.store');
+        Route::put('/rules/{rule}', [PromotionManagementController::class, 'updateRule'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('rule')
+            ->name('rules.update');
+        Route::delete('/rules/{rule}', [PromotionManagementController::class, 'destroyRule'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('rule')
+            ->name('rules.destroy');
+
+        // Actions
+        Route::post('/{promotion}/actions', [PromotionManagementController::class, 'storeAction'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('actions.store');
+        Route::put('/actions/{action}', [PromotionManagementController::class, 'updateAction'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('action')
+            ->name('actions.update');
+        Route::delete('/actions/{action}', [PromotionManagementController::class, 'destroyAction'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('action')
+            ->name('actions.destroy');
+
+        // Coupons
+        Route::post('/{promotion}/coupons', [PromotionManagementController::class, 'storeCoupon'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('coupons.store');
+        Route::post('/{promotion}/coupons/bulk', [PromotionManagementController::class, 'storeCouponsBulk'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('coupons.bulk');
+        Route::get('/{promotion}/coupons/export', [PromotionManagementController::class, 'exportCoupons'])
+            ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
+            ->name('coupons.export');
+        Route::put('/coupons/{coupon}', [PromotionManagementController::class, 'updateCoupon'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('coupon')
+            ->name('coupons.update');
+        Route::delete('/coupons/{coupon}', [PromotionManagementController::class, 'destroyCoupon'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->whereNumber('coupon')
+            ->name('coupons.destroy');
     });
 });

@@ -14,6 +14,7 @@ use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\MenuServiceInterface;
 use App\Services\Contracts\MidtransGatewayInterface;
 use App\Services\Contracts\PaymentServiceInterface;
+use App\Services\Contracts\PromotionServiceInterface;
 use App\Services\Contracts\TwoFactorServiceInterface;
 use App\Services\Contracts\ZiggyServiceInterface;
 use App\Services\ContractService;
@@ -21,6 +22,7 @@ use App\Services\InvoiceService;
 use App\Services\MenuService;
 use App\Services\MidtransService;
 use App\Services\PaymentService;
+use App\Services\PromotionService;
 use App\Services\TwoFactorService;
 use App\Services\ZiggyService;
 use Illuminate\Auth\Events\Login;
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
         $this->app->bind(MidtransGatewayInterface::class, MidtransService::class);
         $this->app->bind(ZiggyServiceInterface::class, ZiggyService::class);
+        $this->app->bind(PromotionServiceInterface::class, PromotionService::class);
     }
 
     /**

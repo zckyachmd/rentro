@@ -1,0 +1,18 @@
+{
+    "title": "Promotions",
+    "desc": "Manage discount promotions",
+    "add": "Add Promotion",
+    "create_title": "Create Promotion",
+    "edit_title": "Edit Promotion",
+    "form": {
+        "save": "Save"
+    },
+    "delete": {
+        "title": "Delete Promotion",
+        "confirm_named": "Are you sure want to delete \"{{name}}\"?"
+    },
+    "created": "Promotion created.",
+    "updated": "Promotion updated.",
+    "deleted": "Promotion deleted."
+}
+

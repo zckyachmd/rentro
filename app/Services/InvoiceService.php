@@ -12,6 +12,9 @@ use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Promotion;
+use App\Models\PromotionCoupon;
+use App\Models\PromotionRedemption;
 use App\Services\Contracts\InvoiceServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +119,8 @@ class InvoiceService implements InvoiceServiceInterface
                     $start,
                     (int) $contract->deposit_idr,
                     $releaseDom,
+                    $contract,
+                    $options['promo'] ?? null,
                 );
 
                 return $this->createInvoiceRecord($contract, $start, $periodEnd, $dueDateStr, $items);
@@ -127,7 +132,7 @@ class InvoiceService implements InvoiceServiceInterface
             if ($this->hasActiveOverlap($contract, $start, $contractEnd->copy(), $activeStatuses)) {
                 throw new \InvalidArgumentException(__('management/invoices.active_overlap_range'));
             }
-            $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $daysOrWeeks, false, $start, (int) $contract->deposit_idr, $releaseDom);
+            $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $daysOrWeeks, false, $start, (int) $contract->deposit_idr, $releaseDom, $contract, $options['promo'] ?? null);
 
             return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueNonMon, $items);
         }
@@ -188,7 +193,7 @@ class InvoiceService implements InvoiceServiceInterface
             if ($this->hasActiveOverlap($contract, $rangeFrom, $rangeTo, $nonCancelled)) {
                 throw new \InvalidArgumentException(__('management/invoices.active_overlap_month'));
             }
-            $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $start, 0, $releaseDom);
+            $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $start, 0, $releaseDom, $contract, $options['promo'] ?? null);
 
             return $this->createInvoiceRecord($contract, $start, $periodEnd, $dueMonthly, $items);
         }
@@ -237,14 +242,14 @@ class InvoiceService implements InvoiceServiceInterface
                     throw new \InvalidArgumentException(__('management/invoices.months_range_must_be_full'));
                 }
 
-                $items = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $from, 0, $releaseDom);
+                $items = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $from, 0, $releaseDom, $contract, $options['promo'] ?? null);
 
                 return $this->createInvoiceRecord($contract, $from, $to, $dueMonthly, $items);
             }
 
             if ($period === BillingPeriod::DAILY->value) {
                 $days  = max(1, (int) $from->diffInDays($to->copy()->addDay()));
-                $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $days, false, $from, 0, $releaseDom);
+                $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $days, false, $from, 0, $releaseDom, $contract, $options['promo'] ?? null);
 
                 return $this->createInvoiceRecord($contract, $from, $to, $dueNonMon, $items);
             }
@@ -252,7 +257,7 @@ class InvoiceService implements InvoiceServiceInterface
             // weekly
             $days  = max(1, (int) $from->diffInDays($to->copy()->addDay()));
             $weeks = max(1, (int) ceil($days / 7));
-            $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $weeks, false, $from, 0, $releaseDom);
+            $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $weeks, false, $from, 0, $releaseDom, $contract, $options['promo'] ?? null);
 
             return $this->createInvoiceRecord($contract, $from, $to, $dueNonMon, $items);
         }
@@ -277,7 +282,7 @@ class InvoiceService implements InvoiceServiceInterface
                     throw new \InvalidArgumentException(__('management/invoices.active_overlap_month'));
                 }
 
-                $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $monthStart, 0, $releaseDom);
+                $items = $this->makeItems($period, 'per_month', $rentCentsMonthly, 1, false, $monthStart, 0, $releaseDom, $contract, $options['promo'] ?? null);
 
                 return $this->createInvoiceRecord($contract, $monthStart, $periodEnd, $dueMonthly, $items);
             }
@@ -300,7 +305,7 @@ class InvoiceService implements InvoiceServiceInterface
             }
             $includeDeposit = !empty($options['include_deposit']);
             $depositCents   = $includeDeposit ? (int) $contract->deposit_idr : 0;
-            $items          = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $anchor, $depositCents, $releaseDom);
+            $items          = $this->makeItems($period, 'full', $rentCentsMonthly, $months, false, $anchor, $depositCents, $releaseDom, $contract, $options['promo'] ?? null);
 
             return $this->createInvoiceRecord($contract, $anchor, $periodEnd, $dueMonthly, $items);
         }
@@ -311,7 +316,7 @@ class InvoiceService implements InvoiceServiceInterface
         if ($this->hasActiveOverlap($contract, $start, $contractEnd->copy(), $activeStatuses)) {
             throw new \InvalidArgumentException(__('management/invoices.active_overlap_range'));
         }
-        $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $daysOrWeeks, false, $start, 0, $releaseDom);
+        $items = $this->makeItems($period, 'full', (int) $contract->rent_idr, $daysOrWeeks, false, $start, 0, $releaseDom, $contract, $options['promo'] ?? null);
 
         return $this->createInvoiceRecord($contract, $start, $contractEnd->copy(), $dueNonMon, $items);
     }
@@ -392,7 +397,7 @@ class InvoiceService implements InvoiceServiceInterface
      * @param int $releaseDom release day-of-month for billing (1-31)
      * @return array<int,array{code:string,label:string,amount_idr:int,meta?:array}>
      */
-    protected function makeItems(string $period, string $plan, int $rent, int $duration, bool $prorata, Carbon $start, int $deposit, int $releaseDom): array
+    protected function makeItems(string $period, string $plan, int $rent, int $duration, bool $prorata, Carbon $start, int $deposit, int $releaseDom, ?\App\Models\Contract $contract = null, ?array $promoOptions = null): array
     {
         $items        = [];
         $needsProrata = $prorata && $start->day !== $releaseDom;
@@ -407,6 +412,21 @@ class InvoiceService implements InvoiceServiceInterface
             default                           => ProrataCharging::FULL,
         };
         $freeThresholdDays = (int) AppSetting::config('billing.prorata_free_threshold_days', 7);
+
+        // Promotion evaluation helpers
+        $promoCtxBase = function () use ($contract, $period, $promoOptions) {
+            $ctx = [
+                'user'        => $contract?->tenant,
+                'contract_id' => $contract?->id,
+                'channel'     => ($promoOptions['channel'] ?? null),
+                'coupon_code' => ($promoOptions['coupon_code'] ?? null),
+            ];
+
+            return $ctx;
+        };
+
+        $promotionService = app(\App\Services\Contracts\PromotionServiceInterface::class);
+        $room             = $contract?->room;
 
         if ($period === BillingPeriod::MONTHLY->value) {
             // Monthly
@@ -431,6 +451,33 @@ class InvoiceService implements InvoiceServiceInterface
                     }
 
                     if ($totalDays > 0) {
+                        // Apply promotions to prorata line
+                        $appliedPromo = [];
+                        if ($room) {
+                            $ctx                         = $promoCtxBase();
+                            $ctx['current_period_index'] = 1;
+                            $ctx['per_day_rate_idr']     = $perDay;
+                            $ctx['base_rent_override']   = $lineAmt;
+                            $res                         = $promotionService->evaluateForRoom($room, BillingPeriod::MONTHLY, $ctx);
+                            if (is_array($res)) {
+                                $lineAmt      = (int) ($res['final_rent'] ?? $lineAmt);
+                                $appliedPromo = array_map(function ($a) {
+                                    /** @var array $a */
+                                    /** @var \App\Models\Promotion $p */
+                                    $p = $a['promotion'];
+
+                                    return [
+                                        'id'               => $p->id,
+                                        'slug'             => $p->slug,
+                                        'name'             => $p->name,
+                                        'discount_rent'    => (int) $a['discount_rent'],
+                                        'discount_deposit' => (int) $a['discount_deposit'],
+                                        'coupon_id'        => $a['coupon_id'] ?? null,
+                                    ];
+                                }, $res['applied'] ?? []);
+                            }
+                        }
+
                         $items[] = Invoice::makeItem('PRORATA', 'Prorated Rent', $lineAmt, [
                             'days'           => $totalDays,
                             'free_days'      => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
@@ -439,6 +486,7 @@ class InvoiceService implements InvoiceServiceInterface
                             'unit'           => 'day',
                             'date_start'     => $pr['from'] ?? $start->toDateString(),
                             'date_end'       => $pr['to'] ?? $start->toDateString(),
+                            'promotions'     => $appliedPromo,
                         ]);
                     }
                 }
@@ -450,18 +498,47 @@ class InvoiceService implements InvoiceServiceInterface
                     $monthStart = $baseMonthStart->copy()->addMonthsNoOverflow($i);
                     $labelBulan = $monthStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
                         ->translatedFormat('F Y');
+                    // Apply promotions per month line
+                    $lineRent = $rent;
+                    $applied  = [];
+                    if ($room) {
+                        $ctx                         = $promoCtxBase();
+                        $ctx['current_period_index'] = $i + 1;
+                        $ctx['per_day_rate_idr']     = (int) round($lineRent / 30);
+                        $ctx['base_rent_override']   = $lineRent;
+                        $res                         = $promotionService->evaluateForRoom($room, BillingPeriod::MONTHLY, $ctx);
+                        if (is_array($res)) {
+                            $lineRent = (int) ($res['final_rent'] ?? $lineRent);
+                            $applied  = array_map(function ($a) {
+                                /** @var array $a */
+                                /** @var \App\Models\Promotion $p */
+                                $p = $a['promotion'];
+
+                                return [
+                                    'id'               => $p->id,
+                                    'slug'             => $p->slug,
+                                    'name'             => $p->name,
+                                    'discount_rent'    => (int) $a['discount_rent'],
+                                    'discount_deposit' => (int) $a['discount_deposit'],
+                                    'coupon_id'        => $a['coupon_id'] ?? null,
+                                ];
+                            }, $res['applied'] ?? []);
+                        }
+                    }
+
                     $items[] = Invoice::makeItem(
                         'RENT',
                         'Rent',
-                        $rent,
+                        $lineRent,
                         [
                             'unit'           => 'month',
                             'qty'            => 1,
-                            'unit_price_idr' => $rent,
+                            'unit_price_idr' => $lineRent,
                             'month'          => $monthStart->format('Y-m'),
                             'period_label'   => $labelBulan,
                             'sequence'       => $i + 1,
                             'total_months'   => max(1, (int) $duration),
+                            'promotions'     => $applied,
                         ],
                     );
                 }
@@ -486,6 +563,33 @@ class InvoiceService implements InvoiceServiceInterface
                     }
 
                     if ($totalDays > 0) {
+                        // Apply promotions to prorata line (per_month plan)
+                        $appliedPromo = [];
+                        if ($room) {
+                            $ctx                         = $promoCtxBase();
+                            $ctx['current_period_index'] = 1;
+                            $ctx['per_day_rate_idr']     = $perDay;
+                            $ctx['base_rent_override']   = $lineAmt;
+                            $res                         = $promotionService->evaluateForRoom($room, BillingPeriod::MONTHLY, $ctx);
+                            if (is_array($res)) {
+                                $lineAmt      = (int) ($res['final_rent'] ?? $lineAmt);
+                                $appliedPromo = array_map(function ($a) {
+                                    /** @var array $a */
+                                    /** @var \App\Models\Promotion $p */
+                                    $p = $a['promotion'];
+
+                                    return [
+                                        'id'               => $p->id,
+                                        'slug'             => $p->slug,
+                                        'name'             => $p->name,
+                                        'discount_rent'    => (int) $a['discount_rent'],
+                                        'discount_deposit' => (int) $a['discount_deposit'],
+                                        'coupon_id'        => $a['coupon_id'] ?? null,
+                                    ];
+                                }, $res['applied'] ?? []);
+                            }
+                        }
+
                         $items[] = Invoice::makeItem('PRORATA', 'Prorated Rent', $lineAmt, [
                             'days'           => $totalDays,
                             'free_days'      => $chargeEnum === ProrataCharging::THRESHOLD ? $freeThresholdDays : 0,
@@ -494,6 +598,7 @@ class InvoiceService implements InvoiceServiceInterface
                             'unit'           => 'day',
                             'date_start'     => $pr['from'] ?? $start->toDateString(),
                             'date_end'       => $pr['to'] ?? $start->toDateString(),
+                            'promotions'     => $appliedPromo,
                         ]);
                     }
                 }
@@ -503,31 +608,119 @@ class InvoiceService implements InvoiceServiceInterface
                     : $start->copy();
                 $labelBulan = $monthStart->locale(app()->getLocale() ?: (string) config('app.fallback_locale', 'en'))
                     ->translatedFormat('F Y');
+                $lineRent = $rent;
+                $applied  = [];
+                if ($room) {
+                    $ctx                         = $promoCtxBase();
+                    $ctx['current_period_index'] = 1;
+                    $ctx['per_day_rate_idr']     = (int) round($lineRent / 30);
+                    $ctx['base_rent_override']   = $lineRent;
+                    $res                         = $promotionService->evaluateForRoom($room, BillingPeriod::MONTHLY, $ctx);
+                    if (is_array($res)) {
+                        $lineRent = (int) ($res['final_rent'] ?? $lineRent);
+                        $applied  = array_map(function ($a) {
+                            /** @var array $a */
+                            /** @var \App\Models\Promotion $p */
+                            $p = $a['promotion'];
+
+                            return [
+                                'id'               => $p->id,
+                                'slug'             => $p->slug,
+                                'name'             => $p->name,
+                                'discount_rent'    => (int) $a['discount_rent'],
+                                'discount_deposit' => (int) $a['discount_deposit'],
+                                'coupon_id'        => $a['coupon_id'] ?? null,
+                            ];
+                        }, $res['applied'] ?? []);
+                    }
+                }
                 $items[] = Invoice::makeItem(
                     'RENT',
                     'Rent',
-                    $rent,
+                    $lineRent,
                     [
                         'unit'           => 'month',
                         'qty'            => 1,
-                        'unit_price_idr' => $rent,
+                        'unit_price_idr' => $lineRent,
                         'month'          => $monthStart->format('Y-m'),
                         'period_label'   => $labelBulan,
+                        'promotions'     => $applied,
                     ],
                 );
             }
         } else {
             $unitLabel = $period === BillingPeriod::DAILY->value ? 'day' : 'week';
-            $items[]   = Invoice::makeItem(
-                'RENT',
-                'Room Rent',
-                $rent * $duration,
-                ['unit' => $unitLabel, 'qty' => (int) $duration, 'unit_price_idr' => $rent],
-            );
+            for ($i = 0; $i < max(1, (int) $duration); $i++) {
+                $lineRent = $rent;
+                $applied  = [];
+                if ($room) {
+                    $ctx                         = $promoCtxBase();
+                    $ctx['current_period_index'] = $i + 1;
+                    $ctx['per_day_rate_idr']     = $unitLabel === 'day' ? $lineRent : (int) round($lineRent / 7);
+                    $ctx['base_rent_override']   = $lineRent;
+                    $res                         = $promotionService->evaluateForRoom($room, $period === BillingPeriod::DAILY->value ? BillingPeriod::DAILY : BillingPeriod::WEEKLY, $ctx);
+                    if (is_array($res)) {
+                        $lineRent = (int) ($res['final_rent'] ?? $lineRent);
+                        $applied  = array_map(function ($a) {
+                            /** @var array $a */
+                            /** @var \App\Models\Promotion $p */
+                            $p = $a['promotion'];
+
+                            return [
+                                'id'               => $p->id,
+                                'slug'             => $p->slug,
+                                'name'             => $p->name,
+                                'discount_rent'    => (int) $a['discount_rent'],
+                                'discount_deposit' => (int) $a['discount_deposit'],
+                                'coupon_id'        => $a['coupon_id'] ?? null,
+                            ];
+                        }, $res['applied'] ?? []);
+                    }
+                }
+
+                $items[] = Invoice::makeItem(
+                    'RENT',
+                    'Room Rent',
+                    $lineRent,
+                    [
+                        'unit'           => $unitLabel,
+                        'qty'            => 1,
+                        'unit_price_idr' => $lineRent,
+                        'sequence'       => $i + 1,
+                        'total_units'    => max(1, (int) $duration),
+                        'promotions'     => $applied,
+                    ],
+                );
+            }
         }
 
         if ($deposit > 0) {
-            $items[] = Invoice::makeItem('DEPOSIT', 'Deposit', $deposit);
+            $finalDeposit = $deposit;
+            $applied      = [];
+            if ($room) {
+                $ctx                          = $promoCtxBase();
+                $ctx['current_period_index']  = 1;
+                $ctx['base_deposit_override'] = $finalDeposit;
+                $res                          = $promotionService->evaluateForRoom($room, BillingPeriod::MONTHLY, $ctx);
+                if (is_array($res)) {
+                    $finalDeposit = (int) ($res['final_deposit'] ?? $finalDeposit);
+                    $applied      = array_map(function ($a) {
+                        /** @var array $a */
+                        /** @var \App\Models\Promotion $p */
+                        $p = $a['promotion'];
+
+                        return [
+                            'id'               => $p->id,
+                            'slug'             => $p->slug,
+                            'name'             => $p->name,
+                            'discount_rent'    => (int) $a['discount_rent'],
+                            'discount_deposit' => (int) $a['discount_deposit'],
+                            'coupon_id'        => $a['coupon_id'] ?? null,
+                        ];
+                    }, $res['applied'] ?? []);
+                }
+            }
+            $items[] = Invoice::makeItem('DEPOSIT', 'Deposit', $finalDeposit, ['promotions' => $applied]);
         }
 
         return $items;
@@ -552,20 +745,216 @@ class InvoiceService implements InvoiceServiceInterface
      */
     protected function createInvoiceRecord(Contract $contract, Carbon $periodStart, Carbon $periodEnd, string $dueDateTime, array $items): Invoice
     {
+        // Enforce promotion usage limits before creating invoice
+        $usage = $this->collectPromotionUsageFromItems($items);
+        $this->enforcePromotionLimits($contract, $usage);
+
         $amount = Invoice::sumItems($items);
 
-        return Invoice::create([
-            'contract_id'     => $contract->id,
-            'number'          => Invoice::makeNumberFor($amount, Carbon::now()),
-            'period_start'    => $periodStart->toDateString(),
-            'period_end'      => $periodEnd->toDateString(),
-            'due_date'        => $dueDateTime,
-            'amount_idr'      => $amount,
-            'outstanding_idr' => $amount,
-            'items'           => $items,
-            'status'          => InvoiceStatus::PENDING->value,
-            'paid_at'         => null,
-        ]);
+        return DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDateTime, $items, $amount, $usage): Invoice {
+            $invoice = Invoice::create([
+                'contract_id'     => $contract->id,
+                'number'          => Invoice::makeNumberFor($amount, Carbon::now()),
+                'period_start'    => $periodStart->toDateString(),
+                'period_end'      => $periodEnd->toDateString(),
+                'due_date'        => $dueDateTime,
+                'amount_idr'      => $amount,
+                'outstanding_idr' => $amount,
+                'items'           => $items,
+                'status'          => InvoiceStatus::PENDING->value,
+                'paid_at'         => null,
+            ]);
+
+            // Persist redemptions atomically with invoice creation
+            $this->persistPromotionRedemptions($invoice, $usage);
+
+            return $invoice;
+        });
+    }
+
+    /**
+     * Extract promotion usages from invoice items meta.
+     * @return array<int,array{count:int,discount:int,coupons:array<int,int>}> promotion_id => data with coupon_id=>count map
+     */
+    protected function collectPromotionUsageFromItems(array $items): array
+    {
+        $usage = [];
+        foreach ($items as $it) {
+            $meta   = $it['meta'] ?? [];
+            $promos = $meta['promotions'] ?? [];
+            if (!is_array($promos)) {
+                continue;
+            }
+            foreach ($promos as $p) {
+                $pid = (int) ($p['id'] ?? 0);
+                if ($pid <= 0) {
+                    continue;
+                }
+                $discount                = (int) ($p['discount_rent'] ?? 0) + (int) ($p['discount_deposit'] ?? 0);
+                $usage[$pid]['count']    = ($usage[$pid]['count'] ?? 0) + 1;
+                $usage[$pid]['discount'] = ($usage[$pid]['discount'] ?? 0) + max(0, $discount);
+                $cid                     = $p['coupon_id'] ?? null;
+                if ($cid) {
+                    $cid                          = (int) $cid;
+                    $usage[$pid]['coupons'][$cid] = ($usage[$pid]['coupons'][$cid] ?? 0) + 1;
+                }
+            }
+        }
+
+        return $usage;
+    }
+
+    /**
+     * Check promotion usage limits against existing redemptions.
+     * Throws InvalidArgumentException when a limit would be exceeded.
+     */
+    protected function enforcePromotionLimits(Contract $contract, array $usage): void
+    {
+        if (empty($usage)) {
+            return;
+        }
+
+        $userId     = (int) $contract->user_id;
+        $contractId = (int) $contract->id;
+        $today      = Carbon::now()->startOfDay();
+        $monthStart = $today->copy()->startOfMonth();
+        $monthEnd   = $today->copy()->endOfMonth();
+
+        $promotionIds = array_map('intval', array_keys($usage));
+        $promotions   = Promotion::query()->whereIn('id', $promotionIds)->get()->keyBy('id');
+
+        foreach ($usage as $pid => $data) {
+            $p = $promotions->get((int) $pid);
+            if (!$p) {
+                continue;
+            }
+
+            $countInc = (int) ($data['count'] ?? 0);
+
+            // Total quota
+            if (!empty($p->total_quota)) {
+                $used = (int) PromotionRedemption::query()->where('promotion_id', $p->id)->count();
+                if ($used + $countInc > (int) $p->total_quota) {
+                    throw new \InvalidArgumentException(__('promotions.limit_total_quota_exceeded'));
+                }
+            }
+
+            // Per-user limit
+            if (!empty($p->per_user_limit)) {
+                $used = (int) PromotionRedemption::query()->where('promotion_id', $p->id)->where('user_id', $userId)->count();
+                if ($used + $countInc > (int) $p->per_user_limit) {
+                    throw new \InvalidArgumentException(__('promotions.limit_per_user_exceeded'));
+                }
+            }
+
+            // Per-contract limit
+            if (!empty($p->per_contract_limit)) {
+                $used = (int) PromotionRedemption::query()->where('promotion_id', $p->id)->where('contract_id', $contractId)->count();
+                if ($used + $countInc > (int) $p->per_contract_limit) {
+                    throw new \InvalidArgumentException(__('promotions.limit_per_contract_exceeded'));
+                }
+            }
+
+            // Per-invoice limit (check within this single invoice's usage count)
+            if (!empty($p->per_invoice_limit)) {
+                if ($countInc > (int) $p->per_invoice_limit) {
+                    throw new \InvalidArgumentException(__('promotions.limit_per_invoice_exceeded'));
+                }
+            }
+
+            // Per-day limit
+            if (!empty($p->per_day_limit)) {
+                $used = (int) PromotionRedemption::query()
+                    ->where('promotion_id', $p->id)
+                    ->whereDate('redeemed_at', '=', $today->toDateString())
+                    ->count();
+                if ($used + $countInc > (int) $p->per_day_limit) {
+                    throw new \InvalidArgumentException(__('promotions.limit_per_day_exceeded'));
+                }
+            }
+
+            // Per-month limit
+            if (!empty($p->per_month_limit)) {
+                $used = (int) PromotionRedemption::query()
+                    ->where('promotion_id', $p->id)
+                    ->whereDate('redeemed_at', '>=', $monthStart->toDateString())
+                    ->whereDate('redeemed_at', '<=', $monthEnd->toDateString())
+                    ->count();
+                if ($used + $countInc > (int) $p->per_month_limit) {
+                    throw new \InvalidArgumentException(__('promotions.limit_per_month_exceeded'));
+                }
+            }
+
+            // Coupon max_redemptions
+            $couponMap = $data['coupons'] ?? [];
+            if (!empty($couponMap) && is_array($couponMap)) {
+                $couponIds = array_map('intval', array_keys($couponMap));
+                $coupons   = PromotionCoupon::query()->whereIn('id', $couponIds)->get()->keyBy('id');
+                foreach ($couponMap as $cid => $cCount) {
+                    $cpn = $coupons->get((int) $cid);
+                    if (!$cpn) {
+                        continue;
+                    }
+                    if (!empty($cpn->max_redemptions)) {
+                        $used = (int) PromotionRedemption::query()->where('coupon_id', $cpn->id)->count();
+                        if ($used + (int) $cCount > (int) $cpn->max_redemptions) {
+                            throw new \InvalidArgumentException(__('promotions.coupon_redeem_limit_exceeded'));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Persist promotion redemptions for an invoice.
+     */
+    protected function persistPromotionRedemptions(Invoice $invoice, array $usage): void
+    {
+        if (empty($usage)) {
+            return;
+        }
+        $now          = Carbon::now();
+        $couponCounts = [];
+        foreach ($usage as $pid => $data) {
+            $discount  = (int) ($data['discount'] ?? 0);
+            $couponMap = $data['coupons'] ?? [];
+            if (!empty($couponMap)) {
+                foreach ($couponMap as $cid => $count) {
+                    for ($i = 0; $i < (int) $count; $i++) {
+                        PromotionRedemption::create([
+                            'promotion_id' => (int) $pid,
+                            'user_id'      => (int) $invoice->contract->user_id,
+                            'coupon_id'    => (int) $cid,
+                            'contract_id'  => (int) $invoice->contract_id,
+                            'invoice_id'   => (int) $invoice->id,
+                            'discount_idr' => $discount,
+                            'meta'         => null,
+                            'redeemed_at'  => $now,
+                        ]);
+                        $couponCounts[(int) $cid] = ($couponCounts[(int) $cid] ?? 0) + 1;
+                    }
+                }
+            } else {
+                for ($i = 0; $i < (int) ($data['count'] ?? 1); $i++) {
+                    PromotionRedemption::create([
+                        'promotion_id' => (int) $pid,
+                        'user_id'      => (int) $invoice->contract->user_id,
+                        'coupon_id'    => null,
+                        'contract_id'  => (int) $invoice->contract_id,
+                        'invoice_id'   => (int) $invoice->id,
+                        'discount_idr' => $discount,
+                        'meta'         => null,
+                        'redeemed_at'  => $now,
+                    ]);
+                }
+            }
+        }
+
+        // Increment coupon redeemed_count
+        foreach ($couponCounts as $cid => $inc) {
+            PromotionCoupon::query()->where('id', (int) $cid)->increment('redeemed_count', (int) $inc);
+        }
     }
 
     /**

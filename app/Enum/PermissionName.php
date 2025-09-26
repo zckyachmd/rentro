@@ -82,4 +82,10 @@ enum PermissionName: string
     case HANDOVER_CREATE = 'handover.create';
     case HANDOVER_UPDATE = 'handover.update';
     case HANDOVER_DELETE = 'handover.delete';
+
+    // Promotions
+    case PROMOTION_VIEW   = 'promotion.view';
+    case PROMOTION_CREATE = 'promotion.create';
+    case PROMOTION_UPDATE = 'promotion.update';
+    case PROMOTION_DELETE = 'promotion.delete';
 }

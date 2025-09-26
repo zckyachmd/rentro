@@ -174,3 +174,10 @@ export type {
 
 // Floor
 export type { FloorItem, FloorPaginator, FloorsPageProps } from './floor';
+
+// Promotion
+export type {
+    PromotionItem,
+    PromotionPaginator,
+    PromotionsPageProps,
+} from './promotion';
