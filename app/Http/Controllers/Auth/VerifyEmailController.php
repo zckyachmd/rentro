@@ -19,7 +19,7 @@ class VerifyEmailController extends Controller
     {
         if ($request->user()->hasVerifiedEmail()) {
             return redirect()->intended(route('profile.index', absolute: false))
-                ->with('error', 'Email Anda sudah diverifikasi sebelumnya.');
+                ->with('error', __('auth.verify.already'));
         }
 
         if ($request->user()->markEmailAsVerified()) {
@@ -28,6 +28,6 @@ class VerifyEmailController extends Controller
         }
 
         return redirect()->intended(route('profile.index', absolute: false))
-            ->with('success', 'Email berhasil diverifikasi.');
+            ->with('success', __('auth.verify.success'));
     }
 }

@@ -1,4 +1,5 @@
 import { Copy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { CopyInline } from '@/components/ui/copy-inline';
 import { Input } from '@/components/ui/input';
@@ -42,14 +43,15 @@ export default function MethodSelection({
     onManualAttachment: (f: File | null) => void;
 }) {
     const isManual = bank === 'manual';
+    const { t: tInv } = useTranslation('tenant/invoice');
     return (
         <Section
-            title="Metode Pembayaran"
-            subtitle="Pilih metode dan lengkapi detail"
+            title={tInv('method_section.title')}
+            subtitle={tInv('method_section.subtitle')}
         >
             <div className="space-y-3">
                 <div className="space-y-1">
-                    <Label>Metode</Label>
+                    <Label>{tInv('method')}</Label>
                     <Select value={bank} onValueChange={(v) => setBank(v)}>
                         <SelectTrigger>
                             <SelectValue />
@@ -57,10 +59,12 @@ export default function MethodSelection({
                         <SelectContent>
                             {vaBanks.map((b) => (
                                 <SelectItem key={b} value={b}>
-                                    {String(b).toUpperCase()} VA
+                                    {String(b).toUpperCase()} {tInv('va_label')}
                                 </SelectItem>
                             ))}
-                            <SelectItem value="manual">Manual</SelectItem>
+                            <SelectItem value="manual">
+                                {tInv('method_manual')}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                     <InputError name="bank" reserveSpace={false} />
@@ -68,12 +72,12 @@ export default function MethodSelection({
 
                 {isManual ? (
                     <div className="space-y-2 rounded-lg border p-3">
-                        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            Transfer Manual
+                        <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                            {tInv('manual.title')}
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <div className="space-y-1">
-                                <Label>Rekening Tujuan</Label>
+                                <Label>{tInv('manual.dest_account')}</Label>
                                 <Select
                                     value={manualBank}
                                     onValueChange={(v) => setManualBank(v)}
@@ -98,8 +102,8 @@ export default function MethodSelection({
                                 />
                             </div>
                             <div className="space-y-1">
-                                <Label>Detail Rekening</Label>
-                                <div className="rounded-md border bg-muted/50 p-2 text-[12px]">
+                                <Label>{tInv('manual.account_detail')}</Label>
+                                <div className="bg-muted/50 rounded-md border p-2 text-[12px]">
                                     {(() => {
                                         const b = manualBanks.find(
                                             (x) =>
@@ -109,15 +113,17 @@ export default function MethodSelection({
                                         if (!b) return <span>-</span>;
                                         return (
                                             <div className="grid grid-cols-2 gap-1">
-                                                <div>Bank</div>
+                                                <div>{tInv('manual.bank')}</div>
                                                 <div className="text-right">
                                                     {b.bank}
                                                 </div>
-                                                <div>Nama</div>
+                                                <div>{tInv('manual.name')}</div>
                                                 <div className="text-right">
                                                     {b.holder}
                                                 </div>
-                                                <div>No. Rekening</div>
+                                                <div>
+                                                    {tInv('manual.account_no')}
+                                                </div>
                                                 <div className="flex items-center justify-end gap-1">
                                                     <span className="font-mono">
                                                         {b.account}
@@ -137,7 +143,7 @@ export default function MethodSelection({
                         </div>
 
                         <div className="space-y-1">
-                            <Label>Bukti Transfer</Label>
+                            <Label>{tInv('manual.proof')}</Label>
                             <Input
                                 type="file"
                                 accept="image/*,application/pdf"
@@ -149,8 +155,9 @@ export default function MethodSelection({
                                 }
                             />
                             {manualAttachment ? (
-                                <div className="text-[12px] text-muted-foreground">
-                                    File: {manualAttachment.name}
+                                <div className="text-muted-foreground text-[12px]">
+                                    {tInv('manual.file')}:
+                                    {manualAttachment.name}
                                 </div>
                             ) : null}
                             <InputError
@@ -160,7 +167,7 @@ export default function MethodSelection({
                         </div>
 
                         <div className="space-y-1">
-                            <Label>Tanggal Bayar</Label>
+                            <Label>{tInv('manual.paid_at')}</Label>
                             <Input
                                 type="datetime-local"
                                 value={manualPaidAt}
@@ -172,21 +179,20 @@ export default function MethodSelection({
                         </div>
 
                         <div className="space-y-1">
-                            <Label>Catatan (opsional)</Label>
+                            <Label>{tInv('manual.note_label')}</Label>
                             <Textarea
                                 rows={3}
                                 value={manualNote}
                                 onChange={(e) =>
                                     onManualNoteChange(e.target.value)
                                 }
-                                placeholder="Contoh: Sudah transfer dari bank X"
+                                placeholder={tInv('manual.note_placeholder')}
                             />
                             <InputError name="note" reserveSpace={false} />
                         </div>
 
                         <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[12px] text-amber-800">
-                            Setelah mengirim bukti, status akan menjadi menunggu
-                            review admin.
+                            {tInv('manual.info')}
                         </div>
                     </div>
                 ) : null}

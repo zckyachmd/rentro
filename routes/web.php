@@ -1,21 +1,9 @@
 <?php
 
-use App\Enum\PermissionName;
 use App\Enum\RoleName;
-use App\Http\Controllers\Management\AmenityManagementController;
-use App\Http\Controllers\Management\AuditLogController;
-use App\Http\Controllers\Management\BuildingManagementController;
-use App\Http\Controllers\Management\ContractManagementController;
-use App\Http\Controllers\Management\FloorManagementController;
-use App\Http\Controllers\Management\HandoverManagementController;
-use App\Http\Controllers\Management\InvoiceManagementController;
-use App\Http\Controllers\Management\PaymentManagementController;
-use App\Http\Controllers\Management\RoleManagementController;
-use App\Http\Controllers\Management\RoomManagementController;
-use App\Http\Controllers\Management\RoomPhotoManagementController;
-use App\Http\Controllers\Management\RoomTypeManagementController;
-use App\Http\Controllers\Management\UserManagementController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentRedirectController;
+use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
@@ -29,12 +17,20 @@ use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 
+// Preferences (visual + language)
+Route::prefix('preferences')
+    ->name('preferences.')
+    ->middleware('throttle:ui-preferences')
+    ->group(function (): void {
+        Route::post('/theme', [PreferencesController::class, 'updateTheme'])->name('theme');
+        Route::post('/locale', [PreferencesController::class, 'updateLocale'])->name('locale');
+    });
+
 Route::middleware('auth')->group(function (): void {
-    Route::get('/dashboard', fn () => Inertia::render('dashboard'))
+    Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     // Profile
@@ -102,29 +98,36 @@ Route::middleware('auth')->group(function (): void {
 
         // Contracts
         Route::prefix('contracts')->name('contracts.')->group(function (): void {
-            Route::get('/', [TenantContractController::class, 'index'])->name('index');
-            Route::get('/{contract}', [TenantContractController::class, 'show'])->name('show');
-            Route::get('/{contract}/print', [TenantContractController::class, 'print'])->name('print');
+            Route::get('/', [TenantContractController::class, 'index'])
+                ->name('index');
+            Route::get('/{contract}', [TenantContractController::class, 'show'])
+                ->name('show');
+            Route::get('/{contract}/print', [TenantContractController::class, 'print'])
+                ->name('print');
             Route::post('/{contract}/stop-auto-renew', [TenantContractController::class, 'stopAutoRenew'])
                 ->name('stopAutoRenew');
             Route::get('/{contract}/handovers', [TenantHandoverController::class, 'index'])
                 ->name('handovers.index');
         });
 
-        // Tenant Handover Attachments (private)
-        Route::get('/handovers/{handover}/attachments/{path}', [TenantHandoverController::class, 'attachmentGeneral'])
-            ->where('path', '.*')
-            ->name('handovers.attachment.general');
-
-        // Tenant handover acknowledge/dispute
-        Route::post('/handovers/{handover}/ack', [TenantHandoverController::class, 'acknowledge'])
-            ->name('handovers.ack');
-        Route::post('/handovers/{handover}/dispute', [TenantHandoverController::class, 'dispute'])
-            ->name('handovers.dispute');
+        // Tenant Handovers
+        Route::prefix('handovers')->name('handovers.')->group(function (): void {
+            Route::get('/{handover}/attachments/{path}', [TenantHandoverController::class, 'attachmentGeneral'])
+                ->where('path', '.*')
+                ->whereNumber('handover')
+                ->name('attachments.general');
+            Route::post('/{handover}/ack', [TenantHandoverController::class, 'acknowledge'])
+                ->whereNumber('handover')
+                ->name('ack');
+            Route::post('/{handover}/dispute', [TenantHandoverController::class, 'dispute'])
+                ->whereNumber('handover')
+                ->name('dispute');
+        });
 
         // Invoices
         Route::prefix('invoices')->name('invoices.')->group(function (): void {
-            Route::get('/', [TenantInvoiceController::class, 'index'])->name('index');
+            Route::get('/', [TenantInvoiceController::class, 'index'])
+                ->name('index');
             Route::get('/{invoice}', [TenantInvoiceController::class, 'show'])
                 ->whereNumber('invoice')
                 ->name('show');
@@ -132,20 +135,20 @@ Route::middleware('auth')->group(function (): void {
                 ->whereNumber('invoice')
                 ->name('print');
             Route::get('/{invoice}/pay/status', [TenantMidtransController::class, 'status'])
+                ->middleware(['throttle:secure-tenant-status'])
                 ->whereNumber('invoice')
-                ->middleware('throttle:secure-tenant-status')
                 ->name('pay.status');
             Route::post('/{invoice}/pay/cancel', [TenantMidtransController::class, 'cancelPending'])
+                ->middleware(['throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
-                ->middleware('throttle:secure-tenant-pay')
                 ->name('pay.cancel');
             Route::post('/{invoice}/pay/midtrans/va', [TenantMidtransController::class, 'payVa'])
+                ->middleware(['throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
-                ->middleware('throttle:secure-tenant-pay')
                 ->name('pay.midtrans.va');
             Route::post('/{invoice}/pay/manual', [TenantPaymentController::class, 'payManual'])
+                ->middleware(['throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
-                ->middleware('throttle:secure-tenant-pay')
                 ->name('pay.manual');
             Route::get('/payments/{payment}', [TenantPaymentController::class, 'show'])
                 ->whereNumber('payment')
@@ -156,287 +159,8 @@ Route::middleware('auth')->group(function (): void {
         });
     });
 
-    // Management
-    Route::prefix('management')->name('management.')->group(function (): void {
-        // Users
-        Route::prefix('users')->name('users.')->group(function (): void {
-            Route::get('/', [UserManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::USER_VIEW->value)
-                ->name('index');
-
-            Route::post('/', [UserManagementController::class, 'createUser'])
-                ->middleware('can:' . PermissionName::USER_CREATE->value)
-                ->name('store');
-
-            Route::put('/{user}/roles', [UserManagementController::class, 'updateRoles'])
-                ->middleware('can:' . PermissionName::USER_ROLE_MANAGE->value)
-                ->name('roles.update');
-
-            Route::post('/{user}/reset-password', [UserManagementController::class, 'resetPasswordLink'])
-                ->middleware('can:' . PermissionName::USER_PASSWORD_RESET->value)
-                ->name('password.reset');
-
-            Route::post('/{user}/two-factor', [UserManagementController::class, 'twoFactor'])
-                ->middleware('can:' . PermissionName::USER_TWO_FACTOR->value)
-                ->name('two-factor');
-
-            Route::delete('/{user}/force-logout', [UserManagementController::class, 'forceLogout'])
-                ->middleware('can:' . PermissionName::USER_FORCE_LOGOUT->value)
-                ->name('force-logout');
-        });
-
-        // Roles
-        Route::prefix('roles')->name('roles.')->group(function (): void {
-            Route::get('/', [RoleManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::ROLE_VIEW->value)
-                ->name('index');
-
-            Route::post('/', [RoleManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::ROLE_CREATE->value)
-                ->name('store');
-
-            Route::put('/{role}', [RoleManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::ROLE_UPDATE->value)
-                ->name('update');
-
-            Route::delete('/{role}', [RoleManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::ROLE_DELETE->value)
-                ->name('destroy');
-
-            Route::put('/{role}/permissions', [RoleManagementController::class, 'updatePermissions'])
-                ->middleware('can:' . PermissionName::ROLE_PERMISSION_MANAGE->value)
-                ->name('permissions.update');
-        });
-
-        // Audit Logs
-        Route::prefix('audit-logs')->name('audit-logs.')->group(function (): void {
-            Route::get('/', [AuditLogController::class, 'index'])
-                ->middleware('can:' . PermissionName::AUDIT_LOG_VIEW->value)
-                ->name('index');
-        });
-
-        // Contracts
-        Route::prefix('contracts')->name('contracts.')->group(function (): void {
-            Route::get('/', [ContractManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
-                ->name('index');
-            Route::get('/create', [ContractManagementController::class, 'create'])
-                ->middleware('can:' . PermissionName::CONTRACT_CREATE->value)
-                ->name('create');
-            Route::post('/', [ContractManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::CONTRACT_CREATE->value)
-                ->name('store');
-            Route::get('/{contract}', [ContractManagementController::class, 'show'])
-                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
-                ->name('show');
-            Route::get('/{contract}/print', [ContractManagementController::class, 'print'])
-                ->middleware('can:' . PermissionName::CONTRACT_VIEW->value)
-                ->name('print');
-            Route::post('/{contract}/cancel', [ContractManagementController::class, 'cancel'])
-                ->middleware('can:' . PermissionName::CONTRACT_CANCEL->value)
-                ->name('cancel');
-            Route::post('/{contract}/set-auto-renew', [ContractManagementController::class, 'setAutoRenew'])
-                ->middleware('can:' . PermissionName::CONTRACT_RENEW->value)
-                ->name('setAutoRenew');
-
-            // Handover (Check-in/Check-out) management
-            Route::get('/{contract}/handovers', [HandoverManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
-                ->name('handovers.index');
-            Route::post('/{contract}/checkin', [HandoverManagementController::class, 'checkin'])
-                ->middleware('can:' . PermissionName::HANDOVER_CREATE->value)
-                ->name('handovers.checkin');
-            Route::post('/{contract}/checkout', [HandoverManagementController::class, 'checkout'])
-                ->middleware('can:' . PermissionName::HANDOVER_CREATE->value)
-                ->name('handovers.checkout');
-        });
-
-        // Handovers
-        Route::get('/handovers/{handover}/attachments/{path}', [HandoverManagementController::class, 'attachmentGeneral'])
-            ->middleware('can:' . PermissionName::HANDOVER_VIEW->value)
-            ->where('path', '.*')
-            ->name('handovers.attachment.general');
-
-        // Invoices
-        Route::prefix('invoices')->name('invoices.')->group(function (): void {
-            Route::get('/', [InvoiceManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
-                ->name('index');
-            Route::get('/{invoice}', [InvoiceManagementController::class, 'show'])
-                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
-                ->whereNumber('invoice')
-                ->name('show');
-            Route::get('/lookup', [InvoiceManagementController::class, 'lookup'])
-                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
-                ->name('lookup');
-            Route::post('/generate', [InvoiceManagementController::class, 'generate'])
-                ->middleware(['can:' . PermissionName::INVOICE_CREATE->value, 'throttle:secure-sensitive'])
-                ->name('generate');
-            Route::get('/{invoice}/print', [InvoiceManagementController::class, 'print'])
-                ->middleware('can:' . PermissionName::INVOICE_VIEW->value)
-                ->whereNumber('invoice')
-                ->name('print');
-            Route::post('/{invoice}/extend-due', [InvoiceManagementController::class, 'extendDue'])
-                ->middleware(['can:' . PermissionName::INVOICE_UPDATE->value, 'throttle:secure-sensitive'])
-                ->whereNumber('invoice')
-                ->name('extendDue');
-            Route::post('/{invoice}/cancel', [InvoiceManagementController::class, 'cancel'])
-                ->middleware(['can:' . PermissionName::INVOICE_UPDATE->value, 'throttle:secure-sensitive'])
-                ->whereNumber('invoice')
-                ->name('cancel');
-        });
-
-        // Payments
-        Route::prefix('payments')->name('payments.')->group(function (): void {
-            Route::get('/', [PaymentManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
-                ->name('index');
-            Route::get('/{payment}', [PaymentManagementController::class, 'show'])
-                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
-                ->name('show');
-            Route::post('/', [PaymentManagementController::class, 'store'])
-                ->middleware(['can:' . PermissionName::PAYMENT_CREATE->value, 'throttle:secure-sensitive'])
-                ->name('store');
-            Route::get('/{payment}/attachment', [PaymentManagementController::class, 'attachment'])
-                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
-                ->name('attachment');
-            Route::get('/{payment}/print', [PaymentManagementController::class, 'print'])
-                ->middleware('can:' . PermissionName::PAYMENT_VIEW->value)
-                ->name('print');
-            Route::post('/{payment}/void', [PaymentManagementController::class, 'void'])
-                ->middleware(['can:' . PermissionName::PAYMENT_UPDATE->value, 'throttle:secure-sensitive'])
-                ->name('void');
-            Route::post('/{payment}/ack', [PaymentManagementController::class, 'ack'])
-                ->middleware(['can:' . PermissionName::PAYMENT_UPDATE->value, 'throttle:secure-sensitive'])
-                ->name('ack');
-        });
-
-        // Rooms
-        Route::prefix('rooms')->name('rooms.')->group(function (): void {
-            Route::get('/', [RoomManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
-                ->name('index');
-
-            Route::get('/create', [RoomManagementController::class, 'create'])
-                ->middleware('can:' . PermissionName::ROOM_MANAGE_CREATE->value)
-                ->name('create');
-
-            Route::get('/{room}', [RoomManagementController::class, 'show'])
-                ->middleware('can:' . PermissionName::ROOM_MANAGE_VIEW->value)
-                ->name('show');
-
-            Route::get('/{room}/edit', [RoomManagementController::class, 'edit'])
-                ->middleware('can:' . PermissionName::ROOM_MANAGE_UPDATE->value)
-                ->name('edit');
-
-            Route::post('/', [RoomManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::ROOM_MANAGE_CREATE->value)
-                ->name('store');
-
-            Route::put('/{room}', [RoomManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::ROOM_MANAGE_UPDATE->value)
-                ->name('update');
-
-            Route::delete('/{room}', [RoomManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::ROOM_MANAGE_DELETE->value)
-                ->name('destroy');
-
-            // Room Photos
-            Route::prefix('{room}/photos')->name('photos.')->group(function (): void {
-                Route::get('/', [RoomPhotoManagementController::class, 'index'])
-                    ->middleware('can:' . PermissionName::ROOM_PHOTO_VIEW->value)
-                    ->name('index');
-
-                Route::post('/', [RoomPhotoManagementController::class, 'store'])
-                    ->middleware('can:' . PermissionName::ROOM_PHOTO_CREATE->value)
-                    ->name('store');
-
-                Route::post('/batch', [RoomPhotoManagementController::class, 'batch'])
-                    ->middleware('can:' . PermissionName::ROOM_PHOTO_CREATE->value)
-                    ->name('batch');
-
-                Route::delete('/{photo}', [RoomPhotoManagementController::class, 'destroy'])
-                    ->middleware('can:' . PermissionName::ROOM_PHOTO_DELETE->value)
-                    ->name('destroy');
-            });
-        });
-
-        // Buildings
-        Route::prefix('buildings')->name('buildings.')->group(function (): void {
-            Route::get('/', [BuildingManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::BUILDING_VIEW->value)
-                ->name('index');
-
-            Route::post('/', [BuildingManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::BUILDING_CREATE->value)
-                ->name('store');
-
-            Route::put('/{building}', [BuildingManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::BUILDING_UPDATE->value)
-                ->name('update');
-
-            Route::delete('/{building}', [BuildingManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::BUILDING_DELETE->value)
-                ->name('destroy');
-        });
-
-        // Floors
-        Route::prefix('floors')->name('floors.')->group(function (): void {
-            Route::get('/', [FloorManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::FLOOR_VIEW->value)
-                ->name('index');
-
-            Route::post('/', [FloorManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::FLOOR_CREATE->value)
-                ->name('store');
-
-            Route::put('/{floor}', [FloorManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::FLOOR_UPDATE->value)
-                ->name('update');
-
-            Route::delete('/{floor}', [FloorManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::FLOOR_DELETE->value)
-                ->name('destroy');
-        });
-
-        // Room Types
-        Route::prefix('room-types')->name('room-types.')->group(function (): void {
-            Route::get('/', [RoomTypeManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::ROOM_TYPE_VIEW->value)
-                ->name('index');
-
-            Route::post('/', [RoomTypeManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::ROOM_TYPE_CREATE->value)
-                ->name('store');
-
-            Route::put('/{room_type}', [RoomTypeManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::ROOM_TYPE_UPDATE->value)
-                ->name('update');
-
-            Route::delete('/{room_type}', [RoomTypeManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::ROOM_TYPE_DELETE->value)
-                ->name('destroy');
-        });
-
-        // Amenities
-        Route::prefix('amenities')->name('amenities.')->group(function (): void {
-            Route::get('/', [AmenityManagementController::class, 'index'])
-                ->middleware('can:' . PermissionName::AMENITY_VIEW->value)
-                ->name('index');
-
-            Route::post('/', [AmenityManagementController::class, 'store'])
-                ->middleware('can:' . PermissionName::AMENITY_CREATE->value)
-                ->name('store');
-
-            Route::put('/{amenity}', [AmenityManagementController::class, 'update'])
-                ->middleware('can:' . PermissionName::AMENITY_UPDATE->value)
-                ->name('update');
-
-            Route::delete('/{amenity}', [AmenityManagementController::class, 'destroy'])
-                ->middleware('can:' . PermissionName::AMENITY_DELETE->value)
-                ->name('destroy');
-        });
-    });
+    // Management (extracted routes)
+    require __DIR__ . '/management.php';
 });
 
 // Payment redirect endpoints (generic + provider-specific)

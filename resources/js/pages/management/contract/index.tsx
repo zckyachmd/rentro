@@ -1,15 +1,16 @@
 import { router } from '@inertiajs/react';
-import { Filter, Plus, Search } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
+import { DatePickerInput } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     DataTableServer,
     type QueryBag,
 } from '@/components/ui/data-table-server';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -35,6 +36,8 @@ import type {
 } from '@/types/management';
 
 export default function ContractIndex(props: ContractsPageProps) {
+    const { t, i18n } = useTranslation();
+    const { t: tContract } = useTranslation('management/contract');
     const {
         contracts: paginator,
         query = {},
@@ -71,9 +74,64 @@ export default function ContractIndex(props: ContractsPageProps) {
     const [status, setStatus] = React.useState<string>(
         String((query as { status?: string | null }).status ?? ''),
     );
-    const [keyword, setKeyword] = React.useState<string>(
-        String((query as { q?: string | null }).q ?? ''),
+    const [start, setStart] = React.useState<string | null>(
+        (query as { start?: string | null }).start ?? null,
     );
+    const [end, setEnd] = React.useState<string | null>(
+        (query as { end?: string | null }).end ?? null,
+    );
+    const toIso = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const setPreset = (days: number) => {
+        const e = new Date();
+        const s = new Date();
+        s.setDate(e.getDate() - (days - 1));
+        const ss = toIso(s);
+        const ee = toIso(e);
+        setStart(ss);
+        setEnd(ee);
+        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
+    };
+    const setPresetMTD = () => {
+        const e = new Date();
+        const s = new Date(e.getFullYear(), e.getMonth(), 1);
+        const ss = toIso(s);
+        const ee = toIso(e);
+        setStart(ss);
+        setEnd(ee);
+        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
+    };
+    const setPresetWTD = () => {
+        const e = new Date();
+        const dow = e.getDay();
+        const mondayOffset = (dow + 6) % 7;
+        const s = new Date(e);
+        s.setDate(e.getDate() - mondayOffset);
+        const ss = toIso(s);
+        const ee = toIso(e);
+        setStart(ss);
+        setEnd(ee);
+        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
+    };
+    const setPresetQTD = () => {
+        const e = new Date();
+        const qStartMonth = Math.floor(e.getMonth() / 3) * 3;
+        const s = new Date(e.getFullYear(), qStartMonth, 1);
+        const ss = toIso(s);
+        const ee = toIso(e);
+        setStart(ss);
+        setEnd(ee);
+        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
+    };
+    const setPresetYTD = () => {
+        const e = new Date();
+        const s = new Date(e.getFullYear(), 0, 1);
+        const ss = toIso(s);
+        const ee = toIso(e);
+        setStart(ss);
+        setEnd(ee);
+        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
+    };
 
     const qinit = (query as QueryInit) || {};
     const initial: QueryBag | undefined = Object.keys(qinit).length
@@ -121,28 +179,27 @@ export default function ContractIndex(props: ContractsPageProps) {
     );
 
     const applyFilters = () => {
-        const trimmedQ = (keyword || '').trim();
-        const hadQ =
-            'q' in (q as Record<string, unknown>) &&
-            Boolean((q as Record<string, unknown>).q);
         const payload: Record<string, unknown> = {
             page: 1,
             status: status || null,
             sort: q.sort ?? null,
             dir: q.dir ?? null,
+            start: start || null,
+            end: end || null,
         };
-        if (trimmedQ) {
-            payload.q = trimmedQ;
-        } else if (hadQ) {
-            payload.q = null;
-        }
         safeOnQueryChange(payload as SafePayload);
     };
 
     const resetFilter = React.useCallback(() => {
         setStatus('');
-        setKeyword('');
-        safeOnQueryChange({ page: 1, status: null, q: null } as SafePayload);
+        safeOnQueryChange({
+            page: 1,
+            status: null,
+            q: null,
+            search: '',
+            start: null,
+            end: null,
+        } as SafePayload);
     }, [safeOnQueryChange]);
 
     type Target = ContractItem | null;
@@ -151,46 +208,25 @@ export default function ContractIndex(props: ContractsPageProps) {
     const [checkinTarget, setCheckinTarget] = React.useState<Target>(null);
     const [checkoutTarget, setCheckoutTarget] = React.useState<Target>(null);
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onCancel: (c) => setCancelTarget(c),
-                onStopAutoRenew: (c) => setToggleTarget(c),
-                onStartAutoRenew: (c) => setToggleTarget(c),
-                onCheckin: (c) => setCheckinTarget(c),
-                onCheckout: (c) => setCheckoutTarget(c),
-                requireCheckinForActivate:
-                    handoverSettings.require_checkin_for_activate,
-            }),
-        [handoverSettings.require_checkin_for_activate],
-    );
-
-    const headerActions = (
-        <div className="flex items-center gap-2">
-            <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpenGuide(true)}
-            >
-                Panduan Aksi
-            </Button>
-            <Button
-                type="button"
-                onClick={() =>
-                    router.visit(route('management.contracts.create'))
-                }
-            >
-                <Plus className="mr-2 h-4 w-4" /> Buat Kontrak
-            </Button>
-        </div>
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onCancel: (c) => setCancelTarget(c),
+            onStopAutoRenew: (c) => setToggleTarget(c),
+            onStartAutoRenew: (c) => setToggleTarget(c),
+            onCheckin: (c) => setCheckinTarget(c),
+            onCheckout: (c) => setCheckoutTarget(c),
+            requireCheckinForActivate:
+                handoverSettings.require_checkin_for_activate,
+        });
+    }, [handoverSettings.require_checkin_for_activate, lang]);
 
     return (
         <AuthLayout
-            pageTitle="Kontrak"
-            pageDescription="Kelola kontrak penyewa dan status perpanjangan."
+            pageTitle={tContract('list.title')}
+            pageDescription={tContract('list.desc')}
             titleIcon="ScrollText"
-            actions={headerActions}
         >
             <div className="space-y-6">
                 <ContractsActionGuideDialog
@@ -199,37 +235,64 @@ export default function ContractIndex(props: ContractsPageProps) {
                 />
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                            <Filter className="h-4 w-4" /> Filter
-                        </CardTitle>
+                        <div className="flex items-center justify-between gap-3">
+                            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                                <Filter className="h-4 w-4" />{' '}
+                                {t('common.filter')}
+                            </CardTitle>
+                            {props.summary ? (
+                                <div className="text-muted-foreground text-xs">
+                                    <span className="mr-3">
+                                        {t('common.total', 'Total')}:{' '}
+                                        <span className="text-foreground font-medium">
+                                            {props.summary.count}
+                                        </span>
+                                    </span>
+                                    <span className="mr-3">
+                                        {tContract('summary.active', 'Active')}:{' '}
+                                        <span className="text-foreground font-medium">
+                                            {props.summary.count_active}
+                                        </span>
+                                    </span>
+                                    <span className="mr-3">
+                                        {tContract('summary.booked', 'Booked')}:{' '}
+                                        <span className="text-foreground font-medium">
+                                            {props.summary.count_booked}
+                                        </span>
+                                    </span>
+                                    <span className="mr-3">
+                                        {tContract(
+                                            'summary.pending_payment',
+                                            'Pending',
+                                        )}
+                                        :{' '}
+                                        <span className="text-foreground font-medium">
+                                            {props.summary.count_pending}
+                                        </span>
+                                    </span>
+                                    <span>
+                                        {tContract(
+                                            'summary.overdue',
+                                            'Overdue',
+                                        )}
+                                        :{' '}
+                                        <span className="text-foreground font-medium">
+                                            {props.summary.count_overdue}
+                                        </span>
+                                    </span>
+                                </div>
+                            ) : null}
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <div className="grid items-end gap-3 md:grid-cols-2">
+                        <div className="grid gap-3 md:grid-cols-[160px_1fr_1fr_auto] md:items-end">
                             <div>
-                                <Label htmlFor="contract-search">Cari</Label>
-                                <div className="relative">
-                                    <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        id="contract-search"
-                                        className="h-9 pl-8"
-                                        value={keyword}
-                                        onChange={(e) =>
-                                            setKeyword(e.target.value)
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                applyFilters();
-                                            }
-                                        }}
-                                        placeholder="Cari nomor kontrak/penyewa/kamar…"
-                                        aria-label="Cari nomor kontrak, penyewa, atau kamar"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="status">Status</Label>
+                                <Label
+                                    htmlFor="status"
+                                    className="text-muted-foreground mb-1 block text-xs"
+                                >
+                                    {t('common.status')}
+                                </Label>
                                 <Select
                                     value={status}
                                     onValueChange={(v) => {
@@ -240,8 +303,13 @@ export default function ContractIndex(props: ContractsPageProps) {
                                         });
                                     }}
                                 >
-                                    <SelectTrigger id="status" className="h-9">
-                                        <SelectValue placeholder="Semua" />
+                                    <SelectTrigger
+                                        id="status"
+                                        className="w-[160px]"
+                                    >
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -257,38 +325,190 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <div>
+                                <Label className="text-muted-foreground mb-1 block text-xs">
+                                    {t('dashboard.filters.start')}
+                                </Label>
+                                <DatePickerInput
+                                    value={start}
+                                    onChange={setStart}
+                                />
+                            </div>
+                            <div>
+                                <Label className="text-muted-foreground mb-1 block text-xs">
+                                    {t('dashboard.filters.end')}
+                                </Label>
+                                <DatePickerInput
+                                    value={end}
+                                    onChange={setEnd}
+                                />
+                            </div>
+                            <div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={applyFilters}
+                                >
+                                    {t('common.apply')}
+                                </Button>
+                            </div>
                         </div>
 
-                        <div className="flex gap-2 pt-2 md:col-span-12">
-                            <Button type="button" onClick={applyFilters}>
-                                Terapkan
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={resetFilter}
-                            >
-                                Reset
-                            </Button>
+                        <div className="flex flex-col gap-2 pt-2 md:col-span-12">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-muted-foreground text-xs">
+                                        {t('dashboard.filters.quick')}:
+                                    </span>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={() => setPreset(7)}
+                                    >
+                                        7D
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={() => setPreset(30)}
+                                    >
+                                        30D
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={() => setPreset(90)}
+                                    >
+                                        90D
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={setPresetMTD}
+                                    >
+                                        {t('dashboard.filters.mtd')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={setPresetWTD}
+                                    >
+                                        {t('dashboard.filters.wtd')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={setPresetQTD}
+                                    >
+                                        {t('dashboard.filters.qtd')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={setPresetYTD}
+                                    >
+                                        {t('dashboard.filters.ytd')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-muted-foreground h-7 px-2 text-xs"
+                                        onClick={resetFilter}
+                                    >
+                                        {t('common.reset')}
+                                    </Button>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            const qs = new URLSearchParams();
+                                            if (status)
+                                                qs.set('status', status);
+                                            const currentSearch =
+                                                (q as QueryBag).search ?? '';
+                                            if (currentSearch)
+                                                qs.set('q', currentSearch);
+                                            if (start) qs.set('start', start);
+                                            if (end) qs.set('end', end);
+                                            const url = `${route('management.contracts.export')}${qs.toString() ? `?${qs.toString()}` : ''}`;
+                                            if (typeof window !== 'undefined')
+                                                window.open(url, '_blank');
+                                        }}
+                                    >
+                                        {t('common.export_csv')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setOpenGuide(true)}
+                                    >
+                                        {tContract('list.guide')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={() =>
+                                            router.visit(
+                                                route(
+                                                    'management.contracts.create',
+                                                ),
+                                            )
+                                        }
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />{' '}
+                                        {tContract('list.create')}
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         <DataTableServer<ContractItem, unknown>
                             columns={tableColumns}
                             rows={contracts}
                             paginator={paginator ?? null}
+                            search={q.search}
+                            onSearchChange={(v) =>
+                                safeOnQueryChange({
+                                    page: 1,
+                                    search: v,
+                                    q: v || null,
+                                } as SafePayload)
+                            }
+                            searchKey="number"
+                            searchPlaceholder={t('nav.search.placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada kontrak."
-                            showColumn={false}
+                            emptyText={t('datatable.no_data')}
+                            showColumn
                             autoRefreshDefault="1m"
-                            showRefresh={false}
+                            showRefresh
                         />
                     </CardContent>
                 </Card>
@@ -325,9 +545,11 @@ export default function ContractIndex(props: ContractsPageProps) {
                     mode="checkin"
                     minPhotosCheckin={handoverSettings.min_photos_checkin}
                     minPhotosCheckout={handoverSettings.min_photos_checkout}
-                    redo={String(
-                        checkinTarget?.latest_checkin_status || '',
-                    ).toLowerCase() === 'disputed'}
+                    redo={
+                        String(
+                            checkinTarget?.latest_checkin_status || '',
+                        ).toLowerCase() === 'disputed'
+                    }
                     onSaved={() => {
                         router.reload({ only: ['contracts'] });
                     }}
@@ -341,9 +563,11 @@ export default function ContractIndex(props: ContractsPageProps) {
                     mode="checkout"
                     minPhotosCheckin={handoverSettings.min_photos_checkin}
                     minPhotosCheckout={handoverSettings.min_photos_checkout}
-                    redo={String(
-                        checkoutTarget?.latest_checkout_status || '',
-                    ).toLowerCase() === 'disputed'}
+                    redo={
+                        String(
+                            checkoutTarget?.latest_checkout_status || '',
+                        ).toLowerCase() === 'disputed'
+                    }
                     onSaved={() => {
                         router.reload({ only: ['contracts'] });
                     }}

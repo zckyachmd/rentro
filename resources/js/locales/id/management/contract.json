@@ -1,0 +1,242 @@
+{
+    "info_title": "Informasi Kontrak",
+    "settings": "Pengaturan",
+    "auto_renew": "Perpanjang Otomatis",
+    "paid_in_full": "Lunas Penuh",
+    "costs": "Biaya",
+    "tenant_room_title": "Penyewa & Kamar",
+    "select_period": "Pilih periode",
+    "duration": {
+        "months_label": "Durasi (bulan)",
+        "weeks_label": "Durasi (minggu)",
+        "days_label": "Durasi (hari)"
+    },
+    "select_duration": "Pilih durasi",
+    "month_count": "{{count}} bulan",
+    "week_count": "{{count}} minggu",
+    "day_count": "{{count}} hari",
+    "start_date_label": "Tanggal Mulai",
+    "start_date_placeholder": "Pilih tanggal mulai",
+    "payment_label": "Pembayaran",
+    "pay_per_month": "Per bulan",
+    "pay_full": "Lunas (bayar penuh)",
+    "auto_renew_contract": "Perpanjang otomatis kontrak",
+    "user_not_found_hint_prefix": "Tidak menemukan penyewa? Silakan daftarkan pengguna terlebih dahulu di halaman",
+    "user_management_link": "Manajemen Pengguna",
+    "leave": {
+        "desc": "Anda memiliki perubahan yang belum disimpan pada formulir kontrak. Jika keluar, perubahan akan hilang."
+    },
+    "payment": { "full": "Lunas" },
+
+    "preview": {
+        "title": "Konfirmasi Data Kontrak",
+        "description": "Tinjau kembali data. Pastikan semua informasi sudah benar.",
+        "badges": { "tenant": "Pengguna" },
+        "sections": { "details": "Rincian Kontrak", "notes": "Catatan" },
+        "fields": {
+            "room": "Kamar",
+            "location": "Lokasi",
+            "period": "Periode",
+            "payment": "Pembayaran",
+            "autoRenew": "Auto-renew",
+            "billingDay": "Tanggal Penagihan",
+            "startDate": "Tanggal Mulai",
+            "endDate": "Tanggal Berakhir",
+            "deposit": "Deposit",
+            "rent": "Biaya Sewa"
+        },
+        "placeholders": { "tenantNotSelected": "Penyewa belum dipilih" },
+        "confirmation": {
+            "label": "Saya telah memeriksa dan memastikan data di atas sudah benar."
+        }
+    },
+    "handover": {
+        "title": "Serah Terima",
+        "detail_title": "Detail Serah Terima",
+        "detail_desc": "Ringkasan entri serah terima.",
+        "summary": "Ringkasan {{type}} — {{date}}",
+        "actions": "Aksi Serah Terima",
+        "empty": "Belum ada riwayat serah terima.",
+        "tenant_response_title": "Status Tanggapan Tenant",
+        "tenant_response_desc": "Aksi terakhir yang dicatat oleh tenant.",
+        "disputed": "Disanggah",
+        "confirmed": "Dikonfirmasi",
+        "no_tenant_confirmation": "Belum ada konfirmasi dari tenant.",
+        "not_found": "Data serah terima tidak ditemukan.",
+        "photo_label": "Foto bukti",
+        "min_photos": "min {{count}}",
+        "photo_helper_min": "Unggah bukti singkat. Min {{count}}, maks 5 foto.",
+        "photo_helper": "Unggah bukti singkat (maks 5 foto).",
+        "notes_label": {
+            "checkin": "Catatan Check-in",
+            "checkout": "Catatan Check-out"
+        },
+        "notes_placeholder": {
+            "checkin": "Tulis ringkasan kondisi kamar, meteran listrik/air, lampu, dan kunci yang diserahkan.",
+            "checkout": "Tulis ringkasan bahwa kondisi saat serah terima kembali sama seperti saat masuk (kunci, meteran, lampu, dll)."
+        },
+        "notes_helper": {
+            "checkin": "Ringkas kondisi awal, perlengkapan, dan angka meter.",
+            "checkout": "Ringkas pengembalian perlengkapan & kondisi akhir."
+        },
+        "submit": {
+            "checkin": "Simpan Check-in",
+            "redo_checkin": "Simpan Ulangi Check-in",
+            "checkout": "Simpan Check-out",
+            "redo_checkout": "Simpan Ulangi Check-out"
+        },
+        "photos_counter": "{{current}}/{{min}} foto",
+        "menu": {
+            "checkin": "Check‑in",
+            "checkout": "Check‑out",
+            "redo_checkin": "Ulangi Check‑in",
+            "redo_checkout": "Ulangi Check‑out"
+        }
+    },
+    "cancel": {
+        "title": "Batalkan Kontrak",
+        "desc": "Konfirmasi untuk membatalkan kontrak ini. Status akan menjadi Cancelled dan auto‑renew dimatikan.",
+        "reason_label": "Alasan pembatalan",
+        "reason_placeholder": "Contoh: pembatalan oleh tenant, salah input, dll.",
+        "confirm": "Ya, Batalkan"
+    },
+    "guide": {
+        "title": "Panduan Aksi Kontrak",
+        "desc": "Ringkasan tindakan yang tersedia bagi admin.",
+        "checkin": {
+            "title": "Check‑in",
+            "a1": "Tersedia saat kontrak berstatus Active dan belum pernah check‑in.",
+            "a2": "Isi catatan minimal 100 karakter.",
+            "a3": "Unggah minimal 1 foto bukti (maksimal 5 foto).",
+            "a4": "Ikon pada menu Aksi: LogIn."
+        },
+        "checkout": {
+            "title": "Check‑out",
+            "a1": "Tersedia saat kontrak Active, sudah check‑in, dan belum check‑out.",
+            "a2": "Isi catatan minimal 100 karakter.",
+            "a3": "Foto opsional (maksimal 5 foto).",
+            "a4": "Ikon pada menu Aksi: LogOut."
+        }
+    },
+    "autorenew": {
+        "stop_title": "Hentikan Auto‑renew",
+        "start_title": "Nyalakan Auto‑renew",
+        "stop_desc": "Kontrak tidak akan diperpanjang otomatis di akhir periode.",
+        "start_desc": "Kontrak akan diperpanjang otomatis di akhir periode.",
+        "reason_label": "Alasan penghentian",
+        "reason_placeholder": "Contoh: permintaan tenant, penyesuaian kontrak, dll."
+    },
+    "table": {
+        "view_detail_title": "Lihat kontrak {{number}}",
+        "actions_for": "Aksi kontrak {{id}}",
+        "columns": {
+            "rent": "Sewa",
+            "days_left": "Sisa Hari",
+            "autorenew": "Perpanjang otomatis"
+        },
+        "expired": "Habis"
+    },
+    "list": {
+        "guide": "Panduan Aksi",
+        "create": "Buat Kontrak",
+        "title": "Kontrak",
+        "desc": "Kelola kontrak penyewa dan status perpanjangan.",
+        "filter": "Filter"
+    },
+    "summary": {
+        "active": "Aktif",
+        "booked": "Booking",
+        "pending_payment": "Menunggu",
+        "overdue": "Terlambat"
+    },
+    "detail": {
+        "title": "Detail Kontrak",
+        "title_format": "Kontrak #{{number}}",
+        "costs": { "rent": "Sewa", "deposit": "Deposit" }
+    },
+    "create": {
+        "guide": {
+            "button": "Panduan & Ketentuan",
+            "title": "Panduan & Ketentuan Kontrak",
+            "desc": "Ringkasan aturan penting dan tips pengisian agar kontrak rapi dan minim salah input.",
+            "flow": {
+                "title": "Alur Singkat",
+                "items": {
+                    "1": "Pilih penyewa dan kamar.",
+                    "2": "Atur periode tagihan, durasi, dan tanggal mulai.",
+                    "3": "Sistem otomatis mengisi tanggal berakhir & tanggal penagihan (terkunci).",
+                    "4": "Isi biaya sewa & deposit (cek pratinjau rupiah).",
+                    "5": {
+                        "prefix": "Tentukan metode pembayaran:",
+                        "bulanan": "• Bulanan: pilih Per bulan atau Lunas.",
+                        "lain": "• Mingguan/Harian: otomatis Lunas."
+                    },
+                    "6": "Opsional: aktifkan Auto‑renew untuk perpanjang otomatis."
+                }
+            },
+            "deposit": {
+                "title": "Deposit",
+                "items": {
+                    "1": "Uang jaminan, bukan pembayaran sewa.",
+                    "2": "Dikembalikan saat kontrak berakhir sesuai kondisi & aturan.",
+                    "3": "Dapat dipakai menutup kerusakan/tunggakan bila kebijakan mengizinkan."
+                }
+            },
+            "payment": {
+                "title": "Pembayaran",
+                "items": {
+                    "1": "Periode Bulanan: pilih Per bulan (ditagih tiap bulan) atau Lunas (bayar penuh di awal).",
+                    "2": "Periode Mingguan & Harian: wajib Lunas (bayar penuh di awal).",
+                    "3": "Pilihan ini mempengaruhi invoice: Per bulan ➜ invoice tiap bulan; Lunas ➜ satu invoice di awal."
+                }
+            },
+            "autorenew": {
+                "title": "Auto‑renew Kontrak",
+                "items": {
+                    "1": "Perpanjang otomatis di akhir periode.",
+                    "2": "Default aktif untuk Bulanan; non‑aktif untuk Mingguan/Harian.",
+                    "3": "Bisa diubah kapan saja lewat checkbox."
+                }
+            },
+            "dates": {
+                "title": "Tanggal Penagihan & Berakhir",
+                "items": {
+                    "1": "Otomatis dari tanggal mulai + periode.",
+                    "prorata": {
+                        "1": "Prorata aktif: tanggal berakhir & penagihan dapat menyesuaikan proporsional pada periode pertama.",
+                        "2": "Penagihan pertama mengikuti kebijakan prorata; periode berikutnya mengikuti siklus normal."
+                    },
+                    "no_prorata": "Tidak ada prorata; tanggal penagihan mengikuti siklus berikutnya (≈ 30 hari untuk bulanan)."
+                }
+            },
+            "tips": {
+                "title": "Tips",
+                "items": {
+                    "1": "Label kamar menampilkan nomor/nama; lokasi ada di deskripsi.",
+                    "2": "Cek pratinjau rupiah untuk menghindari salah ketik nominal besar.",
+                    "3": "Gunakan catatan kontrak untuk aturan khusus (listrik/air, kondisi kamar, dsb.)."
+                }
+            }
+        },
+        "title": "Buat Kontrak",
+        "notes": {
+            "title": "Catatan Kontrak",
+            "placeholder": "Opsional: tambahkan aturan khusus, kondisi kamar, kebijakan listrik/air, dsb."
+        },
+        "form": {
+            "suffix": {
+                "daily": "per hari",
+                "weekly": "per minggu",
+                "monthly": "per bulan"
+            },
+            "fields": {
+                "rent": "Biaya Sewa ({{suffix}})",
+                "deposit": "Deposit"
+            },
+            "placeholders": {
+                "rent": "cth. 1.200.000",
+                "deposit": "cth. 500.000 (opsional)"
+            }
+        }
+    }
+}

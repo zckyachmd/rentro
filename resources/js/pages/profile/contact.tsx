@@ -1,6 +1,8 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { router, usePage } from '@inertiajs/react';
 import { Users } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -14,13 +16,16 @@ import type {
 } from '@/types/profile';
 
 export default function ContactSection({ contacts }: ContactProps) {
-    const { options } = usePage<{
-        errors?: Record<string, string>;
-        options: {
-            emergencyRelationshipLabel: string[];
-            emergencyContactsMax?: number;
-        };
-    }>().props;
+    const { t: tProfile } = useTranslation('profile');
+    const { options } = usePage<
+        InertiaPageProps & {
+            errors?: Record<string, string>;
+            options: {
+                emergencyRelationshipLabel: string[];
+                emergencyContactsMax?: number;
+            };
+        }
+    >()['props'];
     const MAX_CONTACTS = Number(options.emergencyContactsMax ?? 3);
     const total = contacts.length;
     const canAdd = total < MAX_CONTACTS;
@@ -126,11 +131,11 @@ export default function ContactSection({ contacts }: ContactProps) {
             <div className="mt-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-lg font-semibold">
                     <Users className="h-5 w-5" />
-                    Kontak Darurat
+                    {tProfile('contact.title')}
                 </h2>
                 <div className="flex items-center gap-3">
-                    <span className="hidden text-xs text-muted-foreground sm:inline">
-                        Maksimal {MAX_CONTACTS} kontak darurat.
+                    <span className="text-muted-foreground hidden text-xs sm:inline">
+                        {tProfile('contact.max_hint', { count: MAX_CONTACTS })}
                     </span>
                     <Button
                         size="sm"
@@ -138,7 +143,7 @@ export default function ContactSection({ contacts }: ContactProps) {
                         onClick={openAddContact}
                         disabled={!canAdd}
                     >
-                        Tambah Kontak
+                        {tProfile('contact.add')}
                     </Button>
                     {formState && (
                         <ContactDialog
@@ -189,20 +194,23 @@ export default function ContactSection({ contacts }: ContactProps) {
                     )}
                 </div>
             </div>
-            <Separator className="mb-6 mt-2" />
+            <Separator className="mt-2 mb-6" />
             {contacts.length === 0 ? (
                 <>
-                    <p className="text-sm text-muted-foreground">
-                        Belum ada kontak darurat.
+                    <p className="text-muted-foreground text-sm">
+                        {tProfile('contact.empty')}
                     </p>
-                    <p className="mt-2 text-xs text-muted-foreground sm:hidden">
-                        Maksimal {MAX_CONTACTS} kontak darurat.
+                    <p className="text-muted-foreground mt-2 text-xs sm:hidden">
+                        {tProfile('contact.max_hint', { count: MAX_CONTACTS })}
                     </p>
                 </>
             ) : (
                 <>
-                    <p className="mb-2 text-xs text-muted-foreground">
-                        {total}/{MAX_CONTACTS} kontak terdaftar.
+                    <p className="text-muted-foreground mb-2 text-xs">
+                        {tProfile('contact.count', {
+                            total,
+                            max: MAX_CONTACTS,
+                        })}
                     </p>
                     <ContactsTable
                         contacts={contacts}

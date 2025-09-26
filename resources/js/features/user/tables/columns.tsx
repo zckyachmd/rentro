@@ -13,6 +13,7 @@ import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CopyInline } from '@/components/ui/copy-inline';
 import { makeColumn } from '@/components/ui/data-table-column-header';
 import {
     DropdownMenu,
@@ -22,6 +23,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import i18n from '@/lib/i18n';
 import type {
     UserColumnOptions as ColumnFactoryOptions,
     UserItem,
@@ -44,7 +46,7 @@ export const createColumns = (
     makeColumn<UserItem>({
         id: 'name',
         accessorKey: 'name',
-        title: 'Nama',
+        title: i18n.t('common.name'),
         className: COL.name,
         sortable: true,
         cell: ({ row }) => {
@@ -63,7 +65,10 @@ export const createColumns = (
                     <div className="min-w-0">
                         <div className="truncate font-medium">{u.name}</div>
                         {u.phone && (
-                            <div className="truncate text-xs text-muted-foreground">
+                            <div
+                                className="text-muted-foreground truncate text-xs"
+                                title={u.phone}
+                            >
                                 {u.phone}
                             </div>
                         )}
@@ -71,16 +76,27 @@ export const createColumns = (
                     {/* Mobile details (shown when row expanded) */}
                     <div className="md:hidden">
                         {row.getIsExpanded() && (
-                            <div className="mt-1 space-y-1 text-xs text-muted-foreground">
+                            <div className="text-muted-foreground mt-1 space-y-1 text-xs">
                                 <div>
-                                    <span className="font-medium">Aktif:</span>{' '}
+                                    <span className="font-medium">
+                                        {i18n.t('user.table.active', {
+                                            ns: 'management/user',
+                                        })}
+                                    </span>{' '}
                                     {u.last_active_at ?? '—'}
                                 </div>
                                 <div>
-                                    <span className="font-medium">2FA:</span>{' '}
+                                    <span className="font-medium">
+                                        {i18n.t('tabs.2fa', { ns: 'security' })}
+                                        :
+                                    </span>{' '}
                                     {u.two_factor_enabled
-                                        ? 'Aktif'
-                                        : 'Nonaktif'}
+                                        ? i18n.t('user.table.enabled', {
+                                              ns: 'management/user',
+                                          })
+                                        : i18n.t('user.table.disabled', {
+                                              ns: 'management/user',
+                                          })}
                                 </div>
                             </div>
                         )}
@@ -92,20 +108,29 @@ export const createColumns = (
     makeColumn<UserItem>({
         id: 'email',
         accessorKey: 'email',
-        title: 'Email',
+        title: i18n.t('common.email'),
         className: COL.email,
         sortable: true,
         cell: ({ row }) => {
             const u = row.original;
             return (
                 <div className={`${COL.email} truncate`}>
-                    <a
-                        href={`mailto:${u.email}`}
-                        className="block w-full truncate text-sm hover:underline"
-                        title={u.email}
-                    >
-                        {u.email}
-                    </a>
+                    <div className="flex items-center gap-1">
+                        <a
+                            href={`mailto:${u.email}`}
+                            className="block max-w-full truncate text-sm hover:underline"
+                            title={u.email}
+                        >
+                            {u.email}
+                        </a>
+                        <CopyInline
+                            value={u.email}
+                            variant="icon"
+                            size="xs"
+                            className="ml-0.5"
+                            aria-label={i18n.t('common.copy')}
+                        />
+                    </div>
                 </div>
             );
         },
@@ -113,12 +138,18 @@ export const createColumns = (
     makeColumn<UserItem>({
         id: 'roles',
         accessorKey: 'roles',
-        title: 'Peran',
+        title: i18n.t('title', { ns: 'management/role' }),
         className: COL.roles,
         cell: ({ row }) => {
             const roles = row.original.roles || [];
             if (!roles.length) {
-                return <Badge variant="outline">No Role</Badge>;
+                return (
+                    <Badge variant="outline">
+                        {i18n.t('user.table.no_role', {
+                            ns: 'management/user',
+                        })}
+                    </Badge>
+                );
             }
             return (
                 <div className={`${COL.roles} flex flex-wrap gap-1`}>
@@ -129,7 +160,7 @@ export const createColumns = (
                     ))}
                     {roles.length > 2 && (
                         <Badge variant="outline">
-                            +{roles.length - 2} lainnya
+                            +{roles.length - 2} {i18n.t('common.others')}
                         </Badge>
                     )}
                 </div>
@@ -138,7 +169,7 @@ export const createColumns = (
     }),
     makeColumn<UserItem>({
         id: 'twofa',
-        title: '2FA',
+        title: i18n.t('tabs.2fa', { ns: 'security' }),
         className: COL.twofa,
         cell: ({ row }) => (
             <div className={COL.twofa}>
@@ -147,14 +178,20 @@ export const createColumns = (
                         row.original.two_factor_enabled ? 'default' : 'outline'
                     }
                 >
-                    {row.original.two_factor_enabled ? 'Aktif' : 'Nonaktif'}
+                    {row.original.two_factor_enabled
+                        ? i18n.t('user.table.enabled', {
+                              ns: 'management/user',
+                          })
+                        : i18n.t('user.table.disabled', {
+                              ns: 'management/user',
+                          })}
                 </Badge>
             </div>
         ),
     }),
     makeColumn<UserItem>({
         id: 'last_active_at',
-        title: 'Aktif Terakhir',
+        title: i18n.t('user.table.last_active', { ns: 'management/user' }),
         className: COL.last,
         sortable: true,
         cell: ({ row }) => {
@@ -164,8 +201,8 @@ export const createColumns = (
     }),
     makeColumn<UserItem>({
         id: 'actions',
-        title: 'Aksi',
-        className: `text-right ${COL.actions}`,
+        title: i18n.t('common.actions'),
+        className: `text-right ${COL.actions} flex justify-end items-center`,
         cell: ({ row }) => {
             const u = row.original;
             return (
@@ -175,27 +212,33 @@ export const createColumns = (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`Aksi untuk ${u.name}`}
+                                aria-label={`${i18n.t('common.actions')} ${u.name}`}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
                             <Can all={['user.role.manage']}>
                                 <DropdownMenuItem
                                     onClick={() => opts?.onManageRoles?.(u)}
                                 >
                                     <ShieldCheck className="mr-2 h-4 w-4" />{' '}
-                                    Kelola Peran
+                                    {i18n.t('user.actions.manage_roles', {
+                                        ns: 'management/user',
+                                    })}
                                 </DropdownMenuItem>
                             </Can>
                             <Can all={['user.password.reset']}>
                                 <DropdownMenuItem
                                     onClick={() => opts?.onResetPassword?.(u)}
                                 >
-                                    <KeyRound className="mr-2 h-4 w-4" /> Reset
-                                    Password
+                                    <KeyRound className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('user.actions.reset_password', {
+                                        ns: 'management/user',
+                                    })}
                                 </DropdownMenuItem>
                             </Can>
                             {u.two_factor_enabled ? (
@@ -206,7 +249,9 @@ export const createColumns = (
                                         }
                                     >
                                         <ScanFace className="mr-2 h-4 w-4" />{' '}
-                                        Kode Pemulihan 2FA
+                                        {i18n.t('user.actions.twofa_recovery', {
+                                            ns: 'management/user',
+                                        })}
                                     </DropdownMenuItem>
                                 </Can>
                             ) : null}
@@ -216,8 +261,10 @@ export const createColumns = (
                                     className="text-red-600 focus:text-red-600"
                                     onClick={() => opts?.onRevokeSession?.(u)}
                                 >
-                                    <LogOut className="mr-2 h-4 w-4" /> Paksa
-                                    Keluar
+                                    <LogOut className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('user.actions.force_logout', {
+                                        ns: 'management/user',
+                                    })}
                                 </DropdownMenuItem>
                             </Can>
                         </DropdownMenuContent>

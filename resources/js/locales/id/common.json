@@ -1,0 +1,451 @@
+{
+    "common": {
+        "active": "Aktif",
+        "actions": "Aksi",
+        "all": "Semua",
+        "all_statuses": "Semua status",
+        "all_methods": "Semua metode",
+        "amenities": "Fasilitas",
+        "amount": "Jumlah",
+        "apply": "Terapkan",
+        "back": "Kembali",
+        "billed_to": "Ditagihkan kepada",
+        "building": "Gedung",
+        "cancel": "Batal",
+        "cancelled_invoice": "Invoice ini telah dibatalkan.",
+        "change": "Ubah",
+        "click_to_preview": "Klik untuk pratinjau",
+        "close": "Tutup",
+        "contract": "Kontrak",
+        "copy": "Salin",
+        "copy_link": "Salin Tautan",
+        "export_csv": "Ekspor CSV",
+        "daily": "Harian",
+        "days": "{{count}} hari",
+        "days_one": "{{count}} hari",
+        "days_other": "{{count}} hari",
+        "delete": "Hapus",
+        "description": "Deskripsi",
+        "due_date": "Jatuh Tempo",
+        "edit": "Edit",
+        "email": "Email",
+        "end": "Selesai",
+        "floor": "Lantai",
+        "hide_password": "Sembunyikan password",
+        "irreversible": "Tindakan ini tidak dapat dibatalkan.",
+        "issue_date": "Rilis Tagihan",
+        "last_updated": "Terakhir diperbarui:",
+        "link_copied": "Tautan disalin",
+        "loading": "Memuat…",
+        "manage": "Kelola",
+        "monthly": "Bulanan",
+        "name": "Nama",
+        "icon": "Ikon",
+        "no": "Tidak",
+        "no_amenities": "Tidak ada fasilitas",
+        "note": "Catatan",
+        "number": "Nomor",
+        "others": "lainnya",
+        "paid_on": "Dibayar pada {{date}}. Terima kasih.",
+        "pay": "Bayar",
+        "period": "Periode",
+        "period_sep": " s/d ",
+        "permissions": "Permissions",
+        "phone": "Telepon",
+        "photos": "Foto Kamar",
+        "photos_hint": "Unggah foto kamar agar mudah dikenali (minimal 1 foto).",
+        "please_pay_before_due": "Mohon selesaikan pembayaran sebelum tanggal jatuh tempo.",
+        "price": "Harga",
+        "print": "Cetak",
+        "printed_at": "Dicetak pada {{datetime}}",
+        "processing": "Memproses...",
+        "qty": "Qty",
+        "reset": "Reset",
+        "room": "Kamar",
+        "save": "Simpan",
+        "saving": "Menyimpan…",
+        "sending": "Mengirim…",
+        "show_password": "Tampilkan password",
+        "start": "Mulai",
+        "status": "Status",
+        "subtotal": "Subtotal",
+        "tenant": "Penyewa",
+        "time": "Waktu",
+        "total": "Total",
+        "type": "Tipe",
+        "unit_price": "Harga Satuan",
+        "unsaved_changes": "Perubahan belum disimpan",
+        "user": "Pengguna",
+        "users": "Pengguna",
+        "view_detail": "Lihat detail",
+        "weekly": "Mingguan",
+        "yes": "Ya",
+        "max": "Maksimal",
+        "billing_period": "Periode Tagihan",
+        "billing_day": "Tanggal Penagihan",
+        "attachments": "Lampiran",
+        "files": "{{count}} file",
+        "filter": "Filter",
+        "view_all_attachments": "Lihat semua lampiran",
+        "more": "lagi",
+        "reference": "Referensi",
+        "recorded_by": "Pencatat",
+        "submit": "Kirim",
+        "confirm": "Konfirmasi",
+        "optional": "opsional",
+        "selected": "Terpilih",
+        "clear_all": "Hapus semua",
+        "photo": "Foto",
+        "review": "Tinjau",
+        "rent": "Sewa",
+        "deposit": "Deposit",
+        "auto_renew": "Auto‑Renew",
+        "days_left": "Sisa Hari",
+        "expired": "Habis"
+    },
+
+    "dashboard": {
+        "desc": "Ringkasan aktivitas harian, status hunian, dan metrik penting di kost Anda.",
+        "title": "Dashboard",
+        "filters": {
+            "title": "Filter",
+            "desc": "Atur rentang tanggal untuk pemasukan dan daftar.",
+            "start": "Tanggal mulai",
+            "end": "Tanggal akhir",
+            "apply": "Terapkan",
+            "quick": "Cepat",
+            "mtd": "Bulan ini",
+            "wtd": "Minggu ini",
+            "qtd": "Kuartal ini",
+            "ytd": "Tahun ini"
+        },
+        "metrics": {
+            "occupancy": "Okupansi",
+            "occupancy_hint": "{{used}} dari {{avail}} kamar terpakai",
+            "rooms_available": "Kamar Kosong",
+            "rooms_hint": "{{occupied}} terisi dari {{total}} total",
+            "occupied": "Terisi",
+            "reserved": "Dipesan",
+            "vacant": "Kosong",
+            "contracts_active": "Kontrak Aktif",
+            "contracts_hint": "{{booked}} booking · {{pending}} menunggu",
+            "invoices_unpaid": "Tagihan Belum Lunas",
+            "invoices_overdue": "{{count}} lewat jatuh tempo",
+            "revenue_mtd": "Pemasukan (bulan ini)",
+            "revenue": "Pemasukan",
+            "revenue_trend": "Tren Pemasukan",
+            "revenue_range": "Dalam rentang: {{amount}}",
+            "revenue_7d": "7 hari terakhir: {{amount}}",
+            "outstanding_total": "Total Piutang",
+            "revenue_today": "Hari ini: {{amount}}",
+            "contracts_inactive": "Tidak aktif: {{count}}",
+            "recent_payments": "Pembayaran Terbaru",
+            "recent_payments_desc": "Pembayaran yang sudah selesai",
+            "no_recent_payments": "Belum ada pembayaran terbaru",
+            "recent_invoices": "Tagihan Terbaru",
+            "recent_invoices_desc": "Daftar tagihan terbaru",
+            "no_recent_invoices": "Belum ada tagihan terbaru",
+            "issued": "Terbit",
+            "paid": "Lunas",
+            "invoices_trend": "Jumlah Tagihan",
+            "invoices_trend_desc": "Terbit vs lunas per hari"
+        },
+        "hints": {
+            "occupancy": "Okupansi = (Terisi + Dipesan) / Kamar Tersedia. Kamar 'Perawatan' dan 'Nonaktif' tidak dihitung.",
+            "rooms_available": "Jumlah kamar berstatus 'Kosong'.",
+            "contracts_active": "Total kontrak yang sedang aktif saat ini.",
+            "invoices_unpaid": "Tagihan berstatus 'Menunggu' + 'Terlambat'. Tidak mengikuti filter tanggal.",
+            "revenue_mtd": "Pemasukan (status selesai) sejak awal bulan sampai hari ini.",
+            "outstanding_total": "Total piutang seluruh tagihan aktif (belum lunas). Tidak mengikuti filter tanggal."
+        },
+        "actions": {
+            "view_rooms": "Lihat kamar",
+            "view_contracts": "Lihat kontrak",
+            "view_pending": "Menunggu",
+            "view_overdue": "Terlambat",
+            "view_all": "Lihat semua"
+        },
+
+        "upcoming": {
+            "checkins": "Check-in Mendatang",
+            "checkouts": "Check-out Mendatang",
+            "within_7d": "Dalam 7 hari ke depan",
+            "empty": "Tidak ada jadwal mendatang"
+        },
+        "wip": {
+            "billing": "Tagihan & Pembayaran",
+            "contract": "Penyewa & Kontrak",
+            "desc": "Kami sedang merapikan ringkasan data, grafik, dan insight agar lebih informatif.",
+            "hint": "Sementara itu, Anda tetap bisa mengelola data melalui menu yang tersedia di navigasi.",
+            "room": "Manajemen Kamar",
+            "title": "Dashboard sedang dalam pengembangan"
+        }
+    },
+    "datatable": {
+        "auto_refresh": "Pembaruan Otomatis",
+        "columns": "Kolom",
+        "columns_visibility": "Visibilitas Kolom",
+        "hide_all": "Sembunyikan semua",
+        "loading": "Sedang memuat…",
+        "minutes": "{{count}} menit",
+        "next": "Berikutnya",
+        "no_data": "Tidak ada data.",
+        "off": "Off",
+        "page_indicator": "Hal {{current}} / {{total}}",
+        "per_page": "Per halaman",
+        "prev": "Sebelumnya",
+        "reset_default": "Reset (default)",
+        "search": "Cari",
+        "search_placeholder": "Cari …",
+        "seconds": "{{count}} detik",
+        "select_all": "Pilih semua",
+        "select_row": "Pilih baris",
+        "show_all": "Tampilkan semua",
+        "showing": "Menampilkan {{from}}–{{to}} dari {{total}} data",
+        "sort": {
+            "asc": "naik",
+            "desc": "turun",
+            "label": "Urutkan {{title}} {{direction}}"
+        }
+    },
+    "attachment": {
+        "loading": "Memuat pratinjau…",
+        "image_alt": "Lampiran",
+        "file_type": "Tipe berkas",
+        "size": "Ukuran",
+        "preview_not_available": "Pratinjau tidak tersedia",
+        "unknown": "tidak diketahui"
+    },
+    "form": {
+        "placeholder": {
+            "email": "Masukkan alamat email",
+            "fullname": "Masukkan nama lengkap",
+            "number": "Masukkan nomor",
+            "phone": "Masukkan nomor telepon",
+            "pick_date": "Pilih tanggal",
+            "pick_dob": "Pilih tanggal lahir",
+            "pick_gender": "Pilih gender",
+            "pick_type": "Pilih jenis",
+            "username": "Masukkan username",
+            "currency_example": "cth. 1.200.000",
+            "currency_optional_example": "cth. 500.000 (opsional)"
+        },
+        "required": "Wajib diisi.",
+        "required_hint": "Tanda * menandakan kolom wajib diisi.",
+        "invalid_inputs": "Periksa kembali input yang belum valid."
+    },
+    "invoice": {
+        "copy_number": "Salin nomor invoice",
+        "empty": "Tidak ada invoice.",
+        "reason": "Alasan",
+        "title": "Tagihan",
+        "number_label": "Nomor Invoice"
+    },
+
+    "contract": {
+        "autorenew": {
+            "stop_action": "Hentikan perpanjangan otomatis",
+            "start_action": "Nyalakan perpanjangan otomatis"
+        },
+        "title": "Kontrak Saya",
+        "title_with_number": "Kontrak #{{number}}",
+        "desc": "Daftar kontrak kamar Anda.",
+        "detail_desc": "Detail kontrak Anda.",
+        "filter": "Filter",
+        "search": {
+            "aria": "Cari nomor kontrak atau kamar",
+            "placeholder": "Cari nomor kontrak/kamar…"
+        },
+        "empty": "Tidak ada kontrak.",
+        "expired": "Habis",
+        "days_left": "Sisa Hari",
+        "period": "Periode",
+        "rent": "Sewa",
+        "deposit": "Deposit",
+        "auto_renew": "Auto‑Renew",
+        "billing_period": "Periode Tagih",
+        "billing_day": "Tanggal Penagihan",
+        "room_info": {
+            "title": "Informasi Kamar",
+            "room_price": "Harga Kamar"
+        },
+        "info": {
+            "title": "Informasi Kontrak"
+        },
+        "no_checkin": "Belum ada data check‑in.",
+        "no_checkout": "Belum ada data check‑out.",
+        "breadcrumb": {
+            "contracts": "Kontrak",
+            "detail": "Detail Kontrak"
+        },
+        "actions_for": "Aksi kontrak {{id}}",
+        "view_checkin": "Lihat Check‑in",
+        "view_checkout": "Lihat Check‑out",
+        "handover": {
+            "confirm_button": "Konfirmasi",
+            "title": "Serah Terima",
+            "actions_aria": "Aksi Serah Terima",
+            "confirm_title": "Konfirmasi Serah Terima",
+            "confirm_desc": "Pastikan Anda sudah meninjau catatan & lampiran. Aksi ini menandai serah terima sebagai telah Anda setujui.",
+            "confirm_note_prefix": "Setelah dikonfirmasi, Anda tetap dapat mengajukan sanggahan melalui admin jika diperlukan, namun status awal akan tercatat sebagai",
+            "confirmed": "Dikonfirmasi",
+            "dispute_title": "Sanggah Serah Terima",
+            "dispute_desc": "Jelaskan alasan sanggahan Anda.",
+            "dispute_placeholder": "Contoh: terdapat kerusakan yang belum dicatat",
+            "dispute_hint": "Tulis alasan secara ringkas dan jelas (min. 5 karakter).",
+            "dispute_submit": "Kirim Sanggahan",
+            "empty": "Belum ada riwayat serah terima."
+        },
+        "stop": {
+            "title": "Nonaktifkan Perpanjangan Otomatis",
+            "desc": "Apakah Anda yakin ingin menonaktifkan perpanjangan otomatis kontrak ini? Jika dinonaktifkan, kontrak tidak akan diperpanjang secara otomatis setelah berakhir. Untuk mengaktifkan kembali perpanjangan otomatis, silakan hubungi admin.",
+            "disable_button": "Nonaktifkan",
+            "confirm_ack": "Saya telah membaca dan memahami informasi di atas.",
+            "summary": {
+                "end_date": "Tanggal berakhir",
+                "days_left": "Sisa hari",
+                "forfeit_limit": "Batas penalti deposit"
+            },
+            "notice": {
+                "title": "Hal yang perlu diperhatikan:",
+                "no_guarantee": "Tidak ada jaminan perpanjangan jika kamar sudah dibooking penyewa lain.",
+                "forfeit_now": "Karena kurang dari {{days}} hari sebelum tanggal berakhir, deposit Anda akan hangus sesuai kebijakan.",
+                "forfeit_cond": "Jika penghentian dilakukan kurang dari {{days}} hari sebelum tanggal berakhir, deposit akan hangus sesuai kebijakan."
+            }
+        },
+        "copy_number": "Salin nomor kontrak",
+        "actions": {
+            "print": "Cetak kontrak",
+            "view_invoice": "Lihat invoice",
+            "view_invoices": "Lihat invoice",
+            "view_invoices_page": "Lihat di halaman Tagihan"
+        },
+        "cancel_now": "Ya, Batalkan"
+    },
+
+    "room": { "max_occupancy": "Penghuni Maks." },
+    "status": {
+        "approved": "Disetujui",
+        "pending": "Menunggu",
+        "rejected": "Ditolak"
+    },
+    "ui": {
+        "select": {
+            "no_results": "Tidak ada hasil",
+            "placeholder": "Pilih…",
+            "search_placeholder": "Cari…"
+        }
+    },
+
+    "payment": {
+        "manual": {
+            "title": "Pembayaran Manual",
+            "desc": "Masukkan pembayaran manual dengan cepat."
+        },
+        "cancel_reason": "Alasan pembatalan",
+        "cancel_reason_placeholder": "Contoh: salah input, transfer dibatalkan, dsb.",
+        "form": {
+            "account_no": "No. Rekening",
+            "amount": "Nilai Bayar",
+            "attachment_label": "Lampiran (Bukti Transfer)",
+            "bank": "Bank",
+            "fill_max_title": "Isi maksimal (Lunas)",
+            "method": "Metode",
+            "name": "Nama",
+            "note_placeholder": "Opsional",
+            "paid_at": "Tanggal Bayar",
+            "pay_full_short": "(Lunas)",
+            "preview": "Pratinjau:",
+            "receiver_bank": "Rekening Penerima"
+        },
+        "lookup": {
+            "empty_candidates": "Belum ada kandidat invoice",
+            "ineligible": "Invoice tidak dapat dibayar (sudah lunas atau status tidak valid)",
+            "pick_first": "Pilih invoice terlebih dahulu untuk melanjutkan.",
+            "placeholder": "Cari invoice…",
+            "summary": "Nilai: {{amount}} · Sisa: {{outstanding}}{{tenant_optional}}"
+        },
+        "midtrans": {
+            "back_to_billing": "Kembali ke Tagihan",
+            "error": {
+                "desc": "Maaf, terdapat kendala saat memproses transaksi.",
+                "title": "Terjadi Kesalahan"
+            },
+            "fields": {
+                "amount": "Jumlah",
+                "fraud": "Fraud",
+                "order_id": "Order ID",
+                "status_code": "Status Kode",
+                "transaction": "Transaksi"
+            },
+            "finish": {
+                "desc": "Terima kasih, transaksi Anda telah diproses.",
+                "title": "Pembayaran Berhasil"
+            },
+            "summary": {
+                "title": "Ringkasan Transaksi"
+            },
+            "unfinish": {
+                "desc": "Anda dapat melanjutkan pembayaran kapan saja.",
+                "title": "Transaksi Belum Selesai"
+            }
+        },
+        "result": {
+            "error": {
+                "action": "Kembali ke Pembayaran",
+                "desc": "Pembayaran gagal diproses. Silakan coba lagi dari halaman pembayaran.",
+                "title": "Terjadi Kesalahan"
+            },
+            "finish": {
+                "action": "Kembali ke Pembayaran",
+                "desc": "Terima kasih. Pembayaran Anda telah diproses.",
+                "title": "Pembayaran Berhasil"
+            },
+            "page_desc": "Ringkasan redirect pembayaran",
+            "provider_label": "Provider:",
+            "unfinish": {
+                "action": "Kembali ke Pembayaran",
+                "desc": "Anda dapat melanjutkan proses pembayaran dari halaman pembayaran.",
+                "title": "Pembayaran Belum Selesai"
+            }
+        },
+        "void": {
+            "desc": "Anda akan membatalkan pembayaran untuk invoice {{number}}. Nominal {{amount}}.",
+            "title": "Batalkan Pembayaran"
+        },
+        "void_now": "Batalkan Sekarang",
+        "attachments_title": "Lampiran Pembayaran",
+        "attachments_desc": "Pratinjau bukti pembayaran.",
+        "print_receipt": "Cetak Kwitansi",
+        "review": {
+            "action": "Tinjau",
+            "decision_required": "Pilih keputusan: Terima atau Tolak.",
+            "title": "Review Pembayaran Transfer",
+            "desc": "Pilih hasil review dan pastikan kebenaran data sebelum submit.",
+            "check_hint": "Periksa data sebelum konfirmasi/tolak.",
+            "view_proof": "Lihat Bukti",
+            "sender_note": "Catatan Pengirim",
+            "decision": "Keputusan",
+            "approve": "Terima",
+            "reject": "Tolak",
+            "note_required_hint": "(wajib saat menolak)",
+            "note_placeholder_required": "Wajib diisi — jelaskan alasan penolakan.",
+            "ack": "Saya menyatakan data pembayaran sudah benar."
+        },
+        "actions_for": "Aksi pembayaran {{invoice}}",
+        "detail": {
+            "info": "Info Pembayaran"
+        },
+        "no_invoice": "Tidak terkait invoice"
+    },
+    "management": {
+        "role": {
+            "title": "Role",
+            "desc": "Kelola role pengguna dan perizinan.",
+            "list_title": "Daftar Role",
+            "add": "Tambah Role",
+            "empty": "Tidak ada role.",
+            "delete_title": "Hapus Role"
+        }
+    }
+}

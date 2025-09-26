@@ -1,0 +1,30 @@
+{
+    "title": "Tipe Kamar",
+    "desc": "Kelola master data tipe kamar.",
+    "add": "Tambah Tipe Kamar",
+    "search_placeholder": "Cari tipe kamar...",
+    "empty": "Belum ada tipe kamar.",
+    "create_title": "Tambah Tipe Kamar",
+    "edit_title": "Ubah Tipe Kamar",
+    "form": {
+        "capacity": "Kapasitas",
+        "slug_hint": "Kunci URL huruf kecil yang ramah URL. Kosongkan untuk otomatis dari nama.",
+        "slug_example": "cth. single-bed, deluxe-suite",
+        "price_monthly": "Harga (Bulanan)",
+        "price_weekly": "Harga (Mingguan)",
+        "price_daily": "Harga (Harian)",
+        "deposit_monthly": "Deposit (Bulanan)",
+        "deposit_weekly": "Deposit (Mingguan)",
+        "deposit_daily": "Deposit (Harian)",
+        "is_active": "Aktif",
+        "save": "Simpan"
+    },
+    "delete": {
+        "title": "Hapus Tipe Kamar",
+        "confirm": "Hapus tipe kamar ini? Tindakan ini tidak dapat dibatalkan.",
+        "confirm_named": "Hapus tipe kamar \"{{name}}\"? Tindakan ini tidak dapat dibatalkan."
+    },
+    "created": "Tipe kamar berhasil ditambahkan.",
+    "updated": "Tipe kamar berhasil diperbarui.",
+    "deleted": "Tipe kamar berhasil dihapus."
+}

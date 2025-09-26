@@ -59,7 +59,7 @@ class GenerateMonthlyInvoicesForContract implements ShouldQueue
 
             // Generate sequentially until target month (catch up) without duplicates
             $latest = $contract->invoices()
-                ->where('status', '!=', InvoiceStatus::CANCELLED)
+                ->where('status', '!=', InvoiceStatus::CANCELLED->value)
                 ->orderByDesc('period_end')
                 ->first(['id', 'period_end']);
 
@@ -97,7 +97,7 @@ class GenerateMonthlyInvoicesForContract implements ShouldQueue
         $end   = $start->copy()->endOfMonth();
 
         return $contract->invoices()
-            ->where('status', '!=', InvoiceStatus::CANCELLED)
+            ->where('status', '!=', InvoiceStatus::CANCELLED->value)
             ->whereDate('period_start', '<=', $end->toDateString())
             ->whereDate('period_end', '>=', $start->toDateString())
             ->exists();

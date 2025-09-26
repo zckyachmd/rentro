@@ -35,17 +35,17 @@ class CheckoutRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'notes'           => 'catatan',
-            'files.general'   => 'lampiran',
-            'files.general.*' => 'lampiran',
+            'notes'           => __('management/handover.attributes.notes'),
+            'files.general'   => __('management/handover.attributes.attachments'),
+            'files.general.*' => __('management/handover.attributes.attachments'),
         ];
     }
 
     public function messages(): array
     {
         return [
-            'files.general.required' => 'Harap unggah foto sebagai eviden.',
-            'files.general.min'      => 'Minimal unggah :min foto sebagai eviden.',
+            'files.general.required' => __('management/handover.validation.files.general.required'),
+            'files.general.min'      => __('management/handover.validation.files.general.min'),
         ];
     }
 

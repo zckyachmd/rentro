@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Filter, Plus } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     AlertDialog,
@@ -18,7 +19,6 @@ import {
     DataTableServer,
     type QueryBag,
 } from '@/components/ui/data-table-server';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -41,6 +41,8 @@ import type {
 } from '@/types/management';
 
 export default function RoomIndex(props: RoomsPageProps) {
+    const { t: tRoom } = useTranslation('management/room');
+    const { t, i18n } = useTranslation();
     const { rooms: paginator, query = {}, options: opt = {} } = props;
     const rooms: RoomItem[] = (paginator?.data ?? []) as RoomItem[];
     const {
@@ -64,11 +66,7 @@ export default function RoomIndex(props: RoomsPageProps) {
         q: String(query.q ?? ''),
     });
 
-    const updateFilter = React.useCallback(
-        (key: keyof Filters, value: string) =>
-            setFilters((f) => ({ ...f, [key]: value })),
-        [],
-    );
+    // filter setters are inline where used; removed unused updateFilter helper
     const filteredFloors = React.useMemo(
         () =>
             floors.filter(
@@ -278,25 +276,23 @@ export default function RoomIndex(props: RoomsPageProps) {
         });
     }, [safeOnQueryChange]);
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onDetail: (room) => {
-                    setDetailItem(room);
-                    setDetailOpen(true);
-                },
-                onEdit: (room) => {
-                    router.visit(
-                        route('management.rooms.edit', { room: room.id }),
-                    );
-                },
-                onDelete: (room) => {
-                    setDeletingRoom(room);
-                },
-                displayPeriod: pricePeriod,
-            }),
-        [pricePeriod],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onDetail: (room) => {
+                setDetailItem(room);
+                setDetailOpen(true);
+            },
+            onEdit: (room) => {
+                router.visit(route('management.rooms.edit', { room: room.id }));
+            },
+            onDelete: (room) => {
+                setDeletingRoom(room);
+            },
+            displayPeriod: pricePeriod,
+        });
+    }, [pricePeriod, lang]);
 
     const applyFilters = () => {
         const trimmedQ = (filters.q || '').trim();
@@ -340,17 +336,16 @@ export default function RoomIndex(props: RoomsPageProps) {
                 type="button"
                 onClick={() => router.visit(route('management.rooms.create'))}
             >
-                <Plus className="mr-2 h-4 w-4" /> Tambah Kamar
+                <Plus className="mr-2 h-4 w-4" /> {tRoom('add')}
             </Button>
-            {/* Periode Sewa dipindah ke area Filter */}
         </div>
     );
 
     return (
         <>
             <AuthLayout
-                pageTitle="Kamar"
-                pageDescription="Manajemen kamar kost, lengkap dengan filter & aksi cepat."
+                pageTitle={tRoom('title')}
+                pageDescription={tRoom('desc')}
                 titleIcon="BedDouble"
                 actions={headerActions}
             >
@@ -359,30 +354,12 @@ export default function RoomIndex(props: RoomsPageProps) {
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                                <Filter className="h-4 w-4" /> Filter
+                                <Filter className="h-4 w-4" /> {tRoom('filter')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-3 md:grid-cols-12">
                             <div className="md:col-span-4">
-                                <Label htmlFor="room-search">Cari</Label>
-                                <Input
-                                    id="room-search"
-                                    className="h-9"
-                                    value={filters.q}
-                                    onChange={(e) =>
-                                        updateFilter('q', e.target.value)
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            applyFilters();
-                                        }
-                                    }}
-                                    placeholder="Cari nomor/nama kamar"
-                                />
-                            </div>
-                            <div className="md:col-span-4">
-                                <Label>Periode Sewa</Label>
+                                <Label>{tRoom('period_label')}</Label>
                                 <Select
                                     value={pricePeriod}
                                     onValueChange={(v) => {
@@ -403,25 +380,29 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue placeholder="Bulanan" />
+                                        <SelectValue
+                                            placeholder={tRoom(
+                                                'period.monthly',
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             <SelectItem value="daily">
-                                                Harian
+                                                {tRoom('period.daily')}
                                             </SelectItem>
                                             <SelectItem value="weekly">
-                                                Mingguan
+                                                {tRoom('period.weekly')}
                                             </SelectItem>
                                             <SelectItem value="monthly">
-                                                Bulanan
+                                                {tRoom('period.monthly')}
                                             </SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>Gedung</Label>
+                                <Label>{tRoom('building')}</Label>
                                 <Select
                                     value={filters.building_id}
                                     onValueChange={(v) => {
@@ -438,7 +419,9 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue placeholder="Semua gedung" />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -455,7 +438,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>Lantai</Label>
+                                <Label>{tRoom('floor')}</Label>
                                 <Select
                                     value={filters.floor_id}
                                     onValueChange={(v) => {
@@ -470,7 +453,9 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue placeholder="Semua" />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -479,7 +464,10 @@ export default function RoomIndex(props: RoomsPageProps) {
                                                     key={f.id}
                                                     value={String(f.id)}
                                                 >
-                                                    Lantai {f.level}
+                                                    {tRoom(
+                                                        'form.floor_option',
+                                                        { level: f.level },
+                                                    )}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
@@ -487,7 +475,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>Tipe</Label>
+                                <Label>{tRoom('type')}</Label>
                                 <Select
                                     value={filters.type_id}
                                     onValueChange={(v) => {
@@ -502,7 +490,9 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue placeholder="Semua" />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -519,7 +509,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>Status</Label>
+                                <Label>{tRoom('status')}</Label>
                                 <Select
                                     value={filters.status}
                                     onValueChange={(v) => {
@@ -534,7 +524,9 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue placeholder="Semua" />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -543,7 +535,53 @@ export default function RoomIndex(props: RoomsPageProps) {
                                                     key={s.value}
                                                     value={s.value}
                                                 >
-                                                    {s.label}
+                                                    {t(
+                                                        `room.status.${String(s.value).toLowerCase()}`,
+                                                        {
+                                                            ns: 'enum',
+                                                            defaultValue:
+                                                                s.label,
+                                                        },
+                                                    )}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="md:col-span-4">
+                                <Label>{tRoom('form.gender_policy')}</Label>
+                                <Select
+                                    value={filters.gender_policy}
+                                    onValueChange={(v) => {
+                                        setFilters((f) => ({
+                                            ...f,
+                                            gender_policy: v,
+                                        }));
+                                        safeOnQueryChange({
+                                            page: 1,
+                                            gender_policy: v,
+                                        });
+                                    }}
+                                >
+                                    <SelectTrigger className="h-9">
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {(
+                                                [
+                                                    'any',
+                                                    'male',
+                                                    'female',
+                                                ] as const
+                                            ).map((g) => (
+                                                <SelectItem key={g} value={g}>
+                                                    {t(`gender_policy.${g}`, {
+                                                        ns: 'enum',
+                                                    })}
                                                 </SelectItem>
                                             ))}
                                         </SelectGroup>
@@ -552,14 +590,14 @@ export default function RoomIndex(props: RoomsPageProps) {
                             </div>
                             <div className="flex gap-2 pt-2 md:col-span-12">
                                 <Button type="button" onClick={applyFilters}>
-                                    Terapkan
+                                    {t('common.apply')}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={resetFilter}
                                 >
-                                    Reset
+                                    {t('common.reset')}
                                 </Button>
                             </div>
                         </CardContent>
@@ -567,18 +605,30 @@ export default function RoomIndex(props: RoomsPageProps) {
 
                     {/* Table */}
                     <Card>
-                        <CardContent>
+                        <CardContent className="pt-6">
                             <DataTableServer<RoomItem, unknown>
                                 columns={tableColumns}
                                 rows={rooms}
                                 paginator={paginator ?? null}
+                                search={
+                                    ((q as QueryBag & { q?: string | null })
+                                        .q ?? '') as string
+                                }
+                                onSearchChange={(v) =>
+                                    safeOnQueryChange({
+                                        page: 1,
+                                        q: v || null,
+                                    } as SafePayload)
+                                }
+                                searchKey="number"
+                                searchPlaceholder={tRoom('search_placeholder')}
                                 sort={q.sort}
                                 dir={q.dir}
                                 onSortChange={handleSortChange}
                                 onQueryChange={safeOnQueryChange}
                                 loading={processing}
-                                emptyText="Tidak ada kamar."
-                                showColumn={false}
+                                emptyText={tRoom('empty')}
+                                showColumn
                             />
                         </CardContent>
                     </Card>
@@ -591,22 +641,26 @@ export default function RoomIndex(props: RoomsPageProps) {
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Hapus Kamar</AlertDialogTitle>
+                            <AlertDialogTitle>
+                                {tRoom('delete_title')}
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                                Apakah Anda yakin ingin menghapus kamar{' '}
-                                <strong>
-                                    {deletingRoom
+                                {(() => {
+                                    const label = deletingRoom
                                         ? deletingRoom.name
                                             ? `${deletingRoom.number} — ${deletingRoom.name}`
                                             : String(deletingRoom.number)
-                                        : ''}
-                                </strong>{' '}
-                                beserta semua fotonya? Tindakan ini tidak dapat
-                                dibatalkan.
+                                        : '';
+                                    return tRoom('delete_desc', {
+                                        label,
+                                    });
+                                })()}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogCancel>
+                                {t('common.cancel')}
+                            </AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={() => {
                                     if (!deletingRoom) return;
@@ -621,7 +675,7 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     );
                                 }}
                             >
-                                Hapus
+                                {t('common.delete')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

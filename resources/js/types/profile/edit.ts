@@ -30,7 +30,7 @@ export type EditForm = {
         postal_code: string;
     };
     document: {
-        type: '' | 'KTP' | 'SIM' | 'PASSPORT' | 'NPWP' | 'other';
+        type: '' | 'ktp' | 'sim' | 'passport' | 'npwp' | 'other';
         number: string;
         file: File | null;
         has_file?: boolean | null;

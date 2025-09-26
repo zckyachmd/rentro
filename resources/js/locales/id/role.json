@@ -1,0 +1,26 @@
+{
+    "actions": {
+        "edit_role": "Edit role",
+        "manage_permissions": "Kelola permissions"
+    },
+    "create_desc": "Tambah role baru untuk pengelompokan akses.",
+    "create_title": "Tambah Role",
+    "edit_desc": "Ubah nama role.",
+    "edit_title": "Edit Role",
+    "guard": "Guard",
+    "guard_hint": "Pilih konteks autentikasi yang disediakan oleh server.",
+    "guard_info": "Info guard",
+    "label": "Role",
+    "name_placeholder": "cth. Admin Kasir",
+    "permissions": {
+        "desc": "Pilih permissions yang akan dimiliki oleh role ini. Centang grup untuk memilih semua.",
+        "empty": "Tidak ada permission",
+        "search_placeholder": "Cari permission…",
+        "select_all": "Pilih semua",
+        "select_group": "Pilih semua {{group}}",
+        "select_permission": "Pilih permission {{name}}",
+        "title": "Atur Permissions"
+    },
+    "permissions_hint": "Setelah role dibuat, permissions dapat diatur melalui kolom Aksi di daftar role.",
+    "pick_guard": "Pilih guard"
+}

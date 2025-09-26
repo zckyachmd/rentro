@@ -4,9 +4,14 @@ namespace App\Enum;
 
 enum PaymentMethod: string
 {
-    case CASH            = 'Cash';
-    case TRANSFER        = 'Transfer';
-    case VIRTUAL_ACCOUNT = 'VirtualAccount';
+    case CASH            = 'cash';
+    case TRANSFER        = 'transfer';
+    case VIRTUAL_ACCOUNT = 'virtual_account';
+
+    public function label(): string
+    {
+        return __('enum.payment.method.' . strtolower($this->name));
+    }
 
     /**
      * Return options for select inputs.
@@ -22,7 +27,7 @@ enum PaymentMethod: string
 
         return array_values(array_map(fn (self $m) => [
             'value' => $m->value,
-            'label' => $m->value,
+            'label' => $m->label(),
         ], $cases));
     }
 }

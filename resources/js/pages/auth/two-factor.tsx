@@ -1,19 +1,21 @@
 import { useForm } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import OtpInput from '@/components/form/otp-input';
 import { Button } from '@/components/ui/button';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
+import OtpInput from '@/components/ui/otp-input';
 import GuestLayout from '@/layouts/guest-layout';
 
 export default function TwoFactorChallenge() {
     const form = useForm<{ token: string }>({ token: '' });
+    const { t } = useTranslation();
 
     return (
         <GuestLayout
-            title="Two-factor Authentication"
-            description="Masukkan OTP 6 digit dari aplikasi autentikator Anda atau recovery code yang Anda simpan."
+            title={t('auth.twofactor.title')}
+            description={t('auth.twofactor.desc')}
             content={
                 <form
                     onSubmit={(e) => {
@@ -24,11 +26,11 @@ export default function TwoFactorChallenge() {
                 >
                     <div className="grid gap-2">
                         <Label htmlFor="token">
-                            Kode OTP atau Recovery Code
+                            {t('auth.twofactor.label')}
                         </Label>
                         <OtpInput
                             id="token"
-                            placeholder="Contoh: 123456 atau 12345678-ABCDEFGH"
+                            placeholder={t('auth.twofactor.placeholder')}
                             value={form.data.token}
                             onChange={(v) => form.setData('token', v)}
                             aria-invalid={Boolean(form.errors.token)}
@@ -45,7 +47,7 @@ export default function TwoFactorChallenge() {
                             {form.processing && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             )}
-                            Verifikasi
+                            {t('auth.twofactor.submit')}
                         </Button>
                     </div>
                 </form>

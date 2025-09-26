@@ -42,13 +42,13 @@ class PaymentController extends Controller
         $validated = $request->validated();
 
         if (!in_array($invoice->status->value, [InvoiceStatus::PENDING->value, InvoiceStatus::OVERDUE->value], true)) {
-            return back()->with('error', 'Invoice tidak dapat dibayar pada status ini.');
+            return back()->with('error', __('tenant/payment.invoice.cannot_pay_on_status'));
         }
 
         $totals      = $this->invoices->totals($invoice);
         $outstanding = (int) $totals['outstanding'];
         if ($outstanding <= 0) {
-            return back()->with('error', 'Invoice sudah lunas.');
+            return back()->with('error', __('tenant/payment.invoice.already_paid'));
         }
 
         $this->payments->voidPendingPaymentsForInvoice($invoice, 'Manual', 'Resubmitted manual transfer', $request->user());
@@ -106,7 +106,7 @@ class PaymentController extends Controller
             // ignore;
         }
 
-        return back()->with('success', 'Bukti transfer terkirim. Menunggu review admin.');
+        return back()->with('success', __('tenant/payment.proof_submitted'));
     }
 
     public function show(Request $request, Payment $payment)

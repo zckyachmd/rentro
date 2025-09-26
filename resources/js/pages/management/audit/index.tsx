@@ -1,5 +1,7 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { usePage } from '@inertiajs/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     Card,
@@ -52,12 +54,10 @@ function useDebounced<P extends unknown[]>(
     return debounced as typeof fn;
 }
 
-// types moved to pages/types/management/audit
-
-// page types moved to pages/types
-
 export default function AuditLogIndex() {
-    const { props } = usePage<PageProps>();
+    const { i18n } = useTranslation();
+    const { t: tAudit } = useTranslation('management/audit');
+    const { props } = usePage<InertiaPageProps & PageProps>();
     const { logs, query } = props;
 
     const initial: QueryBag | undefined = query
@@ -111,25 +111,22 @@ export default function AuditLogIndex() {
         item: ActivityItem | null;
     }>({ open: false, item: null });
 
-    const tableColumns = React.useMemo(
-        () => createColumns((row) => setDetail({ open: true, item: row })),
-        [],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns((row) => setDetail({ open: true, item: row }));
+    }, [lang]);
 
     return (
         <AuthLayout
-            pageTitle="Audit Log"
-            pageDescription="Jejak aktivitas sistem: siapa melakukan apa dan kapan."
+            pageTitle={tAudit('title')}
+            pageDescription={tAudit('desc')}
         >
-            <div className="space-y-3">
+            <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Daftar Audit Log</CardTitle>
-                        <CardDescription>
-                            Lacak aktivitas penting di sistem. Gunakan pencarian
-                            untuk memfilter berdasarkan deskripsi, log name,
-                            atau event.
-                        </CardDescription>
+                        <CardTitle>{tAudit('list_title')}</CardTitle>
+                        <CardDescription>{tAudit('desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center justify-end gap-2" />
@@ -145,13 +142,13 @@ export default function AuditLogIndex() {
                             search={q.search}
                             onSearchChange={(v) => debouncedSearch(v)}
                             searchKey="description"
-                            searchPlaceholder="Cari deskripsi / log name / event…"
+                            searchPlaceholder={tAudit('search_placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada log."
+                            emptyText={tAudit('empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
                         />

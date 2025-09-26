@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Eye, EyeOff, RefreshCcw, ScanFace } from 'lucide-react';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 // removed status alert per request
 
@@ -37,6 +38,9 @@ export function TwoFADialog({
     user,
     autoReload = true,
 }: TwoFADialogProps) {
+    const { t } = useTranslation();
+    const { t: tSecurity } = useTranslation('security');
+    const { t: tUser } = useTranslation('management/user');
     const [codes, setCodes] = React.useState<string[]>([]);
     const [viewing, setViewing] = React.useState(false);
     const [loading, setLoading] = React.useState<
@@ -134,11 +138,11 @@ export function TwoFADialog({
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <ScanFace className="h-5 w-5" /> Two-Factor
-                            Authentication
+                            <ScanFace className="h-5 w-5" />
+                            {tSecurity('2fa.title')}
                         </DialogTitle>
                         <DialogDescription>
-                            Kelola recovery codes dan status 2FA
+                            {tUser('user.twofa.desc')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3 text-sm">
@@ -159,7 +163,7 @@ export function TwoFADialog({
                                 <div className="truncate font-medium">
                                     {user.name}
                                 </div>
-                                <div className="truncate text-xs text-muted-foreground">
+                                <div className="text-muted-foreground truncate text-xs">
                                     {user.email}
                                 </div>
                             </div>
@@ -170,17 +174,21 @@ export function TwoFADialog({
                         {enabled ? (
                             <>
                                 <div className="space-y-2">
-                                    <Label>Alasan tindakan</Label>
+                                    <Label>
+                                        {tUser('user.twofa.reason_label')}
+                                    </Label>
                                     <Textarea
                                         rows={3}
                                         value={reason}
                                         onChange={(e) =>
                                             setReason(e.target.value)
                                         }
-                                        placeholder="Contoh: Pengguna kehilangan perangkat otentikasi"
+                                        placeholder={tUser(
+                                            'user.twofa.reason_placeholder',
+                                        )}
                                         maxLength={200}
                                     />
-                                    <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
+                                    <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
                                         <span>
                                             {rule.length}/
                                             {rule.length < 20 ? 20 : 200}
@@ -198,14 +206,16 @@ export function TwoFADialog({
                                         disabled={
                                             loading === 'view' || !rule.valid
                                         }
-                                        aria-label="Lihat kode pemulihan"
+                                        aria-label={t(
+                                            'user.twofa.view_codes_aria',
+                                        )}
                                     >
                                         {loading === 'view' ? (
                                             <EyeOff className="mr-2 h-4 w-4" />
                                         ) : (
                                             <Eye className="mr-2 h-4 w-4" />
                                         )}
-                                        Lihat Kode
+                                        {tUser('user.twofa.view_codes')}
                                     </Button>
                                     <Button
                                         type="button"
@@ -215,9 +225,11 @@ export function TwoFADialog({
                                         disabled={
                                             loading === 'disable' || !rule.valid
                                         }
-                                        aria-label="Nonaktifkan two-factor authentication"
+                                        aria-label={t(
+                                            'user.twofa.disable_aria',
+                                        )}
                                     >
-                                        Nonaktifkan 2FA
+                                        {tSecurity('2fa.disable')}
                                     </Button>
                                 </div>
                             </>
@@ -225,11 +237,13 @@ export function TwoFADialog({
 
                         {viewing ? (
                             <div className="rounded-md border p-3">
-                                <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                                <div className="text-muted-foreground mb-2 flex items-center justify-between text-xs">
                                     <span>
                                         {codes.length > 0
-                                            ? 'Kode pemulihan tersedia'
-                                            : 'Belum ada kode pemulihan'}
+                                            ? tUser(
+                                                  'user.twofa.recovery_available',
+                                              )
+                                            : tUser('user.twofa.no_recovery')}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         {codes.length === 0 ? (
@@ -239,21 +253,22 @@ export function TwoFADialog({
                                                 size="sm"
                                                 onClick={handleRegenerate}
                                                 disabled={loading === 'regen'}
-                                                aria-label="Generate kode pemulihan"
+                                                aria-label={tSecurity(
+                                                    '2fa.recovery.regen',
+                                                )}
                                             >
                                                 <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                                Generate Kode
+                                                {tSecurity(
+                                                    '2fa.recovery.regen',
+                                                )}
                                             </Button>
                                         ) : null}
                                     </div>
                                 </div>
                                 {codes.length > 0 ? (
                                     <div className="space-y-2">
-                                        <p className="text-xs text-muted-foreground">
-                                            Ini adalah salah satu kode pemulihan
-                                            Anda. Simpan dan rahasiakan kode
-                                            ini. Jangan bagikan kepada siapa
-                                            pun.
+                                        <p className="text-muted-foreground text-xs">
+                                            {tUser('user.twofa.recovery_hint')}
                                         </p>
                                         <div className="flex items-center justify-between rounded-md border p-2 font-mono text-xs">
                                             <span>{codes[0]}</span>
@@ -261,14 +276,13 @@ export function TwoFADialog({
                                                 value={codes[0]}
                                                 variant="icon"
                                                 size="xs"
-                                                aria-label={`Salin ${codes[0]}`}
+                                                aria-label={`${t('common.copy')} ${codes[0]}`}
                                             />
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-xs text-muted-foreground">
-                                        Klik Generate Kode untuk membuat kode
-                                        pemulihan baru.
+                                    <div className="text-muted-foreground text-xs">
+                                        {tUser('user.twofa.generate_hint')}
                                     </div>
                                 )}
                             </div>
@@ -280,36 +294,36 @@ export function TwoFADialog({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            Nonaktifkan Two-Factor Authentication
+                            {tUser('user.twofa.disable_title')}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Tindakan ini akan menonaktifkan 2FA untuk pengguna
-                            ini. Pengguna dapat mengaktifkannya kembali dengan
-                            melakukan setup ulang 2FA melalui menu keamanan.
+                            {tUser('user.twofa.disable_desc')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="space-y-2 text-sm">
                         <div className="text-muted-foreground">
-                            Pengguna:{' '}
-                            <span className="font-medium text-foreground">
+                            {t('common.user')}:
+                            <span className="text-foreground font-medium">
                                 {user.name}
                             </span>{' '}
                             ({user.email})
                         </div>
                         {reason.trim() ? (
-                            <div className="rounded-md border bg-muted/30 p-2 text-xs">
-                                Alasan: {reason.trim()}
+                            <div className="bg-muted/30 rounded-md border p-2 text-xs">
+                                {t('invoice.reason')}: {reason.trim()}
                             </div>
                         ) : null}
                     </div>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogCancel>
+                            {t('common.cancel')}
+                        </AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             onClick={handleDisable}
                             disabled={loading === 'disable'}
                         >
-                            Nonaktifkan sekarang
+                            {tUser('user.twofa.disable_now')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -1,4 +1,6 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
 import {
     Accordion,
@@ -24,10 +26,14 @@ export default function AddressSection({
     onChange,
     errors = {},
     defaultOpen = true,
-    title = 'Address',
+    title,
 }: AddressProps) {
-    const { props } = usePage<{ options: { addressLabels: string[] } }>();
-    const addressLabels = props.options.addressLabels;
+    const { t: tProfile } = useTranslation('profile');
+    const { t: tEnum } = useTranslation('enum');
+    const { props } = usePage<
+        InertiaPageProps & { options?: { addressLabels: string[] } }
+    >();
+    const addressLabels: string[] = props.options?.addressLabels ?? [];
 
     const setField = (key: keyof AddressValue, val: string) => {
         onChange({ ...value, [key]: val });
@@ -42,7 +48,7 @@ export default function AddressSection({
         >
             <AccordionItem value="address">
                 <AccordionTrigger className="text-base font-semibold">
-                    {title}
+                    {title ?? tProfile('address.title')}
                 </AccordionTrigger>
                 <AccordionContent>
                     <div className="space-y-4">
@@ -54,10 +60,10 @@ export default function AddressSection({
                             onChange={(e) =>
                                 setField('address_line', e.target.value)
                             }
-                            placeholder="Nama jalan, nomor rumah, RT/RW"
+                            placeholder={tProfile('address.street_placeholder')}
                             label={
                                 <>
-                                    Alamat{' '}
+                                    {tProfile('address.label')}{' '}
                                     <span className="text-destructive">*</span>
                                 </>
                             }
@@ -72,10 +78,12 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('village', e.target.value)
                                 }
-                                placeholder="Masukkan kelurahan/desa"
+                                placeholder={tProfile(
+                                    'address.village_placeholder',
+                                )}
                                 label={
                                     <>
-                                        Kelurahan/Desa{' '}
+                                        {tProfile('address.village')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -90,10 +98,12 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('district', e.target.value)
                                 }
-                                placeholder="Masukkan kecamatan"
+                                placeholder={tProfile(
+                                    'address.district_placeholder',
+                                )}
                                 label={
                                     <>
-                                        Kecamatan{' '}
+                                        {tProfile('address.district')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -108,10 +118,12 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('postal_code', e.target.value)
                                 }
-                                placeholder="Masukkan kode pos"
+                                placeholder={tProfile(
+                                    'address.postal_placeholder',
+                                )}
                                 label={
                                     <>
-                                        Kode Pos{' '}
+                                        {tProfile('address.postal')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -129,10 +141,12 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('city', e.target.value)
                                 }
-                                placeholder="Masukkan kota/kabupaten"
+                                placeholder={tProfile(
+                                    'address.city_placeholder',
+                                )}
                                 label={
                                     <>
-                                        Kota{' '}
+                                        {tProfile('address.city')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -147,10 +161,12 @@ export default function AddressSection({
                                 onChange={(e) =>
                                     setField('province', e.target.value)
                                 }
-                                placeholder="Masukkan provinsi"
+                                placeholder={tProfile(
+                                    'address.province_placeholder',
+                                )}
                                 label={
                                     <>
-                                        Provinsi{' '}
+                                        {tProfile('address.province')}{' '}
                                         <span className="text-destructive">
                                             *
                                         </span>
@@ -159,21 +175,32 @@ export default function AddressSection({
                                 errorMessage={errors['address.province']}
                             />
                             <div className="space-y-2">
-                                <Label htmlFor="label">Label Alamat</Label>
+                                <Label htmlFor="label">
+                                    {tProfile('address.address_label')}
+                                </Label>
                                 <Select
                                     value={value.label}
                                     onValueChange={(v) => setField('label', v)}
                                 >
                                     <SelectTrigger id="label">
-                                        <SelectValue placeholder="Pilih label alamat" />
+                                        <SelectValue
+                                            placeholder={tProfile(
+                                                'address.label_placeholder',
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {addressLabels.map((label) => (
+                                        {addressLabels.map((label: string) => (
                                             <SelectItem
                                                 key={label}
                                                 value={label}
                                             >
-                                                {label}
+                                                {tEnum(
+                                                    `address_label.${label}`,
+                                                    {
+                                                        defaultValue: label,
+                                                    },
+                                                )}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

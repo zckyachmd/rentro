@@ -1,14 +1,19 @@
 @extends('pdf.layout')
 
-@section('title', 'Invoice ' . ($invoice['number'] ?? '-'))
+@php
+    $__invNumber = data_get($invoice, 'number');
+    if (is_array($__invNumber)) {
+        $__invNumber = array_key_exists('value', $__invNumber) ? $__invNumber['value'] : (reset($__invNumber) ?: null);
+    }
+    $__invNumber = (is_string($__invNumber) || is_numeric($__invNumber)) ? (string) $__invNumber : '-';
+@endphp
+@section('title', (string) __('pdf.receipt.invoice') . ' ' . (string) $__invNumber)
 
 @push('pdf-styles')
 <style>
-    @page { margin: 24px 28px; }
-    <style>
-        @page {
-            margin: 24px 28px;
-        }
+    @page {
+        margin: 24px 28px;
+    }
 
         body {
             font-family: DejaVu Sans, Arial, Helvetica, sans-serif;
@@ -280,22 +285,20 @@
             </div>
             <div class="right">
                 <div class="meta-inline">
-                    <div class="item"><span class="label">Nomor</span> <span class="value">{{ $invoice['number'] ?? '-'
+                    <div class="item"><span class="label">{{ __('common.number') }}</span> <span class="value">{{ $__invNumber }}</span></div>
+                    <div class="item"><span class="label">{{ __('common.issue_date') }}</span> <span class="value">{{ $issuedAt ?: '—'
                             }}</span></div>
-                    <div class="item"><span class="label">Rilis Tagihan</span> <span class="value">{{ $issuedAt ?: '—'
-                            }}</span></div>
-                    <div class="item"><span class="label">Jatuh Tempo</span> <span class="value">{{ $dueAt ?: '—'
+                    <div class="item"><span class="label">{{ __('common.due_date') }}</span> <span class="value">{{ $dueAt ?: '—'
                             }}</span></div>
 
-                    <div class="item"><span class="label">Status</span> <span class="value">{{ ucfirst($status)
-                            }}</span></div>
+                    <div class="item"><span class="label">{{ __('common.status') }}</span> <span class="value">{{ __('enum.invoice.status.' . strtolower((string)$status)) }}</span></div>
                 </div>
             </div>
         </div>
 
         <!-- Billed To -->
         <div style="margin-bottom: 8px;">
-            <div class="label">Ditagihkan kepada</div>
+            <div class="label">{{ __('common.billed_to') }}</div>
             <div class="billed-name">{{ $tenant['name'] ?? '—' }}</div>
             @if(!empty($tenant['email']))
             <div class="muted">{{ $tenant['email'] }}</div>
@@ -307,33 +310,34 @@
 
         <!-- Context: contract, room, period -->
         <div class="muted" style="margin-bottom: 8px;">
-            Kontrak #{{ $invoice['contract_id'] ?? '—' }} • Kamar {{ $room['number'] ?? '—' }} • Periode {{ ($period[0]
-            ?: '—') }} s/d {{ ($period[1] ?: '—') }}
+            {{ __('invoice.context', [
+                'number' => $invoice['contract_id'] ?? '—',
+                'room'   => $room['number'] ?? '—',
+                'start'  => ($period[0] ?: '—'),
+                'end'    => ($period[1] ?: '—'),
+            ]) }}
         </div>
 
         <!-- Items -->
         <table class="table-items">
             <thead>
                 <tr>
-                    <th style="width:55%">Deskripsi</th>
-                    <th class="right" style="width:15%">Qty</th>
-                    <th class="right" style="width:15%">Harga Satuan</th>
-                    <th class="right" style="width:15%">Subtotal</th>
+                    <th style="width:55%">{{ __('common.description') }}</th>
+                    <th class="right" style="width:15%">{{ __('common.qty') }}</th>
+                    <th class="right" style="width:15%">{{ __('common.unit_price') }}</th>
+                    <th class="right" style="width:15%">{{ __('common.subtotal') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @php($items = (array) ($invoice['items'] ?? []))
                 @if(empty($items))
                 <tr>
-                    <td colspan="4" class="muted">Tidak ada item tagihan.</td>
+                    <td colspan="4" class="muted">{{ __('invoice.empty') }}</td>
                 </tr>
                 @else
                 @foreach($items as $item)
                 @php($meta = (array) ($item['meta'] ?? []))
-                @php($rawLabel = (string) ($item['label'] ?? ''))
-                @php($baseLabel = str_contains($rawLabel, '×') ? trim(explode('×', $rawLabel)[0]) : $rawLabel)
-                @php($displayLabel = preg_replace('/^Sewa\s+1\s+(bulan|hari|minggu)\b/i', 'Sewa kamar', $baseLabel))
-                @php($displayLabel = preg_replace('/^Prorata\s+awal\b/i', 'Prorata sewa kamar', $displayLabel))
+                @php($code = strtoupper((string) ($item['code'] ?? '')))
                 @php($desc = $meta['description'] ?? ($meta['desc'] ?? ($meta['note'] ?? '')))
                 @php($dateStart = isset($meta['date_start']) ? (string) $meta['date_start'] : null)
                 @php($dateEndInc = isset($meta['date_end']) ? (string) $meta['date_end'] : null)
@@ -347,25 +351,31 @@
                 @php($amount = (int) ($item['amount_cents'] ?? 0))
                 @php($unitPrice = is_numeric($meta['unit_price_cents'] ?? null) ? (int) $meta['unit_price_cents'] :
                 (int) round($amount / max(1, $qty)))
-                @php($isProrata = strtoupper((string) ($item['code'] ?? '')) === 'PRORATA' || preg_match('/prorata/i',
-                $displayLabel))
+                @php($isProrata = $code === 'PRORATA' || preg_match('/prorata/i', (string) ($item['label'] ?? '')))
                 <tr>
                     <td>
-                        <div><strong>{{ $displayLabel ?: '-' }}</strong></div>
+                        <div>
+                            @if($code === 'PRORATA')
+                                <strong>{{ __('pdf.invoice.item.prorata') }}</strong>
+                            @elseif($code === 'RENT')
+                                <strong>{{ __('pdf.invoice.item.rent') }}</strong>
+                            @else
+                                <strong>{{ (string) ($item['label'] ?? '-') }}</strong>
+                            @endif
+                        </div>
                         @if(!empty($desc))
                         <div class="muted">{{ $desc }}</div>
                         @endif
                         @if($isProrata && ($dateStart || $endExclusive))
-                        <div class="small-muted">({{ $formatDate($dateStart) }} s/d {{ $formatDate($endExclusive) }})
-                        </div>
+                        <div class="small-muted">({{ __('pdf.invoice.item.period_range', ['start' => $formatDate($dateStart), 'end' => $formatDate($endExclusive)]) }})</div>
                         @endif
                         @if($isProrata && !is_null($freeDays) && $freeDays > 0 && !is_null($totalDays))
-                        <div class="small-muted">{{ 'Total ' . $totalDays . ' hari; gratis ' . min($freeDays,
-                            $totalDays) . ' hari; ditagih ' . $qty . ' hari.' }}</div>
+                        <div class="small-muted">{{ __('pdf.invoice.item.days_summary', ['days' => $totalDays, 'free' => min($freeDays, $totalDays), 'billed' => $qty]) }}</div>
                         @endif
                         @php($unitStr = is_string(($meta['unit'] ?? null)) ? (string) $meta['unit'] : '')
-                        @if(!$isProrata && !empty($unitStr) && $qty && $unitPrice)
-                        <div class="small-muted">{{ $fmt($unitPrice) . ' × ' . $qty . ' ' . $unitStr }}</div>
+                        @php($unitKey = match (strtolower($unitStr)) { 'hari' => 'day', 'minggu' => 'week', 'bulan' => 'month', default => '' })
+                        @if(!$isProrata && !empty($unitKey) && $qty && $unitPrice)
+                        <div class="small-muted">{{ __('pdf.invoice.item.qty_line', ['price' => $fmt($unitPrice), 'qty' => $qty, 'unit' => __('pdf.invoice.unit.' . $unitKey)]) }}</div>
                         @endif
                     </td>
                     <td class="right mono">{{ $qty }}</td>
@@ -374,7 +384,7 @@
                 </tr>
                 @endforeach
                 <tr class="subtotal">
-                    <td class="right" colspan="3">Total</td>
+                    <td class="right" colspan="3">{{ __('common.total') }}</td>
                     <td class="right mono">{{ $fmt($grandTotal) }}</td>
                 </tr>
                 @endif
@@ -384,14 +394,14 @@
         <!-- Notes / Payment Info -->
         <div style="margin-top:12px;" class="note">
             @if($status === 'paid')
-            Dibayar pada {{ !empty($invoice['paid_at']) ? (string) $invoice['paid_at'] : '—' }}. Terima kasih.
+            {{ __('common.paid_on', ['date' => (!empty($invoice['paid_at']) ? (string) $invoice['paid_at'] : '—')]) }}
             @elseif($status === 'cancelled')
-            Invoice ini telah dibatalkan.
+            {{ __('common.cancelled_invoice') }}
             @else
-            Mohon selesaikan pembayaran sebelum tanggal jatuh tempo.
+            {{ __('common.please_pay_before_due') }}
             @endif
         </div>
 
-        <div class="footer">{{ $appName }} — {{ $appUrl }} • Dicetak pada {{ now()->format('Y-m-d H:i') }}</div>
+        <div class="footer">{{ $appName }} — {{ $appUrl }} • {{ __('common.printed_at', ['datetime' => now()->format('Y-m-d H:i')]) }}</div>
     </div>
 @endsection

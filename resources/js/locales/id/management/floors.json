@@ -1,0 +1,20 @@
+{
+    "title": "Lantai",
+    "desc": "Kelola master data lantai.",
+    "add": "Tambah Lantai",
+    "search_placeholder": "Cari lantai...",
+    "empty": "Belum ada lantai.",
+    "create_title": "Tambah Lantai",
+    "edit_title": "Ubah Lantai",
+    "form": {
+        "save": "Simpan"
+    },
+    "delete": {
+        "title": "Hapus Lantai",
+        "confirm": "Hapus lantai ini? Tindakan ini tidak dapat dibatalkan.",
+        "confirm_named": "Hapus lantai \"{{name}}\"? Tindakan ini tidak dapat dibatalkan."
+    },
+    "created": "Lantai berhasil ditambahkan.",
+    "updated": "Lantai berhasil diperbarui.",
+    "deleted": "Lantai berhasil dihapus."
+}

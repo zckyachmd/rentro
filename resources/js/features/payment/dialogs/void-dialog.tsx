@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     AlertDialog,
@@ -33,36 +34,38 @@ export default function VoidPaymentDialog({
         if (!open) setReason('');
     }, [open]);
     const rule = useLengthRule(reason, { min: 20, max: 200, required: true });
+    const { t } = useTranslation();
 
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Batalkan Pembayaran</AlertDialogTitle>
+                    <AlertDialogTitle>
+                        {t('payment.void.title')}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                         {target ? (
                             <>
-                                Anda akan membatalkan pembayaran untuk invoice{' '}
-                                <span className="font-mono font-semibold">
-                                    {target.invoice ?? '-'}
-                                </span>
-                                . Nominal {formatIDR(target.amount_cents)}.
+                                {t('payment.void.desc', {
+                                    number: target.invoice ?? '-',
+                                    amount: formatIDR(target.amount_cents),
+                                })}
                             </>
                         ) : null}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
-                    <Label>Alasan pembatalan</Label>
+                    <Label>{t('payment.cancel_reason')}</Label>
                     <Textarea
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        placeholder="Contoh: salah input, transfer dibatalkan, dsb."
+                        placeholder={t('payment.cancel_reason_placeholder')}
                         rows={3}
                         required
                         maxLength={200}
                         autoFocus
                     />
-                    <div className="mt-1 flex items-center justify-end text-[11px] text-muted-foreground">
+                    <div className="text-muted-foreground mt-1 flex items-center justify-end text-[11px]">
                         <span>
                             {rule.length}/{rule.length < 20 ? 20 : 200}
                             {rule.length < 20 ? '*' : ''}
@@ -71,13 +74,13 @@ export default function VoidPaymentDialog({
                 </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={() => onOpenChange(false)}>
-                        Batal
+                        {t('common.cancel')}
                     </AlertDialogCancel>
                     <AlertDialogAction
                         disabled={!rule.valid || processing}
                         onClick={() => onConfirm(reason)}
                     >
-                        Batalkan Sekarang
+                        {t('payment.void_now')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

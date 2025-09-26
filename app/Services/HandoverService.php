@@ -44,11 +44,11 @@ class HandoverService
         }
 
         if (!in_array($contract->status->value, $allowedStatuses, true) && !$allowActiveDisputedRedo) {
-            throw new \RuntimeException('Kontrak tidak valid untuk check-in.');
+            throw new \RuntimeException(__('management/handover.errors.invalid_for_checkin'));
         }
         if ($contract->status->value === ContractStatus::BOOKED->value) {
             if ($contract->start_date && $contract->start_date->copy()->startOfDay()->greaterThan($today)) {
-                throw new \RuntimeException('Tanggal mulai kontrak belum tiba.');
+                throw new \RuntimeException(__('management/handover.errors.start_date_not_reached'));
             }
         }
 
@@ -58,7 +58,7 @@ class HandoverService
             ->whereIn('status', ['Pending', 'Confirmed'])
             ->exists();
         if ($hasActiveCheckin) {
-            throw new \RuntimeException('Masih ada check-in yang menunggu konfirmasi tenant.');
+            throw new \RuntimeException(__('management/handover.errors.pending_checkin_exists'));
         }
 
         return $this->createHandoverWithItems($contract, 'checkin', $payload);
@@ -84,7 +84,7 @@ class HandoverService
             $allowCompletedDisputed = $lastCheckout && (string) $lastCheckout->status === 'Disputed';
         }
         if (!$isActive && !$allowCompletedDisputed) {
-            throw new \RuntimeException('Kontrak tidak valid untuk check-out.');
+            throw new \RuntimeException(__('management/handover.errors.invalid_for_checkout'));
         }
         $hasConfirmedCheckin = $contract
             ->hasMany(RoomHandover::class, 'contract_id')
@@ -92,7 +92,7 @@ class HandoverService
             ->where('status', 'Confirmed')
             ->exists();
         if (!$hasConfirmedCheckin) {
-            throw new \RuntimeException('Belum ada check-in yang terkonfirmasi. Ulangi proses check-in dan pastikan tenant menyetujui.');
+            throw new \RuntimeException(__('management/handover.errors.no_confirmed_checkin'));
         }
         $hasCheckout = $contract
             ->hasMany(RoomHandover::class, 'contract_id')
@@ -100,7 +100,7 @@ class HandoverService
             ->whereIn('status', ['Pending', 'Confirmed'])
             ->exists();
         if ($hasCheckout) {
-            throw new \RuntimeException('Check-out sudah dibuat.');
+            throw new \RuntimeException(__('management/handover.errors.checkout_already_exists'));
         }
 
         return $this->createHandoverWithItems($contract, 'checkout', $payload);
@@ -123,7 +123,7 @@ class HandoverService
                         ->whereIn('status', ['Pending', 'Confirmed'])
                         ->exists();
                     if ($hasActiveCheckin) {
-                        throw new \RuntimeException('Masih ada check-in yang menunggu konfirmasi tenant.');
+                        throw new \RuntimeException(__('management/handover.errors.pending_checkin_exists'));
                     }
                 } elseif ($type === 'checkout') {
                     $hasConfirmedCheckin = $contract
@@ -132,7 +132,7 @@ class HandoverService
                         ->where('status', 'Confirmed')
                         ->exists();
                     if (!$hasConfirmedCheckin) {
-                        throw new \RuntimeException('Belum ada check-in yang terkonfirmasi. Ulangi proses check-in dan pastikan tenant menyetujui.');
+                        throw new \RuntimeException(__('management/handover.errors.no_confirmed_checkin'));
                     }
                     $hasCheckout = $contract
                         ->hasMany(RoomHandover::class, 'contract_id')
@@ -140,7 +140,7 @@ class HandoverService
                         ->whereIn('status', ['Pending', 'Confirmed'])
                         ->exists();
                     if ($hasCheckout) {
-                        throw new \RuntimeException('Check-out sudah dibuat.');
+                        throw new \RuntimeException(__('management/handover.errors.checkout_already_exists'));
                     }
                 }
 

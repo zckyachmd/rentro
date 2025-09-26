@@ -65,10 +65,10 @@ class HandoverController extends Controller
         $status = (string) ($handover->status ?? '');
         if (strtolower($status) !== 'pending') {
             $msg = $status === 'Confirmed'
-                ? 'Serah terima ini sudah dikonfirmasi sebelumnya.'
+                ? __('tenant/handover.confirmed_already')
                 : ($status === 'Disputed'
-                    ? 'Serah terima ini sudah disanggah. Tidak dapat dikonfirmasi.'
-                    : 'Status serah terima tidak valid untuk dikonfirmasi.');
+                    ? __('tenant/handover.disputed_already')
+                    : __('tenant/handover.status_invalid_for_confirm'));
 
             return back()->with('error', $msg);
         }
@@ -123,7 +123,7 @@ class HandoverController extends Controller
             // abaikan
         }
 
-        return back()->with('success', 'Terima kasih, Anda telah mengonfirmasi handover ini.');
+        return back()->with('success', __('tenant/handover.confirmed_success'));
     }
 
     public function dispute(HandoverDisputeRequest $request, RoomHandover $handover)
@@ -134,10 +134,10 @@ class HandoverController extends Controller
         $status = (string) ($handover->status ?? '');
         if (strtolower($status) !== 'pending') {
             $msg = $status === 'Confirmed'
-                ? 'Serah terima ini sudah dikonfirmasi sebelumnya. Tidak dapat disanggah.'
+                ? __('tenant/handover.dispute_confirmed_already')
                 : ($status === 'Disputed'
-                    ? 'Serah terima ini sudah disanggah sebelumnya.'
-                    : 'Status serah terima tidak valid untuk disanggah.');
+                    ? __('tenant/handover.dispute_already')
+                    : __('tenant/handover.status_invalid_for_dispute'));
 
             return back()->with('error', $msg);
         }
@@ -185,7 +185,7 @@ class HandoverController extends Controller
             ])
             ->log('Tenant mengajukan sanggahan handover');
 
-        return back()->with('success', 'Sanggahan Anda telah dicatat.');
+        return back()->with('success', __('tenant/handover.dispute_saved'));
     }
 
     public function attachmentGeneral(Request $request, RoomHandover $handover, string $path)

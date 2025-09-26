@@ -10,6 +10,7 @@ import {
     RefreshCcw,
 } from 'lucide-react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
@@ -22,6 +23,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
+import i18n from '@/lib/i18n';
 import { variantForContractStatus } from '@/lib/status';
 import type {
     TenantContractColumnOptions as ColumnFactoryOptions,
@@ -44,7 +46,7 @@ export const createColumns = (
 ): ColumnDef<TenantContractItem>[] => [
     makeColumn<TenantContractItem>({
         id: 'number',
-        title: 'Nomor',
+        title: i18n.t('common.number'),
         className: 'shrink-0 w-[180px] font-mono',
         cell: ({ row }) => {
             const href = route('tenant.contracts.show', {
@@ -69,7 +71,7 @@ export const createColumns = (
     }),
     makeColumn<TenantContractItem>({
         id: 'room',
-        title: 'Kamar',
+        title: i18n.t('common.room'),
         className: COL.room,
         cell: ({ row }) => (
             <div className={COL.room}>{row.original.room?.number ?? '-'}</div>
@@ -78,7 +80,7 @@ export const createColumns = (
     makeColumn<TenantContractItem>({
         id: 'start_date',
         accessorKey: 'start_date',
-        title: 'Mulai',
+        title: i18n.t('common.start'),
         sortable: true,
         className: COL.start,
         cell: ({ getValue }) => (
@@ -88,7 +90,7 @@ export const createColumns = (
     makeColumn<TenantContractItem>({
         id: 'end_date',
         accessorKey: 'end_date',
-        title: 'Berakhir',
+        title: i18n.t('common.end'),
         sortable: true,
         className: COL.end,
         cell: ({ getValue }) => (
@@ -97,7 +99,7 @@ export const createColumns = (
     }),
     makeColumn<TenantContractItem>({
         id: 'rent',
-        title: 'Sewa',
+        title: i18n.t('common.rent'),
         className: COL.rent,
         sortable: true,
         cell: ({ row }) => (
@@ -107,20 +109,28 @@ export const createColumns = (
     makeColumn<TenantContractItem>({
         id: 'status',
         accessorKey: 'status',
-        title: 'Status',
+        title: i18n.t('common.status'),
         className: COL.status,
         sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge variant={variantForContractStatus(row.original.status)}>
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const raw = row.original.status || '';
+            const key = raw.trim().toLowerCase().replace(/\s+/g, '_');
+            const label = i18n.t(`contract.status.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return (
+                <div className={COL.status}>
+                    <Badge variant={variantForContractStatus(raw)}>
+                        {label}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<TenantContractItem>({
         id: 'days_left',
-        title: 'Sisa Hari',
+        title: i18n.t('common.days_left'),
         className: COL.daysLeft,
         cell: ({ row }) => {
             const s = String(row.original.status || '');
@@ -145,7 +155,9 @@ export const createColumns = (
             if (days <= 0) {
                 return (
                     <div className={COL.daysLeft}>
-                        <Badge variant="destructive">Habis</Badge>
+                        <Badge variant="destructive">
+                            {i18n.t('common.expired')}
+                        </Badge>
                     </div>
                 );
             }
@@ -153,35 +165,43 @@ export const createColumns = (
                 return (
                     <div className={COL.daysLeft}>
                         <Badge className="border-amber-200 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                            {`${days} hari`}
+                            {i18n.t('common.days', { count: days })}
                         </Badge>
                     </div>
                 );
             }
             return (
                 <div className={COL.daysLeft}>
-                    <Badge variant="secondary">{`${days} hari`}</Badge>
+                    <Badge variant="secondary">
+                        {i18n.t('common.days', { count: days })}
+                    </Badge>
                 </div>
             );
         },
     }),
     makeColumn<TenantContractItem>({
         id: 'renew',
-        title: 'Auto‑Renew',
+        title: i18n.t('common.auto_renew'),
         className: COL.renew,
         cell: ({ row }) => (
             <div className={COL.renew}>
-                {row.original.auto_renew ? 'Ya' : 'Tidak'}
+                {row.original.auto_renew
+                    ? i18n.t('common.yes')
+                    : i18n.t('common.no')}
             </div>
         ),
     }),
     makeColumn<TenantContractItem>({
         id: 'actions',
-        title: 'Aksi',
+        title: i18n.t('common.actions'),
         className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
             const r = row.original as TenantContractItem;
-            const isActive = String(r.status || '').toLowerCase() === 'active';
+            const isActive =
+                String(r.status || '')
+                    .trim()
+                    .toLowerCase()
+                    .replace(/\s+/g, '_') === 'active';
             return (
                 <div className={COL.actions + ' flex items-center justify-end'}>
                     <DropdownMenu>
@@ -189,13 +209,17 @@ export const createColumns = (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`Aksi kontrak ${r.id}`}
+                                aria-label={i18n.t('contract.actions_for', {
+                                    id: r.id,
+                                })}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() =>
@@ -206,34 +230,39 @@ export const createColumns = (
                                     )
                                 }
                             >
-                                <Eye className="mr-2 h-4 w-4" /> Lihat detail
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
                             {r.needs_ack_checkin ? (
                                 <DropdownMenuItem
                                     onClick={() => opts?.onViewCheckin?.(r)}
                                 >
-                                    <Eye className="mr-2 h-4 w-4" /> Lihat
-                                    Check‑in
+                                    <Eye className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('contract.view_checkin')}
                                 </DropdownMenuItem>
                             ) : null}
                             {r.needs_ack_checkout ? (
                                 <DropdownMenuItem
                                     onClick={() => opts?.onViewCheckout?.(r)}
                                 >
-                                    <Eye className="mr-2 h-4 w-4" /> Lihat
-                                    Check‑out
+                                    <Eye className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('contract.view_checkout')}
                                 </DropdownMenuItem>
                             ) : null}
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    const url = route('tenant.invoices.index');
-                                    const qs = `?q=${encodeURIComponent(`contract:${r.id}`)}`;
-                                    router.visit(url + qs);
-                                }}
-                            >
-                                <ReceiptText className="mr-2 h-4 w-4" /> Lihat
-                                invoice
-                            </DropdownMenuItem>
+                            <Can all={['invoice.view']}>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        const url = route(
+                                            'tenant.invoices.index',
+                                        );
+                                        const qs = `?q=${encodeURIComponent(`contract:${r.id}`)}`;
+                                        router.visit(url + qs);
+                                    }}
+                                >
+                                    <ReceiptText className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('contract.actions.view_invoices')}
+                                </DropdownMenuItem>
+                            </Can>
                             <DropdownMenuItem
                                 onClick={() =>
                                     window.open(
@@ -244,16 +273,18 @@ export const createColumns = (
                                     )
                                 }
                             >
-                                <Printer className="mr-2 h-4 w-4" /> Cetak
-                                kontrak
+                                <Printer className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('contract.actions.print')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                                disabled={!r.auto_renew || !isActive}
-                                onClick={() => opts?.onStopAutoRenew?.(r)}
-                            >
-                                <RefreshCcw className="mr-2 h-4 w-4" /> Hentikan
-                                perpanjangan otomatis
-                            </DropdownMenuItem>
+                            <Can all={['contract.renew']}>
+                                <DropdownMenuItem
+                                    disabled={!r.auto_renew || !isActive}
+                                    onClick={() => opts?.onStopAutoRenew?.(r)}
+                                >
+                                    <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('contract.autorenew.stop_action')}
+                                </DropdownMenuItem>
+                            </Can>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

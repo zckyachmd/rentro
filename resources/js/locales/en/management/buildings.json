@@ -1,0 +1,20 @@
+{
+    "title": "Buildings",
+    "desc": "Manage building master data.",
+    "add": "Add Building",
+    "search_placeholder": "Search building...",
+    "empty": "No buildings yet.",
+    "create_title": "Create Building",
+    "edit_title": "Edit Building",
+    "form": {
+        "save": "Save"
+    },
+    "delete": {
+        "title": "Delete Building",
+        "confirm": "Delete this building? This action cannot be undone.",
+        "confirm_named": "Delete building \"{{name}}\"? This action cannot be undone."
+    },
+    "created": "Building created.",
+    "updated": "Building updated.",
+    "deleted": "Building deleted."
+}

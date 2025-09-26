@@ -1,6 +1,8 @@
 import { usePage } from '@inertiajs/react';
 import React from 'react';
 
+import type { PageProps } from '@/types';
+
 function hasRole(role: string, userRoles: string[] = []) {
     return userRoles.map((r) => r.toLowerCase()).includes(role.toLowerCase());
 }
@@ -23,9 +25,11 @@ export type CanProps = {
  *  <Can rolesAny={["super admin"]}>...</Can>
  */
 export function Can({ all, any, not, rolesAll, rolesAny, children }: CanProps) {
-    const { props } = usePage<{
-        auth?: { user?: { permissions?: string[]; roles?: string[] } };
-    }>();
+    const { props } = usePage<
+        PageProps<{
+            auth?: { user?: { permissions?: string[]; roles?: string[] } };
+        }>
+    >();
 
     const perms = props.auth?.user?.permissions ?? [];
     const roles = props.auth?.user?.roles ?? [];

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ export default function HandoverDetail({
     onRedo?: (mode: Mode) => void;
 }) {
     const currentHandover = handover;
+    const { t } = useTranslation('management/contract');
     const dismiss = React.useCallback(
         () => onOpenChange(false),
         [onOpenChange],
@@ -49,7 +51,6 @@ export default function HandoverDetail({
     const [showAllAttachments, setShowAllAttachments] = React.useState(false);
     const [redoInProgress, setRedoInProgress] = React.useState(false);
 
-    // Determine redo marker purely from backend-provided meta
     const redoMarked = React.useMemo(() => {
         if (!currentHandover) return false;
         const anyH = currentHandover as unknown as {
@@ -63,7 +64,6 @@ export default function HandoverDetail({
         return redone || redoByType;
     }, [currentHandover]);
 
-    // Reset view state when switching handover
     React.useEffect(() => {
         setShowAllAttachments(false);
         setRedoInProgress(false);
@@ -90,12 +90,21 @@ export default function HandoverDetail({
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-[calc(100%-1.5rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
-                    <DialogHeader className="px-5 pb-4 pt-6 sm:px-6">
-                        <DialogTitle>Detail Serah Terima</DialogTitle>
+                    <DialogHeader className="px-5 pt-6 pb-4 sm:px-6">
+                        <DialogTitle>{t('handover.detail_title')}</DialogTitle>
                         <DialogDescription>
                             {currentHandover
-                                ? `Ringkasan ${currentHandover.type} — ${formatDate(currentHandover.recorded_at, true)}`
-                                : 'Ringkasan entri serah terima.'}
+                                ? t('handover.summary', {
+                                      type:
+                                          currentHandover.type === 'checkin'
+                                              ? t('handover.menu.checkin')
+                                              : t('handover.menu.checkout'),
+                                      date: formatDate(
+                                          currentHandover.recorded_at,
+                                          true,
+                                      ),
+                                  })
+                                : t('handover.detail_desc')}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -104,24 +113,27 @@ export default function HandoverDetail({
                     {currentHandover ? (
                         <div className="flex-1 overflow-auto overscroll-contain">
                             <div className="space-y-6 px-5 py-6 sm:px-6">
-                                {/* Status Tanggapan Tenant */}
-                                <section className="rounded-xl border bg-muted/10">
+                                {/* Tenant Response Status */}
+                                <section className="bg-muted/10 rounded-xl border">
                                     <div className="flex flex-col gap-4 p-5">
                                         <div className="space-y-1">
-                                            <div className="text-sm font-semibold text-foreground">
-                                                Status Tanggapan Tenant
+                                            <div className="text-foreground text-sm font-semibold">
+                                                {t(
+                                                    'handover.tenant_response_title',
+                                                )}
                                             </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                Aksi terakhir yang dicatat oleh
-                                                tenant.
+                                            <p className="text-muted-foreground text-xs">
+                                                {t(
+                                                    'handover.tenant_response_desc',
+                                                )}
                                             </p>
                                         </div>
 
                                         {currentHandover.disputed ? (
-                                            <div className="mx-0 rounded-lg border border-destructive/30 bg-destructive/5 p-3 sm:p-4">
+                                            <div className="border-destructive/30 bg-destructive/5 mx-0 rounded-lg border p-3 sm:p-4">
                                                 <div className="flex items-center gap-2 text-sm">
                                                     <Badge variant="destructive">
-                                                        Disanggah
+                                                        {t('handover.disputed')}
                                                     </Badge>
                                                     {!disputeSameAsRecorded && (
                                                         <span className="text-destructive">
@@ -133,7 +145,7 @@ export default function HandoverDetail({
                                                     )}
                                                 </div>
                                                 {currentHandover.dispute_note ? (
-                                                    <p className="mt-2 whitespace-pre-wrap text-sm text-destructive">
+                                                    <p className="text-destructive mt-2 text-sm whitespace-pre-wrap">
                                                         {
                                                             currentHandover.dispute_note
                                                         }
@@ -141,10 +153,12 @@ export default function HandoverDetail({
                                                 ) : null}
                                             </div>
                                         ) : currentHandover.acknowledged ? (
-                                            <div className="mx-0 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-900/40 dark:bg-emerald-900/15 sm:p-4">
+                                            <div className="mx-0 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 sm:p-4 dark:border-emerald-900/40 dark:bg-emerald-900/15">
                                                 <div className="flex items-center gap-2 text-sm">
                                                     <Badge variant="outline">
-                                                        Dikonfirmasi
+                                                        {t(
+                                                            'handover.confirmed',
+                                                        )}
                                                     </Badge>
                                                     {!ackSameAsRecorded && (
                                                         <span className="text-muted-foreground">
@@ -156,7 +170,7 @@ export default function HandoverDetail({
                                                     )}
                                                 </div>
                                                 {currentHandover.acknowledge_note ? (
-                                                    <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                                                    <p className="text-muted-foreground mt-2 text-sm whitespace-pre-wrap">
                                                         {
                                                             currentHandover.acknowledge_note
                                                         }
@@ -164,29 +178,30 @@ export default function HandoverDetail({
                                                 ) : null}
                                             </div>
                                         ) : (
-                                            <div className="rounded-lg border border-dashed bg-background/60 px-4 py-6 text-sm text-muted-foreground">
-                                                Belum ada konfirmasi dari
-                                                tenant.
+                                            <div className="bg-background/60 text-muted-foreground rounded-lg border border-dashed px-4 py-6 text-sm">
+                                                {t(
+                                                    'handover.no_tenant_confirmation',
+                                                )}
                                             </div>
                                         )}
                                     </div>
                                 </section>
 
                                 {/* Meta ringkas */}
-                                <section className="rounded-xl border bg-muted/10">
+                                <section className="bg-muted/10 rounded-xl border">
                                     <div className="flex flex-col gap-4 p-5 text-sm">
                                         <div className="grid gap-4 sm:grid-cols-3">
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Jenis
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {t('common.type')}
                                                 </div>
                                                 <div className="text-base font-semibold capitalize">
                                                     {currentHandover.type}
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Waktu
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {t('common.time')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {formatDate(
@@ -196,8 +211,8 @@ export default function HandoverDetail({
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Status
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {t('common.status')}
                                                 </div>
                                                 <div>
                                                     <Badge variant="outline">
@@ -209,15 +224,15 @@ export default function HandoverDetail({
                                     </div>
                                 </section>
 
-                                {/* Catatan (tampilkan hanya jika ada) */}
+                                {/* Notes (if any) */}
                                 {currentHandover.notes ? (
-                                    <section className="rounded-xl border bg-muted/10">
+                                    <section className="bg-muted/10 rounded-xl border">
                                         <div className="flex min-w-0 flex-col gap-3 p-4 sm:p-5">
-                                            <div className="text-sm font-semibold text-foreground">
-                                                Catatan
+                                            <div className="text-foreground text-sm font-semibold">
+                                                {t('common.note')}
                                             </div>
-                                            <ScrollArea className="max-h-48 min-h-[84px] overflow-auto rounded-lg border bg-background/80">
-                                                <div className="max-w-full whitespace-pre-wrap break-words p-4 text-sm leading-relaxed wrap-anywhere">
+                                            <ScrollArea className="bg-background/80 max-h-48 min-h-[84px] overflow-auto rounded-lg border">
+                                                <div className="max-w-full p-4 text-sm leading-relaxed break-words wrap-anywhere whitespace-pre-wrap">
                                                     {String(
                                                         currentHandover.notes,
                                                     )}
@@ -228,23 +243,22 @@ export default function HandoverDetail({
                                     </section>
                                 ) : null}
 
-                                {/* Lampiran (samakan perilaku dengan tenant: batasi 8, tombol lihat semua) */}
+                                {/* Attachments (limit 8, view all) */}
                                 {currentHandover.attachments.length ? (
-                                    <section className="rounded-xl border bg-muted/10">
+                                    <section className="bg-muted/10 rounded-xl border">
                                         <div className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-5">
                                             <div className="flex items-center justify-between">
-                                                <div className="text-sm font-semibold text-foreground">
-                                                    Lampiran
+                                                <div className="text-foreground text-sm font-semibold">
+                                                    {t('common.attachments')}
                                                 </div>
-                                                <span className="text-xs text-muted-foreground">
-                                                    {
-                                                        currentHandover
-                                                            .attachments.length
-                                                    }{' '}
-                                                    file
+                                                <span className="text-muted-foreground text-xs">
+                                                    {t('common.files', {
+                                                        count: currentHandover
+                                                            .attachments.length,
+                                                    })}
                                                 </span>
                                             </div>
-                                            <ScrollArea className="max-h-[280px] rounded-lg border border-dashed bg-background/40">
+                                            <ScrollArea className="bg-background/40 max-h-[280px] rounded-lg border border-dashed">
                                                 <div className="grid gap-3 p-3 sm:grid-cols-3 sm:p-4 md:grid-cols-4 md:p-5">
                                                     {(showAllAttachments
                                                         ? currentHandover.attachments
@@ -274,7 +288,7 @@ export default function HandoverDetail({
                                                                 <button
                                                                     key={ff}
                                                                     type="button"
-                                                                    className="group relative overflow-hidden rounded-lg border bg-background transition hover:border-primary"
+                                                                    className="group bg-background hover:border-primary relative overflow-hidden rounded-lg border transition"
                                                                     onClick={() =>
                                                                         setLightbox(
                                                                             {
@@ -331,7 +345,7 @@ export default function HandoverDetail({
                                                 {currentHandover.attachments
                                                     .length > 8 &&
                                                 !showAllAttachments ? (
-                                                    <div className="border-t bg-background/60 p-2 text-center">
+                                                    <div className="bg-background/60 border-t p-2 text-center">
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
@@ -342,13 +356,15 @@ export default function HandoverDetail({
                                                                 )
                                                             }
                                                         >
-                                                            Lihat semua lampiran
+                                                            {t(
+                                                                'common.view_all_attachments',
+                                                            )}{' '}
                                                             (
                                                             {currentHandover
                                                                 .attachments
                                                                 .length -
                                                                 8}{' '}
-                                                            lagi)
+                                                            {t('common.more')})
                                                         </Button>
                                                     </div>
                                                 ) : null}
@@ -360,19 +376,19 @@ export default function HandoverDetail({
                             </div>
                         </div>
                     ) : (
-                        <div className="px-6 py-10 text-center text-sm text-muted-foreground">
-                            Data serah terima tidak ditemukan.
+                        <div className="text-muted-foreground px-6 py-10 text-center text-sm">
+                            {t('handover.not_found')}
                         </div>
                     )}
 
-                    <DialogFooter className="border-t bg-background/95 px-6 py-4">
+                    <DialogFooter className="bg-background/95 border-t px-6 py-4">
                         <Button
                             type="button"
                             variant="outline"
                             className="w-full sm:w-auto"
                             onClick={dismiss}
                         >
-                            Tutup
+                            {t('common.close')}
                         </Button>
                         {currentHandover?.disputed && !redoMarked ? (
                             <Button
@@ -389,8 +405,8 @@ export default function HandoverDetail({
                                 }}
                             >
                                 {currentHandover.type === 'checkin'
-                                    ? 'Ulangi Check‑in'
-                                    : 'Ulangi Check‑out'}
+                                    ? t('handover.menu.redo_checkin')
+                                    : t('handover.menu.redo_checkout')}
                             </Button>
                         ) : null}
                     </DialogFooter>

@@ -3,6 +3,7 @@
 import type { Column, Table } from "@tanstack/react-table"
 import { ChevronDown, Search } from "lucide-react"
 import * as React from "react"
+import { useTranslation } from 'react-i18next'
 
 import { Button } from "@/components/ui/button"
 import {
@@ -52,7 +53,7 @@ const resolveColumnLabel = <TData,>(col: Column<TData, unknown>): string => {
 export function DataTableToolbar<TData>({
   table,
   filterKey = "email",
-  placeholder = "Cari …",
+  placeholder,
   rightSlot,
   debounceMs = 300,
   value: controlledValue,
@@ -65,6 +66,7 @@ export function DataTableToolbar<TData>({
   autoRefreshValue,
   onAutoRefreshChange,
 }: Props<TData>) {
+  const { t } = useTranslation()
   const column = (table.getAllLeafColumns() as Column<TData, unknown>[]).find(
     (c) => String(c.id) === String(filterKey)
   ) as Column<TData, unknown> | undefined
@@ -149,6 +151,8 @@ export function DataTableToolbar<TData>({
     column.setFilterValue(term || undefined)
   }
 
+  const placeholderText = placeholder ?? t('datatable.search_placeholder')
+
   return (
     <div className="flex items-center gap-2 py-2">
       {column && (
@@ -156,7 +160,7 @@ export function DataTableToolbar<TData>({
           <Input
             value={showSubmitButton && isControlled ? draft : value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
+            placeholder={placeholderText}
             className="max-w-xs"
             onKeyDown={showSubmitButton ? (e) => { if (e.key === 'Enter') submitSearch() } : undefined}
           />
@@ -164,7 +168,7 @@ export function DataTableToolbar<TData>({
             <div className="flex flex-col items-start">
               <div className="flex gap-2">
                 <Button type="button" variant="secondary" onClick={submitSearch} className="shrink-0">
-                  <Search className="mr-2 h-4 w-4" /> Cari
+                  <Search className="mr-2 h-4 w-4" /> {t('datatable.search')}
                 </Button>
               </div>
             </div>
@@ -177,16 +181,16 @@ export function DataTableToolbar<TData>({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
-                {columnsButtonLabel ?? 'Kolom'} <ChevronDown />
+                {columnsButtonLabel ?? t('datatable.columns')} <ChevronDown />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Visibilitas Kolom</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('datatable.columns_visibility')}</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setAllVisibility(true)}>
-                Tampilkan semua
+                {t('datatable.show_all')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setAllVisibility(false)}>
-                Sembunyikan semua
+                {t('datatable.hide_all')}
               </DropdownMenuItem>
               {storageKey && (
                 <DropdownMenuItem
@@ -195,7 +199,7 @@ export function DataTableToolbar<TData>({
                     setAllVisibility(true)
                   }}
                 >
-                  Reset (default)
+                  {t('datatable.reset_default')}
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
@@ -218,18 +222,26 @@ export function DataTableToolbar<TData>({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
-                Auto refresh: {(autoRefreshValue ?? 'off')}
+                {t('datatable.auto_refresh')}: {(autoRefreshValue ?? 'off') === 'off' ? t('datatable.off') : (autoRefreshValue ?? '')}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuLabel>Pembaruan Otomatis</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('datatable.auto_refresh')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {['off','5s','10s','15s','30s','1m','5m','10m'].map((v) => (
-                <DropdownMenuItem key={v} onClick={() => onAutoRefreshChange(v)}>
-                  {v === 'off' ? 'Off' : v.replace('s',' detik').replace('m',' menit')}
-                </DropdownMenuItem>
-              ))}
+              {['off','5s','10s','15s','30s','1m','5m','10m'].map((v) => {
+                const label = (() => {
+                  if (v === 'off') return t('datatable.off')
+                  if (v.endsWith('s')) return t('datatable.seconds', { count: Number(v.replace('s','')) })
+                  if (v.endsWith('m')) return t('datatable.minutes', { count: Number(v.replace('m','')) })
+                  return v
+                })()
+                return (
+                  <DropdownMenuItem key={v} onClick={() => onAutoRefreshChange(v)}>
+                    {label}
+                  </DropdownMenuItem>
+                )
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         )}

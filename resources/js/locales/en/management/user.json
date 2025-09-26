@@ -1,0 +1,64 @@
+{
+    "title": "Users",
+    "desc": "Manage accounts, roles, security, and sessions",
+    "all_roles": "All roles",
+    "add": "Add User",
+    "empty": "No users.",
+    "search_placeholder": "Search name/email/phone…",
+    "user": {
+        "actions": {
+            "force_logout": "Force Logout",
+            "manage_roles": "Manage Roles",
+            "reset_password": "Reset Password",
+            "twofa_recovery": "2FA Recovery Codes"
+        },
+        "create": {
+            "desc": "Create a new user and assign roles",
+            "remove_role_title": "Remove role {{role}}",
+            "send_verification": "Send verification email",
+            "submit": "Create",
+            "title": "Add User"
+        },
+        "force_logout": {
+            "desc": "Force logout from all devices or all except current.",
+            "scope": {
+                "all": "All devices",
+                "all_except_current": "All except current device"
+            },
+            "submit": "Revoke Sessions",
+            "target": "Target",
+            "title": "Revoke User Sessions"
+        },
+        "reset_password": {
+            "desc": "Send or generate a password reset link.",
+            "generate": "Generate Reset Link",
+            "generated_desc": "Reset link generated. Copy and send it securely.",
+            "reason_placeholder": "Example: user forgot password and needs urgent access",
+            "send": "Send Email",
+            "title": "Reset Password"
+        },
+        "table": {
+            "active": "Active:",
+            "disabled": "Disabled",
+            "enabled": "Enabled",
+            "last_active": "Last Active",
+            "no_role": "No Role"
+        },
+        "twofa": {
+            "desc": "Manage recovery codes and 2FA status.",
+            "disable_aria": "Disable two-factor authentication",
+            "disable_desc": "This will disable 2FA for this user. They can re-enable it by setting up 2FA again from the security menu.",
+            "disable_now": "Disable Now",
+            "disable_title": "Disable Two-Factor Authentication",
+            "generate_hint": "Click Generate Codes to create new recovery codes.",
+            "no_recovery": "No recovery code yet",
+            "reason_label": "Action reason",
+            "reason_placeholder": "Example: user lost authenticator device",
+            "recovery_available": "Recovery code available",
+            "recovery_hint": "This is one of the recovery codes. Keep it safe and private. Do not share it with anyone.",
+            "view_codes": "View Codes",
+            "view_codes_aria": "View recovery codes"
+        },
+        "roles": { "dialog_desc": "Select or change roles for this user." }
+    }
+}

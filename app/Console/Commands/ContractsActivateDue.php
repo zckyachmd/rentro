@@ -15,7 +15,7 @@ class ContractsActivateDue extends Command
         {--chunk=200 : Chunk size for processing contracts}
         {--dry-run : Only show counts without updating}';
 
-    protected $description = 'Queue activation jobs for Booked contracts whose start_date has arrived (mark room OCCUPIED).';
+    protected $description = 'Queue activation jobs for booked contracts whose start_date has arrived (mark room occupied).';
 
     public function handle(): int
     {

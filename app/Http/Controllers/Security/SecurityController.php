@@ -72,7 +72,7 @@ class SecurityController extends Controller
             logName: 'security',
         );
 
-        return back()->with('success', 'Password berhasil diperbarui.');
+        return back()->with('success', __('security.password_updated'));
     }
 
     public function revokeOthers(Request $request)
@@ -90,7 +90,7 @@ class SecurityController extends Controller
             ->withProperties(['action' => 'revoke_others'])
             ->log('User revoked all other sessions');
 
-        return back()->with('success', 'Berhasil logout dari semua sesi lain.');
+        return back()->with('success', __('security.sessions.revoked_others'));
     }
 
     public function destroySession(Request $request, string $id)
@@ -104,11 +104,11 @@ class SecurityController extends Controller
             ->first();
 
         if (!$target) {
-            return back()->withErrors(['sessions' => 'Sesi tidak ditemukan atau bukan milik Anda.']);
+            return back()->withErrors(['sessions' => __('security.sessions.not_found_or_not_owned')]);
         }
 
         if ($id === $currentId) {
-            return back()->withErrors(['sessions' => 'Anda tidak dapat logout sesi saat ini dari sini.']);
+            return back()->withErrors(['sessions' => __('security.sessions.cannot_logout_current')]);
         }
 
         $target->delete();
@@ -118,6 +118,6 @@ class SecurityController extends Controller
             ->withProperties(['action' => 'logout_remote', 'session_id' => $id])
             ->log('User logged out a remote session');
 
-        return back()->with('success', 'Sesi berhasil di-logout.');
+        return back()->with('success', __('security.session.logged_out'));
     }
 }

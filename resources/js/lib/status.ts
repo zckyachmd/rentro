@@ -1,14 +1,18 @@
 export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
 
+function normStatus(s: string): string {
+    return (s || '').trim().toLowerCase().replace(/\s+/g, '_');
+}
+
 export function variantForInvoiceStatus(status: string): BadgeVariant {
-    switch (status) {
-        case 'Paid':
+    switch (normStatus(status)) {
+        case 'paid':
             return 'default';
-        case 'Overdue':
+        case 'overdue':
             return 'destructive';
-        case 'Pending':
+        case 'pending':
             return 'secondary';
-        case 'Cancelled':
+        case 'cancelled':
             return 'outline';
         default:
             return 'outline';
@@ -16,18 +20,17 @@ export function variantForInvoiceStatus(status: string): BadgeVariant {
 }
 
 export function variantForPaymentStatus(status: string): BadgeVariant {
-    switch (status) {
-        case 'Review':
+    switch (normStatus(status)) {
+        case 'review':
             return 'secondary';
-        case 'Completed':
+        case 'completed':
             return 'default';
-        case 'Pending':
+        case 'pending':
             return 'secondary';
-        case 'Failed':
+        case 'failed':
+        case 'rejected':
             return 'destructive';
-        case 'Rejected':
-            return 'destructive';
-        case 'Cancelled':
+        case 'cancelled':
             return 'outline';
         default:
             return 'outline';
@@ -35,17 +38,17 @@ export function variantForPaymentStatus(status: string): BadgeVariant {
 }
 
 export function variantForContractStatus(status: string): BadgeVariant {
-    switch (status) {
-        case 'Active':
-        case 'Paid':
+    switch (normStatus(status)) {
+        case 'active':
+        case 'paid': // alias if ever used as a contract summary
             return 'default';
-        case 'Booked':
-        case 'Pending Payment':
-        case 'Completed':
+        case 'booked':
+        case 'pending_payment':
+        case 'completed':
             return 'secondary';
-        case 'Overdue':
+        case 'overdue':
             return 'destructive';
-        case 'Cancelled':
+        case 'cancelled':
             return 'outline';
         default:
             return 'outline';

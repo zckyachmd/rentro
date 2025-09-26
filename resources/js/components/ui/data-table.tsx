@@ -14,6 +14,7 @@ import {
 } from "@tanstack/react-table"
 import { Loader2 } from "lucide-react"
 import * as React from "react"
+import { useTranslation } from 'react-i18next'
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -41,10 +42,11 @@ export function DataTable<TData, TValue>({
   sorting,
   onSortingChange,
   loading = false,
-  emptyText = "Tidak ada data.",
+  emptyText,
   enableRowSelection = false,
   showSelectedCount = true,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation()
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize })
 
@@ -56,14 +58,14 @@ export function DataTable<TData, TValue>({
         <Checkbox
           checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
           onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
-          aria-label="Select all"
+          aria-label={t('datatable.select_all')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(v) => row.toggleSelected(!!v)}
-          aria-label="Select row"
+          aria-label={t('datatable.select_row')}
         />
       ),
       enableSorting: false,
@@ -71,7 +73,7 @@ export function DataTable<TData, TValue>({
       size: 32,
     }
     return [selectCol, ...columns]
-  }, [columns, enableRowSelection])
+  }, [columns, enableRowSelection, t])
 
   const table = useReactTable({
     data,
@@ -134,7 +136,7 @@ export function DataTable<TData, TValue>({
                 <TableCell className="h-24" colSpan={computedColumns.length}>
                   <div className="flex items-center justify-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Sedang memuat…</span>
+                    <span>{t('datatable.loading')}</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -151,7 +153,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell className="h-24 text-center" colSpan={computedColumns.length}>
-                  {emptyText}
+                  {emptyText ?? t('datatable.no_data')}
                 </TableCell>
               </TableRow>
             )}

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
@@ -16,51 +18,54 @@ export default function NominalRow({
     onRent: (v: string) => void;
     onDeposit: (v: string) => void;
     errors?: Partial<Record<'rent_cents' | 'deposit_cents', string>>;
-    billingPeriod?: 'Daily' | 'Weekly' | 'Monthly';
+    billingPeriod?: 'daily' | 'weekly' | 'monthly';
 }) {
+    const { t } = useTranslation('management/contract');
     const suffix =
-        billingPeriod === 'Monthly'
-            ? 'per bulan'
-            : billingPeriod === 'Weekly'
-              ? 'per minggu'
-              : billingPeriod === 'Daily'
-                ? 'per hari'
+        billingPeriod === 'monthly'
+            ? t('create.form.suffix.monthly')
+            : billingPeriod === 'weekly'
+              ? t('create.form.suffix.weekly')
+              : billingPeriod === 'daily'
+                ? t('create.form.suffix.daily')
                 : undefined;
     return (
         <div className="grid gap-6 md:col-span-2 md:grid-cols-2">
             <div className="space-y-2">
                 <Label>
-                    Biaya Sewa ({suffix}){' '}
+                    {t('create.form.fields.rent', { suffix })}{' '}
                     <span className="text-destructive">*</span>
                 </Label>
                 <Input
                     type="number"
                     inputMode="numeric"
                     min={0}
-                    placeholder="cth. 1.200.000"
+                    placeholder={t('create.form.placeholders.rent')}
                     value={rent}
                     onChange={(e) => onRent(e.target.value)}
                     className="h-9"
                 />
-                <p className="text-xs text-muted-foreground">
-                    Pratinjau: {formatIDR(rent)}
+                <p className="text-muted-foreground text-xs">
+                    {t('form.preview', { ns: 'management/room' })}{' '}
+                    {formatIDR(rent)}
                 </p>
                 <InputError message={errors.rent_cents} />
             </div>
 
             <div className="space-y-2">
-                <Label>Deposit</Label>
+                <Label>{t('create.form.fields.deposit')}</Label>
                 <Input
                     type="number"
                     inputMode="numeric"
                     min={0}
-                    placeholder="cth. 500.000 (opsional)"
+                    placeholder={t('create.form.placeholders.deposit')}
                     value={deposit}
                     onChange={(e) => onDeposit(e.target.value)}
                     className="h-9"
                 />
-                <p className="text-xs text-muted-foreground">
-                    Pratinjau: {formatIDR(deposit)}
+                <p className="text-muted-foreground text-xs">
+                    {t('form.preview', { ns: 'management/room' })}{' '}
+                    {formatIDR(deposit)}
                 </p>
                 <InputError message={errors.deposit_cents} />
             </div>

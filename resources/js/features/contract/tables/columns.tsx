@@ -27,26 +27,26 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatIDR } from '@/lib/format';
+import i18n from '@/lib/i18n';
 import { variantForContractStatus } from '@/lib/status';
 import type {
     ContractColumnOptions as ColumnFactoryOptions,
     ContractItem,
 } from '@/types/management';
 
+const norm = (s: string) => (s || '').trim().toLowerCase().replace(/\s+/g, '_');
 const CS = {
-    PENDING_PAYMENT: 'Pending Payment',
-    BOOKED: 'Booked',
-    PAID: 'Paid',
-    ACTIVE: 'Active',
-    COMPLETED: 'Completed',
-    OVERDUE: 'Overdue',
-    CANCELLED: 'Cancelled',
+    PENDING_PAYMENT: 'pending_payment',
+    BOOKED: 'booked',
+    PAID: 'paid',
+    ACTIVE: 'active',
+    COMPLETED: 'completed',
+    OVERDUE: 'overdue',
+    CANCELLED: 'cancelled',
 } as const;
 
 const CANCELABLE: ReadonlyArray<string> = [CS.PENDING_PAYMENT, CS.BOOKED];
 const RENEW_ALLOWED: ReadonlyArray<string> = [CS.BOOKED, CS.PAID, CS.ACTIVE];
-
-// ContractItem moved to pages/types
 
 const COL = {
     tenant: 'shrink-0 min-w-[200px] md:w-[260px]',
@@ -67,7 +67,7 @@ export const createColumns = (
 ): ColumnDef<ContractItem>[] => [
     makeColumn<ContractItem>({
         id: 'number',
-        title: 'Nomor',
+        title: i18n.t('common.number'),
         className: 'shrink-0 w-[200px] font-mono',
         cell: ({ row }) => {
             const no = row.original.number || '';
@@ -80,7 +80,10 @@ export const createColumns = (
                         <Link
                             href={href}
                             className="underline underline-offset-2 hover:opacity-80"
-                            title={`Lihat kontrak ${no}`}
+                            title={i18n.t(
+                                'management/contract:table.view_detail_title',
+                                { number: no },
+                            )}
                         >
                             {no}
                         </Link>
@@ -93,7 +96,7 @@ export const createColumns = (
     }),
     makeColumn<ContractItem>({
         id: 'tenant',
-        title: 'Penyewa',
+        title: i18n.t('common.tenant'),
         className: COL.tenant,
         cell: ({ row }) => (
             <div className={COL.tenant + ' flex flex-col'}>
@@ -101,7 +104,7 @@ export const createColumns = (
                     {row.original.tenant?.name ?? '-'}
                 </span>
                 {row.original.tenant?.email && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                         {row.original.tenant?.email}
                     </span>
                 )}
@@ -110,7 +113,7 @@ export const createColumns = (
     }),
     makeColumn<ContractItem>({
         id: 'room',
-        title: 'Kamar',
+        title: i18n.t('common.room'),
         className: COL.room,
         cell: ({ row }) => (
             <div className={COL.room}>{row.original.room?.number ?? '-'}</div>
@@ -119,7 +122,7 @@ export const createColumns = (
     makeColumn<ContractItem>({
         id: 'start_date',
         accessorKey: 'start_date',
-        title: 'Mulai',
+        title: i18n.t('common.start'),
         sortable: true,
         className: COL.start,
         cell: ({ getValue }) => (
@@ -129,7 +132,7 @@ export const createColumns = (
     makeColumn<ContractItem>({
         id: 'end_date',
         accessorKey: 'end_date',
-        title: 'Berakhir',
+        title: i18n.t('common.end'),
         sortable: true,
         className: COL.end,
         cell: ({ getValue }) => (
@@ -138,7 +141,7 @@ export const createColumns = (
     }),
     makeColumn<ContractItem>({
         id: 'rent',
-        title: 'Sewa',
+        title: i18n.t('management/contract:table.columns.rent'),
         className: COL.rent,
         sortable: true,
         cell: ({ row }) => (
@@ -148,20 +151,28 @@ export const createColumns = (
     makeColumn<ContractItem>({
         id: 'status',
         accessorKey: 'status',
-        title: 'Status',
+        title: i18n.t('common.status'),
         className: COL.status,
         sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.status}>
-                <Badge variant={variantForContractStatus(row.original.status)}>
-                    {row.original.status}
-                </Badge>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const raw = row.original.status || '';
+            const key = norm(raw);
+            const label = i18n.t(`contract.status.${key}`, {
+                ns: 'enum',
+                defaultValue: raw,
+            });
+            return (
+                <div className={COL.status}>
+                    <Badge variant={variantForContractStatus(raw)}>
+                        {label}
+                    </Badge>
+                </div>
+            );
+        },
     }),
     makeColumn<ContractItem>({
         id: 'days_left',
-        title: 'Sisa Hari',
+        title: i18n.t('management/contract:table.columns.days_left'),
         className: COL.daysLeft,
         cell: ({ row }) => {
             const s = String(row.original.status || '');
@@ -186,7 +197,9 @@ export const createColumns = (
             if (days <= 0) {
                 return (
                     <div className={COL.daysLeft}>
-                        <Badge variant="destructive">Habis</Badge>
+                        <Badge variant="destructive">
+                            {i18n.t('management/contract:table.expired')}
+                        </Badge>
                     </div>
                 );
             }
@@ -194,34 +207,39 @@ export const createColumns = (
                 return (
                     <div className={COL.daysLeft}>
                         <Badge className="border-amber-200 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                            {`${days} hari`}
+                            {i18n.t('common.days', { count: days })}
                         </Badge>
                     </div>
                 );
             }
             return (
                 <div className={COL.daysLeft}>
-                    <Badge variant="secondary">{`${days} hari`}</Badge>
+                    <Badge variant="secondary">
+                        {i18n.t('common.days', { count: days })}
+                    </Badge>
                 </div>
             );
         },
     }),
     makeColumn<ContractItem>({
         id: 'renew',
-        title: 'Auto‑Renew',
+        title: i18n.t('management/contract:table.columns.autorenew'),
         className: COL.renew,
         cell: ({ row }) => (
             <div className={COL.renew}>
-                {row.original.auto_renew ? 'Ya' : 'Tidak'}
+                {row.original.auto_renew
+                    ? i18n.t('common.yes')
+                    : i18n.t('common.no')}
             </div>
         ),
     }),
     makeColumn<ContractItem>({
         id: 'actions',
-        title: 'Aksi',
+        title: i18n.t('common.actions'),
         className: COL.actions + ' flex justify-end items-center',
         cell: ({ row }) => {
-            const s = row.original.status;
+            const sRaw = row.original.status || '';
+            const s = norm(sRaw);
             const canCancel = CANCELABLE.includes(s);
             const canStartRenew = RENEW_ALLOWED.includes(s);
             const canStopRenew = s === CS.ACTIVE;
@@ -230,14 +248,10 @@ export const createColumns = (
             const hasPendingCheckin =
                 (lastCheckinStatus ?? '').toLowerCase() === 'pending';
             const lastCheckin = String(lastCheckinStatus || '').toLowerCase();
-            // Allow normal check‑in when none exists and not pending
             const canNormalCheckin =
                 !hasPendingCheckin &&
                 !row.original.has_checkin &&
                 (s === CS.BOOKED || (!requireCheckin && s === CS.ACTIVE));
-
-            // If last check‑in was disputed, allow redo check‑in regardless of existing record
-            // Restrict to sensible statuses (Booked or Active)
             const canRedoCheckin =
                 !hasPendingCheckin &&
                 lastCheckin === 'disputed' &&
@@ -263,13 +277,18 @@ export const createColumns = (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label={`Aksi kontrak ${row.original.id}`}
+                                aria-label={i18n.t(
+                                    'management/contract:table.actions_for',
+                                    { id: row.original.id },
+                                )}
                             >
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
@@ -281,7 +300,8 @@ export const createColumns = (
                                     )
                                 }
                             >
-                                <Eye className="mr-2 h-4 w-4" /> Lihat detail
+                                <Eye className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() =>
@@ -293,8 +313,8 @@ export const createColumns = (
                                     )
                                 }
                             >
-                                <Printer className="mr-2 h-4 w-4" /> Cetak
-                                kontrak
+                                <Printer className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('contract.actions.print')}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
@@ -306,8 +326,8 @@ export const createColumns = (
                                     router.visit(url + qs);
                                 }}
                             >
-                                <ReceiptText className="mr-2 h-4 w-4" /> Lihat
-                                invoice
+                                <ReceiptText className="mr-2 h-4 w-4" />{' '}
+                                {i18n.t('contract.actions.view_invoice')}
                             </DropdownMenuItem>
 
                             {canCheckin && (
@@ -319,8 +339,12 @@ export const createColumns = (
                                     >
                                         <LogIn className="mr-2 h-4 w-4" />{' '}
                                         {lastCheckin === 'disputed'
-                                            ? 'Ulangi Check‑in'
-                                            : 'Check‑in'}
+                                            ? i18n.t(
+                                                  'management/contract:handover.menu.redo_checkin',
+                                              )
+                                            : i18n.t(
+                                                  'management/contract:handover.menu.checkin',
+                                              )}
                                     </DropdownMenuItem>
                                 </Can>
                             )}
@@ -332,45 +356,61 @@ export const createColumns = (
                                         }
                                     >
                                         <LogOut className="mr-2 h-4 w-4" />{' '}
-                                        Check‑out
+                                        {i18n.t(
+                                            'management/contract:handover.menu.checkout',
+                                        )}
                                     </DropdownMenuItem>
                                 </Can>
                             )}
 
                             {row.original.auto_renew && canStopRenew && (
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        opts?.onStopAutoRenew?.(row.original)
-                                    }
-                                >
-                                    <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                    Hentikan perpanjangan otomatis
-                                </DropdownMenuItem>
+                                <Can all={['contract.renew']}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onStopAutoRenew?.(
+                                                row.original,
+                                            )
+                                        }
+                                    >
+                                        <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t(
+                                            'contract.autorenew.stop_action',
+                                        )}
+                                    </DropdownMenuItem>
+                                </Can>
                             )}
                             {!row.original.auto_renew && canStartRenew && (
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        opts?.onStartAutoRenew?.(row.original)
-                                    }
-                                >
-                                    <RefreshCw className="mr-2 h-4 w-4" />{' '}
-                                    Nyalakan perpanjangan otomatis
-                                </DropdownMenuItem>
+                                <Can all={['contract.renew']}>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            opts?.onStartAutoRenew?.(
+                                                row.original,
+                                            )
+                                        }
+                                    >
+                                        <RefreshCw className="mr-2 h-4 w-4" />{' '}
+                                        {i18n.t(
+                                            'contract.autorenew.start_action',
+                                        )}
+                                    </DropdownMenuItem>
+                                </Can>
                             )}
 
                             {canCancel && (
-                                <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            opts?.onCancel?.(row.original)
-                                        }
-                                        className="text-destructive focus:text-destructive"
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />{' '}
-                                        Batalkan
-                                    </DropdownMenuItem>
-                                </>
+                                <Can all={['contract.cancel']}>
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                opts?.onCancel?.(row.original)
+                                            }
+                                            className="text-destructive focus:text-destructive"
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('common.cancel')}
+                                        </DropdownMenuItem>
+                                    </>
+                                </Can>
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>

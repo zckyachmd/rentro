@@ -1,0 +1,26 @@
+{
+    "actions": {
+        "edit_role": "Edit role",
+        "manage_permissions": "Manage permissions"
+    },
+    "create_desc": "Add a new role to group permissions.",
+    "create_title": "Add Role",
+    "edit_desc": "Change role name.",
+    "edit_title": "Edit Role",
+    "guard": "Guard",
+    "guard_hint": "Select authentication context provided by server.",
+    "guard_info": "Guard info",
+    "label": "Role",
+    "name_placeholder": "e.g., Cashier Admin",
+    "permissions": {
+        "desc": "Select permissions for this role. Tick a group to select all inside it.",
+        "empty": "No permissions",
+        "search_placeholder": "Search permissions…",
+        "select_all": "Select all",
+        "select_group": "Select all {{group}}",
+        "select_permission": "Select permission {{name}}",
+        "title": "Manage Permissions"
+    },
+    "permissions_hint": "After creating a role, you can set permissions via the Actions column in the role list.",
+    "pick_guard": "Pick guard"
+}

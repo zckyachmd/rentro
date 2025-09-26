@@ -1,0 +1,109 @@
+{
+    "add": "Tambah Kamar",
+    "building": "Gedung",
+    "delete_desc": "Apakah Anda yakin ingin menghapus kamar {{label}} beserta semua fotonya? Tindakan ini tidak dapat dibatalkan.",
+    "delete_title": "Hapus Kamar",
+    "desc": "Manajemen kamar kost, lengkap dengan filter & aksi cepat.",
+    "detail_error": "Gagal memuat detail kamar",
+    "detail_title": "Detail Kamar",
+    "edit": "Ubah Kamar",
+    "empty": "Tidak ada kamar.",
+    "filter": "Filter",
+    "floor": "Lantai",
+    "floor_prefix": "Lt",
+    "form": {
+        "amenities_empty": "Belum ada fasilitas tersedia. Tambahkan data fasilitas terlebih dahulu di master data.",
+        "building_label": "Gedung",
+        "building_placeholder": "Pilih gedung tempat kamar berada",
+        "number_label": "Nomor Kamar",
+        "number_placeholder": "Masukkan nomor kamar",
+        "number_hint": "Nomor kamar unik untuk identifikasi.",
+        "capacity": {
+            "desc": "Atur kapasitas penghuni, harga & deposit bulanan, serta luas kamar.",
+            "title": "Kapasitas & Harga Bulanan"
+        },
+        "capacity_hint": "Jumlah maksimal penghuni.",
+        "capacity_label": "Kapasitas (orang)",
+        "capacity_placeholder": "Masukkan jumlah orang",
+        "deposit_day_label": "Deposit Harian (Rp)",
+        "deposit_day_placeholder": "Masukkan deposit harian atau kosongkan untuk mengikuti tipe",
+        "deposit_month_label": "Deposit Bulanan (Rp)",
+        "deposit_month_placeholder": "Masukkan deposit bulanan atau kosongkan untuk mengikuti tipe",
+        "deposit_week_label": "Deposit Mingguan (Rp)",
+        "deposit_week_placeholder": "Masukkan deposit mingguan atau kosongkan untuk mengikuti tipe",
+        "floor_label": "Lantai",
+        "floor_option": "Lantai {{level}}",
+        "floor_placeholder": "Pilih lantai sesuai gedung",
+        "follow_type": "Mengikuti tipe",
+        "gender_policy": "Kebijakan Gender",
+        "identity": {
+            "desc": "Nomor dan nama untuk identifikasi kamar.",
+            "title": "Identitas Kamar"
+        },
+        "leave": {
+            "confirm": "Keluar Halaman",
+            "desc": "Anda memiliki perubahan yang belum disimpan (form/foto). Jika keluar, perubahan akan hilang.",
+            "title": "Keluar tanpa menyimpan?"
+        },
+        "location": {
+            "desc": "Pilih gedung, lantai, tipe, dan status kamar.",
+            "title": "Lokasi & Klasifikasi"
+        },
+        "name_hint": "Nama tambahan untuk memudahkan identifikasi (opsional).",
+        "name_label": "Nama Kamar",
+        "name_placeholder": "Masukkan nama kamar (opsional)",
+        "notes": {
+            "placeholder": "Tulis catatan tambahan tentang kamar (opsional)",
+            "title": "Catatan"
+        },
+        "per_day": "/ hari",
+        "per_month": "/ bulan",
+        "per_week": "/ minggu",
+        "photos": {
+            "cover": "Cover",
+            "current": "Foto Saat Ini",
+            "delete_photo": "Hapus foto",
+            "drag_hint": "Seret untuk urutan",
+            "make_cover": "Jadikan cover"
+        },
+        "policy": {
+            "desc": "Atur kebijakan penghuni yang diperbolehkan.",
+            "title": "Kebijakan Penghuni"
+        },
+        "preview": "Pratinjau:",
+        "price_day_label": "Harga Harian (Rp)",
+        "price_day_placeholder": "Masukkan harga harian atau kosongkan untuk mengikuti tipe",
+        "price_month_label": "Harga Bulanan (Rp)",
+        "price_month_placeholder": "Masukkan harga bulanan atau kosongkan untuk mengikuti tipe",
+        "price_week_label": "Harga Mingguan (Rp)",
+        "price_week_placeholder": "Masukkan harga mingguan atau kosongkan untuk mengikuti tipe",
+        "reset": "Reset",
+        "save": "Simpan",
+        "save_changes": "Simpan Perubahan",
+        "size_label": "Luas (m²)",
+        "size_placeholder": "Masukkan luas kamar (opsional)",
+        "status_label": "Status",
+        "status_placeholder": "Pilih status kamar",
+        "type_label": "Tipe Kamar",
+        "type_placeholder": "Pilih tipe kamar",
+        "weekday": { "title": "Harga & Deposit (Mingguan/Harian)" }
+    },
+    "master": {
+        "amenities": "Fasilitas",
+        "buildings": "Gedung",
+        "floors": "Lantai",
+        "room_types": "Tipe Kamar"
+    },
+    "master_data": "Kelola Master Data",
+    "no_data": "Tidak ada data kamar.",
+    "no_photos": "Tidak ada foto",
+    "notes": "Keterangan",
+    "period": { "daily": "Harian", "monthly": "Bulanan", "weekly": "Mingguan" },
+    "period_label": "Periode Sewa",
+    "search_label": "Cari",
+    "search_placeholder": "Cari nomor/nama kamar",
+    "status": "Status",
+    "title": "Kamar",
+    "type": "Tipe",
+    "view_detail_aria": "Lihat detail kamar"
+}

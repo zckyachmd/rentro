@@ -19,54 +19,74 @@ class MenuSeeder extends Seeder
         $structure = [
             [
                 'id' => 'overview',
-                'label' => 'Ringkasan',
+                'label' => 'menu.overview',
                 'items' => [
-                    ['label' => 'Dashboard', 'href' => route('dashboard'), 'icon' => 'Home'],
-                    ['label' => 'Booking', 'href' => '#', 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
-                    ['label' => 'Kontrak', 'href' => route('tenant.contracts.index'), 'icon' => 'ScrollText', 'roles' => [RoleName::TENANT->value]],
-                    ['label' => 'Tagihan', 'href' => route('tenant.invoices.index'), 'icon' => 'ReceiptText', 'roles' => [RoleName::TENANT->value]],
+                    ['label' => 'menu.dashboard', 'href' => route('dashboard'), 'icon' => 'Home'],
+                    ['label' => 'menu.booking', 'href' => '#', 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
+                    [
+                        'label' => 'menu.contracts',
+                        'href' => route('tenant.contracts.index'),
+                        'icon' => 'ScrollText',
+                        'roles' => [RoleName::TENANT->value],
+                    ],
+                    [
+                        'label' => 'menu.invoices',
+                        'href' => route('tenant.invoices.index'),
+                        'icon' => 'ReceiptText',
+                        'roles' => [RoleName::TENANT->value],
+                    ],
                 ],
             ],
 
             [
                 'id' => 'sewa',
-                'label' => 'Sewa',
+                'label' => 'menu.rent',
                 'items' => [
-                    ['label' => 'Booking', 'href' => '#', 'icon' => 'CalendarCheck'],
-                    ['label' => 'Kontrak', 'href' => route('management.contracts.index'), 'icon' => 'ScrollText', 'permission' => PermissionName::CONTRACT_VIEW],
+                    ['label' => 'menu.booking', 'href' => '#', 'icon' => 'CalendarCheck'],
+                    ['label' => 'menu.contracts', 'href' => route('management.contracts.index'), 'icon' => 'ScrollText', 'permission' => PermissionName::CONTRACT_VIEW],
                 ],
             ],
 
             [
                 'id' => 'keuangan',
-                'label' => 'Keuangan',
+                'label' => 'menu.finance',
                 'items' => [
-                    ['label' => 'Tagihan', 'href' => route('management.invoices.index'), 'icon' => 'ReceiptText', 'permission' => PermissionName::INVOICE_VIEW],
-                    ['label' => 'Pembayaran', 'href' => route('management.payments.index'), 'icon' => 'CreditCard', 'permission' => PermissionName::PAYMENT_VIEW],
-                    ['label' => 'Rekonsiliasi', 'href' => '#', 'icon' => 'FileBarChart2'],
-                    ['label' => 'Laporan', 'href' => '#', 'icon' => 'BarChart3'],
+                    ['label' => 'menu.invoices', 'href' => route('management.invoices.index'), 'icon' => 'ReceiptText', 'permission' => PermissionName::INVOICE_VIEW],
+                    ['label' => 'menu.payments', 'href' => route('management.payments.index'), 'icon' => 'CreditCard', 'permission' => PermissionName::PAYMENT_VIEW],
+                    ['label' => 'menu.reconciliation', 'href' => '#', 'icon' => 'FileBarChart2'],
+                    ['label' => 'menu.reports', 'href' => '#', 'icon' => 'BarChart3'],
                 ],
             ],
 
             [
                 'id' => 'properti',
-                'label' => 'Properti',
+                'label' => 'menu.property',
                 'items' => [
                     [
-                        'label' => 'Kamar',
+                        'label' => 'menu.rooms',
                         'icon'  => 'Bed',
                         'children' => [
-                            ['label' => 'Daftar Kamar', 'href' => route('management.rooms.index'), 'icon' => 'BedDouble', 'permission' => PermissionName::ROOM_MANAGE_VIEW],
-                            ['label' => 'Tipe Kamar', 'href' => '#', 'icon' => 'Tags', 'permission'],
-                            ['label' => 'Fasilitas', 'href' => '#', 'icon' => 'AirVent'],
+                            ['label' => 'menu.rooms.list', 'href' => route('management.rooms.index'), 'icon' => 'BedDouble', 'permission' => PermissionName::ROOM_MANAGE_VIEW],
+                            ['label' => 'menu.room_types', 'href' => "" . route('management.room-types.index') . "", 'icon' => 'Tags', 'permission' => PermissionName::ROOM_TYPE_VIEW],
+                            ['label' => 'menu.amenities', 'href' => "" . route('management.amenities.index') . "", 'icon' => 'AirVent', 'permission' => PermissionName::AMENITY_VIEW],
                         ],
                     ],
                     [
-                        'label' => 'Struktur Gedung',
+                        'label' => 'menu.structure',
                         'icon'  => 'Building2',
                         'children' => [
-                            ['label' => 'Gedung', 'href' => '#', 'icon' => 'Building2'],
-                            ['label' => 'Lantai', 'href' => '#', 'icon' => 'Layers'],
+                            [
+                                'label' => 'menu.buildings',
+                                'href' => "" . route('management.buildings.index') . "",
+                                'icon' => 'Building2',
+                                'permission' => PermissionName::BUILDING_VIEW,
+                            ],
+                            [
+                                'label' => 'menu.floors',
+                                'href' => "" . route('management.floors.index') . "",
+                                'icon' => 'Layers',
+                                'permission' => PermissionName::FLOOR_VIEW,
+                            ],
                         ],
                     ],
                 ],
@@ -74,55 +94,55 @@ class MenuSeeder extends Seeder
 
             [
                 'id' => 'operasional',
-                'label' => 'Operasional',
+                'label' => 'menu.operations',
                 'items' => [
                     [
-                        'label' => 'Tugas & Maintenance',
+                        'label' => 'menu.tasks_maintenance',
                         'icon' => 'Wrench',
                         'children' => [
-                            ['label' => 'Tugas', 'href' => '#', 'icon' => 'ClipboardCheck'],
-                            ['label' => 'Maintenance', 'href' => '#', 'icon' => 'Wrench'],
-                            ['label' => 'Task Template', 'href' => '#', 'icon' => 'ClipboardCheck'],
-                            ['label' => 'SLA', 'href' => '#', 'icon' => 'Timer'],
+                            ['label' => 'menu.tasks', 'href' => '#', 'icon' => 'ClipboardCheck'],
+                            ['label' => 'menu.maintenance', 'href' => '#', 'icon' => 'Wrench'],
+                            ['label' => 'menu.task_templates', 'href' => '#', 'icon' => 'ClipboardCheck'],
+                            ['label' => 'menu.sla', 'href' => '#', 'icon' => 'Timer'],
                         ],
                     ],
                     [
-                        'label' => 'Inventaris',
+                        'label' => 'menu.inventory',
                         'icon' => 'Package',
                         'children' => [
-                            ['label' => 'Barang', 'href' => '#', 'icon' => 'Package'],
-                            ['label' => 'Mutasi', 'href' => '#', 'icon' => 'MoveHorizontal'],
-                            ['label' => 'Riwayat', 'href' => '#', 'icon' => 'Archive'],
-                            ['label' => 'Disposal', 'href' => '#', 'icon' => 'Archive'],
+                            ['label' => 'menu.items', 'href' => '#', 'icon' => 'Package'],
+                            ['label' => 'menu.transfers', 'href' => '#', 'icon' => 'MoveHorizontal'],
+                            ['label' => 'menu.history', 'href' => '#', 'icon' => 'Archive'],
+                            ['label' => 'menu.disposal', 'href' => '#', 'icon' => 'Archive'],
                         ],
                     ],
-                    ['label' => 'Keluhan', 'href' => '#', 'icon' => 'MessageSquareWarning'],
-                    ['label' => 'Paket', 'href' => '#', 'icon' => 'Package'],
+                    ['label' => 'menu.complaints', 'href' => '#', 'icon' => 'MessageSquareWarning'],
+                    ['label' => 'menu.packages', 'href' => '#', 'icon' => 'Package'],
                 ],
             ],
 
             [
                 'id' => 'admin',
-                'label' => 'Administrasi',
+                'label' => 'menu.admin',
                 'items' => [
-                    ['label' => 'Pengguna', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
-                    ['label' => 'Roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
-                    ['label' => 'Audit Log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
+                    ['label' => 'menu.users', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
+                    ['label' => 'menu.roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
+                    ['label' => 'menu.audit_log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
                 ],
             ],
 
             [
                 'id' => 'akun',
-                'label' => 'Akun',
+                'label' => 'menu.account',
                 'items' => [
-                    ['label' => 'Profil', 'href' => route('profile.index'), 'icon' => 'User'],
+                    ['label' => 'menu.profile', 'href' => route('profile.index'), 'icon' => 'User'],
                     [
-                        'label' => 'Pengaturan',
+                        'label' => 'menu.settings',
                         'icon' => 'Settings',
                         'children' => [
-                            ['label' => 'Keamanan', 'href' => route('security.index'), 'icon' => 'KeyRound'],
-                            ['label' => 'Notifikasi', 'href' => '#', 'icon' => 'Bell'],
-                            ['label' => 'Preferensi', 'href' => '#', 'icon' => 'Settings2'],
+                            ['label' => 'menu.security', 'href' => route('security.index'), 'icon' => 'KeyRound'],
+                            ['label' => 'menu.notifications', 'href' => '#', 'icon' => 'Bell'],
+                            ['label' => 'menu.preferences', 'href' => '#', 'icon' => 'Settings2'],
                         ],
                     ],
                 ],
@@ -130,12 +150,12 @@ class MenuSeeder extends Seeder
 
             [
                 'id' => 'bantuan',
-                'label' => 'Bantuan',
+                'label' => 'menu.help',
                 'items' => [
-                    ['label' => 'Dokumentasi', 'href' => '#', 'icon' => 'BookText'],
-                    ['label' => 'FAQ', 'href' => '#', 'icon' => 'HelpCircle'],
-                    ['label' => 'Support', 'href' => '#', 'icon' => 'LifeBuoy'],
-                    ['label' => 'Changelog', 'href' => '#', 'icon' => 'BookText'],
+                    ['label' => 'menu.docs', 'href' => '#', 'icon' => 'BookText'],
+                    ['label' => 'menu.faq', 'href' => '#', 'icon' => 'HelpCircle'],
+                    ['label' => 'menu.support', 'href' => '#', 'icon' => 'LifeBuoy'],
+                    ['label' => 'menu.changelog', 'href' => '#', 'icon' => 'BookText'],
                 ],
             ],
         ];
@@ -184,12 +204,18 @@ class MenuSeeder extends Seeder
             $isActive = false;
         }
 
+        $match = [
+            'menu_group_id' => $groupId,
+            'parent_id'     => $parentId,
+        ];
+        if (!empty($href) && $href !== '#') {
+            $match['href'] = $href;
+        } else {
+            $match['label'] = $item['label'];
+        }
+
         $menu = Menu::updateOrCreate(
-            [
-                'menu_group_id' => $groupId,
-                'label' => $item['label'],
-                'parent_id' => $parentId,
-            ],
+            $match,
             [
                 'href' => $href,
                 'icon' => $item['icon'] ?? 'Circle',
@@ -198,6 +224,7 @@ class MenuSeeder extends Seeder
                 'excluded_roles'  => $item['exclude_roles'] ?? null,
                 'sort_order' => $order,
                 'is_active' => $isActive,
+                'label' => $item['label'],
             ]
         );
 

@@ -4,9 +4,14 @@ namespace App\Enum;
 
 enum BillingPeriod: string
 {
-    case DAILY   = 'Daily';
-    case WEEKLY  = 'Weekly';
-    case MONTHLY = 'Monthly';
+    case DAILY   = 'daily';
+    case WEEKLY  = 'weekly';
+    case MONTHLY = 'monthly';
+
+    public function label(): string
+    {
+        return __('enum.billing_period.' . strtolower($this->name));
+    }
 
     public static function options(): array
     {
@@ -15,7 +20,7 @@ enum BillingPeriod: string
         return collect(self::cases())
             ->map(fn (self $p) => [
                 'value' => $p->value,
-                'label' => ucfirst($p->value),
+                'label' => $p->label(),
                 'days'  => $units[$p->value] ?? null,
             ])
             ->all();

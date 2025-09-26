@@ -1,6 +1,8 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { usePage } from '@inertiajs/react';
 import { UserPlus } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
@@ -35,13 +37,13 @@ import type {
     UserItem,
 } from '@/types/management';
 
-// types moved to pages/types
-
 const computeInitials = (name?: string | null) =>
     (name?.slice(0, 1) ?? '?').toUpperCase();
 
 export default function UsersIndex() {
-    const { props } = usePage<PageProps>();
+    const { i18n } = useTranslation();
+    const { t: tUser } = useTranslation('management/user');
+    const { props } = usePage<InertiaPageProps & PageProps>();
     const roles: Role[] = React.useMemo(() => props.roles ?? [], [props.roles]);
     const paginator = props.users;
 
@@ -99,30 +101,24 @@ export default function UsersIndex() {
         [rows],
     );
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onManageRoles: (u) => openDialog('role', u),
-                onResetPassword: (u) => openDialog('reset', u),
-                onTwoFARecovery: (u) => openDialog('twofa', u),
-                onRevokeSession: (u) => openDialog('revoke', u),
-            }),
-        [openDialog],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onManageRoles: (u) => openDialog('role', u),
+            onResetPassword: (u) => openDialog('reset', u),
+            onTwoFARecovery: (u) => openDialog('twofa', u),
+            onRevokeSession: (u) => openDialog('revoke', u),
+        });
+    }, [openDialog, lang]);
 
     return (
-        <AuthLayout
-            pageTitle="Pengguna"
-            pageDescription="Kelola akun, peran, keamanan, dan sesi login"
-        >
+        <AuthLayout pageTitle={tUser('title')} pageDescription={tUser('desc')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>Pengelolaan Pengguna</CardTitle>
-                        <CardDescription>
-                            Tambah pengguna, atur peran, reset password, 2FA,
-                            dan sesi aktif.
-                        </CardDescription>
+                        <CardTitle>{tUser('title')}</CardTitle>
+                        <CardDescription>{tUser('desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -142,11 +138,13 @@ export default function UsersIndex() {
                                     }
                                 >
                                     <SelectTrigger className="w-[160px]">
-                                        <SelectValue placeholder="Semua peran" />
+                                        <SelectValue
+                                            placeholder={tUser('all_roles')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">
-                                            Semua peran
+                                            {tUser('all_roles')}
                                         </SelectItem>
                                         {rolesOptions}
                                     </SelectContent>
@@ -159,7 +157,7 @@ export default function UsersIndex() {
                                         onClick={() => openDialog('create')}
                                     >
                                         <UserPlus className="mr-2 h-4 w-4" />{' '}
-                                        Tambah Pengguna
+                                        {tUser('add')}
                                     </Button>
                                 </Can>
                             </div>
@@ -178,13 +176,13 @@ export default function UsersIndex() {
                                 onQueryChange({ page: 1, search: v })
                             }
                             searchKey="email"
-                            searchPlaceholder="Cari nama/email/telepon…"
+                            searchPlaceholder={tUser('search_placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada pengguna."
+                            emptyText={tUser('empty')}
                         />
                     </CardContent>
                 </Card>

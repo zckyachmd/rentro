@@ -1,0 +1,109 @@
+{
+    "add": "Add Room",
+    "building": "Building",
+    "delete_desc": "Are you sure you want to delete room {{label}} and all its photos? This action cannot be undone.",
+    "delete_title": "Delete Room",
+    "desc": "Room management with filters and quick actions.",
+    "detail_error": "Failed to load room detail",
+    "detail_title": "Room Detail",
+    "edit": "Edit Room",
+    "empty": "No rooms.",
+    "filter": "Filter",
+    "floor": "Floor",
+    "floor_prefix": "Fl.",
+    "form": {
+        "amenities_empty": "No amenities available yet. Please add amenities first in master data.",
+        "building_label": "Building",
+        "building_placeholder": "Select the building where the room is located",
+        "number_label": "Room Number",
+        "number_placeholder": "Enter room number",
+        "number_hint": "Unique room number for identification.",
+        "capacity": {
+            "desc": "Set occupant capacity, monthly price & deposit, and room size.",
+            "title": "Capacity & Monthly Price"
+        },
+        "capacity_hint": "Maximum number of occupants.",
+        "capacity_label": "Capacity (people)",
+        "capacity_placeholder": "Enter number of people",
+        "deposit_day_label": "Daily Deposit (Rp)",
+        "deposit_day_placeholder": "Enter daily deposit or leave empty to follow type",
+        "deposit_month_label": "Monthly Deposit (Rp)",
+        "deposit_month_placeholder": "Enter monthly deposit or leave empty to follow type",
+        "deposit_week_label": "Weekly Deposit (Rp)",
+        "deposit_week_placeholder": "Enter weekly deposit or leave empty to follow type",
+        "floor_label": "Floor",
+        "floor_option": "Floor {{level}}",
+        "floor_placeholder": "Select floor according to building",
+        "follow_type": "Follow type",
+        "gender_policy": "Gender Policy",
+        "identity": {
+            "desc": "Number and name to identify the room.",
+            "title": "Room Identity"
+        },
+        "leave": {
+            "confirm": "Leave Page",
+            "desc": "You have unsaved changes (form/photos). If you leave, the changes will be lost.",
+            "title": "Leave without saving?"
+        },
+        "location": {
+            "desc": "Choose building, floor, type, and room status.",
+            "title": "Location & Classification"
+        },
+        "name_hint": "An additional name to help identification (optional).",
+        "name_label": "Room Name",
+        "name_placeholder": "Enter room name (optional)",
+        "notes": {
+            "placeholder": "Write additional notes about the room (optional)",
+            "title": "Notes"
+        },
+        "per_day": "/ day",
+        "per_month": "/ month",
+        "per_week": "/ week",
+        "photos": {
+            "cover": "Cover",
+            "current": "Current Photos",
+            "delete_photo": "Delete photo",
+            "drag_hint": "Drag to reorder",
+            "make_cover": "Make cover"
+        },
+        "policy": {
+            "desc": "Configure allowed tenant policy.",
+            "title": "Resident Policy"
+        },
+        "preview": "Preview:",
+        "price_day_label": "Daily Price (Rp)",
+        "price_day_placeholder": "Enter daily price or leave empty to follow type",
+        "price_month_label": "Monthly Price (Rp)",
+        "price_month_placeholder": "Enter monthly price or leave empty to follow type",
+        "price_week_label": "Weekly Price (Rp)",
+        "price_week_placeholder": "Enter weekly price or leave empty to follow type",
+        "reset": "Reset",
+        "save": "Save",
+        "save_changes": "Save Changes",
+        "size_label": "Size (m²)",
+        "size_placeholder": "Enter room size (optional)",
+        "status_label": "Status",
+        "status_placeholder": "Select room status",
+        "type_label": "Room Type",
+        "type_placeholder": "Select room type",
+        "weekday": { "title": "Weekly/Daily Price & Deposit" }
+    },
+    "master": {
+        "amenities": "Amenities",
+        "buildings": "Buildings",
+        "floors": "Floors",
+        "room_types": "Room Types"
+    },
+    "master_data": "Manage Master Data",
+    "no_data": "No room data.",
+    "no_photos": "No photos",
+    "notes": "Notes",
+    "period": { "daily": "Daily", "monthly": "Monthly", "weekly": "Weekly" },
+    "period_label": "Rent Period",
+    "search_label": "Search",
+    "search_placeholder": "Search room number/name",
+    "status": "Status",
+    "title": "Rooms",
+    "type": "Type",
+    "view_detail_aria": "View room detail"
+}

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -15,40 +17,35 @@ export default function ContractsActionGuideDialog({
     open: boolean;
     onOpenChange: (v: boolean) => void;
 }) {
+    const { t } = useTranslation('management/contract');
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[640px]">
                 <DialogHeader>
-                    <DialogTitle>Panduan Aksi Kontrak</DialogTitle>
-                    <DialogDescription>
-                        Ringkasan tindakan yang tersedia bagi admin.
-                    </DialogDescription>
+                    <DialogTitle>{t('guide.title')}</DialogTitle>
+                    <DialogDescription>{t('guide.desc')}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 text-sm">
                     <div>
-                        <div className="font-medium">Check‑in</div>
-                        <ul className="mt-1 list-inside list-disc text-muted-foreground">
-                            <li>
-                                Tersedia saat kontrak berstatus Active dan belum
-                                pernah check‑in.
-                            </li>
-                            <li>Isi catatan minimal 100 karakter.</li>
-                            <li>
-                                Unggah minimal 1 foto bukti (maksimal 5 foto).
-                            </li>
-                            <li>Ikon pada menu Aksi: LogIn.</li>
+                        <div className="font-medium">
+                            {t('guide.checkin.title')}
+                        </div>
+                        <ul className="text-muted-foreground mt-1 list-inside list-disc">
+                            <li>{t('guide.checkin.a1')}</li>
+                            <li>{t('guide.checkin.a2')}</li>
+                            <li>{t('guide.checkin.a3')}</li>
+                            <li>{t('guide.checkin.a4')}</li>
                         </ul>
                     </div>
                     <div>
-                        <div className="font-medium">Check‑out</div>
-                        <ul className="mt-1 list-inside list-disc text-muted-foreground">
-                            <li>
-                                Tersedia saat kontrak Active dan sudah check‑in,
-                                serta belum check‑out.
-                            </li>
-                            <li>Isi catatan minimal 100 karakter.</li>
-                            <li>Foto opsional (maksimal 5 foto).</li>
-                            <li>Ikon pada menu Aksi: LogOut.</li>
+                        <div className="font-medium">
+                            {t('guide.checkout.title')}
+                        </div>
+                        <ul className="text-muted-foreground mt-1 list-inside list-disc">
+                            <li>{t('guide.checkout.a1')}</li>
+                            <li>{t('guide.checkout.a2')}</li>
+                            <li>{t('guide.checkout.a3')}</li>
+                            <li>{t('guide.checkout.a4')}</li>
                         </ul>
                     </div>
                 </div>
@@ -58,7 +55,7 @@ export default function ContractsActionGuideDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Tutup
+                        {t('common.close')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

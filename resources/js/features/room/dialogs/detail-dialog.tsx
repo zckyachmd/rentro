@@ -8,6 +8,7 @@ import {
     Pencil,
 } from 'lucide-react';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,8 @@ export default function RoomDetailDialog({
     item: RoomItem | null;
     onOpenChange: (open: boolean) => void;
 }) {
+    const { t } = useTranslation();
+    const { t: tRoom } = useTranslation('management/room');
     const roomId = item?.id ?? null;
 
     const [loading, setLoading] = React.useState(false);
@@ -110,13 +113,13 @@ export default function RoomDetailDialog({
                 );
                 setData(res?.room ?? null);
             } catch {
-                setError('Gagal memuat detail kamar');
+                setError(tRoom('detail_error'));
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
             }
         })();
         return () => controller.abort();
-    }, [open, roomId]);
+    }, [open, roomId, tRoom]);
 
     const prev = React.useCallback(
         () => setCurrent((i) => Math.max(0, i - 1)),
@@ -131,8 +134,8 @@ export default function RoomDetailDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex w-[95vw] max-w-[calc(100%-1.5rem)] flex-col gap-0 p-0 sm:max-w-3xl">
-                <DialogHeader className="px-5 pb-4 pt-6 sm:px-6">
-                    <DialogTitle>Detail Kamar</DialogTitle>
+                <DialogHeader className="px-5 pt-6 pb-4 sm:px-6">
+                    <DialogTitle>{tRoom('detail_title')}</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 overflow-auto overscroll-contain">
                     <div className="space-y-6 px-5 py-6 sm:px-6">
@@ -144,12 +147,12 @@ export default function RoomDetailDialog({
                                 <Skeleton className="h-6 w-2/3" />
                             </div>
                         ) : error ? (
-                            <div className="rounded-md border p-4 text-sm text-destructive">
+                            <div className="text-destructive rounded-md border p-4 text-sm">
                                 {error}
                             </div>
                         ) : data ? (
                             <div className="space-y-6">
-                                <section className="rounded-xl border bg-muted/10">
+                                <section className="bg-muted/10 rounded-xl border">
                                     <div className="flex flex-col gap-4 p-5">
                                         <div className="flex items-center justify-between">
                                             <div className="flex flex-col">
@@ -158,26 +161,17 @@ export default function RoomDetailDialog({
                                                         {data.number}
                                                     </span>
                                                     {data.name ? (
-                                                        <span className="ml-2 text-base font-medium text-muted-foreground">
+                                                        <span className="text-muted-foreground ml-2 text-base font-medium">
                                                             — {data.name}
                                                         </span>
                                                     ) : null}
                                                 </div>
                                             </div>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={goEdit}
-                                            >
-                                                <Pencil className="mr-2 h-4 w-4" />{' '}
-                                                Edit
-                                            </Button>
                                         </div>
                                         <div className="grid gap-4 sm:grid-cols-4">
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Status
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {t('common.status')}
                                                 </div>
                                                 <div>
                                                     <Badge
@@ -190,13 +184,23 @@ export default function RoomDetailDialog({
                                                             ] ?? 'outline'
                                                         }
                                                     >
-                                                        {data.status}
+                                                        {t(
+                                                            `room.status.${String(
+                                                                data.status ||
+                                                                    '',
+                                                            ).toLowerCase()}`,
+                                                            {
+                                                                ns: 'enum',
+                                                                defaultValue:
+                                                                    data.status,
+                                                            },
+                                                        )}
                                                     </Badge>
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Penghuni Maks.
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {t('room.max_occupancy')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.max_occupancy}
@@ -204,8 +208,8 @@ export default function RoomDetailDialog({
                                             </div>
                                             {/* Periode Tagih dihapus dari detail kamar (dikendalikan di kontrak) */}
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Harga
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {t('common.price')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.price_monthly_rupiah ??
@@ -218,24 +222,24 @@ export default function RoomDetailDialog({
 
                                         <div className="grid gap-4 sm:grid-cols-3">
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Gedung
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {tRoom('building')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.building?.name ?? '-'}
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Lantai
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {tRoom('floor')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.floor?.level ?? '-'}
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                                    Tipe
+                                                <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                                                    {tRoom('type')}
                                                 </div>
                                                 <div className="text-base font-semibold">
                                                     {data.type?.name ?? '-'}
@@ -245,24 +249,26 @@ export default function RoomDetailDialog({
                                     </div>
                                 </section>
 
-                                <section className="rounded-xl border bg-muted/10">
+                                <section className="bg-muted/10 rounded-xl border">
                                     <div className="flex flex-col gap-4 p-5">
                                         <div className="flex items-center justify-between">
                                             <div className="text-sm font-semibold">
-                                                Foto Kamar
+                                                {t('common.photos')}
                                             </div>
                                         </div>
                                         <div>
                                             <AspectRatio
                                                 ratio={4 / 3}
-                                                className="overflow-hidden rounded-lg border bg-background/80"
+                                                className="bg-background/80 overflow-hidden rounded-lg border"
                                             >
                                                 {currentPhoto ? (
                                                     <img
                                                         src={currentPhoto.url}
-                                                        alt={`Room ${data.number}`}
+                                                        alt={`${t('common.room')} ${data.number}`}
                                                         className="h-full w-full cursor-zoom-in object-cover"
-                                                        title="Klik untuk pratinjau"
+                                                        title={t(
+                                                            'common.click_to_preview',
+                                                        )}
                                                         onClick={() => {
                                                             setPreviewOpen(
                                                                 true,
@@ -273,10 +279,10 @@ export default function RoomDetailDialog({
                                                         }}
                                                     />
                                                 ) : (
-                                                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                                    <div className="text-muted-foreground flex h-full w-full items-center justify-center">
                                                         <div className="flex items-center gap-2">
                                                             <ImageIcon className="h-5 w-5" />{' '}
-                                                            Tidak ada foto
+                                                            {tRoom('no_photos')}
                                                         </div>
                                                     </div>
                                                 )}
@@ -286,9 +292,11 @@ export default function RoomDetailDialog({
                                                             type="button"
                                                             size="icon"
                                                             variant="secondary"
-                                                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white hover:bg-black/70"
+                                                            className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/60 text-white hover:bg-black/70"
                                                             onClick={prev}
-                                                            title="Sebelumnya"
+                                                            title={t(
+                                                                'datatable.prev',
+                                                            )}
                                                         >
                                                             <ChevronLeft className="h-4 w-4" />
                                                         </Button>
@@ -296,13 +304,15 @@ export default function RoomDetailDialog({
                                                             type="button"
                                                             size="icon"
                                                             variant="secondary"
-                                                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white hover:bg-black/70"
+                                                            className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/60 text-white hover:bg-black/70"
                                                             onClick={next}
-                                                            title="Berikutnya"
+                                                            title={t(
+                                                                'datatable.next',
+                                                            )}
                                                         >
                                                             <ChevronRight className="h-4 w-4" />
                                                         </Button>
-                                                        <div className="pointer-events-none absolute bottom-2 left-0 right-0 mx-auto flex w-fit items-center gap-1 rounded bg-black/40 px-2 py-0.5">
+                                                        <div className="pointer-events-none absolute right-0 bottom-2 left-0 mx-auto flex w-fit items-center gap-1 rounded bg-black/40 px-2 py-0.5">
                                                             <span className="text-xs text-white">
                                                                 {current + 1} /{' '}
                                                                 {photoCount}
@@ -318,20 +328,21 @@ export default function RoomDetailDialog({
                                                     <button
                                                         key={p.id}
                                                         type="button"
-                                                        className={`relative h-16 w-24 shrink-0 overflow-hidden rounded border ${i === current ? 'ring-2 ring-primary' : ''}`}
+                                                        className={`relative h-16 w-24 shrink-0 overflow-hidden rounded border ${i === current ? 'ring-primary ring-2' : ''}`}
                                                         onClick={() =>
                                                             selectThumb(i)
                                                         }
-                                                        title={`Foto ${i + 1}`}
                                                     >
                                                         <img
                                                             src={p.url}
-                                                            alt={`Thumb ${i + 1}`}
+                                                            alt={`${t('common.photo')} ${i + 1}`}
                                                             className="h-full w-full object-cover"
                                                         />
                                                         {p.is_cover ? (
-                                                            <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
-                                                                Cover
+                                                            <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
+                                                                {tRoom(
+                                                                    'form.photos.cover',
+                                                                )}
                                                             </span>
                                                         ) : null}
                                                     </button>
@@ -341,34 +352,36 @@ export default function RoomDetailDialog({
                                     </div>
                                 </section>
 
-                                <section className="rounded-xl border bg-muted/10">
+                                <section className="bg-muted/10 rounded-xl border">
                                     <div className="grid gap-4 p-5 sm:grid-cols-2">
                                         <div>
                                             <div className="text-sm font-semibold">
-                                                Fasilitas
+                                                {t('common.amenities')}
                                             </div>
                                             <div className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
                                                 {amenities.length ? (
                                                     amenities.map((a) => (
                                                         <div
                                                             key={a.id}
-                                                            className="rounded border bg-background px-2 py-1"
+                                                            className="bg-background rounded border px-2 py-1"
                                                         >
                                                             {a.name}
                                                         </div>
                                                     ))
                                                 ) : (
                                                     <div className="text-muted-foreground">
-                                                        Tidak ada fasilitas
+                                                        {t(
+                                                            'common.no_amenities',
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
                                         <div>
                                             <div className="text-sm font-semibold">
-                                                Keterangan
+                                                {tRoom('notes')}
                                             </div>
-                                            <div className="mt-2 rounded border bg-background p-3 text-sm text-muted-foreground">
+                                            <div className="bg-background text-muted-foreground mt-2 rounded border p-3 text-sm">
                                                 {data.notes ?? '-'}
                                             </div>
                                         </div>
@@ -376,20 +389,27 @@ export default function RoomDetailDialog({
                                 </section>
                             </div>
                         ) : (
-                            <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
-                                Tidak ada data kamar.
+                            <div className="text-muted-foreground rounded-md border p-6 text-center text-sm">
+                                {tRoom('no_data')}
                             </div>
                         )}
                     </div>
                 </div>
-                <DialogFooter className="border-t bg-background/95 px-6 py-4">
+                <DialogFooter className="bg-background/95 border-t px-6 py-4">
                     <Button
                         type="button"
                         variant="outline"
                         className="w-full sm:w-auto"
                         onClick={closeDialog}
                     >
-                        Tutup
+                        {t('common.close')}
+                    </Button>
+                    <Button
+                        type="button"
+                        className="w-full sm:w-auto"
+                        onClick={goEdit}
+                    >
+                        <Pencil className="mr-2 h-4 w-4" /> {t('common.edit')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

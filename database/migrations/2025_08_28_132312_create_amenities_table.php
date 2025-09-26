@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('amenities', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();   // AC, Wi-Fi, KM Dalam
-            $table->string('icon')->nullable(); // nama icon lucide/mdi dsb
-            $table->string('category')->nullable(); // "kamar", "komunal"
+            $table->string('name')->unique();
+            $table->json('name_i18n')->nullable();
+            $table->string('icon')->nullable();
+            $table->string('category')->nullable();
             $table->timestamps();
+
+            $table->index('category');
         });
     }
 

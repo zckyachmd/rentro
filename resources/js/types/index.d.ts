@@ -11,7 +11,11 @@ export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
     auth: {
-        user: User;
+        user: User | null;
+    };
+    preferences?: {
+        theme: 'light' | 'dark' | 'system';
+        locale?: 'en' | 'id';
     };
     ziggy: Config & { location: string };
 };

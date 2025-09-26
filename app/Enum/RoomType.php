@@ -4,8 +4,13 @@ namespace App;
 
 enum RoomType: string
 {
-    case STANDARD = 'Standard';
-    case DELUXE   = 'Deluxe';
-    case SUITE    = 'Suite';
-    case ECONOMY  = 'Economy';
+    case STANDARD = 'standard';
+    case DELUXE   = 'deluxe';
+    case SUITE    = 'suite';
+    case ECONOMY  = 'economy';
+
+    public function label(): string
+    {
+        return __('enum.room.type.' . strtolower($this->name));
+    }
 }

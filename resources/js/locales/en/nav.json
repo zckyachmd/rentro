@@ -1,0 +1,31 @@
+{
+    "nav": {
+        "billing": "Billing",
+        "go": "Go",
+        "help": "Help",
+        "lang": { "en": "English", "id": "Indonesian" },
+        "language": "Language",
+        "logout": "Logout",
+        "mobile_menu": "Mobile menu",
+        "nav_menu": "Navigation Menu",
+        "nav_menu_desc": "Access app menu",
+        "notifications": {
+            "label": "Notifications",
+            "empty": "No notifications."
+        },
+        "open_menu": "Open menu",
+        "overview": "Overview",
+        "profile": "Profile",
+        "search": {
+            "label": "Search",
+            "placeholder": "Search tenant, room, or invoice…"
+        },
+        "settings": "Settings",
+        "sidebar": {
+            "label": "Sidebar",
+            "collapse": "Collapse sidebar",
+            "expand": "Expand sidebar"
+        },
+        "user_menu": "User Menu"
+    }
+}

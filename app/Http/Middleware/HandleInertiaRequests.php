@@ -2,10 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Enum\Locale as AppLocale;
 use App\Services\Contracts\MenuServiceInterface;
+use App\Services\Contracts\ZiggyServiceInterface;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -20,9 +21,12 @@ class HandleInertiaRequests extends Middleware
      * Create a new middleware instance.
      *
      * @param MenuServiceInterface $menus
+     * @param ZiggyServiceInterface $ziggy
      */
-    public function __construct(protected MenuServiceInterface $menus)
-    {
+    public function __construct(
+        protected MenuServiceInterface $menus,
+        protected ZiggyServiceInterface $ziggy,
+    ) {
     }
 
     /**
@@ -40,8 +44,13 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $supportedLocales = array_map(fn (AppLocale $c) => $c->value, AppLocale::cases());
+
         return [
             ...parent::share($request),
+            'i18n' => [
+                'supported' => $supportedLocales,
+            ],
             'auth' => (function () use ($request) {
                 $user = $request->user();
 
@@ -68,16 +77,11 @@ class HandleInertiaRequests extends Middleware
                     ]),
                 ];
             })(),
-            'menuGroups' => function () use ($request) {
+            'menus' => function () use ($request) {
                 return $this->menus->forUser($request->user());
             },
-            'ziggy' => fn () => [
-                ...(new Ziggy())->toArray(),
-                'location' => $request->url(),
-            ],
-
-            // Flash & callback helpers (success/error/data) for easy consumption on the frontend
-            'flash' => [
+            'ziggy' => fn () => $this->ziggy->forRequest($request),
+            'alert' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
                 'warning' => fn () => $request->session()->get('warning'),
@@ -85,12 +89,44 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('message'),
                 'data'    => fn () => $request->session()->get('data'),
             ],
+            'preferences' => [
+                'theme' => function () use ($request) {
+                    $user          = $request->user();
+                    $themeFromUser = null;
+                    if ($user) {
+                        try {
+                            $prefs     = (array) ($user->preferences ?? []);
+                            $candidate = $prefs['theme'] ?? null;
+                            if (in_array($candidate, ['light', 'dark', 'system'], true)) {
+                                $themeFromUser = $candidate;
+                            }
+                        } catch (\Throwable) {
+                            // ignore
+                        }
+                    }
 
-            // Aliases specifically for callback-like usage (optional, mirrors flash keys)
-            'cb' => [
-                'success' => fn () => $request->session()->get('success') ?? $request->session()->get('cb_success'),
-                'error'   => fn () => $request->session()->get('error') ?? $request->session()->get('cb_error'),
-                'data'    => fn () => $request->session()->get('data') ?? $request->session()->get('cb_data'),
+                    return $request->cookie('theme', $themeFromUser ?? 'system');
+                },
+                'locale' => function () use ($request, $supportedLocales) {
+                    $supported = $supportedLocales;
+                    $user      = $request->user();
+                    $fromUser  = null;
+                    if ($user) {
+                        try {
+                            $prefs = (array) ($user->preferences ?? []);
+                            $cand  = $prefs['locale'] ?? null;
+                            if (is_string($cand) && in_array($cand, $supported, true)) {
+                                $fromUser = $cand;
+                            }
+                        } catch (\Throwable) {
+                            // ignore
+                        }
+                    }
+                    $fromCookie = (string) $request->cookie('locale', '');
+                    $locale     = $fromUser ?? (in_array($fromCookie, $supported, true) ? $fromCookie : null);
+
+                    return $locale ?? app()->getLocale();
+                },
             ],
         ];
     }

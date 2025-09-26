@@ -12,22 +12,66 @@ class AmenityFactory extends Factory
     public function definition(): array
     {
         static $pool = [
-            ['AC', 'ac'],
-            ['Wi-Fi', 'wifi'],
-            ['Kamar Mandi Dalam', 'shower-head'],
-            ['Lemari', 'wardrobe'],
-            ['Meja', 'table-2'],
-            ['Air Panas', 'thermometer'],
-            ['Parkir Motor', 'bike'],
-            ['Parkir Mobil', 'car'],
-            ['Jendela', 'panel-top'],
+            [
+                'id' => 'AC',
+                'en' => 'Air Conditioner',
+                'icon' => 'AirVent',
+            ],
+            [
+                'id' => 'Wi‑Fi',
+                'en' => 'Wi‑Fi',
+                'icon' => 'Wifi',
+            ],
+            [
+                'id' => 'Kamar Mandi Dalam',
+                'en' => 'Ensuite Bathroom',
+                'icon' => 'ShowerHead',
+            ],
+            [
+                'id' => 'Lemari',
+                'en' => 'Wardrobe',
+                'icon' => 'Archive',
+            ],
+            [
+                'id' => 'Meja',
+                'en' => 'Desk',
+                'icon' => 'LayoutGrid',
+            ],
+            [
+                'id' => 'Air Panas',
+                'en' => 'Hot Water',
+                'icon' => 'Thermometer',
+            ],
+            [
+                'id' => 'Parkir Motor',
+                'en' => 'Motorbike Parking',
+                'icon' => 'Bike',
+            ],
+            [
+                'id' => 'Parkir Mobil',
+                'en' => 'Car Parking',
+                'icon' => 'Car',
+            ],
+            [
+                'id' => 'Jendela',
+                'en' => 'Window',
+                'icon' => 'PanelTop',
+            ],
         ];
         $pick = $this->faker->unique()->randomElement($pool);
 
+        $cat = $this->faker->randomElement(['room', 'communal']);
+
+        $names = [
+            'id' => $pick['id'],
+            'en' => $pick['en'],
+        ];
+
         return [
-            'name'     => $pick[0],
-            'icon'     => $pick[1],        // simpan nama icon (lucide/mdi)
-            'category' => 'kamar',         // bisa "komunal" kalau dibutuhkan
+            'name'       => $pick['en'],
+            'name_i18n'  => $names,
+            'icon'       => $pick['icon'],
+            'category'   => $cat,
         ];
     }
 }

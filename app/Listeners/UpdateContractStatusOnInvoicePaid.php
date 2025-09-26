@@ -35,11 +35,10 @@ class UpdateContractStatusOnInvoicePaid implements ShouldQueue
             return;
         }
 
-        // Run only when invoice is Paid (handle both enum or string)
         $invoiceStatus = $invoice->status instanceof \BackedEnum
             ? $invoice->status->value
             : (string) $invoice->getAttribute('status');
-        if (!in_array($invoiceStatus, [InvoiceStatus::PAID->value, 'Paid', 'PAID'], true)) {
+        if ($invoiceStatus !== InvoiceStatus::PAID->value) {
             return;
         }
 
@@ -49,7 +48,6 @@ class UpdateContractStatusOnInvoicePaid implements ShouldQueue
             return;
         }
 
-        // Read contract raw (bypass Eloquent casting to avoid enum exceptions)
         $raw = DB::table('contracts')->where('id', $contractId)
             ->first(['id', 'status', 'start_date', 'end_date', 'room_id', 'paid_in_full_at']);
         if (!$raw) {
@@ -61,7 +59,6 @@ class UpdateContractStatusOnInvoicePaid implements ShouldQueue
             ContractStatus::PENDING_PAYMENT->value,
             ContractStatus::BOOKED->value,
             ContractStatus::OVERDUE->value,
-            'Pending', // legacy value that may exist in older data
         ], true);
 
         if ($eligibleForTransition) {
@@ -91,7 +88,6 @@ class UpdateContractStatusOnInvoicePaid implements ShouldQueue
                 }
             }
 
-            // Try to log after status normalized (hydrate safely now)
             try {
                 $contractModel = Contract::query()->find($contractId);
                 if ($contractModel) {
@@ -113,7 +109,6 @@ class UpdateContractStatusOnInvoicePaid implements ShouldQueue
             }
         }
 
-        // Determine if contract is fully paid (no open invoices)
         $hasUnpaid = DB::table('invoices')
             ->where('contract_id', $contractId)
             ->whereNot('status', InvoiceStatus::CANCELLED->value)

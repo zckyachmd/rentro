@@ -1,6 +1,8 @@
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
     AlertDialog,
@@ -34,7 +36,8 @@ import type {
 } from '@/types/management';
 
 export default function RolesIndex() {
-    const { props } = usePage<PageProps>();
+    const { t, i18n } = useTranslation();
+    const { props } = usePage<InertiaPageProps & PageProps>();
     const { roles, permissions = [], guards = [], query } = props;
 
     const currentPath = React.useMemo(
@@ -81,28 +84,27 @@ export default function RolesIndex() {
         });
     }, [dialog.del.role?.id]);
 
-    const tableColumns = React.useMemo(
-        () =>
-            createColumns({
-                onEdit: (role: RoleItem) => openDialog('edit', role),
-                onPermissions: (role: RoleItem) => openDialog('perm', role),
-                onDelete: (role: RoleItem) => openDialog('del', role),
-            }),
-        [openDialog],
-    );
+    const lang = i18n.language;
+    const tableColumns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onEdit: (role: RoleItem) => openDialog('edit', role),
+            onPermissions: (role: RoleItem) => openDialog('perm', role),
+            onDelete: (role: RoleItem) => openDialog('del', role),
+        });
+    }, [openDialog, lang]);
 
     return (
         <AuthLayout
-            pageTitle="Role Management"
-            pageDescription="Kelola roles, hapus, dan atur permissions untuk akses aplikasi."
+            pageTitle={t('management.role.title')}
+            pageDescription={t('management.role.desc')}
         >
-            <div className="space-y-3">
+            <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>Daftar Role</CardTitle>
+                        <CardTitle>{t('management.role.list_title')}</CardTitle>
                         <CardDescription>
-                            Kelola daftar role yang tersedia, termasuk menambah,
-                            mengedit, menghapus, dan mengatur permissions.
+                            {t('management.role.desc')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -116,7 +118,8 @@ export default function RolesIndex() {
                                     onClick={openCreate}
                                     className="gap-2"
                                 >
-                                    <Plus className="h-4 w-4" /> Tambah Role
+                                    <Plus className="h-4 w-4" />{' '}
+                                    {t('management.role.add')}
                                 </Button>
                             </div>
                         </div>
@@ -134,13 +137,13 @@ export default function RolesIndex() {
                                 onQueryChange({ page: 1, search: v })
                             }
                             searchKey="name"
-                            searchPlaceholder="Cari nama role…"
+                            searchPlaceholder={t('nav.search.placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
                             onQueryChange={onQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada role."
+                            emptyText={t('management.role.empty')}
                         />
                     </CardContent>
                 </Card>
@@ -188,7 +191,9 @@ export default function RolesIndex() {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Hapus Role</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            {t('management.role.delete_title')}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                             Apakah Anda yakin ingin menghapus role{' '}
                             <span className="font-medium">
@@ -199,13 +204,13 @@ export default function RolesIndex() {
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex items-center justify-between gap-2">
                         <AlertDialogCancel className="mt-2 sm:mt-0">
-                            Batal
+                            {t('common.cancel')}
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleConfirmDelete}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                            Hapus
+                            {t('common.delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

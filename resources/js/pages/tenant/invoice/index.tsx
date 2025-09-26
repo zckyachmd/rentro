@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,11 +31,9 @@ import type {
     TenantInvoiceItem,
 } from '@/types/tenant';
 
-// InvoicesPaginator, PageProps moved to pages/types
-
-// QueryInit, SafePayload, ServerQuery moved to pages/types
-
 export default function TenantInvoiceIndex(props: PageProps) {
+    const { t, i18n } = useTranslation();
+    const { t: tInv } = useTranslation('tenant/invoice');
     const { invoices: paginator, query = {}, options = {} } = props;
     const rows: TenantInvoiceItem[] = React.useMemo(
         () => paginator?.data ?? [],
@@ -115,8 +114,6 @@ export default function TenantInvoiceIndex(props: PageProps) {
         safeOnQueryChange({ page: 1, status: null, q: null } as SafePayload);
     }, [safeOnQueryChange]);
 
-    // Pay dialog approach; keep here for future when needed
-
     const [detail, setDetail] = React.useState<null | {
         id: string;
         number: string;
@@ -124,18 +121,17 @@ export default function TenantInvoiceIndex(props: PageProps) {
     const [pay, setPay] = React.useState<null | { id: string; number: string }>(
         null,
     );
-    const columns = React.useMemo(
-        () =>
-            createColumns({
-                onPay: (row: TenantInvoiceItem) =>
-                    setPay({ id: row.id, number: row.number }),
-                onShowDetail: (row: TenantInvoiceItem) =>
-                    setDetail({ id: row.id, number: row.number }),
-            }),
-        [],
-    );
+    const lang = i18n.language;
+    const columns = React.useMemo(() => {
+        void lang;
+        return createColumns({
+            onPay: (row: TenantInvoiceItem) =>
+                setPay({ id: row.id, number: row.number }),
+            onShowDetail: (row: TenantInvoiceItem) =>
+                setDetail({ id: row.id, number: row.number }),
+        });
+    }, [lang]);
 
-    // Listen to refresh event from pay-dialog and reload invoices data only
     React.useEffect(() => {
         const handler = () => {
             try {
@@ -150,24 +146,23 @@ export default function TenantInvoiceIndex(props: PageProps) {
     }, []);
 
     return (
-        <AuthLayout
-            pageTitle="Tagihan Saya"
-            pageDescription="Daftar tagihan dan pembayaran."
-        >
+        <AuthLayout pageTitle={tInv('title')} pageDescription={tInv('desc')}>
             <div className="space-y-6">
                 {/* Filter */}
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                            Filter
+                            {tInv('filter')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="grid items-end gap-3 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="invoice-search">Cari</Label>
+                                <Label htmlFor="invoice-search">
+                                    {tInv('search')}
+                                </Label>
                                 <div className="relative">
-                                    <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
                                     <Input
                                         id="invoice-search"
                                         className="h-9 pl-8"
@@ -181,13 +176,15 @@ export default function TenantInvoiceIndex(props: PageProps) {
                                                 applyFilters();
                                             }
                                         }}
-                                        placeholder="Cari nomor invoice/kamar…"
-                                        aria-label="Cari invoice"
+                                        placeholder={tInv('search_placeholder')}
+                                        aria-label={tInv('search')}
                                     />
                                 </div>
                             </div>
                             <div>
-                                <Label htmlFor="status">Status</Label>
+                                <Label htmlFor="status">
+                                    {t('common.status')}
+                                </Label>
                                 <Select
                                     value={status}
                                     onValueChange={(v) => {
@@ -199,28 +196,43 @@ export default function TenantInvoiceIndex(props: PageProps) {
                                     }}
                                 >
                                     <SelectTrigger id="status" className="h-9">
-                                        <SelectValue placeholder="Semua" />
+                                        <SelectValue
+                                            placeholder={t('common.all')}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {(statuses || []).map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {s}
-                                            </SelectItem>
-                                        ))}
+                                        {(statuses || []).map((s) => {
+                                            const slug = String(s)
+                                                .trim()
+                                                .toLowerCase()
+                                                .replace(/\s+/g, '_');
+                                            return (
+                                                <SelectItem key={s} value={s}>
+                                                    {t(
+                                                        `invoice.status.${slug}`,
+                                                        {
+                                                            ns: 'enum',
+                                                            defaultValue:
+                                                                String(s),
+                                                        },
+                                                    )}
+                                                </SelectItem>
+                                            );
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
                         <div className="flex gap-2 pt-2 md:col-span-12">
                             <Button type="button" onClick={applyFilters}>
-                                Terapkan
+                                {t('common.apply')}
                             </Button>
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={resetFilter}
                             >
-                                Reset
+                                {t('common.reset')}
                             </Button>
                         </div>
                     </CardContent>
@@ -240,7 +252,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
                             onSortChange={handleSortChange}
                             onQueryChange={safeOnQueryChange}
                             loading={processing}
-                            emptyText="Tidak ada tagihan."
+                            emptyText={t('invoice.empty')}
                             showColumn={false}
                         />
                     </CardContent>
