@@ -1,0 +1,87 @@
+{
+  "title": "Promo",
+  "desc": "Kelola promo diskon",
+  "add": "Tambah Promo",
+  "create_title": "Buat Promo",
+  "edit_title": "Ubah Promo",
+  "common": { "any": "Semua" },
+  "channel": { "public": "Publik", "referral": "Referral", "manual": "Manual", "coupon": "Kupon" },
+  "promotion": {
+    "create_title": "Buat Promo",
+    "edit_title": "Ubah Promo",
+    "label": {
+      "slug": "Slug",
+      "priority": "Prioritas",
+      "stack_mode": "Mode Stacking",
+      "channel": "Channel Default",
+      "valid_from": "Berlaku Dari",
+      "valid_until": "Berlaku Hingga",
+      "tags": "Tag",
+      "require_coupon": "Butuh kupon saat checkout"
+    },
+    "stack": { "stack": "Tumpuk", "highest_only": "Terbesar Saja", "exclusive": "Eksklusif" },
+    "placeholder": {
+      "name": "Nama promo (mis. Summer Sale)",
+      "slug": "otomatis dari nama jika kosong",
+      "priority": "Angka kecil = prioritas tinggi",
+      "description": "Deskripsi singkat untuk admin",
+      "tags": "mis. dp, limited, featured",
+      "total_quota": "mis. 100",
+      "per_user_limit": "mis. 1",
+      "per_contract_limit": "mis. 1",
+      "per_invoice_limit": "mis. 1",
+      "per_day_limit": "mis. 10",
+      "per_month_limit": "mis. 100"
+    },
+    "help": {
+      "name": "Nama tampilan untuk promo ini.",
+      "slug": "Kunci URL huruf kecil; kosongkan untuk otomatis dari nama.",
+      "priority": "Urutan penerapan di antara promo yang memenuhi. Lebih kecil dieksekusi lebih dulu.",
+      "stack_mode": "Tumpuk: jumlahkan diskon; Terbesar Saja: ambil yang terbesar di konflik; Eksklusif: blokir promo lain.",
+      "channel": "Channel default bila rule tidak menentukan channel.",
+      "valid_from": "Tanggal mulai promo aktif.",
+      "valid_until": "Tanggal terakhir promo aktif.",
+      "description": "Catatan/deskripsi internal.",
+      "tags": "Kata kunci dipisah koma untuk memudahkan filter.",
+      "total_quota": "Total maksimum pemakaian.",
+      "per_user_limit": "Maks pemakaian per pengguna.",
+      "per_contract_limit": "Maks pemakaian untuk kontrak yang sama.",
+      "per_invoice_limit": "Maks pemakaian dalam 1 invoice.",
+      "per_day_limit": "Maks pemakaian per hari.",
+      "per_month_limit": "Maks pemakaian per bulan.",
+      "require_coupon": "Jika aktif, harus memasukkan kode kupon yang valid."
+    }
+  },
+  "scope": {
+    "label": { "scope_type": "Tipe Scope", "building": "Gedung", "floor": "Lantai", "room_type": "Tipe Kamar", "room": "Kamar", "floor_optional": "Lantai (opsional)", "room_type_optional": "Tipe Kamar (opsional)" },
+    "placeholder": { "building": "Pilih gedung", "floor": "Pilih lantai", "room_type": "Pilih tipe kamar", "room": "Pilih kamar" },
+    "help": { "scope_type": "Batasi promo ke target tertentu." },
+    "bulk": { "add_filtered_rooms": "Tambah semua kamar terfilter", "add_filtered_floors": "Tambah semua lantai terfilter", "add_all_room_types": "Tambah semua tipe kamar" }
+  },
+  "rule": {
+    "label": { "min_spend": "Min. Transaksi (Rp)", "max_discount": "Maks Diskon (Rp)", "billing_periods": "Periode Tagihan", "date_from": "Tanggal Mulai", "date_until": "Tanggal Akhir", "time_start": "Jam Mulai", "time_end": "Jam Akhir", "channel": "Channel", "first_n": "N Periode Pertama" },
+    "placeholder": { "min_spend": "mis. 1000000", "max_discount": "mis. 500000" },
+    "help": { "min_spend": "Minimal transaksi agar diskon berlaku.", "max_discount": "Maksimal diskon di level rule.", "billing_periods": "Periode yang berlaku (harian/mingguan/bulanan)." }
+  },
+  "action": {
+    "label": { "action_type": "Tipe Aksi", "priority": "Prioritas", "percent_bps": "Persen (bps)", "amount_idr": "Nominal (Rp)", "fixed_price_idr": "Harga Tetap (Rp)", "n_days": "Gratis N Hari", "n_periods": "N Periode Pertama", "max_discount_idr": "Maks Diskon (Rp)" },
+    "type": { "percent": "Persen", "amount": "Nominal", "fixed_price": "Harga Tetap", "free_n_days": "Gratis N Hari", "first_n_percent": "Persen N Periode Pertama", "first_n_amount": "Nominal N Periode Pertama" },
+    "help": { "action_type": "Pilih cara diskon diterapkan." }
+  },
+  "coupon": {
+    "label": { "code": "Kode", "expires_at": "Tanggal Kedaluwarsa", "max_redemptions": "Maks Pemakaian", "is_active": "Aktif" },
+    "placeholder": { "code": "mis. WELCOME20", "max_redemptions": "mis. 1" },
+    "help": { "code": "Kode kupon yang wajib dimasukkan.", "expires_at": "Opsional tanggal kedaluwarsa.", "max_redemptions": "Batas pemakaian per kode; kosongkan untuk tak terbatas." }
+  },
+  "bulk": {
+    "label": { "count": "Jumlah", "prefix": "Prefix (opsional)", "length": "Panjang", "max_redemptions": "Maks Pemakaian (opsional)", "expires_at": "Tanggal Kedaluwarsa (opsional)", "is_active": "Aktif" },
+    "placeholder": { "count": "mis. 50", "prefix": "mis. WLCM-", "length": "mis. 10", "max_redemptions": "mis. 1" },
+    "help": { "count": "Berapa kode yang ingin dibuat.", "prefix": "Prefix opsional di depan kode.", "length": "Panjang bagian acak (4–32).", "max_redemptions": "Batas pemakaian per kode.", "expires_at": "Tanggal kedaluwarsa opsional." }
+  },
+  "form": { "save": "Simpan" },
+  "delete": { "title": "Hapus Promo", "confirm_named": "Yakin ingin menghapus \"{{name}}\"?" },
+  "created": "Promo dibuat.",
+  "updated": "Promo diperbarui.",
+  "deleted": "Promo dihapus."
+}
+

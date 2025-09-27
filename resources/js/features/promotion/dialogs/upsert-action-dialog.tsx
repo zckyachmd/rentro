@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import type { ActionRow } from '../tables/actions-columns';
 
@@ -29,6 +32,7 @@ export default function UpsertActionDialog({
     promotionId,
     item = null,
 }: UpsertActionDialogProps) {
+    const { t: tProm } = useTranslation('management/promotions');
     const { data, setData, post, put, processing, clearErrors } = useForm({
         action_type: (item?.action_type ?? 'percent') as any,
         applies_to_rent: Boolean(item?.applies_to_rent ?? true),
@@ -115,27 +119,31 @@ export default function UpsertActionDialog({
 
                 <div className="grid gap-3 sm:grid-cols-2">
                     <div className="grid gap-2">
-                        <Label>Action Type</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('action.label.action_type')}</Label>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                    <TooltipContent>{tProm('action.help.action_type')}</TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                         <select
                             className="border bg-background px-2 py-2 rounded-md"
                             value={data.action_type}
                             onChange={(e) => setData('action_type', e.target.value)}
                         >
-                            <option value="percent">Percent</option>
-                            <option value="amount">Amount</option>
-                            <option value="fixed_price">Fixed Price</option>
-                            <option value="free_n_days">Free N Days</option>
-                            <option value="first_n_periods_percent">
-                                First N Periods Percent
-                            </option>
-                            <option value="first_n_periods_amount">
-                                First N Periods Amount
-                            </option>
+                            <option value="percent">{tProm('action.type.percent')}</option>
+                            <option value="amount">{tProm('action.type.amount')}</option>
+                            <option value="fixed_price">{tProm('action.type.fixed_price')}</option>
+                            <option value="free_n_days">{tProm('action.type.free_n_days')}</option>
+                            <option value="first_n_periods_percent">{tProm('action.type.first_n_percent')}</option>
+                            <option value="first_n_periods_amount">{tProm('action.type.first_n_amount')}</option>
                         </select>
                         <InputError name="action_type" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Priority</Label>
+                        <Label>{tProm('action.label.priority')}</Label>
                         <Input
                             inputMode="numeric"
                             value={data.priority}
@@ -160,7 +168,7 @@ export default function UpsertActionDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Percent (bps)</Label>
+                        <Label>{tProm('action.label.percent_bps')}</Label>
                         <Input
                             inputMode="numeric"
                             value={data.percent_bps}
@@ -171,7 +179,7 @@ export default function UpsertActionDialog({
                         <InputError name="percent_bps" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Amount (Rp)</Label>
+                        <Label>{tProm('action.label.amount_idr')}</Label>
                         <Input
                             inputMode="numeric"
                             value={data.amount_idr}
@@ -180,7 +188,7 @@ export default function UpsertActionDialog({
                         <InputError name="amount_idr" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Fixed Price (Rp)</Label>
+                        <Label>{tProm('action.label.fixed_price_idr')}</Label>
                         <Input
                             inputMode="numeric"
                             value={data.fixed_price_idr}
@@ -191,7 +199,7 @@ export default function UpsertActionDialog({
                         <InputError name="fixed_price_idr" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Free N Days</Label>
+                        <Label>{tProm('action.label.n_days')}</Label>
                         <Input
                             inputMode="numeric"
                             value={data.n_days}
@@ -200,7 +208,7 @@ export default function UpsertActionDialog({
                         <InputError name="n_days" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>First N Periods</Label>
+                        <Label>{tProm('action.label.n_periods')}</Label>
                         <Input
                             inputMode="numeric"
                             value={data.n_periods}
@@ -209,7 +217,7 @@ export default function UpsertActionDialog({
                         <InputError name="n_periods" />
                     </div>
                     <div className="grid gap-2 sm:col-span-2">
-                        <Label>Max Discount (Rp)</Label>
+                        <Label>{tProm('action.label.max_discount_idr')}</Label>
                         <Input
                             inputMode="numeric"
                             value={data.max_discount_idr}
@@ -233,4 +241,3 @@ export default function UpsertActionDialog({
         </Dialog>
     );
 }
-

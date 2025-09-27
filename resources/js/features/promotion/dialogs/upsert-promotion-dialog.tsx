@@ -148,36 +148,24 @@ export default function UpsertPromotionDialog({
                         <Label>
                             {t('common.name')} <span className="text-red-500">*</span>
                         </Label>
-                        <Input
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
-                        />
+                        <Input placeholder={tProm('promotion.placeholder.name')} value={data.name} onChange={(e) => setData('name', e.target.value)} />
                         <InputError name="name" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Slug</Label>
-                        <Input
-                            placeholder="auto from name if empty"
-                            value={data.slug ?? ''}
-                            onChange={(e) => setData('slug', e.target.value)}
-                        />
+                        <Label>{tProm('promotion.label.slug')}</Label>
+                        <Input placeholder={tProm('promotion.placeholder.slug')} value={data.slug ?? ''} onChange={(e) => setData('slug', e.target.value)} />
                         <InputError name="slug" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Priority</Label>
-                        <Input
-                            type="number"
-                            inputMode="numeric"
-                            value={data.priority}
-                            onChange={(e) => setData('priority', e.target.value)}
-                        />
+                        <Label>{tProm('promotion.label.priority')}</Label>
+                        <Input type="number" inputMode="numeric" placeholder={tProm('promotion.placeholder.priority')} value={data.priority} onChange={(e) => setData('priority', e.target.value)} />
                         <InputError name="priority" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Stack Mode</Label>
+                        <Label>{tProm('promotion.label.stack_mode')}</Label>
                         <select
                             className="border bg-background px-2 py-2 rounded-md"
                             value={data.stack_mode}
@@ -188,15 +176,15 @@ export default function UpsertPromotionDialog({
                                 )
                             }
                         >
-                            <option value="stack">Stack</option>
-                            <option value="highest_only">Highest Only</option>
-                            <option value="exclusive">Exclusive</option>
+                            <option value="stack">{tProm('promotion.stack.stack')}</option>
+                            <option value="highest_only">{tProm('promotion.stack.highest_only')}</option>
+                            <option value="exclusive">{tProm('promotion.stack.exclusive')}</option>
                         </select>
                         <InputError name="stack_mode" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Default Channel</Label>
+                        <Label>{tProm('promotion.label.channel')}</Label>
                         <select
                             className="border bg-background px-2 py-2 rounded-md"
                             value={data.default_channel ?? ''}
@@ -207,31 +195,23 @@ export default function UpsertPromotionDialog({
                                 )
                             }
                         >
-                            <option value="">Any</option>
-                            <option value="public">Public</option>
-                            <option value="referral">Referral</option>
-                            <option value="manual">Manual</option>
-                            <option value="coupon">Coupon</option>
+                            <option value="">{tProm('common.any')}</option>
+                            <option value="public">{tProm('channel.public')}</option>
+                            <option value="referral">{tProm('channel.referral')}</option>
+                            <option value="manual">{tProm('channel.manual')}</option>
+                            <option value="coupon">{tProm('channel.coupon')}</option>
                         </select>
                         <InputError name="default_channel" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Valid From</Label>
-                        <Input
-                            type="date"
-                            value={data.valid_from ?? ''}
-                            onChange={(e) => setData('valid_from', e.target.value)}
-                        />
+                        <Label>{tProm('promotion.label.valid_from')}</Label>
+                        <Input type="date" value={data.valid_from ?? ''} onChange={(e) => setData('valid_from', e.target.value)} />
                         <InputError name="valid_from" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Valid Until</Label>
-                        <Input
-                            type="date"
-                            value={data.valid_until ?? ''}
-                            onChange={(e) => setData('valid_until', e.target.value)}
-                        />
+                        <Label>{tProm('promotion.label.valid_until')}</Label>
+                        <Input type="date" value={data.valid_until ?? ''} onChange={(e) => setData('valid_until', e.target.value)} />
                         <InputError name="valid_until" />
                     </div>
 
@@ -247,75 +227,39 @@ export default function UpsertPromotionDialog({
                     </div>
 
                     <div className="grid gap-2 sm:col-span-2">
-                        <Label>Tags (comma-separated)</Label>
-                        <Input
-                            placeholder="e.g. dp, limited, featured"
-                            value={data.tags ?? ''}
-                            onChange={(e) => setData('tags', e.target.value)}
-                        />
+                        <Label>{tProm('promotion.label.tags')}</Label>
+                        <Input placeholder={tProm('promotion.placeholder.tags')} value={data.tags ?? ''} onChange={(e) => setData('tags', e.target.value)} />
                         <InputError name="tags" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Total Quota</Label>
-                        <Input
-                            inputMode="numeric"
-                            value={data.total_quota}
-                            onChange={(e) => setData('total_quota', e.target.value)}
-                        />
+                        <Label>{tProm('promotion.label.total_quota')}</Label>
+                        <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.total_quota')} value={data.total_quota} onChange={(e) => setData('total_quota', e.target.value)} />
                         <InputError name="total_quota" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Per-User Limit</Label>
-                        <Input
-                            inputMode="numeric"
-                            value={data.per_user_limit}
-                            onChange={(e) =>
-                                setData('per_user_limit', e.target.value)
-                            }
-                        />
+                        <Label>{tProm('promotion.label.per_user_limit')}</Label>
+                        <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_user_limit')} value={data.per_user_limit} onChange={(e) => setData('per_user_limit', e.target.value)} />
                         <InputError name="per_user_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Per-Contract Limit</Label>
-                        <Input
-                            inputMode="numeric"
-                            value={data.per_contract_limit}
-                            onChange={(e) =>
-                                setData('per_contract_limit', e.target.value)
-                            }
-                        />
+                        <Label>{tProm('promotion.label.per_contract_limit')}</Label>
+                        <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_contract_limit')} value={data.per_contract_limit} onChange={(e) => setData('per_contract_limit', e.target.value)} />
                         <InputError name="per_contract_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Per-Invoice Limit</Label>
-                        <Input
-                            inputMode="numeric"
-                            value={data.per_invoice_limit}
-                            onChange={(e) =>
-                                setData('per_invoice_limit', e.target.value)
-                            }
-                        />
+                        <Label>{tProm('promotion.label.per_invoice_limit')}</Label>
+                        <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_invoice_limit')} value={data.per_invoice_limit} onChange={(e) => setData('per_invoice_limit', e.target.value)} />
                         <InputError name="per_invoice_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Per-Day Limit</Label>
-                        <Input
-                            inputMode="numeric"
-                            value={data.per_day_limit}
-                            onChange={(e) => setData('per_day_limit', e.target.value)}
-                        />
+                        <Label>{tProm('promotion.label.per_day_limit')}</Label>
+                        <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_day_limit')} value={data.per_day_limit} onChange={(e) => setData('per_day_limit', e.target.value)} />
                         <InputError name="per_day_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>Per-Month Limit</Label>
-                        <Input
-                            inputMode="numeric"
-                            value={data.per_month_limit}
-                            onChange={(e) =>
-                                setData('per_month_limit', e.target.value)
-                            }
-                        />
+                        <Label>{tProm('promotion.label.per_month_limit')}</Label>
+                        <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_month_limit')} value={data.per_month_limit} onChange={(e) => setData('per_month_limit', e.target.value)} />
                         <InputError name="per_month_limit" />
                     </div>
 
@@ -324,7 +268,7 @@ export default function UpsertPromotionDialog({
                             checked={Boolean(data.require_coupon)}
                             onCheckedChange={(v) => setData('require_coupon', v)}
                         />
-                        <Label>Require Coupon</Label>
+                        <Label>{tProm('promotion.label.require_coupon')}</Label>
                     </div>
                     <div className="flex items-center gap-3 sm:col-span-2">
                         <Switch
@@ -351,4 +295,3 @@ export default function UpsertPromotionDialog({
         </Dialog>
     );
 }
-

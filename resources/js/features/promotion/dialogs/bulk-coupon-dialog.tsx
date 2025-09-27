@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export type BulkCouponDialogProps = {
   open: boolean;
@@ -21,6 +24,7 @@ export type BulkCouponDialogProps = {
 };
 
 export default function BulkCouponDialog({ open, onOpenChange, promotionId }: BulkCouponDialogProps) {
+  const { t: tProm } = useTranslation('management/promotions')
   const { data, setData, processing, clearErrors } = useForm({
     count: '50',
     prefix: '',
@@ -63,33 +67,73 @@ export default function BulkCouponDialog({ open, onOpenChange, promotionId }: Bu
         </DialogHeader>
         <div className="grid gap-3">
           <div className="grid gap-2">
-            <Label>Count</Label>
-            <Input inputMode="numeric" value={data.count} onChange={(e) => setData('count', e.target.value)} />
+            <div className="flex items-center gap-2">
+              <Label>{tProm('bulk.label.count')} <span className="text-red-500">*</span></Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                  <TooltipContent>{tProm('bulk.help.count')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input inputMode="numeric" placeholder={tProm('bulk.placeholder.count')} value={data.count} onChange={(e) => setData('count', e.target.value)} />
             <InputError name="count" />
           </div>
           <div className="grid gap-2">
-            <Label>Prefix (optional)</Label>
-            <Input value={data.prefix} onChange={(e) => setData('prefix', e.target.value)} />
+            <div className="flex items-center gap-2">
+              <Label>{tProm('bulk.label.prefix')}</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                  <TooltipContent>{tProm('bulk.help.prefix')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input placeholder={tProm('bulk.placeholder.prefix')} value={data.prefix} onChange={(e) => setData('prefix', e.target.value)} />
             <InputError name="prefix" />
           </div>
           <div className="grid gap-2">
-            <Label>Length</Label>
-            <Input inputMode="numeric" value={data.length} onChange={(e) => setData('length', e.target.value)} />
+            <div className="flex items-center gap-2">
+              <Label>{tProm('bulk.label.length')} <span className="text-red-500">*</span></Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                  <TooltipContent>{tProm('bulk.help.length')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input inputMode="numeric" placeholder={tProm('bulk.placeholder.length')} value={data.length} onChange={(e) => setData('length', e.target.value)} />
             <InputError name="length" />
           </div>
           <div className="grid gap-2">
-            <Label>Max Redemptions (optional)</Label>
-            <Input inputMode="numeric" value={data.max_redemptions} onChange={(e) => setData('max_redemptions', e.target.value)} />
+            <div className="flex items-center gap-2">
+              <Label>{tProm('bulk.label.max_redemptions')}</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                  <TooltipContent>{tProm('bulk.help.max_redemptions')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input inputMode="numeric" placeholder={tProm('bulk.placeholder.max_redemptions')} value={data.max_redemptions} onChange={(e) => setData('max_redemptions', e.target.value)} />
             <InputError name="max_redemptions" />
           </div>
           <div className="grid gap-2">
-            <Label>Expires At (optional)</Label>
+            <div className="flex items-center gap-2">
+              <Label>{tProm('bulk.label.expires_at')}</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                  <TooltipContent>{tProm('bulk.help.expires_at')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Input type="date" value={data.expires_at} onChange={(e) => setData('expires_at', e.target.value)} />
             <InputError name="expires_at" />
           </div>
           <div className="flex items-center gap-3">
             <Switch checked={Boolean(data.is_active)} onCheckedChange={(v) => setData('is_active', v)} />
-            <Label>Active</Label>
+            <Label>{tProm('bulk.label.is_active')}</Label>
           </div>
         </div>
         <DialogFooter>
@@ -100,4 +144,3 @@ export default function BulkCouponDialog({ open, onOpenChange, promotionId }: Bu
     </Dialog>
   );
 }
-

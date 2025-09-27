@@ -1,18 +1,86 @@
 {
-    "title": "Promotions",
-    "desc": "Manage discount promotions",
-    "add": "Add Promotion",
+  "title": "Promotions",
+  "desc": "Manage discount promotions",
+  "add": "Add Promotion",
+  "create_title": "Create Promotion",
+  "edit_title": "Edit Promotion",
+  "common": { "any": "Any" },
+  "channel": { "public": "Public", "referral": "Referral", "manual": "Manual", "coupon": "Coupon" },
+  "promotion": {
     "create_title": "Create Promotion",
     "edit_title": "Edit Promotion",
-    "form": {
-        "save": "Save"
+    "label": {
+      "slug": "Slug",
+      "priority": "Priority",
+      "stack_mode": "Stack Mode",
+      "channel": "Default Channel",
+      "valid_from": "Valid From",
+      "valid_until": "Valid Until",
+      "tags": "Tags",
+      "require_coupon": "Require coupon at checkout"
     },
-    "delete": {
-        "title": "Delete Promotion",
-        "confirm_named": "Are you sure want to delete \"{{name}}\"?"
+    "stack": { "stack": "Stack", "highest_only": "Highest Only", "exclusive": "Exclusive" },
+    "placeholder": {
+      "name": "Promotion name (e.g. Summer Sale)",
+      "slug": "auto from name if empty",
+      "priority": "Lower number = higher priority",
+      "description": "Short description for admins",
+      "tags": "e.g. dp, limited, featured",
+      "total_quota": "e.g. 100",
+      "per_user_limit": "e.g. 1",
+      "per_contract_limit": "e.g. 1",
+      "per_invoice_limit": "e.g. 1",
+      "per_day_limit": "e.g. 10",
+      "per_month_limit": "e.g. 100"
     },
-    "created": "Promotion created.",
-    "updated": "Promotion updated.",
-    "deleted": "Promotion deleted."
+    "help": {
+      "name": "Display name for this promotion.",
+      "slug": "Lowercase URL key; leave blank to auto-generate from name.",
+      "priority": "Applied order among eligible promos. Lower runs first.",
+      "stack_mode": "Stack: sum discounts; Highest Only: pick best among conflicts; Exclusive: blocks other promos.",
+      "channel": "Default channel when no rule-level channel is specified.",
+      "valid_from": "Start date the promotion becomes active.",
+      "valid_until": "Last date the promotion remains active.",
+      "description": "Internal note/description.",
+      "tags": "Comma separated keywords for filtering.",
+      "total_quota": "Maximum total redemptions across all users.",
+      "per_user_limit": "Max redemptions per user.",
+      "per_contract_limit": "Max redemptions for the same contract.",
+      "per_invoice_limit": "Max redemptions in a single invoice.",
+      "per_day_limit": "Max redemptions per day.",
+      "per_month_limit": "Max redemptions per month.",
+      "require_coupon": "If enabled, a valid coupon code must be supplied."
+    }
+  },
+  "scope": {
+    "label": { "scope_type": "Scope Type", "building": "Building", "floor": "Floor", "room_type": "Room Type", "room": "Room", "floor_optional": "Floor (optional)", "room_type_optional": "Room Type (optional)" },
+    "placeholder": { "building": "Select building", "floor": "Select floor", "room_type": "Select room type", "room": "Select room" },
+    "help": { "scope_type": "Limit this promotion to specific targets." },
+    "bulk": { "add_filtered_rooms": "Add all filtered rooms", "add_filtered_floors": "Add all filtered floors", "add_all_room_types": "Add all room types" }
+  },
+  "rule": {
+    "label": { "min_spend": "Min Spend (Rp)", "max_discount": "Max Discount (Rp)", "billing_periods": "Billing Periods", "date_from": "Date From", "date_until": "Date Until", "time_start": "Time Start", "time_end": "Time End", "channel": "Channel", "first_n": "First N Periods" },
+    "placeholder": { "min_spend": "e.g. 1000000", "max_discount": "e.g. 500000" },
+    "help": { "min_spend": "Required minimum spend before discount applies.", "max_discount": "Maximum discount allowed at rule level.", "billing_periods": "Which periods are eligible (daily/weekly/monthly)." }
+  },
+  "action": {
+    "label": { "action_type": "Action Type", "priority": "Priority", "percent_bps": "Percent (bps)", "amount_idr": "Amount (Rp)", "fixed_price_idr": "Fixed Price (Rp)", "n_days": "Free N Days", "n_periods": "First N Periods", "max_discount_idr": "Max Discount (Rp)" },
+    "type": { "percent": "Percent", "amount": "Amount", "fixed_price": "Fixed Price", "free_n_days": "Free N Days", "first_n_percent": "First N Periods Percent", "first_n_amount": "First N Periods Amount" },
+    "help": { "action_type": "Select how the discount is applied." }
+  },
+  "coupon": {
+    "label": { "code": "Code", "expires_at": "Expires At", "max_redemptions": "Max Redemptions", "is_active": "Active" },
+    "placeholder": { "code": "e.g. WELCOME20", "max_redemptions": "e.g. 1" },
+    "help": { "code": "Required coupon code the user must provide.", "expires_at": "Optional expiration date.", "max_redemptions": "Limit per code; leave empty for unlimited." }
+  },
+  "bulk": {
+    "label": { "count": "Count", "prefix": "Prefix (optional)", "length": "Length", "max_redemptions": "Max Redemptions (optional)", "expires_at": "Expires At (optional)", "is_active": "Active" },
+    "placeholder": { "count": "e.g. 50", "prefix": "e.g. WLCM-", "length": "e.g. 10", "max_redemptions": "e.g. 1" },
+    "help": { "count": "How many codes to generate.", "prefix": "Optional prefix for codes.", "length": "Random part length (4–32).", "max_redemptions": "Limit per code.", "expires_at": "Optional expiration date." }
+  },
+  "form": { "save": "Save" },
+  "delete": { "title": "Delete Promotion", "confirm_named": "Are you sure want to delete \"{{name}}\"?" },
+  "created": "Promotion created.",
+  "updated": "Promotion updated.",
+  "deleted": "Promotion deleted."
 }
-

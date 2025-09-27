@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import SearchSelect, { type SearchOption } from '@/components/ui/search-select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import type { ScopeRow } from '../tables/scopes-columns';
 
@@ -36,6 +39,7 @@ export default function UpsertScopeDialog({
     item = null,
     options,
 }: UpsertScopeDialogProps) {
+    const { t: tProm } = useTranslation('management/promotions')
     const { data, setData, post, put, processing, clearErrors } = useForm({
         scope_type: (item?.scope_type ?? 'global') as any,
         building_id: item?.building_id ? String(item.building_id) : '',
@@ -131,7 +135,15 @@ export default function UpsertScopeDialog({
 
                 <div className="grid gap-3">
                     <div className="grid gap-2">
-                        <Label>Scope Type</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('scope.label.scope_type')}</Label>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                    <TooltipContent>{tProm('scope.help.scope_type')}</TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                         <select
                             className="border bg-background px-2 py-2 rounded-md"
                             value={data.scope_type}
@@ -149,33 +161,36 @@ export default function UpsertScopeDialog({
                     <div className="grid gap-3">
                         {data.scope_type === 'building' && (
                             <div className="grid gap-2">
-                                <Label>Building</Label>
+                                <Label>{tProm('scope.label.building')}</Label>
                                 <SearchSelect
                                     options={options?.buildings ?? []}
                                     value={data.building_id || ''}
                                     onChange={(v) => setData('building_id', v)}
+                                    placeholder={tProm('scope.placeholder.building')}
                                 />
                                 <InputError name="building_id" />
                             </div>
                         )}
                         {data.scope_type === 'floor' && (
                             <div className="grid gap-2">
-                                <Label>Floor</Label>
+                                <Label>{tProm('scope.label.floor')}</Label>
                                 <SearchSelect
                                     options={filteredFloors}
                                     value={data.floor_id || ''}
                                     onChange={(v) => setData('floor_id', v)}
+                                    placeholder={tProm('scope.placeholder.floor')}
                                 />
                                 <InputError name="floor_id" />
                             </div>
                         )}
                         {data.scope_type === 'room_type' && (
                             <div className="grid gap-2">
-                                <Label>Room Type</Label>
+                                <Label>{tProm('scope.label.room_type')}</Label>
                                 <SearchSelect
                                     options={options?.room_types ?? []}
                                     value={data.room_type_id || ''}
                                     onChange={(v) => setData('room_type_id', v)}
+                                    placeholder={tProm('scope.placeholder.room_type')}
                                 />
                                 <InputError name="room_type_id" />
                             </div>
@@ -184,7 +199,7 @@ export default function UpsertScopeDialog({
                             <div className="grid gap-2">
                                 <div className="grid gap-2 md:grid-cols-3">
                                     <div className="grid gap-1">
-                                        <Label>Building</Label>
+                                        <Label>{tProm('scope.label.building')}</Label>
                                         <SearchSelect
                                             options={options?.buildings ?? []}
                                             value={data.building_id || ''}
@@ -192,35 +207,39 @@ export default function UpsertScopeDialog({
                                                 setData('building_id', v)
                                                 setData('floor_id', '')
                                             }}
+                                            placeholder={tProm('scope.placeholder.building')}
                                         />
                                     </div>
                                     <div className="grid gap-1">
-                                        <Label>Floor (optional)</Label>
+                                        <Label>{tProm('scope.label.floor_optional')}</Label>
                                         <SearchSelect
                                             options={filteredFloors}
                                             value={data.floor_id || ''}
                                             onChange={(v) => setData('floor_id', v)}
+                                            placeholder={tProm('scope.placeholder.floor')}
                                         />
                                     </div>
                                     <div className="grid gap-1">
-                                        <Label>Room Type (optional)</Label>
+                                        <Label>{tProm('scope.label.room_type_optional')}</Label>
                                         <SearchSelect
                                             options={options?.room_types ?? []}
                                             value={data.room_type_filter || ''}
                                             onChange={(v) => setData('room_type_filter', v)}
+                                            placeholder={tProm('scope.placeholder.room_type')}
                                         />
                                     </div>
                                     <div className="grid gap-1">
-                                        <Label>Room</Label>
+                                        <Label>{tProm('scope.label.room')}</Label>
                                         <SearchSelect
                                             options={filteredRooms}
                                             value={data.room_id || ''}
                                             onChange={(v) => setData('room_id', v)}
+                                            placeholder={tProm('scope.placeholder.room')}
                                         />
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button type="button" variant="outline" onClick={addAllFilteredRooms}>Add all filtered rooms</Button>
+                                    <Button type="button" variant="outline" onClick={addAllFilteredRooms}>{tProm('scope.bulk.add_filtered_rooms')}</Button>
                                 </div>
                                 <InputError name="room_id" />
                             </div>
@@ -240,7 +259,7 @@ export default function UpsertScopeDialog({
                                         })
                                     }}
                                 >
-                                    Add all filtered floors
+                                    {tProm('scope.bulk.add_filtered_floors')}
                                 </Button>
                             </div>
                         )}
@@ -259,7 +278,7 @@ export default function UpsertScopeDialog({
                                         })
                                     }}
                                 >
-                                    Add all room types
+                                    {tProm('scope.bulk.add_all_room_types')}
                                 </Button>
                             </div>
                         )}
