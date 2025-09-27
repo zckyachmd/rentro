@@ -24,10 +24,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import HandoverRoomSection from '@/features/contract/components/handover-room';
 import { AppLayout } from '@/layouts';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
+import HandoverRoomSection from '@/pages/management/contract/components/handover-room';
 import type {
     ContractDTO,
     HandoverOptions,

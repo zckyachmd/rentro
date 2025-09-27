@@ -18,11 +18,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import TenantInvoiceDetailDialog from '@/features/tenant/invoice/dialogs/detail-dialog';
-import TenantInvoicePayDialog from '@/features/tenant/invoice/dialogs/pay-dialog';
-import { createColumns } from '@/features/tenant/invoice/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import {
+    TenantInvoiceDetailDialog,
+    TenantInvoicePayDialog,
+} from '@/pages/tenant/invoice/dialogs';
+import { createColumns } from '@/pages/tenant/invoice/tables/columns';
 import type {
     TenantInvoiceIndexPageProps as PageProps,
     TenantInvoiceQueryInit as QueryInit,
@@ -262,7 +264,9 @@ export default function TenantInvoiceIndex(props: PageProps) {
                 <TenantInvoiceDetailDialog
                     target={detail}
                     onClose={() => setDetail(null)}
-                    onPay={(id, number) => setPay({ id, number: number || '' })}
+                    onPay={(id: string, number?: string) =>
+                        setPay({ id, number: number || '' })
+                    }
                 />
                 <TenantInvoicePayDialog
                     target={pay}

@@ -1,0 +1,45 @@
+import { Head, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
+
+import { Can } from '@/components/acl';
+import { AppLayout } from '@/layouts';
+import ManagementSummary from '@/pages/dashboard/components/management-summary';
+import TenantSummary from '@/pages/dashboard/components/tenant-summary';
+import type { PageProps } from '@/types';
+import type { DashboardProps } from '@/types/dashboard';
+
+export default function Dashboard() {
+    const { t } = useTranslation();
+    const { auth, management, tenant, filters } =
+        usePage<PageProps<DashboardProps>>().props;
+
+    const roles: string[] = (auth?.user?.roles ?? []) as string[];
+    const isMgmt = roles.some((r) =>
+        ['Super Admin', 'Owner', 'Manager'].includes(r),
+    );
+    const isTenant = roles.includes('Tenant');
+
+    return (
+        <AppLayout
+            pageTitle={t('dashboard.title')}
+            pageDescription={t('dashboard.desc')}
+        >
+            <Head title={t('dashboard.title')} />
+
+            <Can rolesAny={['Super Admin', 'Owner', 'Manager']}>
+                {isMgmt && management && (
+                    <ManagementSummary
+                        management={management}
+                        filters={filters}
+                    />
+                )}
+            </Can>
+
+            {isTenant && tenant && (
+                <div className="py-8">
+                    <TenantSummary tenant={tenant} />
+                </div>
+            )}
+        </AppLayout>
+    );
+}

@@ -25,10 +25,10 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import UpsertRoomTypeDialog from '@/features/room-type/dialogs/upsert-room-type-dialog';
-import { createColumns } from '@/features/room-type/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import UpsertRoomTypeDialog from '@/pages/management/room-types/dialogs/upsert-room-type-dialog';
+import { createColumns } from '@/pages/management/room-types/tables/columns';
 import type {
     ManagementRoomTypeItem,
     RoomTypesPageProps,

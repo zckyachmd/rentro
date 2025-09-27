@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useLengthRule } from '@/hooks/use-length-rule';
 import { AppLayout } from '@/layouts';
 import { createAbort, getJson } from '@/lib/api';
@@ -35,6 +34,7 @@ import {
     variantForContractStatus,
     variantForInvoiceStatus,
 } from '@/lib/status';
+import TenantHandoverDetailDialog from '@/pages/tenant/contract/dialogs/handover-detail-dialog';
 import type {
     TenantHandover as DialogHandover,
     TenantContractDetailPageProps as PageProps,

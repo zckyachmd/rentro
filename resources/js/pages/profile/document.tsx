@@ -20,9 +20,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import DocumentFilePicker from '@/features/profile/components/document-file-picker';
-import DocumentStatusBadge from '@/features/profile/components/document-status-badge';
 import { todayISO, tomorrowISO } from '@/lib/date';
+import DocumentFilePicker from '@/pages/profile/components/document-file-picker';
+import DocumentStatusBadge from '@/pages/profile/components/document-status-badge';
 import type { DocumentFormValue, DocumentSectionProps } from '@/types/profile';
 
 function getAlertText(

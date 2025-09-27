@@ -21,14 +21,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import NominalRow from '@/features/contract/components/nominal-row';
-import NotesPanel from '@/features/contract/components/notes-panel';
-import TenantRoomSelect from '@/features/contract/components/tenant-room-select';
-import ContractPreviewDialog from '@/features/contract/dialogs/contact-create-preview-dialog';
-import ContractGuideDialog from '@/features/contract/dialogs/contract-create-guide-dialog';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
 import { AppLayout } from '@/layouts';
 import { formatIDR } from '@/lib/format';
+import NominalRow from '@/pages/management/contract/components/nominal-row';
+import NotesPanel from '@/pages/management/contract/components/notes-panel';
+import TenantRoomSelect from '@/pages/management/contract/components/tenant-room-select';
+import ContractPreviewDialog from '@/pages/management/contract/dialogs/contact-create-preview-dialog';
+import ContractGuideDialog from '@/pages/management/contract/dialogs/contract-create-guide-dialog';
 import type {
     ContractCreateForm,
     ContractCreateLocal,

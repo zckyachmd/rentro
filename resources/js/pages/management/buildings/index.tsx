@@ -25,10 +25,10 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import UpsertBuildingDialog from '@/features/building/dialogs/upsert-building-dialog';
-import { createColumns } from '@/features/building/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import UpsertBuildingDialog from '@/pages/management/buildings/dialogs/upsert-building-dialog';
+import { createColumns } from '@/pages/management/buildings/tables/columns';
 import type { BuildingItem, BuildingsPageProps } from '@/types/management';
 
 type PageProps = BuildingsPageProps;

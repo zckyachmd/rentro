@@ -24,10 +24,10 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import UpsertPromotionDialog from '@/features/promotion/dialogs/upsert-promotion-dialog';
-import { createColumns } from '@/features/promotion/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import UpsertPromotionDialog from '@/pages/management/promotion/dialogs/upsert-promotion-dialog';
+import { createColumns } from '@/pages/management/promotion/tables/columns';
 import type { PromotionItem, PromotionsPageProps } from '@/types/management';
 
 type PageProps = PromotionsPageProps;

@@ -32,10 +32,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import UpsertAmenityDialog from '@/features/amenity/dialogs/upsert-amenity-dialog';
-import { createColumns } from '@/features/amenity/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import UpsertAmenityDialog from '@/pages/management/amenities/dialogs/upsert-amenity-dialog';
+import { createColumns } from '@/pages/management/amenities/tables/columns';
 import type { AmenitiesPageProps, AmenityItem } from '@/types/management';
 
 type PageProps = AmenitiesPageProps;

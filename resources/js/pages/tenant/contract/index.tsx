@@ -30,10 +30,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import TenantHandoverDetailDialog from '@/features/tenant/contract/dialogs/handover-detail-dialog';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
 import { getJson } from '@/lib/api';
+import TenantHandoverDetailDialog from '@/pages/tenant/contract/dialogs/handover-detail-dialog';
 import type {
     TenantContractsPageProps as ContractsPageProps,
     TenantContractQueryInit as QueryInit,
