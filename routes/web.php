@@ -2,15 +2,15 @@
 
 use App\Enum\RoleName;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\NewsletterController;
+use App\Http\Controllers\Public\PromotionsController;
 use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
-use App\Http\Controllers\Site\PromotionsController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;

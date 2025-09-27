@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import {
     Building2,
     CalendarCheck,
@@ -25,8 +26,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PublicLayout } from '@/layouts';
+import type { PageProps } from '@/types';
+import type {
+    HomeRoom as Room,
+    HomeTestimony as Testimony,
+} from '@/types/public';
 
 export default function PublicHome() {
     // ----- State & Refs -----
@@ -51,95 +64,14 @@ export default function PublicHome() {
         });
     };
 
-    // ----- Data (mock) -----
-    type Room = {
-        name: string;
-        slug: string;
-        price: string;
-        amenities: string[];
-        originalPrice?: string;
-        promoPrice?: string;
-    };
-    type Promo = { title: string; slug: string; until: string };
-
-    const allRooms: Room[] = [
-        {
-            name: 'Single Hemat',
-            slug: 'single-hemat',
-            price: 'Rp 1.400.000 / bulan',
-            amenities: ['WiFi', 'KM Luar', 'Parkir'],
-        },
-        {
-            name: 'Single KM Dalam',
-            slug: 'single-km-dalam',
-            price: 'Rp 1.700.000 / bulan',
-            amenities: ['AC', 'WiFi', 'KM Dalam'],
-        },
-        {
-            name: 'Deluxe Single',
-            slug: 'deluxe-single',
-            price: 'Rp 2.100.000 / bulan',
-            originalPrice: 'Rp 2.100.000 / bulan',
-            promoPrice: 'Rp 1.890.000 / bulan',
-            amenities: ['AC', 'WiFi', 'Lemari'],
-        },
-        {
-            name: 'Couple Room',
-            slug: 'couple-room',
-            price: 'Rp 2.400.000 / bulan',
-            originalPrice: 'Rp 2.400.000 / bulan',
-            promoPrice: 'Rp 2.250.000 / bulan',
-            amenities: ['AC', 'WiFi', 'KM Dalam'],
-        },
-        {
-            name: 'Deluxe View',
-            slug: 'deluxe-view',
-            price: 'Rp 2.300.000 / bulan',
-            amenities: ['AC', 'WiFi', 'Balkon'],
-        },
-        {
-            name: 'Single Compact',
-            slug: 'single-compact',
-            price: 'Rp 1.550.000 / bulan',
-            originalPrice: 'Rp 1.550.000 / bulan',
-            promoPrice: 'Rp 1.450.000 / bulan',
-            amenities: ['WiFi', 'Meja Belajar'],
-        },
-        {
-            name: 'Single Corner',
-            slug: 'single-corner',
-            price: 'Rp 1.600.000 / bulan',
-            amenities: ['WiFi', 'Jendela Besar'],
-        },
-        {
-            name: 'Deluxe Corner',
-            slug: 'deluxe-corner',
-            price: 'Rp 2.250.000 / bulan',
-            amenities: ['AC', 'WiFi', 'Balkon'],
-        },
-        {
-            name: 'Studio Mini',
-            slug: 'studio-mini',
-            price: 'Rp 2.700.000 / bulan',
-            amenities: ['AC', 'WiFi', 'Pantry'],
-        },
-        {
-            name: 'Economy',
-            slug: 'economy',
-            price: 'Rp 1.300.000 / bulan',
-            amenities: ['WiFi'],
-        },
-    ];
-
-    const promos: Promo[] = [
-        { title: 'Deluxe Hemat 10%', slug: 'deluxe-single', until: '31 Okt' },
-        { title: 'Couple Spesial', slug: 'couple-room', until: '15 Nov' },
-        {
-            title: 'Single Compact Deal',
-            slug: 'single-compact',
-            until: '30 Sep',
-        },
-    ];
+    // ----- Data (from backend) -----
+    // Types moved to '@/types/public/home'
+    const page =
+        usePage<PageProps<{ rooms?: Room[]; testimonies?: Testimony[] }>>();
+    const allRooms: Room[] = page.props.rooms ?? [];
+    const isLoading = page.props.rooms === undefined;
+    const testimonies: Testimony[] = page.props.testimonies ?? [];
+    const [openTesti, setOpenTesti] = React.useState<null | Testimony>(null);
 
     const getDiscountPercent = (room: Room): string | null => {
         if (!room.originalPrice || !room.promoPrice) return null;
@@ -147,7 +79,7 @@ export default function PublicHome() {
         const p = parseInt(room.promoPrice.replace(/[^0-9]/g, ''), 10);
         if (!o || !p || p >= o) return null;
         const pct = Math.round(((o - p) / o) * 100);
-        return `-${pct}%`;
+        return `${pct}%`;
     };
 
     // ----- View -----
@@ -278,100 +210,134 @@ export default function PublicHome() {
                             }}
                             className="flex snap-x snap-mandatory gap-4"
                         >
-                            {allRooms.map((room, idx) => {
-                                const promo = promos.find(
-                                    (p) => p.slug === room.slug,
-                                );
-                                return (
-                                    <a
-                                        key={room.slug}
-                                        href={`${route('public.catalog')}?highlight=${room.slug}`}
-                                        data-room-slug={room.slug}
-                                        role="group"
-                                        aria-roledescription="slide"
-                                        aria-posinset={idx + 1}
-                                        aria-setsize={allRooms.length}
-                                        className="focus-visible:ring-primary/50 focus-visible:ring-offset-background min-w-[260px] snap-start rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:min-w-[280px]"
-                                        aria-label={`${room.name} — ${room.promoPrice ? `${room.promoPrice} (harga promo, dari ${room.originalPrice})` : room.price}`}
-                                    >
-                                        <Card className="focus-visible:ring-primary/50 h-full transition hover:shadow-lg focus-visible:ring-2 focus-visible:outline-none">
-                                            <div className="relative h-40 w-full overflow-hidden rounded-b-none">
-                                                <div className="bg-muted absolute inset-0" />
-                                                <div className="bg-background/80 absolute top-2 left-2 max-w-[calc(100%-1rem)] rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur">
-                                                    {room.promoPrice ? (
-                                                        <span className="flex items-baseline gap-2">
-                                                            <span className="text-muted-foreground text-[10px] line-through">
-                                                                {
-                                                                    room.originalPrice
-                                                                }
-                                                            </span>
-                                                            <span className="text-xs font-semibold">
-                                                                {
-                                                                    room.promoPrice
-                                                                }
-                                                            </span>
-                                                        </span>
-                                                    ) : (
-                                                        <span className="whitespace-nowrap">
-                                                            {room.price}
-                                                        </span>
-                                                    )}
+                            {isLoading && (
+                                <>
+                                    {Array.from({ length: 6 }).map((_, idx) => (
+                                        <div
+                                            key={`s-${idx}`}
+                                            className="min-w-[260px] sm:min-w-[280px]"
+                                        >
+                                            <Card className="h-full">
+                                                <div className="relative h-40 w-full overflow-hidden rounded-b-none">
+                                                    <Skeleton className="h-full w-full" />
                                                 </div>
-                                                {promo && (
-                                                    <div className="bg-background/80 absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur">
-                                                        {getDiscountPercent(
-                                                            room,
-                                                        ) && (
-                                                            <span className="mr-1">
+                                                <CardHeader className="space-y-1">
+                                                    <Skeleton className="h-4 w-3/5" />
+                                                    <Skeleton className="h-3 w-2/5" />
+                                                </CardHeader>
+                                                <CardContent className="pt-0">
+                                                    <div className="mt-3 flex flex-wrap gap-1">
+                                                        <Skeleton className="h-5 w-16" />
+                                                        <Skeleton className="h-5 w-14" />
+                                                        <Skeleton className="h-5 w-20" />
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
+                            {!isLoading &&
+                                allRooms.map((room, idx) => {
+                                    return (
+                                        <a
+                                            key={room.slug}
+                                            href={`${route('public.catalog')}?highlight=${room.slug}`}
+                                            data-room-slug={room.slug}
+                                            role="group"
+                                            aria-roledescription="slide"
+                                            aria-posinset={idx + 1}
+                                            aria-setsize={allRooms.length}
+                                            className="focus-visible:ring-primary/50 focus-visible:ring-offset-background min-w-[260px] snap-start rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:min-w-[280px]"
+                                            aria-label={`${room.name} — ${room.promoPrice ? `${room.promoPrice} (harga promo, dari ${room.originalPrice})` : room.price}`}
+                                        >
+                                            <Card className="focus-visible:ring-primary/50 h-full transition hover:shadow-lg focus-visible:ring-2 focus-visible:outline-none">
+                                                <div className="relative h-40 w-full overflow-hidden rounded-b-none">
+                                                    <div className="bg-muted absolute inset-0" />
+                                                    <div className="bg-background/80 absolute top-2 left-2 max-w-[calc(100%-1rem)] rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur">
+                                                        {room.promoPrice ? (
+                                                            <span className="flex items-baseline gap-2">
+                                                                <span className="text-muted-foreground text-[10px] line-through">
+                                                                    {
+                                                                        room.originalPrice
+                                                                    }
+                                                                </span>
+                                                                <span className="text-xs font-semibold">
+                                                                    {
+                                                                        room.promoPrice
+                                                                    }
+                                                                </span>
+                                                            </span>
+                                                        ) : (
+                                                            <span className="whitespace-nowrap">
+                                                                {room.price}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {getDiscountPercent(
+                                                        room,
+                                                    ) && (
+                                                        <div className="bg-background/80 absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur">
+                                                            <span>
+                                                                Diskon{' '}
                                                                 {getDiscountPercent(
                                                                     room,
                                                                 )}
                                                             </span>
-                                                        )}
-                                                        <span>
-                                                            {promo.title} · s/d{' '}
-                                                            {promo.until}
-                                                        </span>
-                                                        <span className="sr-only">
-                                                            Diskon{' '}
-                                                            {getDiscountPercent(
-                                                                room,
-                                                            ) ?? ''}{' '}
-                                                            berlaku sampai{' '}
-                                                            {promo.until}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <CardHeader className="space-y-1">
-                                                <CardTitle className="text-base">
-                                                    {room.name}
-                                                </CardTitle>
-                                                <div className="text-muted-foreground text-[11px]">
-                                                    Contoh tipe kamar
-                                                    {promo
-                                                        ? ' • Promo aktif'
-                                                        : ''}
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent className="pt-0">
-                                                <div className="mt-3 flex flex-wrap gap-1">
-                                                    {room.amenities.map(
-                                                        (a: string) => (
-                                                            <Badge
-                                                                key={a}
-                                                                variant="outline"
-                                                            >
-                                                                {a}
-                                                            </Badge>
-                                                        ),
+                                                        </div>
                                                     )}
                                                 </div>
-                                            </CardContent>
-                                        </Card>
-                                    </a>
-                                );
-                            })}
+                                                <CardHeader className="space-y-1">
+                                                    <CardTitle className="text-base">
+                                                        {room.name}
+                                                    </CardTitle>
+                                                    <div className="text-muted-foreground text-[11px]">
+                                                        {[
+                                                            room.type,
+                                                            room.has_custom_name &&
+                                                            room.number
+                                                                ? `No ${room.number}`
+                                                                : null,
+                                                            room.building,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(' • ')}
+                                                    </div>
+                                                </CardHeader>
+                                                <CardContent className="pt-0">
+                                                    <div className="mt-3 flex flex-wrap gap-1">
+                                                        {room.amenities.map(
+                                                            (a: string) => (
+                                                                <Badge
+                                                                    key={a}
+                                                                    variant="outline"
+                                                                >
+                                                                    {a}
+                                                                </Badge>
+                                                            ),
+                                                        )}
+                                                        {typeof room.amenities_more ===
+                                                            'number' &&
+                                                            room.amenities_more >
+                                                                0 && (
+                                                                <Badge variant="secondary">
+                                                                    +
+                                                                    {
+                                                                        room.amenities_more
+                                                                    }
+                                                                </Badge>
+                                                            )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </a>
+                                    );
+                                })}
+                            {!isLoading && allRooms.length === 0 && (
+                                <div className="text-muted-foreground text-sm">
+                                    Belum ada kamar tersedia.
+                                </div>
+                            )}
                         </div>
                     </ScrollArea>
                 </div>
@@ -566,115 +532,86 @@ export default function PublicHome() {
                             }}
                             className="flex snap-x snap-mandatory gap-4"
                         >
-                            {[
-                                {
-                                    name: 'Nadia',
-                                    role: 'Mahasiswi',
-                                    quote: 'Kamarnya bersih, pemilik ramah, dan responsnya cepat banget. Nyaman belajar!',
-                                    rating: 5,
-                                },
-                                {
-                                    name: 'Rizky',
-                                    role: 'Karyawan',
-                                    quote: 'Lokasi strategis, dekat transportasi. Proses booking dan pembayaran jelas.',
-                                    rating: 5,
-                                },
-                                {
-                                    name: 'Sinta',
-                                    role: 'Freelancer',
-                                    quote: 'Fasilitas sesuai deskripsi. Suasana tenang, cocok untuk kerja dari rumah.',
-                                    rating: 4,
-                                },
-                                {
-                                    name: 'Arif',
-                                    role: 'Fresh Graduate',
-                                    quote: 'Ownernya helpful. Proses pindahan rapi dan cepat.',
-                                    rating: 5,
-                                },
-                                {
-                                    name: 'Dina',
-                                    role: 'Perawat',
-                                    quote: 'Dekat rumah sakit dan lingkungan aman. Tidur jadi lebih tenang.',
-                                    rating: 5,
-                                },
-                                {
-                                    name: 'Yoga',
-                                    role: 'Desainer',
-                                    quote: 'Internet kencang, cocok banget buat WFH dan upload file besar.',
-                                    rating: 4,
-                                },
-                                {
-                                    name: 'Maya',
-                                    role: 'Akuntan',
-                                    quote: 'Kontrak digitalnya simple dan jelas. Pembayaran juga fleksibel.',
-                                    rating: 5,
-                                },
-                                {
-                                    name: 'Bima',
-                                    role: 'Programmer',
-                                    quote: 'Check-in cepat. Support responsif kalau ada kendala kecil.',
-                                    rating: 5,
-                                },
-                                {
-                                    name: 'Lala',
-                                    role: 'Content Creator',
-                                    quote: 'Pencahayaan kamar bagus. Enak buat shooting konten.',
-                                    rating: 4,
-                                },
-                            ].map((t, i, arr) => (
+                            {testimonies.map((t, i, arr) => (
                                 <Card
-                                    key={t.name}
+                                    key={`${t.name}-${i}`}
                                     role="group"
                                     aria-roledescription="slide"
                                     aria-posinset={i + 1}
                                     aria-setsize={arr.length}
-                                    className="max-w-[300px] min-w-[300px] snap-start"
+                                    className="max-w-[300px] min-w-[260px] cursor-pointer snap-start transition focus-within:shadow-md hover:shadow-md sm:min-w-[300px]"
+                                    tabIndex={0}
+                                    onClick={() => setOpenTesti(t)}
+                                    onKeyDown={(e) => {
+                                        if (
+                                            e.key === 'Enter' ||
+                                            e.key === ' '
+                                        ) {
+                                            e.preventDefault();
+                                            setOpenTesti(t);
+                                        }
+                                    }}
+                                    aria-label={`Testimoni ${t.is_anonymous ? 'Anonim' : t.name}`}
                                 >
-                                    <CardContent className="flex h-[180px] flex-col justify-between py-5">
+                                    <CardContent className="flex min-h-[180px] flex-col justify-between py-5">
                                         <div>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-9 w-9">
-                                                    <AvatarImage
-                                                        src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(t.name)}`}
-                                                        alt={t.name}
-                                                        className="grayscale"
-                                                    />
+                                                    {!t.is_anonymous &&
+                                                    t.avatar_url ? (
+                                                        <AvatarImage
+                                                            src={t.avatar_url}
+                                                            alt={t.name}
+                                                            className="grayscale"
+                                                        />
+                                                    ) : null}
                                                     <AvatarFallback>
-                                                        {t.name.slice(0, 1)}
+                                                        {(t.is_anonymous
+                                                            ? 'A'
+                                                            : t.name?.slice(
+                                                                  0,
+                                                                  1,
+                                                              )) || '?'}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <div className="text-sm font-medium">
-                                                        {t.name}
+                                                    <div className="line-clamp-1 text-sm leading-none font-medium break-words">
+                                                        {t.is_anonymous
+                                                            ? 'Anonim'
+                                                            : t.name}
                                                     </div>
-                                                    <div className="text-muted-foreground text-xs">
-                                                        {t.role}
+                                                    <div className="text-muted-foreground line-clamp-1 text-xs break-words">
+                                                        {[t.occupation, t.year]
+                                                            .filter(Boolean)
+                                                            .join(' • ')}
                                                     </div>
                                                 </div>
                                             </div>
-                                            <p className="text-foreground mt-3 text-sm">
+                                            <blockquote className="mt-3 line-clamp-4 text-sm leading-relaxed break-words">
                                                 <Quote
                                                     className="mr-1 inline h-3 w-3 opacity-60"
                                                     aria-hidden
                                                 />
-                                                “{t.quote}”
-                                            </p>
+                                                “{t.content}”
+                                            </blockquote>
                                         </div>
-                                        <div
-                                            className="flex items-center gap-1 text-amber-500"
-                                            role="img"
-                                            aria-label={`Rating ${t.rating} dari 5`}
-                                        >
-                                            {Array.from({ length: 5 }).map(
-                                                (_, i) => (
-                                                    <Star
-                                                        key={i}
-                                                        className={`h-4 w-4 ${i < t.rating ? '' : 'opacity-30'}`}
-                                                        aria-hidden
-                                                    />
-                                                ),
-                                            )}
-                                        </div>
+                                        {typeof t.rating === 'number' && (
+                                            <div
+                                                className="text-muted-foreground inline-flex items-center gap-1"
+                                                role="img"
+                                                aria-label={`Rating ${t.rating} dari 5`}
+                                            >
+                                                {Array.from({ length: 5 }).map(
+                                                    (_, j) => (
+                                                        <Star
+                                                            key={j}
+                                                            className={`h-4 w-4 ${j < (t.rating ?? 0) ? '' : 'opacity-30'}`}
+                                                            aria-hidden
+                                                        />
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))}
@@ -682,6 +619,32 @@ export default function PublicHome() {
                     </ScrollArea>
                 </div>
             </section>
+
+            {/* Testimony detail dialog */}
+            <Dialog
+                open={!!openTesti}
+                onOpenChange={(v) => !v && setOpenTesti(null)}
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="leading-tight">
+                            {openTesti?.is_anonymous
+                                ? 'Anonim'
+                                : openTesti?.name}
+                        </DialogTitle>
+                        {openTesti && (
+                            <div className="text-muted-foreground text-xs">
+                                {[openTesti.occupation, openTesti.year]
+                                    .filter(Boolean)
+                                    .join(' • ')}
+                            </div>
+                        )}
+                    </DialogHeader>
+                    <div className="text-sm leading-relaxed">
+                        {openTesti?.content}
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* 4.2) FAQ (Accordion + Vertical Scroll Area) */}
             <section id="faq" className="mt-12" aria-labelledby="faq-heading">

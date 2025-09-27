@@ -44,9 +44,19 @@ export default function PromosPage() {
             filters?: {
                 status?: string | null;
                 tag?: string | null;
+                tags?: string[] | null;
                 q?: string | null;
                 sort?: string | null;
             };
+            all_tags?: string[];
+            paginator?: {
+                total: number;
+                from: number | null;
+                to: number | null;
+                current_page: number;
+                last_page: number;
+                per_page: number;
+            } | null;
         }
     >();
     const promotions = React.useMemo(
@@ -88,36 +98,68 @@ export default function PromosPage() {
         return diff >= 0 ? diff : 0;
     }, []);
 
+    // Use server-provided master tag list so it doesn't shrink when filtering promos
     const allTags = React.useMemo(() => {
+        const fromServer = page.props.all_tags;
+        if (Array.isArray(fromServer) && fromServer.length) {
+            return [...fromServer].sort((a, b) => a.localeCompare(b));
+        }
+        // Fallback to derive from current promotions
         const s = new Set<string>();
         for (const p of promotions) for (const t of p.tags || []) s.add(t);
         return Array.from(s).sort((a, b) => a.localeCompare(b));
-    }, [promotions]);
+    }, [promotions, page.props]);
+
+    // Multi-select tags synced with query
+    const [selectedTags, setSelectedTags] = React.useState<string[]>(
+        React.useMemo(() => {
+            const arr = (filters.tags as string[] | undefined) || [];
+            const single = (filters.tag as string | undefined) || undefined;
+            return Array.from(
+                new Set([...(arr || []), ...(single ? [single] : [])]),
+            );
+        }, [filters.tags, filters.tag]),
+    );
 
     const changeFilter = (next: {
         status?: string | null;
-        tag?: string | null;
+        tags?: string[] | null;
         q?: string | null;
         sort?: string | null;
+        page?: number | null;
+        per_page?: number | null;
     }) => {
         const has = (k: keyof typeof next) =>
             Object.prototype.hasOwnProperty.call(next, k);
         const status = (
             has('status') ? next.status : (filters.status ?? null)
         ) as string | null;
-        const tag = (has('tag') ? next.tag : (filters.tag ?? null)) as
-            | string
+        const tags = (has('tags') ? next.tags : (filters.tags ?? null)) as
+            | string[]
             | null;
         const sort = (has('sort') ? next.sort : (filters.sort ?? null)) as
             | string
             | null;
         const qv = (has('q') ? next.q : (filters.q ?? null)) as string | null;
+        const perPage = (has('per_page') ? next.per_page : null) as
+            | number
+            | null;
+        const pageNum = (has('page') ? next.page : null) as number | null;
 
-        const params: Record<string, string> = {};
+        const params: {
+            status?: string;
+            tags?: string[];
+            sort?: string;
+            q?: string;
+            per_page?: number;
+            page?: number;
+        } = {};
         if (status) params.status = status;
-        if (tag) params.tag = tag;
+        if (tags && tags.length) params.tags = tags;
         if (sort) params.sort = sort;
         if (qv) params.q = String(qv);
+        if (perPage) params.per_page = perPage;
+        if (pageNum) params.page = pageNum;
 
         router.get(route('public.promos'), params, {
             preserveScroll: true,
@@ -186,7 +228,25 @@ export default function PromosPage() {
                                 <SelectItem value="latest">Terbaru</SelectItem>
                             </SelectContent>
                         </Select>
+                        <Select
+                            value={String(page.props.paginator?.per_page ?? 6)}
+                            onValueChange={(v) =>
+                                changeFilter({ per_page: Number(v), page: 1 })
+                            }
+                        >
+                            <SelectTrigger className="w-full sm:w-[100px]">
+                                <SelectValue placeholder="Per halaman" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {([6, 9, 12, 24, 48] as const).map((n) => (
+                                    <SelectItem key={n} value={String(n)}>
+                                        {n} / page
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         {filters.status ||
+                        (Array.isArray(filters.tags) && filters.tags.length) ||
                         filters.tag ||
                         filters.q ||
                         filters.sort ? (
@@ -195,11 +255,14 @@ export default function PromosPage() {
                                 size="sm"
                                 onClick={() => {
                                     setQ('');
+                                    setSelectedTags([]);
                                     changeFilter({
                                         status: null,
-                                        tag: null,
+                                        tags: null,
                                         q: null,
                                         sort: null,
+                                        per_page: 6,
+                                        page: 1,
                                     });
                                 }}
                             >
@@ -217,7 +280,7 @@ export default function PromosPage() {
                         <ScrollArea className="w-full" showHorizontal>
                             <div className="flex flex-nowrap gap-2">
                                 {allTags.map((t) => {
-                                    const active = filters.tag === t;
+                                    const active = selectedTags.includes(t);
                                     return (
                                         <Button
                                             key={t}
@@ -226,11 +289,20 @@ export default function PromosPage() {
                                                 active ? 'default' : 'outline'
                                             }
                                             className="h-7"
-                                            onClick={() =>
+                                            onClick={() => {
+                                                const next = active
+                                                    ? selectedTags.filter(
+                                                          (x) => x !== t,
+                                                      )
+                                                    : [...selectedTags, t];
+                                                setSelectedTags(next);
                                                 changeFilter({
-                                                    tag: active ? null : t,
-                                                })
-                                            }
+                                                    tags: next.length
+                                                        ? next
+                                                        : null,
+                                                });
+                                            }}
+                                            aria-pressed={active}
                                         >
                                             {t}
                                         </Button>
@@ -241,13 +313,23 @@ export default function PromosPage() {
                     </div>
                 ) : null}
 
+                {/* Selection chips hidden per request; keep multi-select active via tag buttons */}
+
                 <Separator />
             </div>
 
             <div className="text-muted-foreground mb-2 text-xs">
-                {isLoading
-                    ? 'Memuat...'
-                    : `${promotions.length} promo ditemukan`}
+                {isLoading ? (
+                    'Memuat...'
+                ) : page.props.paginator ? (
+                    <>
+                        Menampilkan {page.props.paginator.from ?? 0}–
+                        {page.props.paginator.to ?? 0} dari{' '}
+                        {page.props.paginator.total ?? 0}
+                    </>
+                ) : (
+                    `${promotions.length} promo ditemukan`
+                )}
             </div>
             {isLoading ? (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -414,6 +496,61 @@ export default function PromosPage() {
                             </Wrapper>
                         );
                     })}
+                </div>
+            )}
+
+            {/* Pagination controls */}
+            {page.props.paginator && page.props.paginator.last_page > 1 && (
+                <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="text-muted-foreground text-sm">
+                        Menampilkan {page.props.paginator.from ?? 0}
+                        {'–'}
+                        {page.props.paginator.to ?? 0} dari{' '}
+                        {page.props.paginator.total}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                                changeFilter({
+                                    page: Math.max(
+                                        1,
+                                        (page.props.paginator?.current_page ??
+                                            1) - 1,
+                                    ),
+                                })
+                            }
+                            disabled={
+                                (page.props.paginator?.current_page ?? 1) <= 1
+                            }
+                        >
+                            Sebelumnya
+                        </Button>
+                        <div className="px-2 text-sm tabular-nums">
+                            Hal {page.props.paginator?.current_page ?? 1} dari{' '}
+                            {page.props.paginator?.last_page ?? 1}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                                changeFilter({
+                                    page: Math.min(
+                                        page.props.paginator?.last_page ?? 1,
+                                        (page.props.paginator?.current_page ??
+                                            1) + 1,
+                                    ),
+                                })
+                            }
+                            disabled={
+                                (page.props.paginator?.current_page ?? 1) >=
+                                (page.props.paginator?.last_page ?? 1)
+                            }
+                        >
+                            Berikutnya
+                        </Button>
+                    </div>
                 </div>
             )}
         </PublicLayout>

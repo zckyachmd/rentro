@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Site;
+namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Promotion;
@@ -13,10 +13,34 @@ class PromotionsController extends Controller
     {
         $status = (string) $request->query('status', '');
         $tag    = (string) $request->query('tag', '');
+        $tagsIn = $request->query('tags');
         $q      = trim((string) $request->query('q', ''));
         $sort   = (string) $request->query('sort', '');
 
         $today = now()->startOfDay();
+        $per   = max(1, min((int) $request->query('per_page', 9), 60));
+        $page  = max(1, (int) $request->query('page', 1));
+
+        $tags = [];
+        if ($tag !== '') {
+            $tags[] = $tag;
+        }
+        if (is_array($tagsIn)) {
+            foreach ($tagsIn as $tv) {
+                $tv = trim((string) $tv);
+                if ($tv !== '') {
+                    $tags[] = $tv;
+                }
+            }
+        } elseif (is_string($tagsIn) && $tagsIn !== '') {
+            foreach (explode(',', $tagsIn) as $tv) {
+                $tv = trim($tv);
+                if ($tv !== '') {
+                    $tags[] = $tv;
+                }
+            }
+        }
+        $tags = array_values(array_unique($tags));
 
         $query = Promotion::query()
             ->where('is_active', true)
@@ -34,8 +58,12 @@ class PromotionsController extends Controller
             ->when($status === 'expired', function ($q) use ($today) {
                 $q->whereNotNull('valid_until')->where('valid_until', '<', $today);
             })
-            ->when($tag !== '', function ($q) use ($tag) {
-                $q->whereJsonContains('tags', $tag);
+            ->when(!empty($tags), function ($q) use ($tags) {
+                $q->where(function ($w) use ($tags) {
+                    foreach ($tags as $t) {
+                        $w->orWhereJsonContains('tags', $t);
+                    }
+                });
             })
             ->when($q !== '', function ($qb) use ($q) {
                 $kw = '%' . str_replace('%', '\\%', $q) . '%';
@@ -44,11 +72,9 @@ class PromotionsController extends Controller
                         ->orWhere('slug', 'like', $kw)
                         ->orWhere('description', 'like', $kw);
                 });
-            })
-            ->orderByDesc('priority')
-            ->orderBy('name');
+            });
 
-        $rows = $query->limit(100)->get([
+        $pageData = $query->paginate(perPage: $per, page: $page, columns: [
             'id',
             'name',
             'slug',
@@ -57,19 +83,44 @@ class PromotionsController extends Controller
             'valid_until',
             'require_coupon',
             'tags',
-        ]);
+        ])->appends($request->query());
 
+        // Apply sorting
         if ($sort === 'ending') {
-            $rows = $rows->sortBy(function (Promotion $p) {
-                return $p->valid_until?->startOfDay()->getTimestamp() ?? PHP_INT_MAX;
-            })->values();
+            // Soonest ending first, nulls last
+            $query->orderByRaw('CASE WHEN valid_until IS NULL THEN 1 ELSE 0 END ASC')
+                ->orderBy('valid_until', 'asc')
+                ->orderBy('name');
         } elseif ($sort === 'latest') {
-            $rows = $rows->sortByDesc(function (Promotion $p) {
-                return $p->valid_from?->startOfDay()->getTimestamp() ?? -1;
-            })->values();
+            // Latest start first, nulls last
+            $query->orderByRaw('CASE WHEN valid_from IS NULL THEN 1 ELSE 0 END ASC')
+                ->orderBy('valid_from', 'desc')
+                ->orderBy('name');
+        } else {
+            // Default: priority desc then name
+            $query->orderByDesc('priority')->orderBy('name');
         }
 
-        $promotions = $rows->map(function (Promotion $p) use ($today) {
+        // Build master tags independent of tag filter so the list doesn't shrink
+        $allTags = Promotion::query()
+            ->where('is_active', true)
+            ->where('is_listed', true)
+            ->pluck('tags')
+            ->filter()
+            ->flatMap(function ($v) {
+                try {
+                    $arr = is_array($v) ? $v : (array) json_decode((string) $v, true);
+                } catch (\Throwable) {
+                    $arr = [];
+                }
+
+                return collect($arr)->filter(fn ($t) => is_string($t) && $t !== '');
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $promotions = collect($pageData->items())->map(function (Promotion $p) use ($today) {
             $couponCodes = [];
             if ($p->require_coupon) {
                 $couponCodes = $p->coupons()
@@ -97,14 +148,26 @@ class PromotionsController extends Controller
             ];
         })->values();
 
-        return Inertia::render('public/promos', [
+        $meta = [
+            'total'        => (int) $pageData->total(),
+            'from'         => $pageData->firstItem(),
+            'to'           => $pageData->lastItem(),
+            'current_page' => (int) $pageData->currentPage(),
+            'last_page'    => (int) $pageData->lastPage(),
+            'per_page'     => (int) $pageData->perPage(),
+        ];
+
+        return Inertia::render('public/promos/index', [
             'filters' => [
                 'status' => $status ?: null,
                 'tag'    => $tag ?: null,
+                'tags'   => !empty($tags) ? $tags : null,
                 'q'      => $q ?: null,
                 'sort'   => $sort ?: null,
             ],
             'promotions' => $promotions,
+            'all_tags'   => $allTags,
+            'paginator'  => $meta,
         ]);
     }
 
@@ -154,7 +217,7 @@ class PromotionsController extends Controller
             'tnc'            => $tnc,
             'how'            => $how,
         ];
-        // Try to fetch some recommended matching rooms (top-tier) based on promotion scopes
+
         $rooms = $this->topTierRoomsForPromotion($p);
 
         return Inertia::render('public/promos/show', [
@@ -162,8 +225,6 @@ class PromotionsController extends Controller
             'rooms'     => $rooms,
         ]);
     }
-
-    // Guide builders moved to service
 
     /**
      * Get up to 6 top-tier rooms matching promotion scopes.

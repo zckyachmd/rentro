@@ -481,6 +481,78 @@ class PromotionSeeder extends Seeder
             );
         }
 
+        // Extra upcoming promotions (for pagination demo)
+        for ($i = 1; $i <= 4; $i++) {
+            $start = $today->copy()->addDays(7 * $i);
+            $end   = $start->copy()->addDays(30);
+            $slug  = 'upcoming-' . $i;
+            $this->upsertPromotion(
+                slug: $slug,
+                attrs: [
+                    'name'            => strtoupper(str_replace('-', ' ', $slug)),
+                    'description'     => 'Promo mendatang #' . $i,
+                    'stack_mode'      => PromotionStackMode::STACK->value,
+                    'priority'        => 5,
+                    'default_channel' => PromotionChannel::PUBLIC->value,
+                    'require_coupon'  => false,
+                    'is_active'       => true,
+                    'is_listed'       => true,
+                    'tags'            => ['upcoming'],
+                    'valid_from'      => $start->toDateString(),
+                    'valid_until'     => $end->toDateString(),
+                ],
+                scopes: [['scope_type' => 'global']],
+                rules: [[
+                    'applies_to_rent'    => true,
+                    'applies_to_deposit' => false,
+                    'billing_periods'    => ['monthly'],
+                ]],
+                actions: [[
+                    'action_type'        => 'percent',
+                    'applies_to_rent'    => true,
+                    'applies_to_deposit' => false,
+                    'percent_bps'        => 500, // 5%
+                    'priority'           => 1,
+                ]],
+            );
+        }
+
+        // Extra expired promotions (for pagination demo)
+        for ($i = 1; $i <= 3; $i++) {
+            $end   = $today->copy()->subDays(10 * $i);
+            $start = $end->copy()->subDays(30);
+            $slug  = 'expired-' . $i;
+            $this->upsertPromotion(
+                slug: $slug,
+                attrs: [
+                    'name'            => strtoupper(str_replace('-', ' ', $slug)),
+                    'description'     => 'Promo berakhir #' . $i,
+                    'stack_mode'      => PromotionStackMode::STACK->value,
+                    'priority'        => 5,
+                    'default_channel' => PromotionChannel::PUBLIC->value,
+                    'require_coupon'  => false,
+                    'is_active'       => true,
+                    'is_listed'       => true,
+                    'tags'            => ['expired'],
+                    'valid_from'      => $start->toDateString(),
+                    'valid_until'     => $end->toDateString(),
+                ],
+                scopes: [['scope_type' => 'global']],
+                rules: [[
+                    'applies_to_rent'    => true,
+                    'applies_to_deposit' => false,
+                    'billing_periods'    => ['monthly'],
+                ]],
+                actions: [[
+                    'action_type'        => 'amount',
+                    'applies_to_rent'    => true,
+                    'applies_to_deposit' => false,
+                    'amount_idr'         => 50_000,
+                    'priority'           => 1,
+                ]],
+            );
+        }
+
         // 10) REFER-5P — 5% referral channel only, per-user limit 1, total quota 200
         $this->upsertPromotion(
             slug: 'refer-5p',

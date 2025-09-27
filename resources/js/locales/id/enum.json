@@ -107,5 +107,11 @@
         "light": "Terang",
         "dark": "Gelap",
         "system": "Sistem"
+    },
+    "testimony_status": {
+        "pending": "Menunggu",
+        "approved": "Disetujui",
+        "rejected": "Ditolak",
+        "published": "Dipublikasikan"
     }
 }

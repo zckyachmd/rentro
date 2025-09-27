@@ -181,3 +181,10 @@ export type {
     PromotionPaginator,
     PromotionsPageProps,
 } from './promotion';
+
+// Testimony
+export type {
+    TestimonyItem,
+    TestimonyPageProps,
+    TestimonyPaginator,
+} from './testimony';

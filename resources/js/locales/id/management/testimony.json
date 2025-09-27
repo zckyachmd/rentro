@@ -1,0 +1,20 @@
+{
+    "title": "Testimoni",
+    "desc": "Kelola dan kurasi testimoni pengguna sebelum dipublikasikan.",
+    "all_status": "Semua Status",
+    "search_placeholder": "Cari isi testimoni...",
+    "empty": "Belum ada testimoni.",
+    "updated": "Testimoni diperbarui",
+    "deleted": "Testimoni dihapus",
+    "curate": {
+        "title": "Kurasi Testimoni",
+        "desc": "Tinjau dan sunting agar bahasa serta strukturnya aman.",
+        "original": "Asli",
+        "curated": "Hasil Kurasi",
+        "placeholder": "Tulis versi hasil kurasi yang aman...",
+        "status": "Status",
+        "cancel": "Batal",
+        "save": "Simpan",
+        "saving": "Menyimpan..."
+    }
+}

@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             RoomSeeder::class,
             PromotionSeeder::class,
             PromotionCouponSeeder::class,
+            TestimonySeeder::class,
         ]);
     }
 }
