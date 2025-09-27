@@ -19,6 +19,7 @@
         "contract": "Kontrak",
         "copy": "Salin",
         "copy_link": "Salin Tautan",
+        "tags": "Tag",
         "export_csv": "Ekspor CSV",
         "daily": "Harian",
         "days": "{{count}} hari",
@@ -101,7 +102,10 @@
         "deposit": "Deposit",
         "auto_renew": "Auto‑Renew",
         "days_left": "Sisa Hari",
-        "expired": "Habis"
+        "expired": "Habis",
+        "inactive": "Tidak aktif",
+        "valid": "Berlaku",
+        "expiry": "Kedaluwarsa"
     },
 
     "dashboard": {

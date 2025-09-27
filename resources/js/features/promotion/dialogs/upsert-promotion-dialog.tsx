@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -13,10 +14,11 @@ import {
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import type { PromotionItem } from '@/types/management';
+import { Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export type UpsertPromotionDialogProps = {
     open: boolean;
@@ -24,6 +26,7 @@ export type UpsertPromotionDialogProps = {
     item?: PromotionItem | null;
 };
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export default function UpsertPromotionDialog({
     open,
     onOpenChange,
@@ -32,7 +35,7 @@ export default function UpsertPromotionDialog({
     const { t } = useTranslation();
     const { t: tProm } = useTranslation('management/promotions');
 
-    const { data, setData, post, put, processing, clearErrors } = useForm({
+    const { data, setData, processing, clearErrors } = useForm({
         name: item?.name ?? '',
         slug: item?.slug ?? '',
         description: item?.description ?? '',
@@ -112,8 +115,7 @@ export default function UpsertPromotionDialog({
         };
 
         if (item?.id) {
-            put(route('management.promotions.update', item.id), {
-                data: payload,
+            router.put(route('management.promotions.update', item.id), payload, {
                 preserveScroll: true,
                 onSuccess: () => {
                     router.reload({ preserveUrl: true });
@@ -121,8 +123,7 @@ export default function UpsertPromotionDialog({
                 },
             });
         } else {
-            post(route('management.promotions.store'), {
-                data: payload,
+            router.post(route('management.promotions.store'), payload, {
                 preserveScroll: true,
                 onSuccess: () => {
                     router.reload({ preserveUrl: true });
@@ -130,42 +131,69 @@ export default function UpsertPromotionDialog({
                 },
             });
         }
-    }, [data, post, put, item?.id, close, clearErrors]);
+    }, [data, item?.id, close, clearErrors]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="sm:max-w-3xl" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>
                         {item?.id
                             ? tProm('edit_title', 'Edit Promotion')
                             : tProm('create_title', 'Create Promotion')}
                     </DialogTitle>
+                    <DialogDescription>
+                        {tProm('promotion.desc', 'Basic settings for a promotion, including stack mode, default channel, active dates, and limits.')}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2 sm:col-span-2">
-                        <Label>
-                            {t('common.name')} <span className="text-red-500">*</span>
-                        </Label>
+                        <div className="flex items-center gap-2">
+                            <Label>
+                                {t('common.name')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.name')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input placeholder={tProm('promotion.placeholder.name')} value={data.name} onChange={(e) => setData('name', e.target.value)} />
                         <InputError name="name" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.slug')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.slug')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.slug')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input placeholder={tProm('promotion.placeholder.slug')} value={data.slug ?? ''} onChange={(e) => setData('slug', e.target.value)} />
                         <InputError name="slug" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.priority')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.priority')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.priority')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input type="number" inputMode="numeric" placeholder={tProm('promotion.placeholder.priority')} value={data.priority} onChange={(e) => setData('priority', e.target.value)} />
                         <InputError name="priority" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.stack_mode')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.stack_mode')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.stack_mode')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <select
                             className="border bg-background px-2 py-2 rounded-md"
                             value={data.stack_mode}
@@ -184,7 +212,13 @@ export default function UpsertPromotionDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.channel')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.channel')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.channel')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <select
                             className="border bg-background px-2 py-2 rounded-md"
                             value={data.default_channel ?? ''}
@@ -205,18 +239,36 @@ export default function UpsertPromotionDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.valid_from')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.valid_from')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.valid_from')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input type="date" value={data.valid_from ?? ''} onChange={(e) => setData('valid_from', e.target.value)} />
                         <InputError name="valid_from" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.valid_until')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.valid_until')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.valid_until')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input type="date" value={data.valid_until ?? ''} onChange={(e) => setData('valid_until', e.target.value)} />
                         <InputError name="valid_until" />
                     </div>
 
                     <div className="grid gap-2 sm:col-span-2">
-                        <Label>{t('common.description')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{t('common.description')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.description')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Textarea
                             value={data.description ?? ''}
                             onChange={(e) =>
@@ -227,38 +279,80 @@ export default function UpsertPromotionDialog({
                     </div>
 
                     <div className="grid gap-2 sm:col-span-2">
-                        <Label>{tProm('promotion.label.tags')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.tags')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.tags')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input placeholder={tProm('promotion.placeholder.tags')} value={data.tags ?? ''} onChange={(e) => setData('tags', e.target.value)} />
                         <InputError name="tags" />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.total_quota')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.total_quota')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.total_quota')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.total_quota')} value={data.total_quota} onChange={(e) => setData('total_quota', e.target.value)} />
                         <InputError name="total_quota" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.per_user_limit')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.per_user_limit')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.per_user_limit')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_user_limit')} value={data.per_user_limit} onChange={(e) => setData('per_user_limit', e.target.value)} />
                         <InputError name="per_user_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.per_contract_limit')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.per_contract_limit')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.per_contract_limit')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_contract_limit')} value={data.per_contract_limit} onChange={(e) => setData('per_contract_limit', e.target.value)} />
                         <InputError name="per_contract_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.per_invoice_limit')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.per_invoice_limit')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.per_invoice_limit')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_invoice_limit')} value={data.per_invoice_limit} onChange={(e) => setData('per_invoice_limit', e.target.value)} />
                         <InputError name="per_invoice_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.per_day_limit')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.per_day_limit')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.per_day_limit')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_day_limit')} value={data.per_day_limit} onChange={(e) => setData('per_day_limit', e.target.value)} />
                         <InputError name="per_day_limit" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>{tProm('promotion.label.per_month_limit')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.per_month_limit')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.per_month_limit')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input inputMode="numeric" placeholder={tProm('promotion.placeholder.per_month_limit')} value={data.per_month_limit} onChange={(e) => setData('per_month_limit', e.target.value)} />
                         <InputError name="per_month_limit" />
                     </div>
@@ -268,7 +362,13 @@ export default function UpsertPromotionDialog({
                             checked={Boolean(data.require_coupon)}
                             onCheckedChange={(v) => setData('require_coupon', v)}
                         />
-                        <Label>{tProm('promotion.label.require_coupon')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('promotion.label.require_coupon')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('promotion.help.require_coupon')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                     </div>
                     <div className="flex items-center gap-3 sm:col-span-2">
                         <Switch

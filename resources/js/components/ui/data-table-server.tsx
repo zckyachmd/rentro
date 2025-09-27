@@ -34,6 +34,7 @@ type ServerDataTableProps<TData, TValue> = {
   onSearchChange?: (q: string) => void
   searchKey?: string
   searchPlaceholder?: string
+  rightSlot?: React.ReactNode
   // page size options
   pageSizeOptions?: number[]
   // generic query dispatcher (page/per_page/q/sort/dir)
@@ -62,6 +63,7 @@ export function DataTableServer<TData, TValue>({
   onSearchChange,
   searchKey = "email",
   searchPlaceholder,
+  rightSlot,
   pageSizeOptions = [10, 20, 50, 100],
   onQueryChange,
   sort = null,
@@ -216,6 +218,7 @@ export function DataTableServer<TData, TValue>({
           onValueChange={onSearchChange ?? noop}
           showSubmitButton={showSubmitButton}
           showColumn={showColumn}
+          rightSlot={rightSlot}
           {...(showRefresh
             ? {
                 autoRefreshValue: String(refresh),

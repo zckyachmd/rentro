@@ -1,10 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { router, useForm } from '@inertiajs/react';
+import { Info } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -12,10 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import type { RuleRow } from '../tables/rules-columns';
 
@@ -32,8 +34,9 @@ export default function UpsertRuleDialog({
     promotionId,
     item = null,
 }: UpsertRuleDialogProps) {
+    const { t } = useTranslation();
     const { t: tProm } = useTranslation('management/promotions');
-    const { data, setData, post, put, processing, clearErrors } = useForm({
+    const { data, setData, processing, clearErrors } = useForm({
         min_spend_idr: item?.min_spend_idr ? String(item.min_spend_idr) : '',
         max_discount_idr: item?.max_discount_idr
             ? String(item.max_discount_idr)
@@ -100,8 +103,7 @@ export default function UpsertRuleDialog({
             first_n_periods: data.first_n_periods || null,
         };
         if (item?.id) {
-            put(route('management.promotions.rules.update', item.id), {
-                data: payload,
+            router.put(route('management.promotions.rules.update', item.id), payload, {
                 preserveScroll: true,
                 onSuccess: () => {
                     router.reload({ preserveUrl: true });
@@ -109,8 +111,7 @@ export default function UpsertRuleDialog({
                 },
             });
         } else {
-            post(route('management.promotions.rules.store', promotionId), {
-                data: payload,
+            router.post(route('management.promotions.rules.store', promotionId), payload, {
                 preserveScroll: true,
                 onSuccess: () => {
                     router.reload({ preserveUrl: true });
@@ -118,25 +119,24 @@ export default function UpsertRuleDialog({
                 },
             });
         }
-    }, [data, post, put, item?.id, close, clearErrors, promotionId]);
+    }, [data, item?.id, close, clearErrors, promotionId]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="sm:max-w-3xl" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
-                    <DialogTitle>{item?.id ? 'Edit Rule' : 'Add Rule'}</DialogTitle>
+                    <DialogTitle>{item?.id ? tProm('rule.edit_title', 'Edit Rule') : tProm('rule.create_title', 'Add Rule')}</DialogTitle>
+                    <DialogDescription>{tProm('rule.desc', 'Define conditions for when this promotion applies.')}</DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                     <div className="grid gap-2">
                         <div className="flex items-center gap-2">
                             <Label>{tProm('rule.label.min_spend')}</Label>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
-                                    <TooltipContent>{tProm('rule.help.min_spend')}</TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('rule.help.min_spend')}</TooltipContent>
+                            </Tooltip>
                         </div>
                         <Input inputMode="numeric" placeholder={tProm('rule.placeholder.min_spend')} value={data.min_spend_idr} onChange={(e) => setData('min_spend_idr', e.target.value)} />
                         <InputError name="min_spend_idr" />
@@ -144,41 +144,29 @@ export default function UpsertRuleDialog({
                     <div className="grid gap-2">
                         <div className="flex items-center gap-2">
                             <Label>{tProm('rule.label.max_discount')}</Label>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
-                                    <TooltipContent>{tProm('rule.help.max_discount')}</TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('rule.help.max_discount')}</TooltipContent>
+                            </Tooltip>
                         </div>
                         <Input inputMode="numeric" placeholder={tProm('rule.placeholder.max_discount')} value={data.max_discount_idr} onChange={(e) => setData('max_discount_idr', e.target.value)} />
                         <InputError name="max_discount_idr" />
                     </div>
 
                     <div className="flex items-center gap-2 sm:col-span-2">
-                        <Checkbox
-                            checked={Boolean(data.applies_to_rent)}
-                            onCheckedChange={(v) => setData('applies_to_rent', v)}
-                        />
-                        <Label>Applies to Rent</Label>
-                        <Checkbox
-                            checked={Boolean(data.applies_to_deposit)}
-                            onCheckedChange={(v) =>
-                                setData('applies_to_deposit', v)
-                            }
-                        />
-                        <Label>Applies to Deposit</Label>
+                        <Checkbox checked={Boolean(data.applies_to_rent)} onCheckedChange={(v) => setData('applies_to_rent', !!v)} />
+                        <Label>{tProm('common.rent', 'Rent')}</Label>
+                        <Checkbox checked={Boolean(data.applies_to_deposit)} onCheckedChange={(v) => setData('applies_to_deposit', !!v)} />
+                        <Label>{tProm('common.deposit', 'Deposit')}</Label>
                     </div>
 
                     <div className="grid gap-2 sm:col-span-2">
                         <div className="flex items-center gap-2">
                             <Label>{tProm('rule.label.billing_periods')}</Label>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
-                                    <TooltipContent>{tProm('rule.help.billing_periods')}</TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('rule.help.billing_periods')}</TooltipContent>
+                            </Tooltip>
                         </div>
                         <div className="flex items-center gap-4">
                             {['daily', 'weekly', 'monthly'].map((p) => (
@@ -192,10 +180,11 @@ export default function UpsertRuleDialog({
                                             toggleArray('billing_periods', p)
                                         }
                                     />
-                                    <span className="capitalize">{p}</span>
+                                    <span className="capitalize">{p === 'daily' ? t('common.daily', 'Daily') : p === 'weekly' ? t('common.weekly', 'Weekly') : t('common.monthly', 'Monthly')}</span>
                                 </label>
                             ))}
                         </div>
+                        
                         <InputError name="billing_periods" />
                     </div>
 
@@ -238,7 +227,13 @@ export default function UpsertRuleDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>{tProm('rule.label.channel')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('rule.label.channel')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('rule.help.channel', 'Default sales channel to apply this rule')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <select
                             className="border bg-background px-2 py-2 rounded-md"
                             value={data.channel}
@@ -253,7 +248,13 @@ export default function UpsertRuleDialog({
                         <InputError name="channel" />
                     </div>
                     <div className="grid gap-2">
-                        <Label>{tProm('rule.label.first_n')}</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>{tProm('rule.label.first_n')}</Label>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground"><Info className="h-4 w-4" /></TooltipTrigger>
+                                <TooltipContent>{tProm('rule.help.first_n', 'Limit effect to the first N billing periods')}</TooltipContent>
+                            </Tooltip>
+                        </div>
                         <Input
                             inputMode="numeric"
                             value={data.first_n_periods}
@@ -266,10 +267,10 @@ export default function UpsertRuleDialog({
 
                     <DialogFooter className="sm:col-span-2">
                         <Button type="button" variant="outline" onClick={close}>
-                            Cancel
+                            {t('common.cancel', 'Cancel')}
                         </Button>
                         <Button type="button" disabled={processing} onClick={submit}>
-                            Save
+                            {tProm('form.save', 'Save')}
                         </Button>
                     </DialogFooter>
                 </div>

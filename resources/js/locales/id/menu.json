@@ -46,6 +46,7 @@
         "changelog": "Changelog",
         "payments": "Pembayaran",
         "roles": "Peran",
-        "users": "Pengguna"
+        "users": "Pengguna",
+        "promotions": "Promo"
     }
 }

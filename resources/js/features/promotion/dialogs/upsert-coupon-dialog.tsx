@@ -1,10 +1,13 @@
 import { router, useForm } from '@inertiajs/react';
+import { Info } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -12,10 +15,9 @@ import {
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 import type { CouponRow } from '../tables/coupons-columns';
 
@@ -24,6 +26,14 @@ export type UpsertCouponDialogProps = {
     onOpenChange: (v: boolean) => void;
     promotionId: string;
     item?: CouponRow | null;
+    onSuccess?: () => void;
+};
+
+type CouponForm = {
+    code: string;
+    is_active: boolean;
+    max_redemptions: string;
+    expires_at: string;
 };
 
 export default function UpsertCouponDialog({
@@ -31,9 +41,11 @@ export default function UpsertCouponDialog({
     onOpenChange,
     promotionId,
     item = null,
+    onSuccess,
 }: UpsertCouponDialogProps) {
+    const { t } = useTranslation();
     const { t: tProm } = useTranslation('management/promotions');
-    const { data, setData, post, put, processing, clearErrors } = useForm({
+    const { data, setData, processing, clearErrors } = useForm<CouponForm>({
         code: item?.code ?? '',
         is_active: Boolean(item?.is_active ?? true),
         max_redemptions: item?.max_redemptions ? String(item.max_redemptions) : '',
@@ -57,37 +69,37 @@ export default function UpsertCouponDialog({
 
     const submit = React.useCallback(() => {
         clearErrors();
-        const payload: any = {
-            ...data,
-            max_redemptions: data.max_redemptions || null,
+        const payload = {
+            code: data.code,
+            is_active: Boolean(data.is_active),
+            max_redemptions: data.max_redemptions ? Number(data.max_redemptions) : null,
             expires_at: data.expires_at || null,
         };
         if (item?.id) {
-            put(route('management.promotions.coupons.update', item.id), {
-                data: payload,
+            router.put(route('management.promotions.coupons.update', item.id), payload, {
                 preserveScroll: true,
                 onSuccess: () => {
-                    router.reload({ preserveUrl: true });
+                    try { onSuccess?.() } catch {}
                     close();
                 },
             });
         } else {
-            post(route('management.promotions.coupons.store', promotionId), {
-                data: payload,
+            router.post(route('management.promotions.coupons.store', promotionId), payload, {
                 preserveScroll: true,
                 onSuccess: () => {
-                    router.reload({ preserveUrl: true });
+                    try { onSuccess?.() } catch {}
                     close();
                 },
             });
         }
-    }, [data, post, put, item?.id, close, clearErrors, promotionId]);
+    }, [data, item?.id, close, clearErrors, promotionId, onSuccess]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
-                    <DialogTitle>{item?.id ? 'Edit Coupon' : 'Add Coupon'}</DialogTitle>
+                    <DialogTitle>{item?.id ? tProm('coupon.edit_title', 'Edit Coupon') : tProm('coupon.dialog_title', 'Coupon')}</DialogTitle>
+                    <DialogDescription>{tProm('coupon.desc', 'Create or edit a single coupon code.')}</DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-3">
@@ -96,14 +108,12 @@ export default function UpsertCouponDialog({
                             <Label>
                                 {tProm('coupon.label.code')} <span className="text-red-500">*</span>
                             </Label>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger type="button" className="text-muted-foreground">
-                                        <Info className="h-4 w-4" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>{tProm('coupon.help.code')}</TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground">
+                                    <Info className="h-4 w-4" />
+                                </TooltipTrigger>
+                                <TooltipContent>{tProm('coupon.help.code')}</TooltipContent>
+                            </Tooltip>
                         </div>
                         <Input placeholder={tProm('coupon.placeholder.code')} value={data.code} onChange={(e) => setData('code', e.target.value)} />
                         <InputError name="code" />
@@ -111,14 +121,12 @@ export default function UpsertCouponDialog({
                     <div className="grid gap-2">
                         <div className="flex items-center gap-2">
                             <Label>{tProm('coupon.label.expires_at')}</Label>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger type="button" className="text-muted-foreground">
-                                        <Info className="h-4 w-4" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>{tProm('coupon.help.expires_at')}</TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground">
+                                    <Info className="h-4 w-4" />
+                                </TooltipTrigger>
+                                <TooltipContent>{tProm('coupon.help.expires_at')}</TooltipContent>
+                            </Tooltip>
                         </div>
                         <Input type="date" value={data.expires_at} onChange={(e) => setData('expires_at', e.target.value)} />
                         <InputError name="expires_at" />
@@ -126,14 +134,12 @@ export default function UpsertCouponDialog({
                     <div className="grid gap-2">
                         <div className="flex items-center gap-2">
                             <Label>{tProm('coupon.label.max_redemptions')}</Label>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger type="button" className="text-muted-foreground">
-                                        <Info className="h-4 w-4" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>{tProm('coupon.help.max_redemptions')}</TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger tabIndex={-1} type="button" className="text-muted-foreground">
+                                    <Info className="h-4 w-4" />
+                                </TooltipTrigger>
+                                <TooltipContent>{tProm('coupon.help.max_redemptions')}</TooltipContent>
+                            </Tooltip>
                         </div>
                         <Input inputMode="numeric" placeholder={tProm('coupon.placeholder.max_redemptions')} value={data.max_redemptions} onChange={(e) => setData('max_redemptions', e.target.value)} />
                         <InputError name="max_redemptions" />
@@ -145,10 +151,10 @@ export default function UpsertCouponDialog({
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={close}>
-                            Cancel
+                            {t('common.cancel', 'Cancel')}
                         </Button>
                         <Button type="button" disabled={processing} onClick={submit}>
-                            Save
+                            {tProm('form.save', 'Save')}
                         </Button>
                     </DialogFooter>
                 </div>

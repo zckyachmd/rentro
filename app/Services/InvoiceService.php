@@ -414,7 +414,7 @@ class InvoiceService implements InvoiceServiceInterface
         $freeThresholdDays = (int) AppSetting::config('billing.prorata_free_threshold_days', 7);
 
         // Promotion evaluation helpers
-        $promoCtxBase = function () use ($contract, $period, $promoOptions) {
+        $promoCtxBase = function () use ($contract, $promoOptions) {
             $ctx = [
                 'user'        => $contract?->tenant,
                 'contract_id' => $contract?->id,
@@ -462,7 +462,7 @@ class InvoiceService implements InvoiceServiceInterface
                             if (is_array($res)) {
                                 $lineAmt      = (int) ($res['final_rent'] ?? $lineAmt);
                                 $appliedPromo = array_map(function ($a) {
-                                    /** @var array $a */
+                                    /** @var array{promotion: \App\Models\Promotion, discount_rent: int, discount_deposit: int, actions: array, coupon_id?: int|null} $a */
                                     /** @var \App\Models\Promotion $p */
                                     $p = $a['promotion'];
 
@@ -510,7 +510,7 @@ class InvoiceService implements InvoiceServiceInterface
                         if (is_array($res)) {
                             $lineRent = (int) ($res['final_rent'] ?? $lineRent);
                             $applied  = array_map(function ($a) {
-                                /** @var array $a */
+                                /** @var array{promotion: \App\Models\Promotion, discount_rent: int, discount_deposit: int, actions: array, coupon_id?: int|null} $a */
                                 /** @var \App\Models\Promotion $p */
                                 $p = $a['promotion'];
 
@@ -574,7 +574,7 @@ class InvoiceService implements InvoiceServiceInterface
                             if (is_array($res)) {
                                 $lineAmt      = (int) ($res['final_rent'] ?? $lineAmt);
                                 $appliedPromo = array_map(function ($a) {
-                                    /** @var array $a */
+                                    /** @var array{promotion: \App\Models\Promotion, discount_rent: int, discount_deposit: int, actions: array, coupon_id?: int|null} $a */
                                     /** @var \App\Models\Promotion $p */
                                     $p = $a['promotion'];
 
@@ -619,7 +619,7 @@ class InvoiceService implements InvoiceServiceInterface
                     if (is_array($res)) {
                         $lineRent = (int) ($res['final_rent'] ?? $lineRent);
                         $applied  = array_map(function ($a) {
-                            /** @var array $a */
+                            /** @var array{promotion: \App\Models\Promotion, discount_rent: int, discount_deposit: int, actions: array, coupon_id?: int|null} $a */
                             /** @var \App\Models\Promotion $p */
                             $p = $a['promotion'];
 
@@ -662,7 +662,7 @@ class InvoiceService implements InvoiceServiceInterface
                     if (is_array($res)) {
                         $lineRent = (int) ($res['final_rent'] ?? $lineRent);
                         $applied  = array_map(function ($a) {
-                            /** @var array $a */
+                            /** @var array{promotion: \App\Models\Promotion, discount_rent: int, discount_deposit: int, actions: array, coupon_id?: int|null} $a */
                             /** @var \App\Models\Promotion $p */
                             $p = $a['promotion'];
 
@@ -705,7 +705,7 @@ class InvoiceService implements InvoiceServiceInterface
                 if (is_array($res)) {
                     $finalDeposit = (int) ($res['final_deposit'] ?? $finalDeposit);
                     $applied      = array_map(function ($a) {
-                        /** @var array $a */
+                        /** @var array{promotion: \App\Models\Promotion, discount_rent: int, discount_deposit: int, actions: array, coupon_id?: int|null} $a */
                         /** @var \App\Models\Promotion $p */
                         $p = $a['promotion'];
 

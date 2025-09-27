@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Trash2 } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import i18n from '@/lib/i18n';
 
 export type RuleRow = {
     id: number;
@@ -19,29 +21,49 @@ export type RuleRow = {
 export function createRuleColumns(opts: {
     onEdit: (it: RuleRow) => void;
     onDelete: (it: RuleRow) => void;
-}): ColumnDef<RuleRow>[] {
+}): ColumnDef<unknown>[] {
     return [
         {
             accessorKey: 'min_spend_idr',
             header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Min Spend" />
+                <DataTableColumnHeader column={column as any} title={i18n.t('management/promotions:rule.label.min_spend')} />
             ),
+            cell: ({ row }) => row.original.min_spend_idr ?? '-',
         },
-        { accessorKey: 'max_discount_idr', header: 'Max Disc' },
+        { accessorKey: 'max_discount_idr', header: i18n.t('management/promotions:rule.label.max_discount'), cell: ({ row }) => row.original.max_discount_idr ?? '-' },
         {
             accessorKey: 'billing_periods',
-            header: 'Periods',
-            cell: ({ row }) => (row.original.billing_periods || []).join(','),
+            header: i18n.t('management/promotions:rule.label.billing_periods'),
+            cell: ({ row }) => {
+                const list = Array.isArray(row.original.billing_periods) ? row.original.billing_periods : [];
+                return list.length
+                    ? list.map((p: string) => (p === 'daily' ? i18n.t('common.daily') : p === 'weekly' ? i18n.t('common.weekly') : i18n.t('common.monthly'))).join(', ')
+                    : '-';
+            },
         },
-        { accessorKey: 'channel', header: 'Channel' },
+        {
+            accessorKey: 'channel',
+            header: i18n.t('management/promotions:rule.label.channel'),
+            cell: ({ row }) => {
+                const raw = (row.original.channel || '').trim();
+                if (!raw) return i18n.t('management/promotions:common.any');
+                const key = raw.replace(/\s+/g, '_').toLowerCase();
+                return i18n.t(`management/promotions:channel.${key}`, { defaultValue: raw });
+            },
+        },
         {
             accessorKey: 'first_n_periods',
-            header: 'First N',
+            header: i18n.t('management/promotions:rule.label.first_n'),
             cell: ({ row }) => row.original.first_n_periods ?? '-',
         },
         {
             id: 'actions',
             enableHiding: false,
+            header: ({ column }) => (
+                <div className="text-right">
+                    <DataTableColumnHeader column={column as any} title={i18n.t('common.actions')} />
+                </div>
+            ),
             cell: ({ row }) => {
                 const it = row.original;
                 return (
@@ -66,4 +88,3 @@ export function createRuleColumns(opts: {
         },
     ];
 }
-

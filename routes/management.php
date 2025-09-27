@@ -373,6 +373,9 @@ Route::prefix('management')->name('management.')->group(function (): void {
             ->name('actions.destroy');
 
         // Coupons
+        Route::get('/{promotion}/coupons/list', [PromotionManagementController::class, 'listCoupons'])
+            ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
+            ->name('coupons.list');
         Route::post('/{promotion}/coupons', [PromotionManagementController::class, 'storeCoupon'])
             ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
             ->name('coupons.store');

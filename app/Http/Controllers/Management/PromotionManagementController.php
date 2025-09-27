@@ -17,8 +17,10 @@ use App\Models\PromotionCoupon;
 use App\Models\PromotionRule;
 use App\Models\PromotionScope;
 use App\Traits\DataTable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -83,28 +85,33 @@ class PromotionManagementController extends Controller
     {
         $v    = $request->validated();
         $slug = $v['slug'] ?? null;
-        if (!$slug && !empty($v['name'])) {
+        if ($slug !== null && $slug !== '') {
+            $slug = Str::slug((string) $slug);
+        } elseif (!empty($v['name'])) {
             $slug = Str::slug((string) $v['name']);
         }
-        Promotion::create([
-            'name'               => $v['name'],
-            'slug'               => $slug,
-            'description'        => $v['description'] ?? null,
-            'valid_from'         => $v['valid_from'] ?? null,
-            'valid_until'        => $v['valid_until'] ?? null,
-            'stack_mode'         => $v['stack_mode'],
-            'priority'           => (int) ($v['priority'] ?? 100),
-            'total_quota'        => $v['total_quota'] ?? null,
-            'per_user_limit'     => $v['per_user_limit'] ?? null,
-            'per_contract_limit' => $v['per_contract_limit'] ?? null,
-            'per_invoice_limit'  => $v['per_invoice_limit'] ?? null,
-            'per_day_limit'      => $v['per_day_limit'] ?? null,
-            'per_month_limit'    => $v['per_month_limit'] ?? null,
-            'default_channel'    => $v['default_channel'] ?? null,
-            'require_coupon'     => (bool) ($v['require_coupon'] ?? false),
-            'is_active'          => (bool) ($v['is_active'] ?? true),
-            'tags'               => $v['tags'] ?? null,
-        ]);
+
+        DB::transaction(function () use ($v, $slug) {
+            Promotion::create([
+                'name'               => $v['name'],
+                'slug'               => $slug,
+                'description'        => $v['description'] ?? null,
+                'valid_from'         => $v['valid_from'] ?? null,
+                'valid_until'        => $v['valid_until'] ?? null,
+                'stack_mode'         => $v['stack_mode'],
+                'priority'           => (int) ($v['priority'] ?? 100),
+                'total_quota'        => $v['total_quota'] ?? null,
+                'per_user_limit'     => $v['per_user_limit'] ?? null,
+                'per_contract_limit' => $v['per_contract_limit'] ?? null,
+                'per_invoice_limit'  => $v['per_invoice_limit'] ?? null,
+                'per_day_limit'      => $v['per_day_limit'] ?? null,
+                'per_month_limit'    => $v['per_month_limit'] ?? null,
+                'default_channel'    => $v['default_channel'] ?? null,
+                'require_coupon'     => (bool) ($v['require_coupon'] ?? false),
+                'is_active'          => (bool) ($v['is_active'] ?? true),
+                'tags'               => $v['tags'] ?? null,
+            ]);
+        });
 
         return back()->with('success', __('management/promotions.created'));
     }
@@ -113,28 +120,33 @@ class PromotionManagementController extends Controller
     {
         $v    = $request->validated();
         $slug = $v['slug'] ?? null;
-        if (!$slug && !empty($v['name'])) {
+        if ($slug !== null && $slug !== '') {
+            $slug = Str::slug((string) $slug);
+        } elseif (!empty($v['name'])) {
             $slug = Str::slug((string) $v['name']);
         }
-        $promotion->update([
-            'name'               => $v['name'],
-            'slug'               => $slug,
-            'description'        => $v['description'] ?? null,
-            'valid_from'         => $v['valid_from'] ?? null,
-            'valid_until'        => $v['valid_until'] ?? null,
-            'stack_mode'         => $v['stack_mode'],
-            'priority'           => (int) ($v['priority'] ?? 100),
-            'total_quota'        => $v['total_quota'] ?? null,
-            'per_user_limit'     => $v['per_user_limit'] ?? null,
-            'per_contract_limit' => $v['per_contract_limit'] ?? null,
-            'per_invoice_limit'  => $v['per_invoice_limit'] ?? null,
-            'per_day_limit'      => $v['per_day_limit'] ?? null,
-            'per_month_limit'    => $v['per_month_limit'] ?? null,
-            'default_channel'    => $v['default_channel'] ?? null,
-            'require_coupon'     => (bool) ($v['require_coupon'] ?? false),
-            'is_active'          => (bool) ($v['is_active'] ?? true),
-            'tags'               => $v['tags'] ?? null,
-        ]);
+
+        DB::transaction(function () use ($promotion, $v, $slug) {
+            $promotion->update([
+                'name'               => $v['name'],
+                'slug'               => $slug,
+                'description'        => $v['description'] ?? null,
+                'valid_from'         => $v['valid_from'] ?? null,
+                'valid_until'        => $v['valid_until'] ?? null,
+                'stack_mode'         => $v['stack_mode'],
+                'priority'           => (int) ($v['priority'] ?? 100),
+                'total_quota'        => $v['total_quota'] ?? null,
+                'per_user_limit'     => $v['per_user_limit'] ?? null,
+                'per_contract_limit' => $v['per_contract_limit'] ?? null,
+                'per_invoice_limit'  => $v['per_invoice_limit'] ?? null,
+                'per_day_limit'      => $v['per_day_limit'] ?? null,
+                'per_month_limit'    => $v['per_month_limit'] ?? null,
+                'default_channel'    => $v['default_channel'] ?? null,
+                'require_coupon'     => (bool) ($v['require_coupon'] ?? false),
+                'is_active'          => (bool) ($v['is_active'] ?? true),
+                'tags'               => $v['tags'] ?? null,
+            ]);
+        });
 
         return back()->with('success', __('management/promotions.updated'));
     }
@@ -165,8 +177,9 @@ class PromotionManagementController extends Controller
             'tags'            => is_array($promotion->tags) ? $promotion->tags : [],
         ];
 
-        $scopes = $promotion->scopes->map(function ($s) {
-            /* @var PromotionScope $s */
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PromotionScope> $scopesCol */
+        $scopesCol = $promotion->scopes;
+        $scopes    = $scopesCol->map(function (\App\Models\PromotionScope $s): array {
             return [
                 'id'           => (int) $s->id,
                 'scope_type'   => (string) $s->scope_type->value,
@@ -177,8 +190,9 @@ class PromotionManagementController extends Controller
             ];
         });
 
-        $rules = $promotion->rules->map(function ($r) {
-            /* @var PromotionRule $r */
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PromotionRule> $rulesCol */
+        $rulesCol = $promotion->rules;
+        $rules    = $rulesCol->map(function (\App\Models\PromotionRule $r): array {
             return [
                 'id'                 => (int) $r->id,
                 'min_spend_idr'      => $r->min_spend_idr ? (int) $r->min_spend_idr : null,
@@ -198,8 +212,9 @@ class PromotionManagementController extends Controller
             ];
         });
 
-        $actions = $promotion->actions->map(function ($a) {
-            /* @var PromotionAction $a */
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PromotionAction> $actionsCol */
+        $actionsCol = $promotion->actions;
+        $actions    = $actionsCol->map(function (\App\Models\PromotionAction $a): array {
             return [
                 'id'                 => (int) $a->id,
                 'action_type'        => (string) $a->action_type->value,
@@ -222,7 +237,7 @@ class PromotionManagementController extends Controller
             ->map(fn ($b) => [
                 'value'       => (string) $b->id,
                 'label'       => trim($b->name . (isset($b->code) && $b->code ? " ({$b->code})" : '')),
-                'description' => null,
+                'description' => '',
             ]);
         $floors = \App\Models\Floor::query()
             ->with('building:id,name')
@@ -231,7 +246,7 @@ class PromotionManagementController extends Controller
             ->map(fn ($f) => [
                 'value'       => (string) $f->id,
                 'label'       => ($f->name ?: ('Lantai ' . $f->level)),
-                'description' => optional($f->building)->name,
+                'description' => (string) (optional($f->building)->name ?? ''),
                 'payload'     => ['building_id' => (int) $f->building_id],
             ]);
         $roomTypes = \App\Models\RoomType::query()
@@ -240,7 +255,7 @@ class PromotionManagementController extends Controller
             ->map(fn ($t) => [
                 'value'       => (string) $t->id,
                 'label'       => (string) $t->name,
-                'description' => null,
+                'description' => '',
             ]);
         $rooms = \App\Models\Room::query()
             ->with(['building:id,name', 'floor:id,level'])
@@ -257,7 +272,9 @@ class PromotionManagementController extends Controller
                 ],
             ]);
 
-        $coupons = $promotion->coupons()->orderByDesc('created_at')->get(['id', 'code', 'is_active', 'max_redemptions', 'redeemed_count', 'expires_at'])->map(function (PromotionCoupon $c) {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PromotionCoupon> $couponsCol */
+        $couponsCol = $promotion->coupons()->orderByDesc('created_at')->get(['id', 'code', 'is_active', 'max_redemptions', 'redeemed_count', 'expires_at']);
+        $coupons    = $couponsCol->map(function (\App\Models\PromotionCoupon $c): array {
             return [
                 'id'              => (int) $c->id,
                 'code'            => (string) $c->code,
@@ -287,9 +304,61 @@ class PromotionManagementController extends Controller
     public function storeScope(StorePromotionScopeRequest $request, Promotion $promotion): RedirectResponse
     {
         $v = $request->validated();
-        $promotion->scopes()->create($v);
 
-        return back()->with('success', __('management/promotions.scope_created'));
+        // Reconcile narrower scopes when adding broader ones
+        $removed = 0;
+        DB::transaction(function () use ($promotion, &$v, &$removed) {
+            switch ($v['scope_type'] ?? '') {
+                case 'global':
+                    // Remove all existing scopes to keep global only
+                    /** @phpstan-ignore-next-line arguments.count */
+                    $removed = (int) $promotion->scopes()->count();
+                    /* @phpstan-ignore-next-line arguments.count */
+                    $promotion->scopes()->delete();
+                    break;
+                case 'room_type':
+                    // Remove all narrower scopes (building, floor, room)
+                    /** @phpstan-ignore-next-line arguments.count */
+                    $removed += (int) $promotion->scopes()->whereIn('scope_type', ['building', 'floor', 'room'])->delete();
+                    break;
+                case 'building':
+                    $bid = (int) ($v['building_id'] ?? 0);
+                    if ($bid > 0) {
+                        // Remove floors and rooms under this building
+                        $floorIds = \App\Models\Floor::query()->where('building_id', $bid)->pluck('id')->all();
+                        if (!empty($floorIds)) {
+                            /** @phpstan-ignore-next-line arguments.count */
+                            $removed += (int) $promotion->scopes()->where('scope_type', 'floor')->whereIn('floor_id', $floorIds)->delete();
+                        }
+                        $roomIds = \App\Models\Room::query()->where('building_id', $bid)->pluck('id')->all();
+                        if (!empty($roomIds)) {
+                            /** @phpstan-ignore-next-line arguments.count */
+                            $removed += (int) $promotion->scopes()->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                        }
+                    }
+                    break;
+                case 'floor':
+                    $fid = (int) ($v['floor_id'] ?? 0);
+                    if ($fid > 0) {
+                        // Remove rooms under this floor
+                        $roomIds = \App\Models\Room::query()->where('floor_id', $fid)->pluck('id')->all();
+                        if (!empty($roomIds)) {
+                            /** @phpstan-ignore-next-line arguments.count */
+                            $removed += (int) $promotion->scopes()->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                        }
+                    }
+                    break;
+            }
+
+            /* @phpstan-ignore-next-line arguments.count */
+            $promotion->scopes()->create($v);
+        });
+        $msg = __('management/promotions.scope_created');
+        if ($removed > 0) {
+            $msg .= ' ' . __('management/promotions.scope_reconciled', ['count' => $removed]);
+        }
+
+        return back()->with('success', $msg);
     }
 
     public function storeScopesBulk(\Illuminate\Http\Request $request, Promotion $promotion): RedirectResponse
@@ -299,6 +368,11 @@ class PromotionManagementController extends Controller
             'ids'        => ['required', 'array', 'min:1'],
             'ids.*'      => ['integer', 'min:1'],
         ]);
+
+        /* @phpstan-ignore-next-line arguments.count */
+        if ($promotion->scopes()->where('scope_type', 'global')->exists()) {
+            return back()->withErrors(['scope_type' => __('management/promotions.scope_global_exists')]);
+        }
         $type = $data['scope_type'];
         $ids  = array_values(array_unique(array_map('intval', $data['ids'])));
         $rows = [];
@@ -320,18 +394,144 @@ class PromotionManagementController extends Controller
             }
             $rows[] = $row;
         }
-        foreach ($rows as $r) {
-            $promotion->scopes()->create($r);
+        // Reconcile then insert unique rows (batched)
+        $removedTotal = 0;
+        DB::transaction(function () use ($promotion, $type, $rows, &$removedTotal) {
+            if ($type === 'building') {
+                $buildingIds = array_values(array_unique(array_map(fn ($r) => (int) ($r['building_id'] ?? 0), $rows)));
+                $buildingIds = array_filter($buildingIds, fn ($v) => $v > 0);
+                if (!empty($buildingIds)) {
+                    $floorIds = \App\Models\Floor::query()->whereIn('building_id', $buildingIds)->pluck('id')->all();
+                    if (!empty($floorIds)) {
+                        /** @phpstan-ignore-next-line arguments.count */
+                        $removedTotal += (int) $promotion->scopes()->where('scope_type', 'floor')->whereIn('floor_id', $floorIds)->delete();
+                    }
+                    $roomIds = \App\Models\Room::query()->whereIn('building_id', $buildingIds)->pluck('id')->all();
+                    if (!empty($roomIds)) {
+                        /** @phpstan-ignore-next-line arguments.count */
+                        $removedTotal += (int) $promotion->scopes()->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                    }
+                }
+            } elseif ($type === 'floor') {
+                $floorIds = array_values(array_unique(array_map(fn ($r) => (int) ($r['floor_id'] ?? 0), $rows)));
+                $floorIds = array_filter($floorIds, fn ($v) => $v > 0);
+                if (!empty($floorIds)) {
+                    $roomIds = \App\Models\Room::query()->whereIn('floor_id', $floorIds)->pluck('id')->all();
+                    if (!empty($roomIds)) {
+                        /** @phpstan-ignore-next-line arguments.count */
+                        $removedTotal += (int) $promotion->scopes()->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                    }
+                }
+            } elseif ($type === 'room_type') {
+                // When adding room_type via bulk, remove all narrower scopes
+                /** @phpstan-ignore-next-line arguments.count */
+                $removedTotal += (int) $promotion->scopes()->whereIn('scope_type', ['building', 'floor', 'room'])->delete();
+            }
+
+            foreach ($rows as $r) {
+                /* @phpstan-ignore-next-line arguments.count */
+                $promotion->scopes()->firstOrCreate($r, $r);
+            }
+        });
+
+        $msg = __('management/promotions.scopes_created');
+        if ($removedTotal > 0) {
+            $msg .= ' ' . __('management/promotions.scope_reconciled', ['count' => $removedTotal]);
         }
 
-        return back()->with('success', __('management/promotions.scopes_created'));
+        return back()->with('success', $msg);
     }
 
     public function updateScope(UpdatePromotionScopeRequest $request, PromotionScope $scope): RedirectResponse
     {
-        $scope->update($request->validated());
+        $v         = $request->validated();
+        $promotion = $scope->promotion;
+        /* @var \App\Models\Promotion $promotion */
 
-        return back()->with('success', __('management/promotions.scope_updated'));
+        switch ($v['scope_type'] ?? '') {
+            case 'global':
+                // keep only this scope, remove others
+                /* @phpstan-ignore-next-line arguments.count */
+                $promotion->scopes()->where('id', '!=', $scope->id)->delete();
+                break;
+            case 'building':
+                $bid = (int) ($v['building_id'] ?? 0);
+                if ($bid > 0) {
+                    $floorIds = \App\Models\Floor::query()->where('building_id', $bid)->pluck('id')->all();
+                    if (!empty($floorIds)) {
+                        /* @phpstan-ignore-next-line arguments.count */
+                        $promotion->scopes()->where('id', '!=', $scope->id)->where('scope_type', 'floor')->whereIn('floor_id', $floorIds)->delete();
+                    }
+                    $roomIds = \App\Models\Room::query()->where('building_id', $bid)->pluck('id')->all();
+                    if (!empty($roomIds)) {
+                        /* @phpstan-ignore-next-line arguments.count */
+                        $promotion->scopes()->where('id', '!=', $scope->id)->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                    }
+                }
+                break;
+            case 'floor':
+                $fid = (int) ($v['floor_id'] ?? 0);
+                if ($fid > 0) {
+                    $roomIds = \App\Models\Room::query()->where('floor_id', $fid)->pluck('id')->all();
+                    if (!empty($roomIds)) {
+                        /* @phpstan-ignore-next-line arguments.count */
+                        $promotion->scopes()->where('id', '!=', $scope->id)->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                    }
+                }
+                break;
+        }
+
+        $removed   = 0;
+        $scopeType = $v['scope_type'] ?? '';
+        DB::transaction(function () use ($promotion, $scope, &$v, $scopeType, &$removed) {
+            switch ($scopeType) {
+                case 'global':
+                    /** @phpstan-ignore-next-line arguments.count */
+                    $removed = (int) $promotion->scopes()->where('id', '!=', $scope->id)->count();
+                    /* @phpstan-ignore-next-line arguments.count */
+                    $promotion->scopes()->where('id', '!=', $scope->id)->delete();
+                    break;
+                case 'room_type':
+                    // remove all narrower scopes except current
+                    /** @phpstan-ignore-next-line arguments.count */
+                    $removed += (int) $promotion->scopes()->where('id', '!=', $scope->id)->whereIn('scope_type', ['building', 'floor', 'room'])->delete();
+                    break;
+                case 'building':
+                    $bid = (int) ($v['building_id'] ?? 0);
+                    if ($bid > 0) {
+                        $floorIds = \App\Models\Floor::query()->where('building_id', $bid)->pluck('id')->all();
+                        if (!empty($floorIds)) {
+                            /** @phpstan-ignore-next-line arguments.count */
+                            $removed += (int) $promotion->scopes()->where('id', '!=', $scope->id)->where('scope_type', 'floor')->whereIn('floor_id', $floorIds)->delete();
+                        }
+                        $roomIds = \App\Models\Room::query()->where('building_id', $bid)->pluck('id')->all();
+                        if (!empty($roomIds)) {
+                            /** @phpstan-ignore-next-line arguments.count */
+                            $removed += (int) $promotion->scopes()->where('id', '!=', $scope->id)->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                        }
+                    }
+                    break;
+                case 'floor':
+                    $fid = (int) ($v['floor_id'] ?? 0);
+                    if ($fid > 0) {
+                        $roomIds = \App\Models\Room::query()->where('floor_id', $fid)->pluck('id')->all();
+                        if (!empty($roomIds)) {
+                            /** @phpstan-ignore-next-line arguments.count */
+                            $removed += (int) $promotion->scopes()->where('id', '!=', $scope->id)->where('scope_type', 'room')->whereIn('room_id', $roomIds)->delete();
+                        }
+                    }
+                    break;
+            }
+
+            $scope->update($v);
+        });
+
+        $msg = __('management/promotions.scope_updated');
+        if ($removed > 0) {
+            $msg .= ' ' . __('management/promotions.scope_reconciled', ['count' => $removed]);
+        }
+
+        return back()->with('success', $msg);
     }
 
     public function destroyScope(PromotionScope $scope): RedirectResponse
@@ -388,6 +588,59 @@ class PromotionManagementController extends Controller
     }
 
     // Coupons
+    public function listCoupons(Request $request, Promotion $promotion): JsonResponse
+    {
+        $query   = $promotion->coupons()->getQuery();
+        $options = [
+            'select'       => ['id', 'promotion_id', 'code', 'is_active', 'max_redemptions', 'redeemed_count', 'expires_at'],
+            'search_param' => 'search',
+            'searchable'   => ['code'],
+            'sortable'     => [
+                'code'            => 'code',
+                'is_active'       => 'is_active',
+                'max_redemptions' => 'max_redemptions',
+                'redeemed_count'  => 'redeemed_count',
+                'expires_at'      => 'expires_at',
+            ],
+            'default_sort' => ['id', 'desc'],
+            'filters'      => [
+                'active' => function ($q, $value) {
+                    if ($value === '1' || $value === 1) {
+                        $q->where('is_active', true);
+                    } elseif ($value === '0' || $value === 0) {
+                        $q->where('is_active', false);
+                    }
+                },
+                'expiry' => function ($q, $value) {
+                    if ($value === 'expired') {
+                        $q->whereNotNull('expires_at')->whereDate('expires_at', '<', now()->toDateString());
+                    } elseif ($value === 'valid') {
+                        $q->where(function ($qq) {
+                            $qq->whereNull('expires_at')->orWhereDate('expires_at', '>=', now()->toDateString());
+                        });
+                    }
+                },
+            ],
+        ];
+
+        $page       = $this->applyTable($query, $request, $options);
+        $collection = $page->getCollection();
+        $mapped     = $collection->map(function (PromotionCoupon $c): array {
+            return [
+                'id'              => (int) $c->id,
+                'code'            => $c->code,
+                'is_active'       => (bool) $c->is_active,
+                'max_redemptions' => $c->max_redemptions !== null ? (int) $c->max_redemptions : null,
+                'redeemed_count'  => (int) ($c->redeemed_count ?? 0),
+                'expires_at'      => optional($c->expires_at)->toDateString(),
+            ];
+        });
+        $page->setCollection($mapped);
+        $payload = $this->tablePaginate($page);
+
+        return response()->json($payload);
+    }
+
     public function storeCoupon(\Illuminate\Http\Request $request, Promotion $promotion): RedirectResponse
     {
         $v = $request->validate([
@@ -473,6 +726,7 @@ class PromotionManagementController extends Controller
 
     public function exportCoupons(Promotion $promotion)
     {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PromotionCoupon> $rows */
         $rows    = $promotion->coupons()->orderBy('id')->get(['code', 'is_active', 'max_redemptions', 'redeemed_count', 'expires_at']);
         $headers = [
             'Content-Type'        => 'text/csv; charset=UTF-8',
@@ -483,6 +737,7 @@ class PromotionManagementController extends Controller
             $out = fopen('php://output', 'w');
             fputcsv($out, ['code', 'is_active', 'max_redemptions', 'redeemed_count', 'expires_at']);
             foreach ($rows as $r) {
+                /* @var \App\Models\PromotionCoupon $r */
                 fputcsv($out, [
                     $r->code,
                     $r->is_active ? 1 : 0,
