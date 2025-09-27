@@ -16,10 +16,7 @@ class HomeController extends Controller
         return Inertia::render('public/catalog');
     }
 
-    public function promos()
-    {
-        return Inertia::render('public/promos');
-    }
+    // moved promos to Site\PromotionsController
 
     public function blogIndex()
     {
@@ -57,4 +54,6 @@ class HomeController extends Controller
     {
         return Inertia::render('public/contact');
     }
+
+    // moved promoShow to Site\PromotionsController
 }

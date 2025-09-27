@@ -12,7 +12,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import SearchSelect, { type SearchOption } from '@/components/ui/search-select';
@@ -68,10 +68,10 @@ export default function UpsertScopeDialog({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [item?.id]);
 
-    const close = () => {
+    const close = React.useCallback(() => {
         onOpenChange(false);
         (clearErrors as any)();
-    };
+    }, [onOpenChange, clearErrors]);
 
     const submit = () => {
         (clearErrors as any)();
@@ -206,7 +206,10 @@ export default function UpsertScopeDialog({
                             : tProm('scope.create_title', 'Add Scope')}
                     </DialogTitle>
                     <DialogDescription>
-                        {tProm('scope.desc', 'Limit where the promotion applies (global/building/floor/room type/room).')}
+                        {tProm(
+                            'scope.desc',
+                            'Limit where the promotion applies (global/building/floor/room type/room).',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -294,7 +297,7 @@ export default function UpsertScopeDialog({
                         )}
                         {data.scope_type === 'room' && (
                             <div className="grid gap-3">
-                                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="grid min-w-0 gap-1">
                                         <Label>
                                             {tProm('scope.label.building')}
@@ -378,26 +381,46 @@ export default function UpsertScopeDialog({
                     <DialogFooter className="flex items-center justify-between">
                         <div className="mr-auto flex flex-wrap gap-2">
                             {data.scope_type === 'room' && (
-                                <Button type="button" variant="outline" onClick={addAllFilteredRooms}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addAllFilteredRooms}
+                                >
                                     {tProm('scope.bulk.add_filtered_rooms')}
                                 </Button>
                             )}
                             {data.scope_type === 'floor' && (
-                                <Button type="button" variant="outline" onClick={addAllFilteredFloors}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addAllFilteredFloors}
+                                >
                                     {tProm('scope.bulk.add_filtered_floors')}
                                 </Button>
                             )}
                             {data.scope_type === 'room_type' && (
-                                <Button type="button" variant="outline" onClick={addAllRoomTypes}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addAllRoomTypes}
+                                >
                                     {tProm('scope.bulk.add_all_room_types')}
                                 </Button>
                             )}
                         </div>
                         <div className="flex gap-2">
-                            <Button type="button" variant="outline" onClick={close}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
                                 {t('common.cancel', 'Cancel')}
                             </Button>
-                            <Button type="button" disabled={processing} onClick={submit}>
+                            <Button
+                                type="button"
+                                disabled={processing}
+                                onClick={submit}
+                            >
                                 {tProm('form.save', 'Save')}
                             </Button>
                         </div>

@@ -92,7 +92,15 @@ class PromotionManagementController extends Controller
         }
 
         DB::transaction(function () use ($v, $slug) {
-            Promotion::create([
+            $autoListed = array_key_exists('is_listed', $v) ? (bool) $v['is_listed'] : $this->inferIsListed($v);
+
+            /** @var \App\Services\PromotionGuideService $guide */
+            $guide = app(\App\Services\PromotionGuideService::class);
+            $tnc   = $v['tnc'] ?? null;
+            $how   = $v['how'] ?? null;
+
+            // Temporary promotion object to build guides based on provided attributes later
+            $promo = Promotion::create([
                 'name'               => $v['name'],
                 'slug'               => $slug,
                 'description'        => $v['description'] ?? null,
@@ -109,8 +117,23 @@ class PromotionManagementController extends Controller
                 'default_channel'    => $v['default_channel'] ?? null,
                 'require_coupon'     => (bool) ($v['require_coupon'] ?? false),
                 'is_active'          => (bool) ($v['is_active'] ?? true),
+                'is_listed'          => $autoListed,
                 'tags'               => $v['tags'] ?? null,
+                'tnc'                => null, // set after creation
+                'how'                => null,
             ]);
+
+            // Auto-generate guides if not provided
+            $updates = [];
+            if (empty($tnc)) {
+                $updates['tnc'] = $guide->buildTncTemplate($promo);
+            }
+            if (empty($how)) {
+                $updates['how'] = $guide->buildHowTemplate($promo);
+            }
+            if (!empty($updates)) {
+                $promo->update($updates);
+            }
         });
 
         return back()->with('success', __('management/promotions.created'));
@@ -127,6 +150,10 @@ class PromotionManagementController extends Controller
         }
 
         DB::transaction(function () use ($promotion, $v, $slug) {
+            $autoListed = array_key_exists('is_listed', $v) ? (bool) $v['is_listed'] : $this->inferIsListed($v + [
+                'default_channel' => $promotion->default_channel?->value,
+                'tags'            => is_array($promotion->tags) ? $promotion->tags : [],
+            ]);
             $promotion->update([
                 'name'               => $v['name'],
                 'slug'               => $slug,
@@ -144,11 +171,34 @@ class PromotionManagementController extends Controller
                 'default_channel'    => $v['default_channel'] ?? null,
                 'require_coupon'     => (bool) ($v['require_coupon'] ?? false),
                 'is_active'          => (bool) ($v['is_active'] ?? true),
+                'is_listed'          => $autoListed,
                 'tags'               => $v['tags'] ?? null,
+                'tnc'                => $v['tnc'] ?? null,
+                'how'                => $v['how'] ?? null,
             ]);
         });
 
         return back()->with('success', __('management/promotions.updated'));
+    }
+
+    /**
+     * Infer is_listed automatically based on input promo attributes.
+     * - Hide if tagged as private/hidden.
+     * - Hide if default_channel is manual (admin-only application).
+     * - Otherwise list by default.
+     */
+    protected function inferIsListed(array $attrs): bool
+    {
+        $tags = array_map('strtolower', (array) ($attrs['tags'] ?? []));
+        if (in_array('private', $tags, true) || in_array('hidden', $tags, true)) {
+            return false;
+        }
+        $channel = isset($attrs['default_channel']) ? strtolower((string) $attrs['default_channel']) : null;
+        if ($channel === 'manual') {
+            return false;
+        }
+
+        return true;
     }
 
     public function destroy(Promotion $promotion): RedirectResponse
@@ -174,7 +224,10 @@ class PromotionManagementController extends Controller
             'default_channel' => $promotion->default_channel?->value,
             'require_coupon'  => (bool) $promotion->require_coupon,
             'is_active'       => (bool) $promotion->is_active,
+            'is_listed'       => (bool) $promotion->is_listed,
             'tags'            => is_array($promotion->tags) ? $promotion->tags : [],
+            'tnc'             => is_array($promotion->tnc) ? $promotion->tnc : [],
+            'how'             => is_array($promotion->how) ? $promotion->how : [],
         ];
 
         /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\PromotionScope> $scopesCol */
@@ -297,6 +350,51 @@ class PromotionManagementController extends Controller
                 'room_types' => $roomTypes,
                 'rooms'      => $rooms,
             ],
+        ]);
+    }
+
+    /**
+     * Generate and save default guides (tnc/how) for a promotion.
+     * Query params: type=tnc|how|both (default both), overwrite=0|1 (default 0).
+     */
+    public function generateGuides(Request $request, Promotion $promotion): RedirectResponse
+    {
+        $type      = (string) $request->query('type', 'both');
+        $overwrite = (bool) $request->boolean('overwrite', false);
+
+        /** @var \App\Services\PromotionGuideService $guide */
+        $guide = app(\App\Services\PromotionGuideService::class);
+        $tnc   = $promotion->tnc ?? [];
+        $how   = $promotion->how ?? [];
+
+        if ($type === 'both' || $type === 'tnc') {
+            $genTnc = $guide->buildTncTemplate($promotion);
+            $tnc    = $overwrite ? $genTnc : array_values(array_unique(array_merge($tnc, $genTnc)));
+        }
+        if ($type === 'both' || $type === 'how') {
+            $genHow = $guide->buildHowTemplate($promotion);
+            $how    = $overwrite ? $genHow : array_values(array_unique(array_merge($how, $genHow)));
+        }
+
+        $promotion->update([
+            'tnc' => $tnc,
+            'how' => $how,
+        ]);
+
+        return back()->with('success', __('management/promotions.updated'));
+    }
+
+    /**
+     * Preview generated guides without persisting. Returns JSON.
+     */
+    public function previewGuides(Promotion $promotion): JsonResponse
+    {
+        /** @var \App\Services\PromotionGuideService $guide */
+        $guide = app(\App\Services\PromotionGuideService::class);
+
+        return response()->json([
+            'tnc' => $guide->buildTncTemplate($promotion),
+            'how' => $guide->buildHowTemplate($promotion),
         ]);
     }
 

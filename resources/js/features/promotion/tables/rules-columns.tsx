@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Trash2 } from 'lucide-react';
-import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
@@ -26,18 +25,35 @@ export function createRuleColumns(opts: {
         {
             accessorKey: 'min_spend_idr',
             header: ({ column }) => (
-                <DataTableColumnHeader column={column as any} title={i18n.t('management/promotions:rule.label.min_spend')} />
+                <DataTableColumnHeader
+                    column={column as any}
+                    title={i18n.t('management/promotions:rule.label.min_spend')}
+                />
             ),
-            cell: ({ row }) => row.original.min_spend_idr ?? '-',
+            cell: ({ row }) => (row.original as RuleRow).min_spend_idr ?? '-',
         },
-        { accessorKey: 'max_discount_idr', header: i18n.t('management/promotions:rule.label.max_discount'), cell: ({ row }) => row.original.max_discount_idr ?? '-' },
+        {
+            accessorKey: 'max_discount_idr',
+            header: i18n.t('management/promotions:rule.label.max_discount'),
+            cell: ({ row }) => (row.original as RuleRow).max_discount_idr ?? '-',
+        },
         {
             accessorKey: 'billing_periods',
             header: i18n.t('management/promotions:rule.label.billing_periods'),
             cell: ({ row }) => {
-                const list = Array.isArray(row.original.billing_periods) ? row.original.billing_periods : [];
+                const list = Array.isArray((row.original as RuleRow).billing_periods)
+                    ? (row.original as RuleRow).billing_periods
+                    : [];
                 return list.length
-                    ? list.map((p: string) => (p === 'daily' ? i18n.t('common.daily') : p === 'weekly' ? i18n.t('common.weekly') : i18n.t('common.monthly'))).join(', ')
+                    ? list
+                          .map((p: string) =>
+                              p === 'daily'
+                                  ? i18n.t('common.daily')
+                                  : p === 'weekly'
+                                    ? i18n.t('common.weekly')
+                                    : i18n.t('common.monthly'),
+                          )
+                          .join(', ')
                     : '-';
             },
         },
@@ -45,29 +61,34 @@ export function createRuleColumns(opts: {
             accessorKey: 'channel',
             header: i18n.t('management/promotions:rule.label.channel'),
             cell: ({ row }) => {
-                const raw = (row.original.channel || '').trim();
+                const raw = ((row.original as RuleRow).channel || '').trim();
                 if (!raw) return i18n.t('management/promotions:common.any');
                 const key = raw.replace(/\s+/g, '_').toLowerCase();
-                return i18n.t(`management/promotions:channel.${key}`, { defaultValue: raw });
+                return i18n.t(`management/promotions:channel.${key}`, {
+                    defaultValue: raw,
+                });
             },
         },
         {
             accessorKey: 'first_n_periods',
             header: i18n.t('management/promotions:rule.label.first_n'),
-            cell: ({ row }) => row.original.first_n_periods ?? '-',
+            cell: ({ row }) => (row.original as RuleRow).first_n_periods ?? '-',
         },
         {
             id: 'actions',
             enableHiding: false,
             header: ({ column }) => (
                 <div className="text-right">
-                    <DataTableColumnHeader column={column as any} title={i18n.t('common.actions')} />
+                    <DataTableColumnHeader
+                        column={column as any}
+                        title={i18n.t('common.actions')}
+                    />
                 </div>
             ),
             cell: ({ row }) => {
-                const it = row.original;
+                const it = row.original as RuleRow;
                 return (
-                    <div className="flex items-center gap-2 justify-end">
+                    <div className="flex items-center justify-end gap-2">
                         <Button
                             variant="outline"
                             size="icon"

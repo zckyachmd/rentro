@@ -38,7 +38,10 @@ class Promotion extends Model
         'default_channel',
         'require_coupon',
         'is_active',
+        'is_listed',
         'tags',
+        'tnc',
+        'how',
     ];
 
     protected $casts = [
@@ -48,8 +51,11 @@ class Promotion extends Model
         'default_channel' => PromotionChannel::class,
         'require_coupon'  => 'boolean',
         'is_active'       => 'boolean',
+        'is_listed'       => 'boolean',
         'priority'        => 'integer',
         'tags'            => 'array',
+        'tnc'             => 'array',
+        'how'             => 'array',
     ];
 
     public function scopes(): HasMany

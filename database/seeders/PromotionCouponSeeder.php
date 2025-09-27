@@ -10,14 +10,14 @@ use Illuminate\Support\Str;
 class PromotionCouponSeeder extends Seeder
 {
     /**
-     * Seed coupons for existing promotions.
+     * Seed a single coupon per eligible promotion.
      * - Targets promos with require_coupon = true by default.
-     * - Controlled by env PROMO_COUPON_COUNT (default 50).
-     * - Uses prefix from promotion slug/name.
+     * - Controlled by env PROMO_COUPON_COUNT (default 1).
+     * - Uses prefix from promotion slug/name when generating.
      */
     public function run(): void
     {
-        $defaultCount = (int) env('PROMO_COUPON_COUNT', 50);
+        $defaultCount = max(0, (int) env('PROMO_COUPON_COUNT', 1));
 
         // Target promotions: require_coupon true first; if none, fallback to all active promos
         $promotions = Promotion::query()
@@ -44,32 +44,17 @@ class PromotionCouponSeeder extends Seeder
             }
 
             $prefix = $this->makePrefix($promo);
-            $length = 10; // random part length
+            $length = 8; // random part length
 
-            $generated = 0;
-            $tries = 0;
-            while ($generated < $need && $tries < ($need * 20)) {
-                $tries++;
-                $code = $this->randomCode($prefix, $length);
-                $exists = PromotionCoupon::query()
-                    ->where('promotion_id', $promo->id)
-                    ->where('code', $code)
-                    ->exists();
-                if ($exists) {
-                    continue;
-                }
-
-                PromotionCoupon::create([
-                    'promotion_id'    => $promo->id,
-                    'code'            => $code,
-                    'is_active'       => true,
-                    'max_redemptions' => null,
-                    'expires_at'      => null,
-                ]);
-                $generated++;
-            }
-
-            $this->command?->info("Seeded {$generated} coupon(s) for promo: {$promo->slug}");
+            $code = $this->randomCode($prefix, $length);
+            PromotionCoupon::create([
+                'promotion_id'    => $promo->id,
+                'code'            => $code,
+                'is_active'       => true,
+                'max_redemptions' => null,
+                'expires_at'      => null,
+            ]);
+            $this->command?->info("Seeded 1 coupon for promo: {$promo->slug}");
         }
     }
 
@@ -89,4 +74,3 @@ class PromotionCouponSeeder extends Seeder
         return $prefix . substr($rand, 0, $len);
     }
 }
-

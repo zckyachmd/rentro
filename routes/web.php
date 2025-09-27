@@ -10,6 +10,7 @@ use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
+use App\Http\Controllers\Site\PromotionsController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
 use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;
@@ -24,7 +25,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::prefix('')->name('public.')->group(function (): void {
     Route::get('/catalog', [HomeController::class, 'catalog'])->name('catalog');
-    Route::get('/promos', [HomeController::class, 'promos'])->name('promos');
+    Route::get('/promos', [PromotionsController::class, 'index'])->name('promos');
+    Route::get('/promos/{slug}', [PromotionsController::class, 'show'])->name('promos.show');
     Route::get('/blog', [HomeController::class, 'blogIndex'])->name('blog.index');
     Route::get('/blog/{slug}', [HomeController::class, 'blogShow'])->name('blog.show');
     Route::get('/help', [HomeController::class, 'help'])->name('help');

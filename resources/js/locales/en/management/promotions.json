@@ -1,138 +1,239 @@
 {
-  "title": "Promotions",
-  "desc": "Manage discount promotions",
-  "add": "Add Promotion",
-  "create_title": "Create Promotion",
-  "edit_title": "Edit Promotion",
-  "common": { "any": "Any" },
-  "channel": { "public": "Public", "referral": "Referral", "manual": "Manual", "coupon": "Coupon" },
-  "promotion": {
+    "title": "Promotions",
+    "desc": "Manage discount promotions",
+    "add": "Add Promotion",
     "create_title": "Create Promotion",
     "edit_title": "Edit Promotion",
-    "desc": "Basic settings for a promotion, including stack mode, default channel, active dates, and limits.",
-    "label": {
-      "slug": "Slug",
-      "priority": "Priority",
-      "stack_mode": "Stack Mode",
-      "channel": "Default Channel",
-      "valid_from": "Valid From",
-      "valid_until": "Valid Until",
-      "tags": "Tags",
-      "require_coupon": "Require coupon at checkout",
-      "total_quota": "Total Quota",
-      "per_user_limit": "Per User Limit",
-      "per_contract_limit": "Per Contract Limit",
-      "per_invoice_limit": "Per Invoice Limit",
-      "per_day_limit": "Per Day Limit",
-      "per_month_limit": "Per Month Limit"
+    "common": { "any": "Any" },
+    "channel": {
+        "public": "Public",
+        "referral": "Referral",
+        "manual": "Manual",
+        "coupon": "Coupon"
     },
-    "stack": { "stack": "Stack", "highest_only": "Highest Only", "exclusive": "Exclusive" },
-    "placeholder": {
-      "name": "Promotion name (e.g. Summer Sale)",
-      "slug": "auto from name if empty",
-      "priority": "Lower number = higher priority",
-      "description": "Short description for admins",
-      "tags": "e.g. dp, limited, featured",
-      "total_quota": "e.g. 100",
-      "per_user_limit": "e.g. 1",
-      "per_contract_limit": "e.g. 1",
-      "per_invoice_limit": "e.g. 1",
-      "per_day_limit": "e.g. 10",
-      "per_month_limit": "e.g. 100"
+    "promotion": {
+        "create_title": "Create Promotion",
+        "edit_title": "Edit Promotion",
+        "desc": "Basic settings for a promotion, including stack mode, default channel, active dates, and limits.",
+        "label": {
+            "slug": "Slug",
+            "priority": "Priority",
+            "stack_mode": "Stack Mode",
+            "channel": "Default Channel",
+            "valid_from": "Valid From",
+            "valid_until": "Valid Until",
+            "tags": "Tags",
+            "require_coupon": "Require coupon at checkout",
+            "total_quota": "Total Quota",
+            "per_user_limit": "Per User Limit",
+            "per_contract_limit": "Per Contract Limit",
+            "per_invoice_limit": "Per Invoice Limit",
+            "per_day_limit": "Per Day Limit",
+            "per_month_limit": "Per Month Limit"
+        },
+        "stack": {
+            "stack": "Stack",
+            "highest_only": "Highest Only",
+            "exclusive": "Exclusive"
+        },
+        "placeholder": {
+            "name": "Promotion name (e.g. Summer Sale)",
+            "slug": "auto from name if empty",
+            "priority": "Lower number = higher priority",
+            "description": "Short description for admins",
+            "tags": "e.g. dp, limited, featured",
+            "total_quota": "e.g. 100",
+            "per_user_limit": "e.g. 1",
+            "per_contract_limit": "e.g. 1",
+            "per_invoice_limit": "e.g. 1",
+            "per_day_limit": "e.g. 10",
+            "per_month_limit": "e.g. 100"
+        },
+        "help": {
+            "name": "Display name for this promotion.",
+            "slug": "Lowercase URL key; leave blank to auto-generate from name.",
+            "priority": "Applied order among eligible promos. Lower runs first.",
+            "stack_mode": "Stack: sum discounts; Highest Only: pick best among conflicts; Exclusive: blocks other promos.",
+            "channel": "Default channel when no rule-level channel is specified.",
+            "valid_from": "Start date the promotion becomes active.",
+            "valid_until": "Last date the promotion remains active.",
+            "description": "Internal note/description.",
+            "tags": "Comma separated keywords for filtering.",
+            "total_quota": "Maximum total redemptions across all users.",
+            "per_user_limit": "Max redemptions per user.",
+            "per_contract_limit": "Max redemptions for the same contract.",
+            "per_invoice_limit": "Max redemptions in a single invoice.",
+            "per_day_limit": "Max redemptions per day.",
+            "per_month_limit": "Max redemptions per month.",
+            "require_coupon": "If enabled, a valid coupon code must be supplied."
+        }
     },
-    "help": {
-      "name": "Display name for this promotion.",
-      "slug": "Lowercase URL key; leave blank to auto-generate from name.",
-      "priority": "Applied order among eligible promos. Lower runs first.",
-      "stack_mode": "Stack: sum discounts; Highest Only: pick best among conflicts; Exclusive: blocks other promos.",
-      "channel": "Default channel when no rule-level channel is specified.",
-      "valid_from": "Start date the promotion becomes active.",
-      "valid_until": "Last date the promotion remains active.",
-      "description": "Internal note/description.",
-      "tags": "Comma separated keywords for filtering.",
-      "total_quota": "Maximum total redemptions across all users.",
-      "per_user_limit": "Max redemptions per user.",
-      "per_contract_limit": "Max redemptions for the same contract.",
-      "per_invoice_limit": "Max redemptions in a single invoice.",
-      "per_day_limit": "Max redemptions per day.",
-      "per_month_limit": "Max redemptions per month.",
-      "require_coupon": "If enabled, a valid coupon code must be supplied."
-    }
-  },
-  "scope": {
-    "desc": "Limit where the promotion applies (global/building/floor/room type/room).",
-    "create_title": "Add Scope",
-    "edit_title": "Edit Scope",
-    "label": { "scope_type": "Scope Type", "building": "Building", "floor": "Floor", "room_type": "Room Type", "room": "Room", "floor_optional": "Floor (optional)", "room_type_optional": "Room Type (optional)" },
-    "placeholder": { "building": "Select building", "floor": "Select floor", "room_type": "Select room type", "room": "Select room" },
-    "help": { "scope_type": "Limit this promotion to specific targets." },
-    "bulk": { "add_filtered_rooms": "Add all filtered rooms", "add_filtered_floors": "Add all filtered floors", "add_all_room_types": "Add all room types" }
-  },
-  "rule": {
-    "create_title": "Add Rule",
-    "edit_title": "Edit Rule",
-    "desc": "Define conditions for when this promotion applies.",
-    "label": { "min_spend": "Min Spend (Rp)", "max_discount": "Max Discount (Rp)", "billing_periods": "Billing Periods", "date_from": "Date From", "date_until": "Date Until", "time_start": "Time Start", "time_end": "Time End", "channel": "Channel", "first_n": "First N Periods" },
-    "placeholder": { "min_spend": "e.g. 1000000", "max_discount": "e.g. 500000" },
-    "help": {
-      "min_spend": "Required minimum spend before discount applies.",
-      "max_discount": "Maximum discount allowed at rule level.",
-      "billing_periods": "Which periods are eligible (daily/weekly/monthly).",
-      "channel": "Restrict this rule to a specific sales channel.",
-      "first_n": "Apply only for the first N billing periods."
-    }
-  },
-  "action": {
-    "desc": "Specify how the discount is applied.",
-    "create_title": "Add Action",
-    "edit_title": "Edit Action",
-    "label": { "action_type": "Action Type", "priority": "Priority", "percent_bps": "Percent (bps)", "amount_idr": "Amount (Rp)", "fixed_price_idr": "Fixed Price (Rp)", "n_days": "Free N Days", "n_periods": "First N Periods", "max_discount_idr": "Max Discount (Rp)" },
-    "type": { "percent": "Percent", "amount": "Amount", "fixed_price": "Fixed Price", "free_n_days": "Free N Days", "first_n_percent": "First N Periods Percent", "first_n_amount": "First N Periods Amount" },
-    "help": {
-      "action_type": "Select how the discount is applied.",
-      "percent_bps": "Enter basis points, e.g. 500 = 5%",
-      "amount_idr": "Flat discount amount in Rupiah",
-      "fixed_price_idr": "Override price to this fixed amount",
-      "n_days": "Number of days covered for free",
-      "n_periods": "Applies only to the first N billing periods",
-      "max_discount_idr": "Optional cap for discount amount"
-    }
-  },
-  "coupon": {
-    "desc": "Create or edit a single coupon code.",
-    "create_title": "Add Coupon",
-    "edit_title": "Edit Coupon",
-    "label": { "code": "Code", "expires_at": "Expires At", "max_redemptions": "Max Redemptions", "is_active": "Active", "redeemed": "Redeemed" },
-    "placeholder": { "code": "e.g. WELCOME20", "max_redemptions": "e.g. 1" },
-    "help": { "code": "Required coupon code the user must provide.", "expires_at": "Optional expiration date.", "max_redemptions": "Limit per code; leave empty for unlimited." }
-  },
-  "bulk": {
-    "title": "Bulk Generate Coupons",
-    "desc": "Create one or many coupon codes at once. Default creates a single code (count 1) with max redemptions 1.",
-    "label": { "count": "Count", "prefix": "Prefix (optional)", "length": "Length", "max_redemptions": "Max Redemptions (optional)", "expires_at": "Expires At (optional)", "is_active": "Active" },
-    "placeholder": { "count": "e.g. 50", "prefix": "e.g. WLCM-", "length": "e.g. 10", "max_redemptions": "e.g. 1" },
-    "help": { "count": "How many codes to generate.", "prefix": "Optional prefix for codes.", "length": "Random part length (4–32).", "max_redemptions": "Limit per code.", "expires_at": "Optional expiration date." }
-  },
-  "guide": {
-    "open": "Guide",
-    "title": "Promotion Guide",
-    "sections": {
-      "scope": { "title": "Scopes", "desc": "Limit where the promotion applies (global/building/floor/room type/room)." },
-      "rule": { "title": "Rules", "desc": "Conditions: min spend, billing periods, date/time windows, channels, and allowed users." },
-      "action": { "title": "Actions", "desc": "What discount to apply: percent/amount/fixed price/free days/first N periods." },
-      "coupon": { "title": "Coupons", "desc": "Optional codes required at checkout. Create single or bulk, and export CSV." }
-    }
-  },
-  "section": {
-    "scopes": { "title": "Scopes", "desc": "Targeting for this promotion" },
-    "rules": { "title": "Rules", "desc": "Conditions for applying" },
-    "actions": { "title": "Actions", "desc": "Discount effects" },
-    "coupons": { "title": "Coupons", "desc": "Shared or unique codes" }
-  },
-  
-  "form": { "save": "Save" },
-  "delete": { "title": "Delete Promotion", "confirm_named": "Are you sure want to delete \"{{name}}\"?" },
-  "created": "Promotion created.",
-  "updated": "Promotion updated.",
-  "deleted": "Promotion deleted."
+    "scope": {
+        "desc": "Limit where the promotion applies (global/building/floor/room type/room).",
+        "create_title": "Add Scope",
+        "edit_title": "Edit Scope",
+        "label": {
+            "scope_type": "Scope Type",
+            "building": "Building",
+            "floor": "Floor",
+            "room_type": "Room Type",
+            "room": "Room",
+            "floor_optional": "Floor (optional)",
+            "room_type_optional": "Room Type (optional)"
+        },
+        "placeholder": {
+            "building": "Select building",
+            "floor": "Select floor",
+            "room_type": "Select room type",
+            "room": "Select room"
+        },
+        "help": { "scope_type": "Limit this promotion to specific targets." },
+        "bulk": {
+            "add_filtered_rooms": "Add all filtered rooms",
+            "add_filtered_floors": "Add all filtered floors",
+            "add_all_room_types": "Add all room types"
+        }
+    },
+    "rule": {
+        "create_title": "Add Rule",
+        "edit_title": "Edit Rule",
+        "desc": "Define conditions for when this promotion applies.",
+        "label": {
+            "min_spend": "Min Spend (Rp)",
+            "max_discount": "Max Discount (Rp)",
+            "billing_periods": "Billing Periods",
+            "date_from": "Date From",
+            "date_until": "Date Until",
+            "time_start": "Time Start",
+            "time_end": "Time End",
+            "channel": "Channel",
+            "first_n": "First N Periods"
+        },
+        "placeholder": {
+            "min_spend": "e.g. 1000000",
+            "max_discount": "e.g. 500000"
+        },
+        "help": {
+            "min_spend": "Required minimum spend before discount applies.",
+            "max_discount": "Maximum discount allowed at rule level.",
+            "billing_periods": "Which periods are eligible (daily/weekly/monthly).",
+            "channel": "Restrict this rule to a specific sales channel.",
+            "first_n": "Apply only for the first N billing periods."
+        }
+    },
+    "action": {
+        "desc": "Specify how the discount is applied.",
+        "create_title": "Add Action",
+        "edit_title": "Edit Action",
+        "label": {
+            "action_type": "Action Type",
+            "priority": "Priority",
+            "percent_bps": "Percent (bps)",
+            "amount_idr": "Amount (Rp)",
+            "fixed_price_idr": "Fixed Price (Rp)",
+            "n_days": "Free N Days",
+            "n_periods": "First N Periods",
+            "max_discount_idr": "Max Discount (Rp)"
+        },
+        "type": {
+            "percent": "Percent",
+            "amount": "Amount",
+            "fixed_price": "Fixed Price",
+            "free_n_days": "Free N Days",
+            "first_n_percent": "First N Periods Percent",
+            "first_n_amount": "First N Periods Amount"
+        },
+        "help": {
+            "action_type": "Select how the discount is applied.",
+            "percent_bps": "Enter basis points, e.g. 500 = 5%",
+            "amount_idr": "Flat discount amount in Rupiah",
+            "fixed_price_idr": "Override price to this fixed amount",
+            "n_days": "Number of days covered for free",
+            "n_periods": "Applies only to the first N billing periods",
+            "max_discount_idr": "Optional cap for discount amount"
+        }
+    },
+    "coupon": {
+        "desc": "Create or edit a single coupon code.",
+        "create_title": "Add Coupon",
+        "edit_title": "Edit Coupon",
+        "label": {
+            "code": "Code",
+            "expires_at": "Expires At",
+            "max_redemptions": "Max Redemptions",
+            "is_active": "Active",
+            "redeemed": "Redeemed"
+        },
+        "placeholder": {
+            "code": "e.g. WELCOME20",
+            "max_redemptions": "e.g. 1"
+        },
+        "help": {
+            "code": "Required coupon code the user must provide.",
+            "expires_at": "Optional expiration date.",
+            "max_redemptions": "Limit per code; leave empty for unlimited."
+        }
+    },
+    "bulk": {
+        "title": "Bulk Generate Coupons",
+        "desc": "Create one or many coupon codes at once. Default creates a single code (count 1) with max redemptions 1.",
+        "label": {
+            "count": "Count",
+            "prefix": "Prefix (optional)",
+            "length": "Length",
+            "max_redemptions": "Max Redemptions (optional)",
+            "expires_at": "Expires At (optional)",
+            "is_active": "Active"
+        },
+        "placeholder": {
+            "count": "e.g. 50",
+            "prefix": "e.g. WLCM-",
+            "length": "e.g. 10",
+            "max_redemptions": "e.g. 1"
+        },
+        "help": {
+            "count": "How many codes to generate.",
+            "prefix": "Optional prefix for codes.",
+            "length": "Random part length (4–32).",
+            "max_redemptions": "Limit per code.",
+            "expires_at": "Optional expiration date."
+        }
+    },
+    "guide": {
+        "open": "Guide",
+        "title": "Promotion Guide",
+        "sections": {
+            "scope": {
+                "title": "Scopes",
+                "desc": "Limit where the promotion applies (global/building/floor/room type/room)."
+            },
+            "rule": {
+                "title": "Rules",
+                "desc": "Conditions: min spend, billing periods, date/time windows, channels, and allowed users."
+            },
+            "action": {
+                "title": "Actions",
+                "desc": "What discount to apply: percent/amount/fixed price/free days/first N periods."
+            },
+            "coupon": {
+                "title": "Coupons",
+                "desc": "Optional codes required at checkout. Create single or bulk, and export CSV."
+            }
+        }
+    },
+    "section": {
+        "scopes": { "title": "Scopes", "desc": "Targeting for this promotion" },
+        "rules": { "title": "Rules", "desc": "Conditions for applying" },
+        "actions": { "title": "Actions", "desc": "Discount effects" },
+        "coupons": { "title": "Coupons", "desc": "Shared or unique codes" }
+    },
+
+    "form": { "save": "Save" },
+    "delete": {
+        "title": "Delete Promotion",
+        "confirm_named": "Are you sure want to delete \"{{name}}\"?"
+    },
+    "created": "Promotion created.",
+    "updated": "Promotion updated.",
+    "deleted": "Promotion deleted."
 }

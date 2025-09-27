@@ -13,7 +13,10 @@ export default function BlogShowPage() {
             seo={{
                 type: 'article',
                 title: slug.replace(/[-_]/g, ' ') + ' - Blog',
-                canonical: route('public.blog.show', slug as never) as unknown as string,
+                canonical: route(
+                    'public.blog.show',
+                    slug as never,
+                ) as unknown as string,
             }}
         >
             <article className="prose prose-neutral dark:prose-invert max-w-none">

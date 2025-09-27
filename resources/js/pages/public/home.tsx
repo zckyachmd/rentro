@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { PublicLayout } from '@/layouts';
 
 export default function PublicHome() {
@@ -253,26 +254,30 @@ export default function PublicHome() {
                 {/* (Promo strip removed; promos now only as badges on cards) */}
 
                 <div className="w-full">
-                    <div
-                        id="rooms-scroller"
-                        ref={roomsScroll}
-                        role="region"
-                        aria-roledescription="carousel"
-                        aria-label="Daftar kamar tersedia"
-                        aria-live="off"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                            if (e.key === 'ArrowRight') {
-                                e.preventDefault();
-                                scrollByRef(roomsScroll, 'right');
-                            }
-                            if (e.key === 'ArrowLeft') {
-                                e.preventDefault();
-                                scrollByRef(roomsScroll, 'left');
-                            }
-                        }}
-                        className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2"
+                    <ScrollArea
+                        viewportRef={roomsScroll}
+                        className="pb-2"
+                        showHorizontal
                     >
+                        <div
+                            id="rooms-scroller"
+                            role="region"
+                            aria-roledescription="carousel"
+                            aria-label="Daftar kamar tersedia"
+                            aria-live="off"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowRight') {
+                                    e.preventDefault();
+                                    scrollByRef(roomsScroll, 'right');
+                                }
+                                if (e.key === 'ArrowLeft') {
+                                    e.preventDefault();
+                                    scrollByRef(roomsScroll, 'left');
+                                }
+                            }}
+                            className="flex snap-x snap-mandatory gap-4"
+                        >
                         {allRooms.map((room, idx) => {
                             const promo = promos.find(
                                 (p) => p.slug === room.slug,
@@ -361,7 +366,8 @@ export default function PublicHome() {
                                 </a>
                             );
                         })}
-                    </div>
+                        </div>
+                    </ScrollArea>
                 </div>
             </section>
 
@@ -530,26 +536,30 @@ export default function PublicHome() {
                     </div>
                 </div>
                 <div className="w-full">
-                    <div
-                        id="testimonials-scroller"
-                        ref={testiScroll}
-                        role="region"
-                        aria-roledescription="carousel"
-                        aria-label="Testimoni penghuni"
-                        aria-live="off"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                            if (e.key === 'ArrowRight') {
-                                e.preventDefault();
-                                scrollByRef(testiScroll, 'right');
-                            }
-                            if (e.key === 'ArrowLeft') {
-                                e.preventDefault();
-                                scrollByRef(testiScroll, 'left');
-                            }
-                        }}
-                        className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2"
+                    <ScrollArea
+                        viewportRef={testiScroll}
+                        className="pb-2"
+                        showHorizontal
                     >
+                        <div
+                            id="testimonials-scroller"
+                            role="region"
+                            aria-roledescription="carousel"
+                            aria-label="Testimoni penghuni"
+                            aria-live="off"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowRight') {
+                                    e.preventDefault();
+                                    scrollByRef(testiScroll, 'right');
+                                }
+                                if (e.key === 'ArrowLeft') {
+                                    e.preventDefault();
+                                    scrollByRef(testiScroll, 'left');
+                                }
+                            }}
+                            className="flex snap-x snap-mandatory gap-4"
+                        >
                         {[
                             {
                                 name: 'Nadia',
@@ -662,7 +672,8 @@ export default function PublicHome() {
                                 </CardContent>
                             </Card>
                         ))}
-                    </div>
+                        </div>
+                    </ScrollArea>
                 </div>
             </section>
 
@@ -678,8 +689,8 @@ export default function PublicHome() {
                     Jawaban singkat untuk hal yang sering ditanyakan.
                 </p>
 
-                <div className="no-scrollbar mt-4 max-h-80 overflow-y-auto rounded-lg border">
-                    <Accordion type="single" collapsible className="w-full">
+                <ScrollArea className="mt-4 max-h-80 rounded-lg border">
+                    <Accordion type="single" collapsible className="w-full px-0.5">
                         {[
                             {
                                 q: 'Apakah pembayaran aman?',
@@ -712,7 +723,7 @@ export default function PublicHome() {
                             </AccordionItem>
                         ))}
                     </Accordion>
-                </div>
+                </ScrollArea>
             </section>
 
             {/* 5) CTA */}

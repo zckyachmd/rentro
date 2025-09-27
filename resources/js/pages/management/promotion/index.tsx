@@ -72,25 +72,31 @@ export default function PromotionsIndex() {
         setConfirmDel({ open: true, item });
     }, []);
 
-    const columns: ColumnDef<PromotionItem>[] = React.useMemo(
+    const columns: ColumnDef<unknown>[] = React.useMemo(
         () => createColumns({ onEdit: openEdit, onDelete }),
         [openEdit, onDelete],
     );
 
     return (
-        <AppLayout pageTitle="Promotions" pageDescription="Manage discount promotions">
+        <AppLayout
+            pageTitle="Promotions"
+            pageDescription="Manage discount promotions"
+        >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle>Promotions</CardTitle>
-                        <CardDescription>Manage discount promotions</CardDescription>
+                        <CardDescription>
+                            Manage discount promotions
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="flex w-full flex-1 items-center gap-2" />
                             <Can all={['promotion.create']}>
                                 <Button size="sm" onClick={openCreate}>
-                                    <Plus className="mr-2 h-4 w-4" /> Add Promotion
+                                    <Plus className="mr-2 h-4 w-4" /> Add
+                                    Promotion
                                 </Button>
                             </Can>
                         </div>
@@ -99,9 +105,9 @@ export default function PromotionsIndex() {
 
                 <Card>
                     <CardContent className="pt-6">
-                        <DataTableServer<PromotionItem, unknown>
+                        <DataTableServer<unknown, unknown>
                             columns={columns}
-                            rows={rows}
+                            rows={rows as unknown[]}
                             paginator={paginator ?? null}
                             search={q.search}
                             onSearchChange={(v) =>
@@ -169,4 +175,3 @@ export default function PromotionsIndex() {
         </AppLayout>
     );
 }
-

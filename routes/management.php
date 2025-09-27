@@ -393,5 +393,13 @@ Route::prefix('management')->name('management.')->group(function (): void {
             ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
             ->whereNumber('coupon')
             ->name('coupons.destroy');
+
+        // Guides (TnC/How) template generator
+        Route::post('/{promotion}/guides/generate', [PromotionManagementController::class, 'generateGuides'])
+            ->middleware('can:' . PermissionName::PROMOTION_UPDATE->value)
+            ->name('guides.generate');
+        Route::get('/{promotion}/guides/preview', [PromotionManagementController::class, 'previewGuides'])
+            ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
+            ->name('guides.preview');
     });
 });

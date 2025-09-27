@@ -37,8 +37,13 @@ class UpdatePromotionRequest extends FormRequest
             'default_channel'    => ['nullable', Rule::in(['public', 'referral', 'manual', 'coupon'])],
             'require_coupon'     => ['boolean'],
             'is_active'          => ['boolean'],
+            'is_listed'          => ['boolean'],
             'tags'               => ['nullable', 'array'],
             'tags.*'             => ['string', 'max:50'],
+            'tnc'                => ['nullable', 'array'],
+            'tnc.*'              => ['string', 'max:500'],
+            'how'                => ['nullable', 'array'],
+            'how.*'              => ['string', 'max:500'],
         ];
     }
 
@@ -77,6 +82,9 @@ class UpdatePromotionRequest extends FormRequest
         }
         if (array_key_exists('is_active', $input)) {
             $input['is_active'] = filter_var($input['is_active'], FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true;
+        }
+        if (array_key_exists('is_listed', $input)) {
+            $input['is_listed'] = filter_var($input['is_listed'], FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true;
         }
 
         $this->replace($input);

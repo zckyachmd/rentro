@@ -64,14 +64,18 @@ export default function Seo(props: SeoProps) {
             {keywordsStr ? (
                 <meta key="kw" name="keywords" content={keywordsStr} />
             ) : null}
-            {(
-                robots || (import.meta?.env?.PROD ? 'index,follow' : 'noindex, nofollow')
-            ) && (
+            {(robots ||
+                (import.meta?.env?.PROD
+                    ? 'index,follow'
+                    : 'noindex, nofollow')) && (
                 <meta
                     key="robots"
                     name="robots"
                     content={
-                        robots ?? (import.meta.env?.PROD ? 'index,follow' : 'noindex, nofollow')
+                        robots ??
+                        (import.meta.env?.PROD
+                            ? 'index,follow'
+                            : 'noindex, nofollow')
                     }
                 />
             )}

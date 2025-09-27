@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Trash2 } from 'lucide-react';
-import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
@@ -29,34 +28,75 @@ export function createActionColumns(opts: {
         {
             accessorKey: 'action_type',
             header: ({ column }) => (
-                <DataTableColumnHeader column={column as any} title={i18n.t('management/promotions:action.label.action_type')} />
+                <DataTableColumnHeader
+                    column={column as any}
+                    title={i18n.t(
+                        'management/promotions:action.label.action_type',
+                    )}
+                />
             ),
             cell: ({ row }) => {
-                const raw = String(row.original.action_type || '').trim().toLowerCase();
+                const raw = String((row.original as ActionRow).action_type || '')
+                    .trim()
+                    .toLowerCase();
                 const key = raw.startsWith('first_n_periods_')
                     ? `first_n_${raw.replace('first_n_periods_', '')}`
                     : raw;
-                return <span>{i18n.t(`management/promotions:action.type.${key}`, { defaultValue: raw || '-' })}</span>;
+                return (
+                    <span>
+                        {i18n.t(`management/promotions:action.type.${key}`, {
+                            defaultValue: raw || '-',
+                        })}
+                    </span>
+                );
             },
         },
-        { accessorKey: 'priority', header: i18n.t('management/promotions:action.label.priority') },
-        { accessorKey: 'percent_bps', header: i18n.t('management/promotions:action.label.percent_bps'), cell: ({ row }) => row.original.percent_bps ?? '-' },
-        { accessorKey: 'amount_idr', header: i18n.t('management/promotions:action.label.amount_idr'), cell: ({ row }) => row.original.amount_idr ?? '-' },
-        { accessorKey: 'fixed_price_idr', header: i18n.t('management/promotions:action.label.fixed_price_idr'), cell: ({ row }) => row.original.fixed_price_idr ?? '-' },
-        { accessorKey: 'n_days', header: i18n.t('management/promotions:action.label.n_days'), cell: ({ row }) => row.original.n_days ?? '-' },
-        { accessorKey: 'n_periods', header: i18n.t('management/promotions:action.label.n_periods'), cell: ({ row }) => row.original.n_periods ?? '-' },
+        {
+            accessorKey: 'priority',
+            header: i18n.t('management/promotions:action.label.priority'),
+        },
+        {
+            accessorKey: 'percent_bps',
+            header: i18n.t('management/promotions:action.label.percent_bps'),
+            cell: ({ row }) => (row.original as ActionRow).percent_bps ?? '-',
+        },
+        {
+            accessorKey: 'amount_idr',
+            header: i18n.t('management/promotions:action.label.amount_idr'),
+            cell: ({ row }) => (row.original as ActionRow).amount_idr ?? '-',
+        },
+        {
+            accessorKey: 'fixed_price_idr',
+            header: i18n.t(
+                'management/promotions:action.label.fixed_price_idr',
+            ),
+            cell: ({ row }) => (row.original as ActionRow).fixed_price_idr ?? '-',
+        },
+        {
+            accessorKey: 'n_days',
+            header: i18n.t('management/promotions:action.label.n_days'),
+            cell: ({ row }) => (row.original as ActionRow).n_days ?? '-',
+        },
+        {
+            accessorKey: 'n_periods',
+            header: i18n.t('management/promotions:action.label.n_periods'),
+            cell: ({ row }) => (row.original as ActionRow).n_periods ?? '-',
+        },
         {
             id: 'actions',
             enableHiding: false,
             header: ({ column }) => (
                 <div className="text-right">
-                    <DataTableColumnHeader column={column as any} title={i18n.t('common.actions')} />
+                    <DataTableColumnHeader
+                        column={column as any}
+                        title={i18n.t('common.actions')}
+                    />
                 </div>
             ),
             cell: ({ row }) => {
-                const it = row.original;
+                const it = row.original as ActionRow;
                 return (
-                    <div className="flex items-center gap-2 justify-end">
+                    <div className="flex items-center justify-end gap-2">
                         <Button
                             variant="outline"
                             size="icon"
