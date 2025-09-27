@@ -118,6 +118,12 @@ class MenuSeeder extends Seeder
                     ],
                     ['label' => 'menu.complaints', 'href' => '#', 'icon' => 'MessageSquareWarning'],
                     ['label' => 'menu.packages', 'href' => '#', 'icon' => 'Package'],
+                    [
+                        'label' => 'menu.testimonies',
+                        'href' => route('management.testimonies.index'),
+                        'icon' => 'MessageSquareText',
+                        'permission' => PermissionName::TESTIMONY_VIEW,
+                    ],
                 ],
             ],
 

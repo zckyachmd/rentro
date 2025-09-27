@@ -23,11 +23,11 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import PermissionsDialog from '@/features/role/dialogs/permissions-dialog';
-import RoleUpsertDialog from '@/features/role/dialogs/roles-dialog';
-import { createColumns } from '@/features/role/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import PermissionsDialog from '@/pages/management/role/dialogs/permissions-dialog';
+import RoleUpsertDialog from '@/pages/management/role/dialogs/roles-dialog';
+import { createColumns } from '@/pages/management/role/tables/columns';
 import type {
     RoleDialogKey as DialogKey,
     RolePageProps as PageProps,

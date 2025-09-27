@@ -21,14 +21,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import CreateUserDialog from '@/features/user/dialogs/create-user-dialog';
-import ForceLogoutDialog from '@/features/user/dialogs/force-logout-dialog';
-import ResetPasswordDialog from '@/features/user/dialogs/reset-password-dialog';
-import { RoleDialog } from '@/features/user/dialogs/role-dialog';
-import { TwoFADialog } from '@/features/user/dialogs/two-factor-dialog';
-import { createColumns } from '@/features/user/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import CreateUserDialog from '@/pages/management/user/dialogs/create-user-dialog';
+import ForceLogoutDialog from '@/pages/management/user/dialogs/force-logout-dialog';
+import ResetPasswordDialog from '@/pages/management/user/dialogs/reset-password-dialog';
+import { RoleDialog } from '@/pages/management/user/dialogs/role-dialog';
+import { TwoFADialog } from '@/pages/management/user/dialogs/two-factor-dialog';
+import { createColumns } from '@/pages/management/user/tables/columns';
 import type {
     UserDialogKind as DialogKind,
     UserDialogState as DialogState,

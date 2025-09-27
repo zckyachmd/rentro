@@ -6,9 +6,9 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import ContactsTable from '@/features/profile/components/contacts-table';
-import ContactDeleteDialog from '@/features/profile/dialogs/contact-delete-dialog';
-import ContactDialog from '@/features/profile/dialogs/contact-dialog';
+import ContactsTable from '@/pages/profile/components/contacts-table';
+import ContactDeleteDialog from '@/pages/profile/dialogs/contact-delete-dialog';
+import ContactDialog from '@/pages/profile/dialogs/contact-dialog';
 import type {
     ContactDTO,
     ContactFormState,

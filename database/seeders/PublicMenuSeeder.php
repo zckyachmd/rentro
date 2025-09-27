@@ -56,10 +56,6 @@ class PublicMenuSeeder extends Seeder
                     'href' => '/promos',
                     'icon' => 'Percent',
                     'sort' => 3,
-                    'children' => [
-                        ['placement' => 'header', 'label' => 'Promo Aktif', 'href' => '/promos?status=active', 'icon' => 'BadgeCheck', 'sort' => 2],
-                        ['placement' => 'header', 'label' => 'Hemat DP',    'href' => '/promos?tag=dp',        'icon' => 'Wallet',     'sort' => 3],
-                    ],
                 ],
                 ['placement' => 'header', 'label' => 'Blog',  'href' => '/blog',  'icon' => 'Newspaper', 'sort' => 4],
             ];

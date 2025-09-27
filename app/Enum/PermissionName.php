@@ -88,4 +88,10 @@ enum PermissionName: string
     case PROMOTION_CREATE = 'promotion.create';
     case PROMOTION_UPDATE = 'promotion.update';
     case PROMOTION_DELETE = 'promotion.delete';
+
+    // Testimonies
+    case TESTIMONY_VIEW   = 'testimony.view';
+    case TESTIMONY_CREATE = 'testimony.create';
+    case TESTIMONY_UPDATE = 'testimony.update';
+    case TESTIMONY_DELETE = 'testimony.delete';
 }

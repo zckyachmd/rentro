@@ -25,10 +25,10 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import UpsertFloorDialog from '@/features/floor/dialogs/upsert-floor-dialog';
-import { createColumns } from '@/features/floor/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import UpsertFloorDialog from '@/pages/management/floors/dialogs/upsert-floor-dialog';
+import { createColumns } from '@/pages/management/floors/tables/columns';
 import type { FloorItem, FloorsPageProps } from '@/types/management';
 
 type PageProps = FloorsPageProps;

@@ -107,5 +107,11 @@
         "light": "Light",
         "dark": "Dark",
         "system": "System"
+    },
+    "testimony_status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "published": "Published"
     }
 }

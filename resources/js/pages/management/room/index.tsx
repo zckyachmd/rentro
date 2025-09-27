@@ -28,10 +28,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import RoomDetailDialog from '@/features/room/dialogs/detail-dialog';
-import { createColumns } from '@/features/room/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import RoomDetailDialog from '@/pages/management/room/dialogs/detail-dialog';
+import { createColumns } from '@/pages/management/room/tables/columns';
 import type {
     RoomFilters as Filters,
     RoomQueryInit as QueryInit,

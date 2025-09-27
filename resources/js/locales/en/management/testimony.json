@@ -1,0 +1,20 @@
+{
+    "title": "Testimonies",
+    "desc": "Manage and curate user testimonies before publishing.",
+    "all_status": "All Statuses",
+    "search_placeholder": "Search testimony content...",
+    "empty": "No testimonies found.",
+    "updated": "Testimony updated",
+    "deleted": "Testimony deleted",
+    "curate": {
+        "title": "Curate Testimony",
+        "desc": "Review and rewrite if needed to ensure language safety.",
+        "original": "Original",
+        "curated": "Curated",
+        "placeholder": "Write curated/safe version...",
+        "status": "Status",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving..."
+    }
+}

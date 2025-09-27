@@ -17,8 +17,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import AddressInput from '@/features/profile/components/address-input';
-import AddressTextarea from '@/features/profile/components/address-textarea';
+import AddressInput from '@/pages/profile/components/address-input';
+import AddressTextarea from '@/pages/profile/components/address-textarea';
 import type { AddressProps, AddressValue } from '@/types/profile';
 
 export default function AddressSection({

@@ -20,13 +20,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import CancelContractDialog from '@/features/contract/dialogs/cancel-contract-dialog';
-import ContractsActionGuideDialog from '@/features/contract/dialogs/contracts-action-guide-dialog';
-import HandoverCreate from '@/features/contract/dialogs/handover-create-dialog';
-import ToggleAutoRenewDialog from '@/features/contract/dialogs/toggle-autorenew-dialog';
-import { createColumns } from '@/features/contract/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import CancelContractDialog from '@/pages/management/contract/dialogs/cancel-contract-dialog';
+import ContractsActionGuideDialog from '@/pages/management/contract/dialogs/contracts-action-guide-dialog';
+import HandoverCreate from '@/pages/management/contract/dialogs/handover-create-dialog';
+import ToggleAutoRenewDialog from '@/pages/management/contract/dialogs/toggle-autorenew-dialog';
+import { createColumns } from '@/pages/management/contract/tables/columns';
 import type {
     ContractItem,
     ContractsPageProps,

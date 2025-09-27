@@ -248,7 +248,7 @@ class DashboardController extends Controller
             $payload['tenant'] = $this->buildTenantSummary($casted);
         }
 
-        return Inertia::render('dashboard', $payload);
+        return Inertia::render('dashboard/index', $payload);
     }
 
     /**

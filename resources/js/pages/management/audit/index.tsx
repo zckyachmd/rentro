@@ -14,10 +14,10 @@ import {
     DataTableServer,
     type QueryBag,
 } from '@/components/ui/data-table-server';
-import AuditDetailDialog from '@/features/audit/dialogs/detail-dialog';
-import { createColumns } from '@/features/audit/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import AuditDetailDialog from '@/pages/management/audit/dialogs/detail-dialog';
+import { createColumns } from '@/pages/management/audit/tables/columns';
 import type {
     ActivityItem,
     AuditNextShape as NextShape,

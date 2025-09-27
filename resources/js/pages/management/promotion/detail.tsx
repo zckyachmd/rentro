@@ -58,16 +58,16 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import BulkCouponDialog from '@/features/promotion/dialogs/bulk-coupon-dialog';
-import UpsertActionDialog from '@/features/promotion/dialogs/upsert-action-dialog';
-import UpsertCouponDialog from '@/features/promotion/dialogs/upsert-coupon-dialog';
-import UpsertRuleDialog from '@/features/promotion/dialogs/upsert-rule-dialog';
-import UpsertScopeDialog from '@/features/promotion/dialogs/upsert-scope-dialog';
-import { createActionColumns } from '@/features/promotion/tables/actions-columns';
-import { createCouponColumns } from '@/features/promotion/tables/coupons-columns';
-import { createRuleColumns } from '@/features/promotion/tables/rules-columns';
-import { createScopeColumns } from '@/features/promotion/tables/scopes-columns';
 import { AppLayout } from '@/layouts';
+import BulkCouponDialog from '@/pages/management/promotion/dialogs/bulk-coupon-dialog';
+import UpsertActionDialog from '@/pages/management/promotion/dialogs/upsert-action-dialog';
+import UpsertCouponDialog from '@/pages/management/promotion/dialogs/upsert-coupon-dialog';
+import UpsertRuleDialog from '@/pages/management/promotion/dialogs/upsert-rule-dialog';
+import UpsertScopeDialog from '@/pages/management/promotion/dialogs/upsert-scope-dialog';
+import { createActionColumns } from '@/pages/management/promotion/tables/actions-columns';
+import { createCouponColumns } from '@/pages/management/promotion/tables/coupons-columns';
+import { createRuleColumns } from '@/pages/management/promotion/tables/rules-columns';
+import { createScopeColumns } from '@/pages/management/promotion/tables/scopes-columns';
 
 type PromotionDTO = {
     id: string;

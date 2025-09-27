@@ -14,6 +14,7 @@ use App\Http\Controllers\Management\RoleManagementController;
 use App\Http\Controllers\Management\RoomManagementController;
 use App\Http\Controllers\Management\RoomPhotoManagementController;
 use App\Http\Controllers\Management\RoomTypeManagementController;
+use App\Http\Controllers\Management\TestimonyManagementController;
 use App\Http\Controllers\Management\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
@@ -401,5 +402,18 @@ Route::prefix('management')->name('management.')->group(function (): void {
         Route::get('/{promotion}/guides/preview', [PromotionManagementController::class, 'previewGuides'])
             ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
             ->name('guides.preview');
+    });
+
+    // Testimonies
+    Route::prefix('testimonies')->name('testimonies.')->group(function (): void {
+        Route::get('/', [TestimonyManagementController::class, 'index'])
+            ->middleware('can:' . PermissionName::TESTIMONY_VIEW->value)
+            ->name('index');
+        Route::put('/{testimony}', [TestimonyManagementController::class, 'update'])
+            ->middleware('can:' . PermissionName::TESTIMONY_UPDATE->value)
+            ->name('update');
+        Route::delete('/{testimony}', [TestimonyManagementController::class, 'destroy'])
+            ->middleware('can:' . PermissionName::TESTIMONY_DELETE->value)
+            ->name('destroy');
     });
 });

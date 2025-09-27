@@ -87,6 +87,11 @@ class PermissionSeeder extends Seeder
                 PermissionName::PROMOTION_CREATE,
                 PermissionName::PROMOTION_UPDATE,
                 PermissionName::PROMOTION_DELETE,
+                // Testimonies
+                PermissionName::TESTIMONY_VIEW,
+                PermissionName::TESTIMONY_CREATE,
+                PermissionName::TESTIMONY_UPDATE,
+                PermissionName::TESTIMONY_DELETE,
             ],
             RoleName::MANAGER->value => [
                 PermissionName::USER_VIEW,
@@ -138,6 +143,10 @@ class PermissionSeeder extends Seeder
                 PermissionName::PROMOTION_VIEW,
                 PermissionName::PROMOTION_CREATE,
                 PermissionName::PROMOTION_UPDATE,
+                // Testimonies (manager can view + edit)
+                PermissionName::TESTIMONY_VIEW,
+                PermissionName::TESTIMONY_CREATE,
+                PermissionName::TESTIMONY_UPDATE,
             ],
             // Tenant role exists for assigning to app users, with no management permissions.
             RoleName::TENANT->value => [],

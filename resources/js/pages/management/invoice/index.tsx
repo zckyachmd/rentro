@@ -17,14 +17,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import CancelInvoiceDialog from '@/features/invoice/dialogs/cancel-dialog';
-import InvoiceDetailDialog from '@/features/invoice/dialogs/detail-dialog';
-import ExtendDueDialog from '@/features/invoice/dialogs/extend-due-dialog';
-import GenerateInvoiceDialog from '@/features/invoice/dialogs/generate-dialog';
-import { createColumns } from '@/features/invoice/tables/columns';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
 import { formatIDR } from '@/lib/format';
+import CancelInvoiceDialog from '@/pages/management/invoice/dialogs/cancel-dialog';
+import InvoiceDetailDialog from '@/pages/management/invoice/dialogs/detail-dialog';
+import ExtendDueDialog from '@/pages/management/invoice/dialogs/extend-due-dialog';
+import GenerateInvoiceDialog from '@/pages/management/invoice/dialogs/generate-dialog';
+import { createColumns } from '@/pages/management/invoice/tables/columns';
 import type {
     ManagementCancelState as CancelState,
     ManagementExtendState as ExtendState,
