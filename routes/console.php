@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Schedule;
 
+Schedule::command('content:schedule')
+    ->name('content.schedule')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->runInBackground();
+
 Schedule::command('invoices:generate-monthly')
     ->name('invoices.generate-monthly')
     ->dailyAt('00:30')

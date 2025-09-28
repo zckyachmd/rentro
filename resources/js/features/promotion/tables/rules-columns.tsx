@@ -35,13 +35,16 @@ export function createRuleColumns(opts: {
         {
             accessorKey: 'max_discount_idr',
             header: i18n.t('management/promotions:rule.label.max_discount'),
-            cell: ({ row }) => (row.original as RuleRow).max_discount_idr ?? '-',
+            cell: ({ row }) =>
+                (row.original as RuleRow).max_discount_idr ?? '-',
         },
         {
             accessorKey: 'billing_periods',
             header: i18n.t('management/promotions:rule.label.billing_periods'),
             cell: ({ row }) => {
-                const list = Array.isArray((row.original as RuleRow).billing_periods)
+                const list = Array.isArray(
+                    (row.original as RuleRow).billing_periods,
+                )
                     ? (row.original as RuleRow).billing_periods
                     : [];
                 return list.length

@@ -278,94 +278,100 @@ export default function PublicHome() {
                             }}
                             className="flex snap-x snap-mandatory gap-4"
                         >
-                        {allRooms.map((room, idx) => {
-                            const promo = promos.find(
-                                (p) => p.slug === room.slug,
-                            );
-                            return (
-                                <a
-                                    key={room.slug}
-                                    href={`${route('public.catalog')}?highlight=${room.slug}`}
-                                    data-room-slug={room.slug}
-                                    role="group"
-                                    aria-roledescription="slide"
-                                    aria-posinset={idx + 1}
-                                    aria-setsize={allRooms.length}
-                                    className="focus-visible:ring-primary/50 focus-visible:ring-offset-background min-w-[260px] snap-start rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:min-w-[280px]"
-                                    aria-label={`${room.name} — ${room.promoPrice ? `${room.promoPrice} (harga promo, dari ${room.originalPrice})` : room.price}`}
-                                >
-                                    <Card className="focus-visible:ring-primary/50 h-full transition hover:shadow-lg focus-visible:ring-2 focus-visible:outline-none">
-                                        <div className="relative h-40 w-full overflow-hidden rounded-b-none">
-                                            <div className="bg-muted absolute inset-0" />
-                                            <div className="bg-background/80 absolute top-2 left-2 max-w-[calc(100%-1rem)] rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur">
-                                                {room.promoPrice ? (
-                                                    <span className="flex items-baseline gap-2">
-                                                        <span className="text-muted-foreground text-[10px] line-through">
-                                                            {room.originalPrice}
+                            {allRooms.map((room, idx) => {
+                                const promo = promos.find(
+                                    (p) => p.slug === room.slug,
+                                );
+                                return (
+                                    <a
+                                        key={room.slug}
+                                        href={`${route('public.catalog')}?highlight=${room.slug}`}
+                                        data-room-slug={room.slug}
+                                        role="group"
+                                        aria-roledescription="slide"
+                                        aria-posinset={idx + 1}
+                                        aria-setsize={allRooms.length}
+                                        className="focus-visible:ring-primary/50 focus-visible:ring-offset-background min-w-[260px] snap-start rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:min-w-[280px]"
+                                        aria-label={`${room.name} — ${room.promoPrice ? `${room.promoPrice} (harga promo, dari ${room.originalPrice})` : room.price}`}
+                                    >
+                                        <Card className="focus-visible:ring-primary/50 h-full transition hover:shadow-lg focus-visible:ring-2 focus-visible:outline-none">
+                                            <div className="relative h-40 w-full overflow-hidden rounded-b-none">
+                                                <div className="bg-muted absolute inset-0" />
+                                                <div className="bg-background/80 absolute top-2 left-2 max-w-[calc(100%-1rem)] rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur">
+                                                    {room.promoPrice ? (
+                                                        <span className="flex items-baseline gap-2">
+                                                            <span className="text-muted-foreground text-[10px] line-through">
+                                                                {
+                                                                    room.originalPrice
+                                                                }
+                                                            </span>
+                                                            <span className="text-xs font-semibold">
+                                                                {
+                                                                    room.promoPrice
+                                                                }
+                                                            </span>
                                                         </span>
-                                                        <span className="text-xs font-semibold">
-                                                            {room.promoPrice}
-                                                        </span>
-                                                    </span>
-                                                ) : (
-                                                    <span className="whitespace-nowrap">
-                                                        {room.price}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {promo && (
-                                                <div className="bg-background/80 absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur">
-                                                    {getDiscountPercent(
-                                                        room,
-                                                    ) && (
-                                                        <span className="mr-1">
-                                                            {getDiscountPercent(
-                                                                room,
-                                                            )}
+                                                    ) : (
+                                                        <span className="whitespace-nowrap">
+                                                            {room.price}
                                                         </span>
                                                     )}
-                                                    <span>
-                                                        {promo.title} · s/d{' '}
-                                                        {promo.until}
-                                                    </span>
-                                                    <span className="sr-only">
-                                                        Diskon{' '}
+                                                </div>
+                                                {promo && (
+                                                    <div className="bg-background/80 absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur">
                                                         {getDiscountPercent(
                                                             room,
-                                                        ) ?? ''}{' '}
-                                                        berlaku sampai{' '}
-                                                        {promo.until}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <CardHeader className="space-y-1">
-                                            <CardTitle className="text-base">
-                                                {room.name}
-                                            </CardTitle>
-                                            <div className="text-muted-foreground text-[11px]">
-                                                Contoh tipe kamar
-                                                {promo ? ' • Promo aktif' : ''}
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="pt-0">
-                                            <div className="mt-3 flex flex-wrap gap-1">
-                                                {room.amenities.map(
-                                                    (a: string) => (
-                                                        <Badge
-                                                            key={a}
-                                                            variant="outline"
-                                                        >
-                                                            {a}
-                                                        </Badge>
-                                                    ),
+                                                        ) && (
+                                                            <span className="mr-1">
+                                                                {getDiscountPercent(
+                                                                    room,
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                        <span>
+                                                            {promo.title} · s/d{' '}
+                                                            {promo.until}
+                                                        </span>
+                                                        <span className="sr-only">
+                                                            Diskon{' '}
+                                                            {getDiscountPercent(
+                                                                room,
+                                                            ) ?? ''}{' '}
+                                                            berlaku sampai{' '}
+                                                            {promo.until}
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
-                                        </CardContent>
-                                    </Card>
-                                </a>
-                            );
-                        })}
+                                            <CardHeader className="space-y-1">
+                                                <CardTitle className="text-base">
+                                                    {room.name}
+                                                </CardTitle>
+                                                <div className="text-muted-foreground text-[11px]">
+                                                    Contoh tipe kamar
+                                                    {promo
+                                                        ? ' • Promo aktif'
+                                                        : ''}
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="pt-0">
+                                                <div className="mt-3 flex flex-wrap gap-1">
+                                                    {room.amenities.map(
+                                                        (a: string) => (
+                                                            <Badge
+                                                                key={a}
+                                                                variant="outline"
+                                                            >
+                                                                {a}
+                                                            </Badge>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </a>
+                                );
+                            })}
                         </div>
                     </ScrollArea>
                 </div>
@@ -560,118 +566,118 @@ export default function PublicHome() {
                             }}
                             className="flex snap-x snap-mandatory gap-4"
                         >
-                        {[
-                            {
-                                name: 'Nadia',
-                                role: 'Mahasiswi',
-                                quote: 'Kamarnya bersih, pemilik ramah, dan responsnya cepat banget. Nyaman belajar!',
-                                rating: 5,
-                            },
-                            {
-                                name: 'Rizky',
-                                role: 'Karyawan',
-                                quote: 'Lokasi strategis, dekat transportasi. Proses booking dan pembayaran jelas.',
-                                rating: 5,
-                            },
-                            {
-                                name: 'Sinta',
-                                role: 'Freelancer',
-                                quote: 'Fasilitas sesuai deskripsi. Suasana tenang, cocok untuk kerja dari rumah.',
-                                rating: 4,
-                            },
-                            {
-                                name: 'Arif',
-                                role: 'Fresh Graduate',
-                                quote: 'Ownernya helpful. Proses pindahan rapi dan cepat.',
-                                rating: 5,
-                            },
-                            {
-                                name: 'Dina',
-                                role: 'Perawat',
-                                quote: 'Dekat rumah sakit dan lingkungan aman. Tidur jadi lebih tenang.',
-                                rating: 5,
-                            },
-                            {
-                                name: 'Yoga',
-                                role: 'Desainer',
-                                quote: 'Internet kencang, cocok banget buat WFH dan upload file besar.',
-                                rating: 4,
-                            },
-                            {
-                                name: 'Maya',
-                                role: 'Akuntan',
-                                quote: 'Kontrak digitalnya simple dan jelas. Pembayaran juga fleksibel.',
-                                rating: 5,
-                            },
-                            {
-                                name: 'Bima',
-                                role: 'Programmer',
-                                quote: 'Check-in cepat. Support responsif kalau ada kendala kecil.',
-                                rating: 5,
-                            },
-                            {
-                                name: 'Lala',
-                                role: 'Content Creator',
-                                quote: 'Pencahayaan kamar bagus. Enak buat shooting konten.',
-                                rating: 4,
-                            },
-                        ].map((t, i, arr) => (
-                            <Card
-                                key={t.name}
-                                role="group"
-                                aria-roledescription="slide"
-                                aria-posinset={i + 1}
-                                aria-setsize={arr.length}
-                                className="max-w-[300px] min-w-[300px] snap-start"
-                            >
-                                <CardContent className="flex h-[180px] flex-col justify-between py-5">
-                                    <div>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-9 w-9">
-                                                <AvatarImage
-                                                    src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(t.name)}`}
-                                                    alt={t.name}
-                                                    className="grayscale"
-                                                />
-                                                <AvatarFallback>
-                                                    {t.name.slice(0, 1)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <div className="text-sm font-medium">
-                                                    {t.name}
-                                                </div>
-                                                <div className="text-muted-foreground text-xs">
-                                                    {t.role}
+                            {[
+                                {
+                                    name: 'Nadia',
+                                    role: 'Mahasiswi',
+                                    quote: 'Kamarnya bersih, pemilik ramah, dan responsnya cepat banget. Nyaman belajar!',
+                                    rating: 5,
+                                },
+                                {
+                                    name: 'Rizky',
+                                    role: 'Karyawan',
+                                    quote: 'Lokasi strategis, dekat transportasi. Proses booking dan pembayaran jelas.',
+                                    rating: 5,
+                                },
+                                {
+                                    name: 'Sinta',
+                                    role: 'Freelancer',
+                                    quote: 'Fasilitas sesuai deskripsi. Suasana tenang, cocok untuk kerja dari rumah.',
+                                    rating: 4,
+                                },
+                                {
+                                    name: 'Arif',
+                                    role: 'Fresh Graduate',
+                                    quote: 'Ownernya helpful. Proses pindahan rapi dan cepat.',
+                                    rating: 5,
+                                },
+                                {
+                                    name: 'Dina',
+                                    role: 'Perawat',
+                                    quote: 'Dekat rumah sakit dan lingkungan aman. Tidur jadi lebih tenang.',
+                                    rating: 5,
+                                },
+                                {
+                                    name: 'Yoga',
+                                    role: 'Desainer',
+                                    quote: 'Internet kencang, cocok banget buat WFH dan upload file besar.',
+                                    rating: 4,
+                                },
+                                {
+                                    name: 'Maya',
+                                    role: 'Akuntan',
+                                    quote: 'Kontrak digitalnya simple dan jelas. Pembayaran juga fleksibel.',
+                                    rating: 5,
+                                },
+                                {
+                                    name: 'Bima',
+                                    role: 'Programmer',
+                                    quote: 'Check-in cepat. Support responsif kalau ada kendala kecil.',
+                                    rating: 5,
+                                },
+                                {
+                                    name: 'Lala',
+                                    role: 'Content Creator',
+                                    quote: 'Pencahayaan kamar bagus. Enak buat shooting konten.',
+                                    rating: 4,
+                                },
+                            ].map((t, i, arr) => (
+                                <Card
+                                    key={t.name}
+                                    role="group"
+                                    aria-roledescription="slide"
+                                    aria-posinset={i + 1}
+                                    aria-setsize={arr.length}
+                                    className="max-w-[300px] min-w-[300px] snap-start"
+                                >
+                                    <CardContent className="flex h-[180px] flex-col justify-between py-5">
+                                        <div>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9">
+                                                    <AvatarImage
+                                                        src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(t.name)}`}
+                                                        alt={t.name}
+                                                        className="grayscale"
+                                                    />
+                                                    <AvatarFallback>
+                                                        {t.name.slice(0, 1)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <div className="text-sm font-medium">
+                                                        {t.name}
+                                                    </div>
+                                                    <div className="text-muted-foreground text-xs">
+                                                        {t.role}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <p className="text-foreground mt-3 text-sm">
-                                            <Quote
-                                                className="mr-1 inline h-3 w-3 opacity-60"
-                                                aria-hidden
-                                            />
-                                            “{t.quote}”
-                                        </p>
-                                    </div>
-                                    <div
-                                        className="flex items-center gap-1 text-amber-500"
-                                        role="img"
-                                        aria-label={`Rating ${t.rating} dari 5`}
-                                    >
-                                        {Array.from({ length: 5 }).map(
-                                            (_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    className={`h-4 w-4 ${i < t.rating ? '' : 'opacity-30'}`}
+                                            <p className="text-foreground mt-3 text-sm">
+                                                <Quote
+                                                    className="mr-1 inline h-3 w-3 opacity-60"
                                                     aria-hidden
                                                 />
-                                            ),
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                                “{t.quote}”
+                                            </p>
+                                        </div>
+                                        <div
+                                            className="flex items-center gap-1 text-amber-500"
+                                            role="img"
+                                            aria-label={`Rating ${t.rating} dari 5`}
+                                        >
+                                            {Array.from({ length: 5 }).map(
+                                                (_, i) => (
+                                                    <Star
+                                                        key={i}
+                                                        className={`h-4 w-4 ${i < t.rating ? '' : 'opacity-30'}`}
+                                                        aria-hidden
+                                                    />
+                                                ),
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
                     </ScrollArea>
                 </div>
@@ -690,7 +696,11 @@ export default function PublicHome() {
                 </p>
 
                 <ScrollArea className="mt-4 max-h-80 rounded-lg border">
-                    <Accordion type="single" collapsible className="w-full px-0.5">
+                    <Accordion
+                        type="single"
+                        collapsible
+                        className="w-full px-0.5"
+                    >
                         {[
                             {
                                 q: 'Apakah pembayaran aman?',

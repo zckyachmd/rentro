@@ -4,10 +4,14 @@ use App\Enum\PermissionName;
 use App\Http\Controllers\Management\AmenityManagementController;
 use App\Http\Controllers\Management\AuditLogController;
 use App\Http\Controllers\Management\BuildingManagementController;
+use App\Http\Controllers\Management\ContentUploadController;
 use App\Http\Controllers\Management\ContractManagementController;
 use App\Http\Controllers\Management\FloorManagementController;
 use App\Http\Controllers\Management\HandoverManagementController;
 use App\Http\Controllers\Management\InvoiceManagementController;
+use App\Http\Controllers\Management\PageLocaleManagementController;
+use App\Http\Controllers\Management\PageManagementController;
+use App\Http\Controllers\Management\PageManagementViewController;
 use App\Http\Controllers\Management\PaymentManagementController;
 use App\Http\Controllers\Management\PromotionManagementController;
 use App\Http\Controllers\Management\RoleManagementController;
@@ -19,6 +23,35 @@ use Illuminate\Support\Facades\Route;
 
 // Management
 Route::prefix('management')->name('management.')->group(function (): void {
+    // Pages (CMS) - UI views
+    Route::prefix('pages')->name('pages.')->group(function (): void {
+        Route::get('/view', [PageManagementViewController::class, 'index'])
+            ->middleware('can:' . PermissionName::PAGE_VIEW->value)
+            ->name('view');
+        Route::get('/{page}/edit', [PageManagementViewController::class, 'edit'])
+            ->middleware('can:' . PermissionName::PAGE_UPDATE->value)
+            ->name('edit');
+    });
+
+    Route::prefix('pages')->name('pages.')->group(function (): void {
+        // Minimal: list + detail-only for management views
+        Route::get('/', [PageManagementController::class, 'index'])
+            ->middleware('can:' . PermissionName::PAGE_VIEW->value)
+            ->name('index');
+        Route::get('/{page}', [PageManagementController::class, 'show'])
+            ->middleware('can:' . PermissionName::PAGE_VIEW->value)
+            ->name('show');
+
+        // Locale upsert (submit from Inertia page)
+        Route::post('/{page}/locales/{locale}', [PageLocaleManagementController::class, 'upsertDraft'])
+            ->middleware('can:' . PermissionName::PAGE_UPDATE->value)
+            ->name('upsertDraft');
+    });
+
+    // Content upload (JSON)
+    Route::post('/content/upload', [ContentUploadController::class, 'upload'])
+        ->middleware('can:' . PermissionName::PAGE_UPDATE->value)
+        ->name('content.upload');
     // Users
     Route::prefix('users')->name('users.')->group(function (): void {
         Route::get('/', [UserManagementController::class, 'index'])

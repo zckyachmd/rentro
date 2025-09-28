@@ -88,4 +88,11 @@ enum PermissionName: string
     case PROMOTION_CREATE = 'promotion.create';
     case PROMOTION_UPDATE = 'promotion.update';
     case PROMOTION_DELETE = 'promotion.delete';
+
+    // Pages (CMS)
+    case PAGE_VIEW    = 'page.view';
+    case PAGE_CREATE  = 'page.create';
+    case PAGE_UPDATE  = 'page.update';
+    case PAGE_PUBLISH = 'page.publish';
+    case PAGE_DELETE  = 'page.delete';
 }

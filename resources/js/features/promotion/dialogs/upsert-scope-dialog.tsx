@@ -46,7 +46,8 @@ export default function UpsertScopeDialog({
 }: UpsertScopeDialogProps) {
     const { t } = useTranslation();
     const { t: tProm } = useTranslation('management/promotions');
-    const { data, setData, processing, clearErrors } = useForm({
+    // Work around deep type instantiation from generics
+    const formAny = (useForm as unknown as any)({
         scope_type: (item?.scope_type ?? 'global') as any,
         building_id: item?.building_id ? String(item.building_id) : '',
         floor_id: item?.floor_id ? String(item.floor_id) : '',
@@ -55,6 +56,7 @@ export default function UpsertScopeDialog({
         bulk_ids: [] as string[],
         room_type_filter: '',
     });
+    const { data, setData, processing, clearErrors } = formAny as any;
 
     React.useEffect(() => {
         setData({

@@ -87,6 +87,12 @@ class PermissionSeeder extends Seeder
                 PermissionName::PROMOTION_CREATE,
                 PermissionName::PROMOTION_UPDATE,
                 PermissionName::PROMOTION_DELETE,
+                // Pages CMS
+                PermissionName::PAGE_VIEW,
+                PermissionName::PAGE_CREATE,
+                PermissionName::PAGE_UPDATE,
+                PermissionName::PAGE_PUBLISH,
+                PermissionName::PAGE_DELETE,
             ],
             RoleName::MANAGER->value => [
                 PermissionName::USER_VIEW,
@@ -138,6 +144,11 @@ class PermissionSeeder extends Seeder
                 PermissionName::PROMOTION_VIEW,
                 PermissionName::PROMOTION_CREATE,
                 PermissionName::PROMOTION_UPDATE,
+                // Pages CMS (manager can view + edit + publish)
+                PermissionName::PAGE_VIEW,
+                PermissionName::PAGE_CREATE,
+                PermissionName::PAGE_UPDATE,
+                PermissionName::PAGE_PUBLISH,
             ],
             // Tenant role exists for assigning to app users, with no management permissions.
             RoleName::TENANT->value => [],

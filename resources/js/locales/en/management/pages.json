@@ -1,0 +1,59 @@
+{
+    "title": "Pages",
+    "desc": "Manage public pages content",
+    "columns": {
+        "slug": "Slug",
+        "locales": "Locales",
+        "updated_at": "Updated At",
+        "actions": "Actions",
+        "id": "ID",
+        "en": "EN"
+    },
+    "filters": { "status": "Status", "locale": "Locale" },
+    "actions": {
+        "create": "Create",
+        "creating": "Creating…",
+        "save_draft": "Save Draft",
+        "preview": "Preview",
+        "publish": "Publish",
+        "unpublish": "Unpublish"
+    },
+    "placeholders": {
+        "slug": "slug (e.g. about)",
+        "search_slug": "Search slug"
+    },
+    "empty": "No pages yet",
+    "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "scheduled": "Scheduled",
+        "published_via_action": "Published (via action)",
+        "archived": "Archived",
+        "archived_hint": "Archived (by unpublish)"
+    },
+    "labels": {
+        "publish_at": "Publish At",
+        "unpublish_at": "Unpublish At",
+        "versions": "Versions",
+        "no_versions": "No versions yet"
+    },
+    "stats": { "title": "Locale Statistics" },
+    "delete": {
+        "title": "Delete Page",
+        "confirm_named": "Are you sure you want to delete :slug? This action cannot be undone."
+    },
+    "toasts": {
+        "created": "Created",
+        "failed_create": "Failed to create",
+        "saved": "Saved",
+        "failed_save": "Failed to save",
+        "published": "Published",
+        "failed_publish": "Failed to publish",
+        "unpublished": "Unpublished",
+        "failed_unpublish": "Failed to unpublish",
+        "restored": "Restored",
+        "failed_restore": "Failed to restore",
+        "deleted": "Deleted",
+        "failed_delete": "Failed to delete"
+    }
+}

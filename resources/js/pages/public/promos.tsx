@@ -49,7 +49,10 @@ export default function PromosPage() {
             };
         }
     >();
-    const promotions = React.useMemo(() => page.props.promotions ?? [], [page.props.promotions]);
+    const promotions = React.useMemo(
+        () => page.props.promotions ?? [],
+        [page.props.promotions],
+    );
     const filters = page.props.filters ?? {};
     const [q, setQ] = React.useState<string>((filters.q as string) || '');
     const [isLoading, setIsLoading] = React.useState(false);
@@ -303,7 +306,11 @@ export default function PromosPage() {
                                   : isAlmost
                                     ? 'Hampir berakhir'
                                     : 'Aktif';
-                        const statusVariant: 'default' | 'secondary' | 'destructive' | 'outline' =
+                        const statusVariant:
+                            | 'default'
+                            | 'secondary'
+                            | 'destructive'
+                            | 'outline' =
                             st === 'expired'
                                 ? 'destructive'
                                 : isAlmost

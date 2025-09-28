@@ -90,7 +90,10 @@ export default function UpsertCouponDialog({
                 payload,
                 {
                     preserveScroll: true,
-                    onSuccess: () => { onSuccess?.(); close(); },
+                    onSuccess: () => {
+                        onSuccess?.();
+                        close();
+                    },
                 },
             );
         } else {
@@ -99,7 +102,10 @@ export default function UpsertCouponDialog({
                 payload,
                 {
                     preserveScroll: true,
-                    onSuccess: () => { onSuccess?.(); close(); },
+                    onSuccess: () => {
+                        onSuccess?.();
+                        close();
+                    },
                 },
             );
         }

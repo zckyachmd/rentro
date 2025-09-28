@@ -31,7 +31,9 @@ export function createCouponColumns(opts: {
             ),
             cell: ({ row }) => (
                 <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-xs">{(row.original as CouponRow).code}</span>
+                    <span className="font-mono text-xs">
+                        {(row.original as CouponRow).code}
+                    </span>
                     <CopyInline
                         value={(row.original as CouponRow).code}
                         as="span"
@@ -54,7 +56,8 @@ export function createCouponColumns(opts: {
         {
             accessorKey: 'max_redemptions',
             header: i18n.t('common.max', 'Maximum'),
-            cell: ({ row }) => (row.original as CouponRow).max_redemptions ?? '-',
+            cell: ({ row }) =>
+                (row.original as CouponRow).max_redemptions ?? '-',
         },
         {
             accessorKey: 'redeemed_count',
@@ -66,7 +69,10 @@ export function createCouponColumns(opts: {
         {
             accessorKey: 'expires_at',
             header: i18n.t('management/promotions:coupon.label.expires_at'),
-            cell: ({ row }) => ((row.original as CouponRow).expires_at ? (row.original as CouponRow).expires_at : '-'),
+            cell: ({ row }) =>
+                (row.original as CouponRow).expires_at
+                    ? (row.original as CouponRow).expires_at
+                    : '-',
         },
         {
             id: 'actions',

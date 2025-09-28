@@ -39,7 +39,9 @@ export function createScopeColumns(opts: {
                 />
             ),
             cell: ({ row }) => {
-                const raw = String((row.original as ScopeRow).scope_type || '').trim();
+                const raw = String(
+                    (row.original as ScopeRow).scope_type || '',
+                ).trim();
                 const key = raw.replace(/\s+/g, '_').toLowerCase();
                 const map: Record<string, string> = {
                     global: i18n.t(
@@ -61,7 +63,9 @@ export function createScopeColumns(opts: {
             accessorKey: 'building_id',
             header: i18n.t('management/promotions:scope.label.building'),
             cell: ({ row }) =>
-                opts.resolvers?.building?.((row.original as ScopeRow).building_id) ??
+                opts.resolvers?.building?.(
+                    (row.original as ScopeRow).building_id,
+                ) ??
                 (row.original as ScopeRow).building_id ??
                 '-',
         },
@@ -77,7 +81,9 @@ export function createScopeColumns(opts: {
             accessorKey: 'room_type_id',
             header: i18n.t('management/promotions:scope.label.room_type'),
             cell: ({ row }) =>
-                opts.resolvers?.room_type?.((row.original as ScopeRow).room_type_id) ??
+                opts.resolvers?.room_type?.(
+                    (row.original as ScopeRow).room_type_id,
+                ) ??
                 (row.original as ScopeRow).room_type_id ??
                 '-',
         },

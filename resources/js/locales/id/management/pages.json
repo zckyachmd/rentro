@@ -1,0 +1,59 @@
+{
+    "title": "Pages",
+    "desc": "Kelola konten halaman publik",
+    "columns": {
+        "slug": "Slug",
+        "locales": "Locales",
+        "updated_at": "Diperbarui",
+        "actions": "Aksi",
+        "id": "ID",
+        "en": "EN"
+    },
+    "filters": { "status": "Status", "locale": "Bahasa" },
+    "actions": {
+        "create": "Buat",
+        "creating": "Membuat…",
+        "save_draft": "Simpan Draft",
+        "preview": "Pratinjau",
+        "publish": "Publikasikan",
+        "unpublish": "Batalkan Publikasi"
+    },
+    "placeholders": {
+        "slug": "slug (mis. about)",
+        "search_slug": "Cari slug"
+    },
+    "empty": "Belum ada halaman",
+    "status": {
+        "draft": "Draft",
+        "published": "Terpublikasi",
+        "scheduled": "Terjadwal",
+        "published_via_action": "Dipublikasikan (via aksi)",
+        "archived": "Diarsipkan",
+        "archived_hint": "Diarsipkan (dari unpublish)"
+    },
+    "labels": {
+        "publish_at": "Jadwalkan Publikasi",
+        "unpublish_at": "Jadwalkan Unpublish",
+        "versions": "Versi",
+        "no_versions": "Belum ada versi"
+    },
+    "stats": { "title": "Statistik Bahasa" },
+    "delete": {
+        "title": "Hapus Halaman",
+        "confirm_named": "Yakin ingin menghapus :slug? Tindakan ini tidak bisa dibatalkan."
+    },
+    "toasts": {
+        "created": "Berhasil dibuat",
+        "failed_create": "Gagal membuat",
+        "saved": "Tersimpan",
+        "failed_save": "Gagal menyimpan",
+        "published": "Dipublikasikan",
+        "failed_publish": "Gagal publikasi",
+        "unpublished": "Dibatalkan publikasi",
+        "failed_unpublish": "Gagal batalkan publikasi",
+        "restored": "Berhasil dikembalikan",
+        "failed_restore": "Gagal mengembalikan",
+        "deleted": "Berhasil dihapus",
+        "failed_delete": "Gagal menghapus"
+    }
+}

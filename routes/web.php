@@ -10,6 +10,7 @@ use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
+use App\Http\Controllers\Site\PageController as PublicPageController;
 use App\Http\Controllers\Site\PromotionsController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
 use App\Http\Controllers\Tenant\ContractController as TenantContractController;
@@ -29,11 +30,13 @@ Route::prefix('')->name('public.')->group(function (): void {
     Route::get('/promos/{slug}', [PromotionsController::class, 'show'])->name('promos.show');
     Route::get('/blog', [HomeController::class, 'blogIndex'])->name('blog.index');
     Route::get('/blog/{slug}', [HomeController::class, 'blogShow'])->name('blog.show');
-    Route::get('/help', [HomeController::class, 'help'])->name('help');
-    Route::get('/about', [HomeController::class, 'about'])->name('about');
-    Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
-    Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
-    Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+
+    // Static pages migrated to CMS (except home)
+    Route::get('/help', fn () => app(PublicPageController::class)->show(request(), 'help'))->name('help');
+    Route::get('/about', fn () => app(PublicPageController::class)->show(request(), 'about'))->name('about');
+    Route::get('/privacy', fn () => app(PublicPageController::class)->show(request(), 'privacy'))->name('privacy');
+    Route::get('/terms', fn () => app(PublicPageController::class)->show(request(), 'terms'))->name('terms');
+    Route::get('/contact', fn () => app(PublicPageController::class)->show(request(), 'contact'))->name('contact');
 
     // Newsletter
     Route::post('/newsletter', [NewsletterController::class, 'subscribe'])
@@ -198,6 +201,9 @@ Route::prefix('payments')->name('payments.')->group(function (): void {
             ->name('provider.status');
     });
 });
+
+// Generic CMS public route
+Route::get('/p/{slug}', [PublicPageController::class, 'show'])->name('public.pages.show');
 
 // Midtrans webhooks
 Route::prefix('webhooks/midtrans')

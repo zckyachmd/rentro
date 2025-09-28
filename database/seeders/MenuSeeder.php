@@ -125,6 +125,7 @@ class MenuSeeder extends Seeder
                 'id' => 'admin',
                 'label' => 'menu.admin',
                 'items' => [
+                    ['label' => 'menu.pages', 'href' => route('management.pages.view'), 'icon' => 'FileText', 'permission' => PermissionName::PAGE_VIEW],
                     ['label' => 'menu.users', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
                     ['label' => 'menu.roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
                     ['label' => 'menu.audit_log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],

@@ -36,7 +36,9 @@ export function createActionColumns(opts: {
                 />
             ),
             cell: ({ row }) => {
-                const raw = String((row.original as ActionRow).action_type || '')
+                const raw = String(
+                    (row.original as ActionRow).action_type || '',
+                )
                     .trim()
                     .toLowerCase();
                 const key = raw.startsWith('first_n_periods_')
@@ -70,7 +72,8 @@ export function createActionColumns(opts: {
             header: i18n.t(
                 'management/promotions:action.label.fixed_price_idr',
             ),
-            cell: ({ row }) => (row.original as ActionRow).fixed_price_idr ?? '-',
+            cell: ({ row }) =>
+                (row.original as ActionRow).fixed_price_idr ?? '-',
         },
         {
             accessorKey: 'n_days',
