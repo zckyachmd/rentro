@@ -1,18 +1,37 @@
 import { router, usePage } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
 import type { PageProps } from '@/types';
+
 import { createColumns, type PageSectionItem } from './tables/columns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Plus } from 'lucide-react';
 
 type Props = {
     pageSections: {
@@ -64,7 +83,9 @@ export default function PagesIndex() {
         () =>
             createColumns({
                 onEdit: (row) =>
-                    router.get(route('management.pages.edit', [row.page, row.section])),
+                    router.get(
+                        route('management.pages.edit', [row.page, row.section]),
+                    ),
             }),
         [],
     );
@@ -99,7 +120,9 @@ export default function PagesIndex() {
                             <div className="flex w-full flex-1 items-center gap-2">
                                 <div className="w-full max-w-[240px]">
                                     <Select
-                                        value={q.fpage ? String(q.fpage) : 'all'}
+                                        value={
+                                            q.fpage ? String(q.fpage) : 'all'
+                                        }
                                         onValueChange={(v) =>
                                             onQueryChange({
                                                 page: 1,
@@ -107,15 +130,24 @@ export default function PagesIndex() {
                                             })
                                         }
                                     >
-                                        <SelectTrigger aria-label={tPages('filters.page')}>
-                                            <SelectValue placeholder={tPages('filters.select_page')} />
+                                        <SelectTrigger
+                                            aria-label={tPages('filters.page')}
+                                        >
+                                            <SelectValue
+                                                placeholder={tPages(
+                                                    'filters.select_page',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="all">
                                                 {t('common.all')}
                                             </SelectItem>
                                             {options.pages.map((p) => (
-                                                <SelectItem key={p.value} value={p.value}>
+                                                <SelectItem
+                                                    key={p.value}
+                                                    value={p.value}
+                                                >
                                                     {p.label}
                                                 </SelectItem>
                                             ))}
@@ -126,13 +158,20 @@ export default function PagesIndex() {
                             </div>
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
-                                    <Button type="button" size="sm" className="gap-2">
-                                        <Plus className="h-4 w-4" /> {tPages('actions.add_section')}
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        className="gap-2"
+                                    >
+                                        <Plus className="h-4 w-4" />{' '}
+                                        {tPages('actions.add_section')}
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>{tPages('actions.add_section')}</DialogTitle>
+                                        <DialogTitle>
+                                            {tPages('actions.add_section')}
+                                        </DialogTitle>
                                     </DialogHeader>
                                     <div className="space-y-3">
                                         <div>
@@ -141,14 +180,23 @@ export default function PagesIndex() {
                                             </label>
                                             <Select
                                                 value={targetPage}
-                                                onValueChange={(v) => setTargetPage(v)}
+                                                onValueChange={(v) =>
+                                                    setTargetPage(v)
+                                                }
                                             >
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder={tPages('filters.select_page')} />
+                                                    <SelectValue
+                                                        placeholder={tPages(
+                                                            'filters.select_page',
+                                                        )}
+                                                    />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {options.pages.map((p) => (
-                                                        <SelectItem key={p.value} value={p.value}>
+                                                        <SelectItem
+                                                            key={p.value}
+                                                            value={p.value}
+                                                        >
                                                             {p.label}
                                                         </SelectItem>
                                                     ))}
@@ -161,15 +209,28 @@ export default function PagesIndex() {
                                             </label>
                                             <Input
                                                 value={newSection}
-                                                onChange={(e) => setNewSection(e.target.value)}
-                                                placeholder={tPages('new_section.placeholder')}
+                                                onChange={(e) =>
+                                                    setNewSection(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder={tPages(
+                                                    'new_section.placeholder',
+                                                )}
                                             />
                                         </div>
                                         <div className="flex justify-end gap-2 pt-2">
-                                            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                onClick={() => setOpen(false)}
+                                            >
                                                 {t('common.cancel')}
                                             </Button>
-                                            <Button type="button" onClick={createSection}>
+                                            <Button
+                                                type="button"
+                                                onClick={createSection}
+                                            >
                                                 {t('common.submit')}
                                             </Button>
                                         </div>
@@ -187,9 +248,13 @@ export default function PagesIndex() {
                             rows={rows}
                             paginator={paginator ?? null}
                             search={q.search}
-                            onSearchChange={(v) => onQueryChange({ page: 1, search: v })}
+                            onSearchChange={(v) =>
+                                onQueryChange({ page: 1, search: v })
+                            }
                             searchKey="section"
-                            searchPlaceholder={t('datatable.search_placeholder')}
+                            searchPlaceholder={t(
+                                'datatable.search_placeholder',
+                            )}
                             sort={q.sort as string | null}
                             dir={q.dir as 'asc' | 'desc' | null}
                             onSortChange={handleSortChange}

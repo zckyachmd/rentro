@@ -28,6 +28,11 @@ services:
       FPM_MAX_SPARE_SERVERS: ${FPM_MAX_SPARE_SERVERS:-12}
       FPM_MAX_REQUESTS: ${FPM_MAX_REQUESTS:-800}
       FPM_REQUEST_TERMINATE_TIMEOUT: ${FPM_REQUEST_TERMINATE_TIMEOUT:-60s}
+      DB_CONNECTION: pgsql
+      REDIS_CLIENT: phpredis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_PORT: 6379
     volumes:
       - app_storage:/var/www/html/storage
     depends_on:
@@ -48,7 +53,7 @@ services:
       context: .
       target: web
     ports:
-      - "80:80"         # terminate TLS upstream or add separate TLS terminator
+      - "8888:80"         # terminate TLS upstream or add separate TLS terminator
       # - "443:443"     # enable only if you add TLS config/certs
     volumes:
       # Mount storage volume so Nginx can serve public/storage (via symlink)
@@ -97,10 +102,14 @@ services:
     env_file: [.env]
     environment:
       APP_ENV: production
-      QUEUE_CONNECTION: redis
       DB_HOST: db
       DB_PORT: 5432
       REDIS_HOST: redis
+      DB_CONNECTION: pgsql
+      REDIS_CLIENT: phpredis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_PORT: 6379
     volumes:
       - app_storage:/var/www/html/storage
     depends_on:
@@ -128,6 +137,11 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       REDIS_HOST: redis
+      DB_CONNECTION: pgsql
+      REDIS_CLIENT: phpredis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_PORT: 6379
     volumes:
       - app_storage:/var/www/html/storage
     depends_on:

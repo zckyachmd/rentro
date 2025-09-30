@@ -56,7 +56,8 @@ class PageContent extends Model
             ->where('key', $key)
             ->first();
 
-        return $row?->value ?? $default;
+        // Using -> with ?? is safe; ?? does not trigger errors when $row is null
+        return $row->value ?? $default;
     }
 
     /**

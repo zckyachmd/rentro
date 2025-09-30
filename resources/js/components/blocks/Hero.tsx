@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import React from 'react';
 
 export type HeroProps = {
     title?: string | null;
@@ -16,11 +15,11 @@ export function Hero({ title, subtitle, ctaLabel, ctaHref }: HeroProps) {
 
     return (
         <section className="mx-auto flex min-h-[40svh] max-w-5xl flex-col items-center justify-center gap-4 px-4 py-10 text-center md:gap-6 md:py-16">
-            <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl">
                 {safeTitle}
             </h1>
             {safeSub ? (
-                <p className="text-muted-foreground text-balance max-w-2xl text-base md:text-lg">
+                <p className="text-muted-foreground max-w-2xl text-base text-balance md:text-lg">
                     {safeSub}
                 </p>
             ) : null}
@@ -35,4 +34,3 @@ export function Hero({ title, subtitle, ctaLabel, ctaHref }: HeroProps) {
 }
 
 export default Hero;
-

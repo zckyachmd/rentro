@@ -1,7 +1,8 @@
 import { usePage } from '@inertiajs/react';
+
+import { RichText } from '@/components/blocks/RichText';
 import { PublicLayout } from '@/layouts';
 import type { PageProps } from '@/types';
-import { RichText } from '@/components/blocks/RichText';
 
 type Props = {
     sections: {
@@ -16,7 +17,10 @@ export default function PrivacyPage() {
     const seo = props.seo ?? {};
 
     return (
-        <PublicLayout title={seo.title ?? 'Kebijakan Privasi'} description={seo.desc ?? undefined}>
+        <PublicLayout
+            title={seo.title ?? 'Kebijakan Privasi'}
+            description={seo.desc ?? undefined}
+        >
             <div className="mx-auto max-w-5xl px-4 py-10">
                 <RichText body={content.body ?? ''} />
             </div>

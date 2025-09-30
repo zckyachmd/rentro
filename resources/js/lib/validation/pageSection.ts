@@ -11,4 +11,3 @@ export const saveSectionSchema = z.object({
 });
 
 export type SaveSectionInput = z.infer<typeof saveSectionSchema>;
-

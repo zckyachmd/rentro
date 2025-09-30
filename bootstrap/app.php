@@ -2,7 +2,9 @@
 
 use Illuminate\Http\Request;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\PortalAccess;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\TrustedGateway;
 use App\Providers\RateLimitServiceProvider;
 use App\Http\Middleware\HandleInertiaRequests;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -25,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'trusted.gateway' => TrustedGateway::class,
+            'portal.access' => PortalAccess::class,
         ]);
 
         $middleware->web(append: [

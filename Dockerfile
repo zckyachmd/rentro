@@ -26,6 +26,7 @@ RUN set -eux; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       git curl unzip zip tzdata ca-certificates locales \
       libpq-dev libicu-dev libzip-dev \
+      postgresql-client redis-tools \
     ; \
     rm -rf /var/lib/apt/lists/*
 

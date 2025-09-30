@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             PromotionSeeder::class,
             PromotionCouponSeeder::class,
             TestimonySeeder::class,
+            WifiSetupSeeder::class,
         ]);
     }
 }
