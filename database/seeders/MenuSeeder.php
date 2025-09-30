@@ -135,6 +135,16 @@ class MenuSeeder extends Seeder
                     ['label' => 'menu.roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
                     ['label' => 'menu.audit_log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
                     ['label' => 'menu.promotions', 'href' => route('management.promotions.index'), 'icon' => 'BadgePercent', 'permission' => PermissionName::PROMOTION_VIEW],
+                    [
+                        'label' => 'menu.pages',
+                        'href' => route('management.pages.index'),
+                        'icon' => 'FileText',
+                        'roles' => [
+                            RoleName::SUPER_ADMIN->value,
+                            RoleName::OWNER->value,
+                            RoleName::MANAGER->value,
+                        ],
+                    ],
                 ],
             ],
 

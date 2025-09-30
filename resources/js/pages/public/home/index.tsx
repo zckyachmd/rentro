@@ -15,6 +15,7 @@ import {
     Tag,
 } from 'lucide-react';
 import React from 'react';
+import { Hero } from '@/components/blocks/Hero';
 
 import {
     Accordion,
@@ -67,7 +68,7 @@ export default function PublicHome() {
     // ----- Data (from backend) -----
     // Types moved to '@/types/public/home'
     const page =
-        usePage<PageProps<{ rooms?: Room[]; testimonies?: Testimony[] }>>();
+        usePage<PageProps<{ rooms?: Room[]; testimonies?: Testimony[]; sections?: { hero?: { title?: string | null; subtitle?: string | null; cta_label?: string | null } } }>>();
     const allRooms: Room[] = page.props.rooms ?? [];
     const isLoading = page.props.rooms === undefined;
     const testimonies: Testimony[] = page.props.testimonies ?? [];
@@ -86,15 +87,10 @@ export default function PublicHome() {
     return (
         <PublicLayout
             seo={{
+                title: (page.props as any).seo?.title ?? undefined,
                 description:
+                    (page.props as any).seo?.desc ??
                     'Rentro membantu kamu menemukan kost nyaman dari brand tepercaya. Proses jelas dari pencarian hingga check‑in, pembayaran aman & transparan.',
-                keywords: [
-                    'kost',
-                    'sewa kamar',
-                    'kos-kosan',
-                    'kost nyaman',
-                    'rentro',
-                ],
                 canonical: '/',
             }}
         >
@@ -104,39 +100,17 @@ export default function PublicHome() {
             >
                 Lewati ke konten utama
             </a>
-            {/* 1) HERO */}
-            <section
-                id="main-content"
-                className="mx-auto flex min-h-[56svh] max-w-6xl flex-col items-center justify-center gap-4 px-4 py-10 text-center md:gap-6 md:py-16"
-            >
-                <h1 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl md:mb-4 md:text-5xl">
-                    Kost Terverifikasi — Aman & Nyaman
-                </h1>
-                <p className="text-muted-foreground mx-auto max-w-2xl text-base md:text-lg">
-                    Pembayaran dikelola oleh Rentro dengan perlindungan
-                    berlapis. Proses jelas dari pencarian hingga check‑in —
-                    tanpa perantara.
-                </p>
-                <div className="flex flex-wrap justify-center gap-3">
-                    <Button asChild size="lg">
-                        <a
-                            href={route('public.catalog')}
-                            className="inline-flex items-center gap-2"
-                        >
-                            <Search className="h-4 w-4" />
-                            Lihat Kamar
-                        </a>
-                    </Button>
-                    <Button asChild variant="secondary" size="lg">
-                        <a
-                            href={route('public.promos')}
-                            className="inline-flex items-center gap-2"
-                        >
-                            <Tag className="h-4 w-4" />
-                            Cek Promo
-                        </a>
-                    </Button>
-                </div>
+            {/* 1) HERO (from CMS if available) */}
+            <section id="main-content">
+                <Hero
+                    title={page.props.sections?.hero?.title ?? 'Kost Terverifikasi — Aman & Nyaman'}
+                    subtitle={
+                        page.props.sections?.hero?.subtitle ??
+                        'Pembayaran dikelola oleh Rentro dengan perlindungan berlapis. Proses jelas dari pencarian hingga check‑in — tanpa perantara.'
+                    }
+                    ctaLabel={page.props.sections?.hero?.cta_label ?? 'Lihat Kamar'}
+                    ctaHref={route('public.catalog')}
+                />
             </section>
 
             {/* 2) KAMAR TERSEDIA */}

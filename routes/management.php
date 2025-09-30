@@ -20,6 +20,17 @@ use Illuminate\Support\Facades\Route;
 
 // Management
 Route::prefix('management')->name('management.')->group(function (): void {
+    // Pages (mini CMS)
+    Route::prefix('pages')->name('pages.')
+        ->middleware('role:' . \App\Enum\RoleName::SUPER_ADMIN->value . '|' . \App\Enum\RoleName::OWNER->value . '|' . \App\Enum\RoleName::MANAGER->value)
+        ->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Management\PageContentController::class, 'index'])
+            ->name('index');
+            Route::get('/{page}/{section}', [\App\Http\Controllers\Management\PageContentController::class, 'edit'])
+            ->name('edit');
+            Route::post('/{page}/{section}', [\App\Http\Controllers\Management\PageContentController::class, 'update'])
+            ->name('update');
+        });
     // Users
     Route::prefix('users')->name('users.')->group(function (): void {
         Route::get('/', [UserManagementController::class, 'index'])

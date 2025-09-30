@@ -30,8 +30,8 @@ Route::prefix('')->name('public.')->group(function (): void {
     Route::get('/blog', [HomeController::class, 'blogIndex'])->name('blog.index');
     Route::get('/blog/{slug}', [HomeController::class, 'blogShow'])->name('blog.show');
     Route::get('/help', [HomeController::class, 'help'])->name('help');
-    Route::get('/about', [HomeController::class, 'about'])->name('about');
-    Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
+    Route::get('/about', \App\Http\Controllers\Public\AboutController::class)->name('about');
+    Route::get('/privacy', \App\Http\Controllers\Public\PrivacyController::class)->name('privacy');
     Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
     Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 

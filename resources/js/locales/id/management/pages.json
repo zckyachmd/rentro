@@ -1,0 +1,49 @@
+{
+    "title": "Halaman",
+    "desc": "Kelola konten halaman publik dan terjemahannya.",
+    "list_title": "Section Halaman",
+    "filters": {
+        "page": "Halaman",
+        "locale": "Bahasa",
+        "select_page": "Pilih halaman",
+        "select_locale": "Pilih bahasa"
+    },
+    "table": {
+        "page": "Halaman",
+        "section": "Bagian",
+        "keys": "Kunci",
+        "actions": "Aksi",
+        "edit": "Edit",
+        "empty": "Tidak ada data."
+    },
+    "actions": {
+        "open_public": "Buka halaman publik",
+        "add_section": "Tambah section"
+    },
+    "new_section": {
+        "name": "Nama section",
+        "placeholder": "mis. features"
+    },
+    "edit": {
+        "title": "Edit Section",
+        "desc": "Perbarui konten untuk bahasa terpilih.",
+        "page": "Halaman",
+        "section": "Bagian",
+        "locale": "Bahasa",
+        "tabs": {
+            "id": "Indonesia",
+            "en": "Inggris"
+        },
+        "fields": {
+            "body_placeholder": "Markdown (minimal) didukung",
+            "key_label": "Kunci",
+            "add_key_placeholder": "Nama kunci baru (mis. subtitle_2)"
+        },
+        "actions": {
+            "save": "Simpan",
+            "add_field": "Tambah field",
+            "remove_field": "Hapus"
+        },
+        "saved": "Konten berhasil disimpan."
+    }
+}
