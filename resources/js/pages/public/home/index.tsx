@@ -12,11 +12,10 @@ import {
     Search,
     ShieldCheck,
     Star,
-    Tag,
 } from 'lucide-react';
 import React from 'react';
-import { Hero } from '@/components/blocks/Hero';
 
+import { Hero } from '@/components/blocks/Hero';
 import {
     Accordion,
     AccordionContent,
@@ -68,7 +67,20 @@ export default function PublicHome() {
     // ----- Data (from backend) -----
     // Types moved to '@/types/public/home'
     const page =
-        usePage<PageProps<{ rooms?: Room[]; testimonies?: Testimony[]; sections?: { hero?: { title?: string | null; subtitle?: string | null; cta_label?: string | null } } }>>();
+        usePage<
+            PageProps<{
+                rooms?: Room[];
+                testimonies?: Testimony[];
+                sections?: {
+                    hero?: {
+                        title?: string | null;
+                        subtitle?: string | null;
+                        cta_label?: string | null;
+                    };
+                };
+                seo?: { title?: string; desc?: string };
+            }>
+        >();
     const allRooms: Room[] = page.props.rooms ?? [];
     const isLoading = page.props.rooms === undefined;
     const testimonies: Testimony[] = page.props.testimonies ?? [];
@@ -87,9 +99,9 @@ export default function PublicHome() {
     return (
         <PublicLayout
             seo={{
-                title: (page.props as any).seo?.title ?? undefined,
+                title: page.props.seo?.title ?? undefined,
                 description:
-                    (page.props as any).seo?.desc ??
+                    page.props.seo?.desc ??
                     'Rentro membantu kamu menemukan kost nyaman dari brand tepercaya. Proses jelas dari pencarian hingga check‑in, pembayaran aman & transparan.',
                 canonical: '/',
             }}
@@ -103,12 +115,17 @@ export default function PublicHome() {
             {/* 1) HERO (from CMS if available) */}
             <section id="main-content">
                 <Hero
-                    title={page.props.sections?.hero?.title ?? 'Kost Terverifikasi — Aman & Nyaman'}
+                    title={
+                        page.props.sections?.hero?.title ??
+                        'Kost Terverifikasi — Aman & Nyaman'
+                    }
                     subtitle={
                         page.props.sections?.hero?.subtitle ??
                         'Pembayaran dikelola oleh Rentro dengan perlindungan berlapis. Proses jelas dari pencarian hingga check‑in — tanpa perantara.'
                     }
-                    ctaLabel={page.props.sections?.hero?.cta_label ?? 'Lihat Kamar'}
+                    ctaLabel={
+                        page.props.sections?.hero?.cta_label ?? 'Lihat Kamar'
+                    }
                     ctaHref={route('public.catalog')}
                 />
             </section>
