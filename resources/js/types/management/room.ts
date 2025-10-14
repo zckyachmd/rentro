@@ -50,7 +50,6 @@ export type RoomDetail = {
     deposit_monthly_rupiah?: string | null;
     area_sqm?: number | null;
     gender_policy?: string | null;
-    // billing_period removed from room
     notes?: string | null;
     building?: { id: number; name: string } | null;
     floor?: { id: number; level: number | string; building_id: number } | null;

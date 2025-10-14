@@ -152,7 +152,7 @@ class PaymentManagementController extends Controller
         $sumAll       = (int) (clone $sumBase)->sum('amount_idr');
         $sumCompleted = (int) (clone $sumBase)->where('status', PaymentStatus::COMPLETED->value)->sum('amount_idr');
 
-        return Inertia::render('management/payment/index', [
+        return Inertia::render('management/payments/index', [
             'payments' => $payload,
             'filters'  => [
                 'status' => $request->query('status'),

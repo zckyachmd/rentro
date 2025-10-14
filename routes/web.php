@@ -18,7 +18,10 @@ use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
 use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
+use App\Http\Controllers\WifiDogController;
+use App\Models\WifiSession;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -30,8 +33,8 @@ Route::prefix('')->name('public.')->group(function (): void {
     Route::get('/blog', [HomeController::class, 'blogIndex'])->name('blog.index');
     Route::get('/blog/{slug}', [HomeController::class, 'blogShow'])->name('blog.show');
     Route::get('/help', [HomeController::class, 'help'])->name('help');
-    Route::get('/about', [HomeController::class, 'about'])->name('about');
-    Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
+    Route::get('/about', \App\Http\Controllers\Public\AboutController::class)->name('about');
+    Route::get('/privacy', \App\Http\Controllers\Public\PrivacyController::class)->name('privacy');
     Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
     Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 
@@ -208,4 +211,34 @@ Route::prefix('webhooks/midtrans')
         Route::post('/recurring', [MidtransWebhookController::class, 'handleRecurring'])->name('recurring');
     });
 
+// WifiDog
+Route::prefix('wifi')->name('wifi.')->group(function () {
+    Route::middleware('trusted.gateway')->group(function () {
+        Route::get('/ping', [WifiDogController::class, 'ping']);
+        Route::match(['get', 'post'], '/auth', [WifiDogController::class, 'auth'])
+            ->withoutMiddleware([VerifyCsrfToken::class]);
+    });
+
+    Route::get('/login', [WifiDogController::class, 'login'])->name('login');
+    Route::post('/login', [WifiDogController::class, 'login'])->name('login.submit');
+
+    Route::get('/portal', [WifiDogController::class, 'portal'])
+        ->middleware('portal.access')
+        ->name('portal');
+    Route::post('/logout', [WifiDogController::class, 'logout'])->name('logout');
+});
+
+Route::get('/.well-known/captive-portal/capport-venue.json', function (Request $r) {
+    $active = WifiSession::where('ip', $r->ip())
+        ->where('status', 'auth')
+        ->exists();
+
+    return response()->json([
+        'captive'            => !$active,
+        'user-portal-url'    => route('wifi.portal'),
+        'can-extend-session' => true,
+    ]);
+})->name('capport.venue');
+
+// Auth
 require __DIR__ . '/auth.php';

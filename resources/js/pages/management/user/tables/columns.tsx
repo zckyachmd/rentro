@@ -38,8 +38,6 @@ const COL = {
     actions: 'shrink-0 w-10 md:w-[48px]',
 } as const;
 
-// types moved to pages/types
-
 export const createColumns = (
     opts?: ColumnFactoryOptions,
 ): ColumnDef<UserItem>[] => [

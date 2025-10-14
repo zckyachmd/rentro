@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Schema;
 return new class() extends Migration {
     public function up(): void
     {
-        DB::statement('CREATE EXTENSION IF NOT EXISTS citext;');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE EXTENSION IF NOT EXISTS citext;');
+        }
 
         // USERS
         Schema::create('users', function (Blueprint $table): void {
@@ -34,8 +36,10 @@ return new class() extends Migration {
             $table->index('phone');
         });
 
-        DB::statement('ALTER TABLE users ALTER COLUMN username TYPE CITEXT;');
-        DB::statement('ALTER TABLE users ALTER COLUMN email TYPE CITEXT;');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE users ALTER COLUMN username TYPE CITEXT;');
+            DB::statement('ALTER TABLE users ALTER COLUMN email TYPE CITEXT;');
+        }
 
         // PASSWORD RESETS
         Schema::create('password_reset_tokens', function (Blueprint $table): void {
@@ -43,7 +47,9 @@ return new class() extends Migration {
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
-        DB::statement('ALTER TABLE password_reset_tokens ALTER COLUMN email TYPE CITEXT;');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE password_reset_tokens ALTER COLUMN email TYPE CITEXT;');
+        }
 
         // SESSIONS
         Schema::create('sessions', function (Blueprint $table): void {

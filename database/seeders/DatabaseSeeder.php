@@ -13,13 +13,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             MenuSeeder::class,
             PublicMenuSeeder::class,
-            UserSeeder::class,
-            AmenitySeeder::class,
-            RoomTypeSeeder::class,
-            RoomSeeder::class,
-            PromotionSeeder::class,
-            PromotionCouponSeeder::class,
-            TestimonySeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }

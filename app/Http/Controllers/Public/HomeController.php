@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\Testimony;
 use App\Models\User;
+use App\Services\ContentStore;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -114,9 +115,19 @@ class HomeController extends Controller
             })
             ->values();
 
+        $locale = app()->getLocale();
+        $hero   = ContentStore::getSection('home', 'hero', $locale);
+
         return Inertia::render('public/home/index', [
             'rooms'       => $rooms,
             'testimonies' => $testimonies,
+            'sections'    => [
+                'hero' => $hero,
+            ],
+            'seo' => [
+                'title' => $hero['title'] ?? 'Home',
+                'desc'  => $hero['subtitle'] ?? null,
+            ],
         ]);
     }
 

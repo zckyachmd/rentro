@@ -48,6 +48,7 @@
         "payments": "Pembayaran",
         "roles": "Peran",
         "users": "Pengguna",
-        "promotions": "Promo"
+        "promotions": "Promo",
+        "pages": "Halaman"
     }
 }

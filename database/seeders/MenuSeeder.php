@@ -135,6 +135,16 @@ class MenuSeeder extends Seeder
                     ['label' => 'menu.roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
                     ['label' => 'menu.audit_log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
                     ['label' => 'menu.promotions', 'href' => route('management.promotions.index'), 'icon' => 'BadgePercent', 'permission' => PermissionName::PROMOTION_VIEW],
+                    [
+                        'label' => 'menu.pages',
+                        'href' => route('management.pages.index'),
+                        'icon' => 'FileText',
+                        'roles' => [
+                            RoleName::SUPER_ADMIN->value,
+                            RoleName::OWNER->value,
+                            RoleName::MANAGER->value,
+                        ],
+                    ],
                 ],
             ],
 
@@ -169,7 +179,7 @@ class MenuSeeder extends Seeder
 
         DB::transaction(function () use ($structure): void {
             foreach ($structure as $gIdx => $group) {
-                $menuGroup = MenuGroup::updateOrCreate(
+                $menuGroup = MenuGroup::firstOrCreate(
                     ['key' => $group['id']],
                     [
                         'label' => $group['label'],
@@ -221,12 +231,17 @@ class MenuSeeder extends Seeder
             $match['label'] = $item['label'];
         }
 
-        $menu = Menu::updateOrCreate(
+        $perm = $item['permission'] ?? null;
+        if (is_object($perm) && property_exists($perm, 'value')) {
+            $perm = $perm->value;
+        }
+
+        $menu = Menu::firstOrCreate(
             $match,
             [
                 'href' => $href,
                 'icon' => $item['icon'] ?? 'Circle',
-                'permission_name' => $item['permission'] ?? null,
+                'permission_name' => is_string($perm) ? $perm : null,
                 'allowed_roles'   => $item['roles'] ?? null,
                 'excluded_roles'  => $item['exclude_roles'] ?? null,
                 'sort_order' => $order,

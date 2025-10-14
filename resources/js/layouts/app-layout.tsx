@@ -1,6 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
 import React, {
     PropsWithChildren,
     ReactNode,
@@ -11,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 import Breadcrumbs, { Crumb } from '@/components/breadcrumbs';
 import FlashToaster from '@/components/flash-toaster';
+import LazyIcon from '@/components/lazy-icon';
 import { LocaleProvider } from '@/components/locale-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
@@ -24,10 +24,12 @@ import type { MenuGroup } from '@/types/navigation';
 
 const LS_SIDEBAR = 'rentro:sidebar:collapsed';
 
-function getIconByName(name?: string) {
+function makeLazyIcon(name?: string) {
     if (!name) return undefined;
-    const icons = Icons as unknown as Record<string, LucideIcon>;
-    return icons[name];
+    const C: React.ComponentType<React.SVGProps<SVGSVGElement>> = (props) => (
+        <LazyIcon name={name} {...props} />
+    );
+    return C as unknown as LucideIcon;
 }
 
 type ServerMenuChild = { label: string; href?: string; icon?: string };
@@ -101,11 +103,11 @@ export default function AppLayout({
             items: (g.items ?? []).map((m) => ({
                 label: m.label,
                 href: m.href,
-                icon: getIconByName(m.icon),
+                icon: m.icon, // pass through name; Menu renders LazyIcon
                 children: (m.children ?? undefined)?.map((c) => ({
                     label: c.label,
                     href: c.href,
-                    icon: getIconByName(c.icon),
+                    icon: c.icon,
                 })),
             })),
         }));
@@ -191,18 +193,14 @@ export default function AppLayout({
                                                     >
                                                         {titleIcon && (
                                                             <div className="h-6 w-6 place-self-center">
-                                                                {typeof titleIcon !==
-                                                                'string'
-                                                                    ? titleIcon
-                                                                    : (() => {
-                                                                          const DynIcon =
-                                                                              getIconByName(
-                                                                                  titleIcon,
-                                                                              );
-                                                                          return DynIcon ? (
-                                                                              <DynIcon className="h-6 w-6" />
-                                                                          ) : null;
-                                                                      })()}
+                                                                {typeof titleIcon !== 'string' ? (
+                                                                    titleIcon
+                                                                ) : (
+                                                                    <LazyIcon
+                                                                        name={titleIcon}
+                                                                        className="h-6 w-6"
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
                                                         <div className="min-w-0 space-y-1">

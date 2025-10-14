@@ -27,9 +27,6 @@
     <!-- Basic SEO Defaults (can be overridden per-page) -->
     <meta name="application-name" content="{{ config('app.name', 'Laravel') }}">
     <meta property="og:site_name" content="{{ config('app.name', 'Laravel') }}">
-    @if (env('VITE_TWITTER_HANDLE'))
-        <meta name="twitter:site" content="{{ env('VITE_TWITTER_HANDLE') }}">
-    @endif
 
     <!-- Scripts -->
     <script>

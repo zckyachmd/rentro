@@ -2,8 +2,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build && vite build --ssr",
-    "build:ssr": "tsc && vite build && vite build --ssr && vite build && vite build --ssr --ssr",
+    "build": "vite build",
+    "build:ssr": "vite build --ssr resources/js/ssr.tsx --outDir build-ssr",
     "dev": "vite",
     "format": "prettier --write resources/",
     "format:check": "prettier --check resources/",
@@ -84,7 +84,8 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
-    "zod": "^4.1.11"
+    "zod": "^4.1.11",
+    "ziggy-js": "^1.8.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.9.5",

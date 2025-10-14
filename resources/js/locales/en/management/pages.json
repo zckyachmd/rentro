@@ -1,0 +1,49 @@
+{
+    "title": "Pages",
+    "desc": "Manage public pages content and translations.",
+    "list_title": "Page Sections",
+    "filters": {
+        "page": "Page",
+        "locale": "Locale",
+        "select_page": "Select page",
+        "select_locale": "Select locale"
+    },
+    "table": {
+        "page": "Page",
+        "section": "Section",
+        "keys": "Keys",
+        "actions": "Actions",
+        "edit": "Edit",
+        "empty": "No items."
+    },
+    "actions": {
+        "open_public": "Open public page",
+        "add_section": "Add section"
+    },
+    "new_section": {
+        "name": "Section name",
+        "placeholder": "e.g. features"
+    },
+    "edit": {
+        "title": "Edit Section",
+        "desc": "Update content for the selected locale.",
+        "page": "Page",
+        "section": "Section",
+        "locale": "Locale",
+        "tabs": {
+            "id": "Indonesian",
+            "en": "English"
+        },
+        "fields": {
+            "body_placeholder": "Markdown supported (minimal)",
+            "key_label": "Key",
+            "add_key_placeholder": "New key name (e.g. subtitle_2)"
+        },
+        "actions": {
+            "save": "Save",
+            "add_field": "Add field",
+            "remove_field": "Remove"
+        },
+        "saved": "Content saved successfully."
+    }
+}

@@ -22,10 +22,8 @@ return new class extends Migration
             $table->string('number');
             $table->string('name')->nullable();
             $table->decimal('size_m2', 6, 2)->nullable();
-            // Overrides as JSON per period: if null/empty, fallback to RoomType
             $table->json('price_overrides')->nullable();
             $table->json('deposit_overrides')->nullable();
-            // billing_period removed; contracts hold the billing period
             $table->unsignedTinyInteger('max_occupancy')->default(1);
             $table->string('status', 20)->default(RoomStatus::VACANT->value)->index();
             $table->string('gender_policy', 10)->default(GenderPolicy::ANY->value)->index();

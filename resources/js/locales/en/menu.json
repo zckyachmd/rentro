@@ -48,6 +48,7 @@
         "payments": "Payments",
         "roles": "Roles",
         "users": "Users",
-        "promotions": "Promotions"
+        "promotions": "Promotions",
+        "pages": "Pages"
     }
 }

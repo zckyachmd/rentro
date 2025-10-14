@@ -89,8 +89,6 @@ export default function AuditLogIndex() {
         onQueryChange({ page: 1, q: value, search: value });
     }, 350);
 
-    // SafePayload, NextShape moved to pages/types
-
     const safeOnQueryChange = React.useCallback(
         (payload: SafePayload) => {
             if (processing) return;

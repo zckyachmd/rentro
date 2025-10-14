@@ -1,6 +1,4 @@
 import { Link } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 
@@ -19,17 +17,8 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type {
-    PublicFooterSection,
-    PublicLink,
-    PublicMenuItem,
-} from '@/types/navigation';
-
-function getIconByName(name?: string) {
-    if (!name) return undefined;
-    const icons = Icons as unknown as Record<string, LucideIcon>;
-    return icons[name];
-}
+import type { PublicFooterSection, PublicLink, PublicMenuItem } from '@/types/navigation';
+import LazyIcon from '@/components/lazy-icon';
 
 const Anchor: React.FC<{
     item: PublicLink;
@@ -80,12 +69,9 @@ const renderDesktopDropdownItems = (items: PublicMenuItem[]) => {
                 <DropdownMenuItem key={key} asChild>
                     <Anchor item={it} className="w-full">
                         <span className="inline-flex items-center gap-2">
-                            {(() => {
-                                const Icon = getIconByName(it.icon);
-                                return Icon ? (
-                                    <Icon className="h-4 w-4" />
-                                ) : null;
-                            })()}
+                            {it.icon ? (
+                                <LazyIcon name={it.icon} className="h-4 w-4" />
+                            ) : null}
                             <span>{it.label}</span>
                         </span>
                     </Anchor>
@@ -96,10 +82,9 @@ const renderDesktopDropdownItems = (items: PublicMenuItem[]) => {
             <DropdownMenuSub key={key}>
                 <DropdownMenuSubTrigger>
                     <span className="inline-flex items-center gap-2">
-                        {(() => {
-                            const Icon = getIconByName(it.icon);
-                            return Icon ? <Icon className="h-4 w-4" /> : null;
-                        })()}
+                        {it.icon ? (
+                            <LazyIcon name={it.icon} className="h-4 w-4" />
+                        ) : null}
                         <span>{it.label}</span>
                     </span>
                 </DropdownMenuSubTrigger>
@@ -125,12 +110,9 @@ export function PublicDesktopMenu({ items }: { items: PublicMenuItem[] }) {
                             item={it}
                             className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-2 rounded px-2 text-sm font-medium transition-colors"
                         >
-                            {(() => {
-                                const Icon = getIconByName(it.icon);
-                                return Icon ? (
-                                    <Icon className="h-4 w-4" />
-                                ) : null;
-                            })()}
+                            {it.icon ? (
+                                <LazyIcon name={it.icon} className="h-4 w-4" />
+                            ) : null}
                             <span>{it.label}</span>
                         </Anchor>
                     );
@@ -138,12 +120,9 @@ export function PublicDesktopMenu({ items }: { items: PublicMenuItem[] }) {
                 return (
                     <DropdownMenu key={key}>
                         <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-2 rounded px-2 text-sm font-medium transition-colors">
-                            {(() => {
-                                const Icon = getIconByName(it.icon);
-                                return Icon ? (
-                                    <Icon className="h-4 w-4" />
-                                ) : null;
-                            })()}
+                            {it.icon ? (
+                                <LazyIcon name={it.icon} className="h-4 w-4" />
+                            ) : null}
                             <span>{it.label}</span>
                             <ChevronDown className="ml-0.5 h-4 w-4 opacity-60" />
                         </DropdownMenuTrigger>
@@ -184,12 +163,9 @@ export function PublicMobileMenu({
                                 onClick={onNavigate}
                             >
                                 <span className="inline-flex items-center gap-2">
-                                    {(() => {
-                                        const Icon = getIconByName(it.icon);
-                                        return Icon ? (
-                                            <Icon className="h-4 w-4" />
-                                        ) : null;
-                                    })()}
+                                    {it.icon ? (
+                                        <LazyIcon name={it.icon} className="h-4 w-4" />
+                                    ) : null}
                                     <span>{it.label}</span>
                                 </span>
                             </Anchor>
@@ -199,12 +175,9 @@ export function PublicMobileMenu({
                         <AccordionItem key={key} value={key}>
                             <AccordionTrigger className="px-3 py-2 text-sm font-medium">
                                 <span className="inline-flex items-center gap-2">
-                                    {(() => {
-                                        const Icon = getIconByName(it.icon);
-                                        return Icon ? (
-                                            <Icon className="h-4 w-4" />
-                                        ) : null;
-                                    })()}
+                                    {it.icon ? (
+                                        <LazyIcon name={it.icon} className="h-4 w-4" />
+                                    ) : null}
                                     <span>{it.label}</span>
                                 </span>
                             </AccordionTrigger>
