@@ -79,7 +79,7 @@ class HandleInertiaRequests extends Middleware
             },
             'publicMenus'       => fn () => $this->menus->publicForLocale((string) app()->getLocale(), 'header'),
             'publicFooterMenus' => fn () => $this->menus->publicForLocale((string) app()->getLocale(), 'footer'),
-            'ziggy'             => fn () => $this->ziggy->forRequest($request),
+            'ziggy'             => $this->ziggy->forRequest($request),
             'alert'             => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),

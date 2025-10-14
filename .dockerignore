@@ -12,9 +12,12 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+*.tsbuildinfo
+.pnpm-store/
 
 # PHP/Composer
 vendor/
+composer.phar
 
 # Laravel runtime/cache
 storage/debugbar/
@@ -27,6 +30,11 @@ bootstrap/cache/
 # Build artifacts
 public/build/
 public/hot
+coverage/
+dist/
+build/
+tmp/
+*.map
 
 # Env files (mounted via compose)
 .env
@@ -38,3 +46,7 @@ Dockerfile
 
 # Docs
 *.md
+
+# Tests and CI-only
+tests/
+.github/

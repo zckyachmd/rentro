@@ -28,14 +28,14 @@ class RoomFactory extends Factory
                 return $floor ? $floor->building_id : null;
             },
             'room_type_id'   => RoomType::factory(),
-            'number'         => $this->faker->numerify('###'),
-            'name'           => $this->faker->boolean(70) ? $this->faker->words(2, true) : null,
-            'size_m2'        => $this->faker->boolean(30) ? null : $this->faker->randomFloat(2, 8, 20),
+            'number'         => fake()->numerify('###'),
+            'name'           => fake()->boolean(70) ? fake()->words(2, true) : null,
+            'size_m2'        => fake()->boolean(30) ? null : fake()->randomFloat(2, 8, 20),
             'price_overrides'    => function (array $attrs) {
                 $type = RoomType::find($attrs['room_type_id']);
                 $prices = is_array($type?->prices) ? $type->prices : [];
-                if (!empty($prices) && $this->faker->boolean(30)) {
-                    $delta = $this->faker->numberBetween(50_000, 200_000);
+                if (!empty($prices) && fake()->boolean(30)) {
+                    $delta = fake()->numberBetween(50_000, 200_000);
                     $base  = (int) ($prices['monthly'] ?? 0);
                     return ['monthly' => max(0, $base + $delta)];
                 }
@@ -44,8 +44,8 @@ class RoomFactory extends Factory
             'deposit_overrides'  => function (array $attrs) {
                 $type = RoomType::find($attrs['room_type_id']);
                 $deps = is_array($type?->deposits) ? $type->deposits : [];
-                if (!empty($deps) && $this->faker->boolean(20)) {
-                    $delta = $this->faker->numberBetween(-100_000, 100_000);
+                if (!empty($deps) && fake()->boolean(20)) {
+                    $delta = fake()->numberBetween(-100_000, 100_000);
                     $base  = (int) ($deps['monthly'] ?? 0);
                     $val   = max(0, $base + $delta);
                     if ($val !== $base) return ['monthly' => $val];
@@ -58,7 +58,7 @@ class RoomFactory extends Factory
             },
             'status'         => Arr::random([RoomStatus::VACANT->value, RoomStatus::MAINTENANCE->value, RoomStatus::INACTIVE->value]),
             'gender_policy'  => Arr::random([GenderPolicy::ANY->value, GenderPolicy::MALE->value, GenderPolicy::FEMALE->value]),
-            'notes'          => $this->faker->boolean(30) ? $this->faker->sentence(6) : null,
+            'notes'          => fake()->boolean(30) ? fake()->sentence(6) : null,
         ];
     }
 }

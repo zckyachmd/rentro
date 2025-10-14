@@ -12,14 +12,14 @@ class BuildingFactory extends Factory
 
     public function definition(): array
     {
-        $name = 'Gedung ' . Str::upper($this->faker->bothify('??-###'));
+        $name = 'Gedung ' . Str::upper(fake()->bothify('??-###'));
 
         $code = $this->makeUniqueBuildingCode();
 
         return [
             'name'      => $name,
             'code'      => $code,
-            'address'   => $this->faker->address(),
+            'address'   => fake()->address(),
             'is_active' => true,
         ];
     }

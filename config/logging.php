@@ -118,6 +118,13 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'ssr' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/ssr.log'),
+            'level' => env('LOG_SSR_LEVEL', 'warning'),
+            'replace_placeholders' => true,
+        ],
+
         'null' => [
             'driver'  => 'monolog',
             'handler' => NullHandler::class,

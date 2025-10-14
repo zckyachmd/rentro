@@ -27,13 +27,13 @@ class UserAddressFactory extends Factory
     {
         return [
             'user_id'      => null, // Should be set explicitly when creating
-            'label'        => $this->faker->randomElement(AddressLabel::values()),
-            'address_line' => $this->faker->streetAddress(),
-            'village'      => $this->faker->citySuffix(),
-            'district'     => $this->faker->city(),
-            'city'         => $this->faker->city(),
-            'province'     => $this->faker->state(),
-            'postal_code'  => $this->faker->postcode(),
+            'label'        => fake()->randomElement(AddressLabel::values()),
+            'address_line' => fake()->streetAddress(),
+            'village'      => fake()->citySuffix(),
+            'district'     => fake()->city(),
+            'city'         => fake()->city(),
+            'province'     => fake()->state(),
+            'postal_code'  => fake()->postcode(),
         ];
     }
 }

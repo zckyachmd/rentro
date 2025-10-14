@@ -26,20 +26,20 @@ class UserDocumentFactory extends Factory
      */
     public function definition(): array
     {
-        $type = $this->faker->randomElement(DocumentType::cases())->value;
+        $type = fake()->randomElement(DocumentType::cases())->value;
 
         $number = match ($type) {
-            DocumentType::KTP->value      => $this->faker->numerify(str_repeat('#', 16)),
-            DocumentType::NPWP->value     => $this->faker->numerify('##.###.###.#-###.###'),
+            DocumentType::KTP->value      => fake()->numerify(str_repeat('#', 16)),
+            DocumentType::NPWP->value     => fake()->numerify('##.###.###.#-###.###'),
             DocumentType::SIM->value,
-            DocumentType::PASSPORT->value => $this->faker->bothify('??######'),
+            DocumentType::PASSPORT->value => fake()->bothify('??######'),
             // Ensure non-null for OTHER to satisfy NOT NULL constraint
             DocumentType::OTHER->value    => $this->faker->bothify('DOC-########'),
         };
 
-        $issuedAt  = $this->faker->date();
+        $issuedAt  = fake()->date();
         $expiresAt = in_array($type, [DocumentType::SIM->value, DocumentType::PASSPORT->value, DocumentType::OTHER->value])
-            ? $this->faker->dateTimeBetween('+1 year', '+10 years')->format('Y-m-d')
+            ? fake()->dateTimeBetween('+1 year', '+10 years')->format('Y-m-d')
             : null;
 
         return [
@@ -49,7 +49,7 @@ class UserDocumentFactory extends Factory
             'attachments' => [],
             'issued_at'   => $issuedAt,
             'expires_at'  => $expiresAt,
-            'status'      => $this->faker->randomElement(DocumentStatus::values()),
+            'status'      => fake()->randomElement(DocumentStatus::values()),
             'verified_at' => null,
             'notes'       => null,
         ];

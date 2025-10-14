@@ -63,7 +63,7 @@ class RoomTypeFactory extends Factory
                 'weekly'  => (int) $depositWeeklyIdr,
                 'monthly' => (int) $depositMonthlyIdr,
             ],
-            'description'     => $this->faker->sentence(8),
+            'description'     => fake()->sentence(8),
             'is_active'       => true,
         ];
     }

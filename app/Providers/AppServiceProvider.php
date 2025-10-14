@@ -30,7 +30,10 @@ use App\Services\ZiggyService;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Ssr\Gateway as InertiaSsrGateway;
+use App\Inertia\Ssr\LoggingHttpGateway;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -48,6 +51,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ZiggyServiceInterface::class, ZiggyService::class);
         $this->app->bind(PromotionServiceInterface::class, PromotionService::class);
         $this->app->bind(WifiServiceInterface::class, WifiService::class);
+
+        // Bind Inertia SSR gateway with logging + timeouts
+        $this->app->bind(InertiaSsrGateway::class, LoggingHttpGateway::class);
     }
 
     /**
@@ -55,7 +61,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Vite::prefetch(concurrency: 3);
+        Vite::prefetch(concurrency: env('VITE_CONCURRENCY', 4));
+
+        if (filter_var(env('FORCE_HTTPS', false), FILTER_VALIDATE_BOOL)) {
+            URL::forceScheme('https');
+        }
 
         // Domain events registration
         Event::listen(InvoicePaid::class, UpdateContractStatusOnInvoicePaid::class);

@@ -153,13 +153,16 @@ export function useAppearance({
         };
     }, []);
 
-    const resolvedTheme =
-        themeState === 'system'
-            ? window.matchMedia &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light'
-            : themeState;
+    const resolvedTheme: Theme = (() => {
+        if (themeState !== 'system') return themeState;
+        if (typeof window === 'undefined') return 'light';
+        try {
+            const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+            return mq && typeof mq.matches === 'boolean' && mq.matches ? 'dark' : 'light';
+        } catch {
+            return 'light';
+        }
+    })();
 
     return {
         theme: themeState,

@@ -19,7 +19,7 @@ class InvoiceFactory extends Factory
         $epoch = (int) config('snowflake.epoch_ms', 1704067200000);
         if ($epoch > 0) { $sf->setStartTimeStamp($epoch); }
 
-        $start = $this->faker->dateTimeBetween('-1 month', '+1 week');
+        $start = fake()->dateTimeBetween('-1 month', '+1 week');
         $end   = (clone $start)->modify('+1 month');
         $due   = (clone $start)->modify('+3 days');
 
@@ -30,7 +30,7 @@ class InvoiceFactory extends Factory
             'period_start' => $start->format('Y-m-d'),
             'period_end'   => $end->format('Y-m-d'),
             'due_date'     => $due->format('Y-m-d'),
-            'amount_idr' => $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]),
+            'amount_idr' => fake()->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]),
             'status'       => InvoiceStatus::PENDING->value,
             'paid_at'      => null,
         ];

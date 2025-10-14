@@ -11,13 +11,12 @@ export default defineConfig(({ mode }) => {
         (env.VITE_DISABLE_HMR || '').toLowerCase() === 'true' ||
         env.VITE_DISABLE_HMR === '1';
 
-    const ssrEnabled = String(env.INERTIA_SSR_ENABLED ?? '').toLowerCase() === 'true';
-
     return {
         plugins: [
             laravel({
                 input: ['resources/css/app.css', 'resources/js/app.tsx'],
-                ssr: ssrEnabled ? 'resources/js/ssr.tsx' : undefined,
+                ssr: 'resources/js/ssr.tsx',
+                ssrOutputDirectory: 'bootstrap/ssr',
                 refresh: true,
                 hotFile: 'public/hot',
                 buildDirectory: 'build',
@@ -93,41 +92,7 @@ export default defineConfig(({ mode }) => {
             // Ensure a single React instance is used
             dedupe: ['react', 'react-dom'],
         },
-        // Fine-tune SSR bundling: keep heavy UI libs external to slim SSR bundle
-        ssr: {
-            external: [
-                'react',
-                'react-dom',
-                '@inertiajs/core',
-                '@inertiajs/react',
-                'lucide-react',
-                '@radix-ui/react-accordion',
-                '@radix-ui/react-alert-dialog',
-                '@radix-ui/react-aspect-ratio',
-                '@radix-ui/react-avatar',
-                '@radix-ui/react-checkbox',
-                '@radix-ui/react-collapsible',
-                '@radix-ui/react-dialog',
-                '@radix-ui/react-dropdown-menu',
-                '@radix-ui/react-label',
-                '@radix-ui/react-navigation-menu',
-                '@radix-ui/react-popover',
-                '@radix-ui/react-radio-group',
-                '@radix-ui/react-scroll-area',
-                '@radix-ui/react-select',
-                '@radix-ui/react-separator',
-                '@radix-ui/react-slot',
-                '@radix-ui/react-switch',
-                '@radix-ui/react-tabs',
-                '@radix-ui/react-toast',
-                '@radix-ui/react-toggle',
-                '@radix-ui/react-toggle-group',
-                '@radix-ui/react-tooltip',
-                'i18next',
-                'react-i18next',
-                'date-fns',
-            ],
-        },
+        // Keep defaults for SSR bundling; the SSR container installs node_modules.
         server: {
             host: '0.0.0.0',
             port: 5173,

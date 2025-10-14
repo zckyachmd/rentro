@@ -15,9 +15,22 @@ export default (page: Page<PageProps>) =>
                 import.meta.glob('./pages/**/*.tsx'),
             ),
         setup: ({ App, props }) => {
-            const ziggy: any = route as any;
+            const ziggyAny: any = route as any;
             (globalThis as unknown as { route: typeof route }).route =
-                ziggy?.route ?? ziggy;
+                ziggyAny?.route ?? ziggyAny;
+
+            try {
+                // Prefer the Ziggy config sent via Inertia props
+                const p: any = props ?? {};
+                const pageProps: any = p?.initialPage?.props ?? p?.page?.props ?? {};
+                const ziggyConfig = pageProps?.ziggy;
+                if (ziggyConfig) {
+                    (globalThis as any).Ziggy = ziggyConfig;
+                }
+            } catch {
+                // ignore
+            }
+
             return <App {...props} />;
         },
     });

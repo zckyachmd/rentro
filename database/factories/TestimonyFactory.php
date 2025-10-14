@@ -16,19 +16,19 @@ class TestimonyFactory extends Factory
 
     public function definition(): array
     {
-        $status = $this->faker->randomElement(TestimonyStatus::cases());
+        $status = fake()->randomElement(TestimonyStatus::cases());
         $publishedAt = $status === TestimonyStatus::PUBLISHED
-            ? $this->faker->dateTimeBetween('-2 years', 'now')
+            ? fake()->dateTimeBetween('-2 years', 'now')
             : null;
-        $isAnon = $this->faker->boolean(20); // ~20% anonymous
+        $isAnon = fake()->boolean(20); // ~20% anonymous
         $occupations = ['Mahasiswa', 'Karyawan', 'Freelancer', 'Perawat', 'Desainer', 'Programmer', 'Akuntan', 'Content Creator'];
-        $occupation = $this->faker->boolean(70) ? $this->faker->randomElement($occupations) : null;
+        $occupation = fake()->boolean(70) ? fake()->randomElement($occupations) : null;
 
         return [
             'id'               => null, // filled by HasSnowflakeId
             'user_id'          => User::factory(),
-            'content_original' => $this->faker->sentences(rand(2, 5), true),
-            'content_curated'  => $this->faker->boolean(50) ? $this->faker->sentences(rand(2, 4), true) : null,
+            'content_original' => fake()->sentences(rand(2, 5), true),
+            'content_curated'  => fake()->boolean(50) ? fake()->sentences(rand(2, 4), true) : null,
             'status'           => $status,
             'is_anonymous'     => $isAnon,
             'occupation'       => $occupation,

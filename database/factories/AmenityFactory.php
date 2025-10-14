@@ -58,9 +58,9 @@ class AmenityFactory extends Factory
                 'icon' => 'PanelTop',
             ],
         ];
-        $pick = $this->faker->unique()->randomElement($pool);
+        $pick = fake()->unique()->randomElement($pool);
 
-        $cat = $this->faker->randomElement(['room', 'communal']);
+        $cat = fake()->randomElement(['room', 'communal']);
 
         $names = [
             'id' => $pick['id'],

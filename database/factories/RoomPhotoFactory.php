@@ -20,7 +20,7 @@ class RoomPhotoFactory extends Factory
         return [
             'id'       => $sf->id(),
             'room_id'  => Room::factory(),
-            'path'     => 'rooms/' . $this->faker->uuid() . '.jpg',
+            'path'     => 'rooms/' . fake()->uuid() . '.jpg',
             'is_cover' => false,
             'ordering' => 0,
         ];

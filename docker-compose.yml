@@ -1,31 +1,48 @@
 services:
   web:
     container_name: rentro_web
-    image: nginx:stable
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    image: rentro/web:prod
     ports:
       - "${APP_HTTP_PORT:-8888}:80"
     volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - app_shared:/var/www/html:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /var/tmp
+      - /var/log/nginx
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETUID
+      - SETGID
     healthcheck:
-      test: ["CMD-SHELL", "nginx -t >/dev/null 2>&1 || exit 1; pid=$$(cat /var/run/nginx.pid 2>/dev/null) || exit 1; kill -0 $$pid 2>/dev/null || exit 1"]
+      test: ["CMD-SHELL", "/usr/local/bin/nginx-healthcheck.sh"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+    init: true
     depends_on:
       app:
         condition: service_healthy
     restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.20.0.10
 
   app:
     container_name: rentro_app
     build:
       context: .
-      target: app-runner
+      dockerfile: docker/app/Dockerfile
+    image: rentro/app:prod
+    working_dir: /var/www/html
     volumes:
       - app_shared:/var/www/html
     environment:
@@ -42,38 +59,43 @@ services:
       REDIS_CLIENT: phpredis
       INERTIA_SSR_ENABLED: ${INERTIA_SSR_ENABLED:-true}
       INERTIA_SSR_URL: ${INERTIA_SSR_URL:-http://ssr:13714}
+      INERTIA_SSR_ONLY_PUBLIC: ${INERTIA_SSR_ONLY_PUBLIC:-true}
+      CACHE_STORE: redis
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      BROADCAST_DRIVER: redis
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "php", "-r", "exit((int)!@fsockopen('127.0.0.1', (int)(getenv('FPM_PORT')?:9000)));"]
-      interval: 30s
+      test: ["CMD-SHELL", "/usr/local/bin/app-healthcheck.sh"]
+      interval: 20s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 40s
+    init: true
     depends_on:
       redis:
         condition: service_healthy
       db:
         condition: service_healthy
-      ssr:
-        condition: service_healthy
     restart: unless-stopped
     stop_grace_period: 15s
-    networks:
-      default:
-        ipv4_address: 172.20.0.11
 
   redis:
     container_name: rentro_redis
     image: redis:7
     command: ["redis-server","--save","","--appendonly","no"]
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
     restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.20.0.12
+    security_opt:
+      - no-new-privileges:true
+    init: true
 
   db:
     container_name: rentro_db
@@ -91,37 +113,48 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.20.0.13
+    security_opt:
+      - no-new-privileges:true
+    init: true
 
   ssr:
     container_name: rentro_ssr
     build:
       context: .
-      target: ssr-runner
+      dockerfile: docker/ssr/Dockerfile
+    image: rentro/ssr:prod
+    working_dir: /srv
+    user: node
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - app_shared:/srv/app:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').request({host:'127.0.0.1',port:process.env.PORT||13714,path:'/'},r=>process.exit(0)).on('error',()=>process.exit(1)).end()"]
+      test: ["CMD-SHELL", "/usr/local/bin/ssr-healthcheck.sh"]
       interval: 20s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      app:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 13714
       NODE_OPTIONS: --max-old-space-size=512
-      SSR_ENTRY: bootstrap/ssr/ssr.js
     restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.20.0.14
+    init: true
 
   horizon:
     container_name: rentro_horizon
-    build:
-      context: .
-      target: app-runner
+    image: rentro/app:prod
     command: ["php", "artisan", "horizon"]
+    working_dir: /var/www/html
     volumes:
       - app_shared:/var/www/html
     environment:
@@ -136,12 +169,18 @@ services:
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+      CACHE_STORE: redis
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      BROADCAST_DRIVER: redis
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
-      test: ["CMD-SHELL", "php artisan horizon:status | grep -iqE 'running|active'"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "/usr/local/bin/app-healthcheck.sh"]
+      interval: 20s
+      timeout: 3s
       retries: 3
-      start_period: 15s
+      start_period: 10s
     depends_on:
       app:
         condition: service_healthy
@@ -150,16 +189,13 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.20.0.15
+    init: true
 
   scheduler:
     container_name: rentro_scheduler
-    build:
-      context: .
-      target: app-runner
+    image: rentro/app:prod
     command: ["php", "artisan", "schedule:work", "--no-interaction"]
+    working_dir: /var/www/html
     volumes:
       - app_shared:/var/www/html
     environment:
@@ -174,12 +210,18 @@ services:
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+      CACHE_STORE: redis
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      BROADCAST_DRIVER: redis
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep '[s]chedule:work' > /dev/null || exit 1"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "/usr/local/bin/app-healthcheck.sh"]
+      interval: 20s
+      timeout: 3s
       retries: 3
-      start_period: 15s
+      start_period: 10s
     depends_on:
       app:
         condition: service_healthy
@@ -188,13 +230,12 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.20.0.16
+    init: true
 
 volumes:
   app_shared:
   pg_data:
+  redis_data:
 
 networks:
   default:

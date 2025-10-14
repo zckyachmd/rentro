@@ -6,7 +6,17 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import '../css/app.css';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName =
+    (import.meta as any)?.env?.VITE_APP_NAME ??
+    (typeof document !== 'undefined'
+        ? document
+              .querySelector('meta[name="application-name"]')
+              ?.getAttribute('content') ??
+          document
+              .querySelector('meta[property="og:site_name"]')
+              ?.getAttribute('content')
+        : undefined) ??
+    'Laravel';
 
 createInertiaApp({
     title: (title) =>

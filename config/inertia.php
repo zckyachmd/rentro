@@ -19,6 +19,8 @@ return [
         'enabled' => env('INERTIA_SSR_ENABLED', true),
         'url'     => env('INERTIA_SSR_URL', 'http://ssr:13714'),
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
+        // Health checks are handled by gateway with timeouts set via env
+        'ensure_bundle_exists' => true,
 
     ],
 

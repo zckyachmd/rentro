@@ -20,10 +20,10 @@ class ContractFactory extends Factory
         $epoch = (int) config('snowflake.epoch_ms', 1704067200000);
         if ($epoch > 0) { $sf->setStartTimeStamp($epoch); }
 
-        $start = $this->faker->dateTimeBetween('-2 months', '+1 day');
-        $rent  = $this->faker->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]);
+        $start = fake()->dateTimeBetween('-2 months', '+1 day');
+        $rent  = fake()->randomElement([900_000, 1_200_000, 1_500_000, 2_000_000]);
 
-        $seq4 = str_pad((string) $this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT);
+        $seq4 = str_pad((string) fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT);
         $number = $seq4;
 
         return [
@@ -36,13 +36,13 @@ class ContractFactory extends Factory
             'rent_idr'       => $rent,
             'deposit_idr'    => (int) round($rent * 0.5),
             'billing_period' => BillingPeriod::MONTHLY->value,
-            'billing_day'    => (int) $this->faker->numberBetween(1, 28),
+            'billing_day'    => (int) fake()->numberBetween(1, 28),
             'status'         => ContractStatus::ACTIVE->value,
             'auto_renew'     => true,
             'renewal_cancelled_at' => null,
             'deposit_refund_idr' => null,
             'deposit_refunded_at'  => null,
-            'notes'          => $this->faker->boolean(20) ? $this->faker->sentence(6) : null,
+            'notes'          => fake()->boolean(20) ? fake()->sentence(6) : null,
         ];
     }
 }

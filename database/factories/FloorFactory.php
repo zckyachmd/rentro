@@ -14,7 +14,7 @@ class FloorFactory extends Factory
     {
         return [
             'building_id' => Building::factory(),
-            'level'       => $this->faker->numberBetween(1, 5),
+            'level'       => fake()->numberBetween(1, 5),
             'name'        => null, // optional, bisa diisi "Lantai X" saat seeding
         ];
     }
