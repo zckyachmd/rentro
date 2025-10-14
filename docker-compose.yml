@@ -18,7 +18,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - rentro_net
+      default:
+        ipv4_address: 172.20.0.10
 
   app:
     container_name: rentro_app
@@ -28,6 +29,7 @@ services:
     volumes:
       - app_shared:/var/www/html
     environment:
+      DB_CONNECTION: pgsql
       APP_KEY: ${APP_KEY}
       APP_URL: ${APP_URL:-http://localhost:${APP_HTTP_PORT:-8888}}
       DB_HOST: db
@@ -56,7 +58,8 @@ services:
     restart: unless-stopped
     stop_grace_period: 15s
     networks:
-      - rentro_net
+      default:
+        ipv4_address: 172.20.0.11
 
   redis:
     container_name: rentro_redis
@@ -69,13 +72,14 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - rentro_net
+      default:
+        ipv4_address: 172.20.0.12
 
   db:
     container_name: rentro_db
     image: postgres:16
     ports:
-      - "${DB_EXPOSE_PORT:-5432}:5432"
+      - "${DB_PORT:-5432}:5432"
     environment:
       POSTGRES_DB: ${DB_DATABASE:-app}
       POSTGRES_USER: ${DB_USERNAME:-app}
@@ -88,7 +92,8 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - rentro_net
+      default:
+        ipv4_address: 172.20.0.13
 
   ssr:
     container_name: rentro_ssr
@@ -104,21 +109,23 @@ services:
     environment:
       NODE_ENV: production
       PORT: 13714
-      NODE_OPTIONS: --max-old-space-size=256
+      NODE_OPTIONS: --max-old-space-size=512
+      SSR_ENTRY: bootstrap/ssr/ssr.js
     restart: unless-stopped
     networks:
-      - rentro_net
+      default:
+        ipv4_address: 172.20.0.14
 
   horizon:
     container_name: rentro_horizon
     build:
       context: .
       target: app-runner
-    entrypoint: ["/bin/sh","-lc"]
-    command: "su -s /bin/sh -c 'php artisan horizon' www-data"
+    command: ["php", "artisan", "horizon"]
     volumes:
       - app_shared:/var/www/html
     environment:
+      DB_CONNECTION: pgsql
       APP_KEY: ${APP_KEY}
       DB_HOST: db
       DB_PORT: 5432
@@ -129,6 +136,12 @@ services:
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+    healthcheck:
+      test: ["CMD-SHELL", "php artisan horizon:status | grep -iqE 'running|active'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
     depends_on:
       app:
         condition: service_healthy
@@ -138,18 +151,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - rentro_net
+      default:
+        ipv4_address: 172.20.0.15
 
   scheduler:
     container_name: rentro_scheduler
     build:
       context: .
       target: app-runner
-    entrypoint: ["/bin/sh","-lc"]
-    command: "su -s /bin/sh -c 'while true; do php artisan schedule:run --no-interaction; sleep 60; done' www-data"
+    command: ["php", "artisan", "schedule:work", "--no-interaction"]
     volumes:
       - app_shared:/var/www/html
     environment:
+      DB_CONNECTION: pgsql
       APP_KEY: ${APP_KEY}
       DB_HOST: db
       DB_PORT: 5432
@@ -160,6 +174,12 @@ services:
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
       QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[s]chedule:work' > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
     depends_on:
       app:
         condition: service_healthy
@@ -169,12 +189,16 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - rentro_net
+      default:
+        ipv4_address: 172.20.0.16
 
 volumes:
   app_shared:
   pg_data:
 
 networks:
-  rentro_net:
-    driver: bridge
+  default:
+    name: rentro-net
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

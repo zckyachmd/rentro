@@ -19,12 +19,14 @@ class PermissionSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         foreach (PermissionName::cases() as $p) {
-            Permission::firstOrCreate(['name' => $p->value, 'guard_name' => 'web']);
+            if (!Permission::where('name', $p->value)->exists()) {
+                Permission::create(['name' => $p->value, 'guard_name' => 'web']);
+            }
         }
 
         $role = Role::firstOrCreate(['name' => RoleName::SUPER_ADMIN->value, 'guard_name' => 'web']);
-        $all = Permission::all()->pluck('name')->all();
-        $role->syncPermissions($all);
+        $all = Permission::query()->pluck('name')->all();
+        $role->givePermissionTo($all);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

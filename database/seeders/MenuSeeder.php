@@ -21,17 +21,17 @@ class MenuSeeder extends Seeder
                 'id' => 'overview',
                 'label' => 'menu.overview',
                 'items' => [
-                    ['label' => 'menu.dashboard', 'href' => route('dashboard'), 'icon' => 'Home'],
+                    ['label' => 'menu.dashboard', 'href' => route('dashboard', [], false), 'icon' => 'Home'],
                     ['label' => 'menu.booking', 'href' => '#', 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
                     [
                         'label' => 'menu.contracts',
-                        'href' => route('tenant.contracts.index'),
+                        'href' => route('tenant.contracts.index', [], false),
                         'icon' => 'ScrollText',
                         'roles' => [RoleName::TENANT->value],
                     ],
                     [
                         'label' => 'menu.invoices',
-                        'href' => route('tenant.invoices.index'),
+                        'href' => route('tenant.invoices.index', [], false),
                         'icon' => 'ReceiptText',
                         'roles' => [RoleName::TENANT->value],
                     ],
@@ -43,7 +43,7 @@ class MenuSeeder extends Seeder
                 'label' => 'menu.rent',
                 'items' => [
                     ['label' => 'menu.booking', 'href' => '#', 'icon' => 'CalendarCheck'],
-                    ['label' => 'menu.contracts', 'href' => route('management.contracts.index'), 'icon' => 'ScrollText', 'permission' => PermissionName::CONTRACT_VIEW],
+                    ['label' => 'menu.contracts', 'href' => route('management.contracts.index', [], false), 'icon' => 'ScrollText', 'permission' => PermissionName::CONTRACT_VIEW],
                 ],
             ],
 
@@ -51,8 +51,8 @@ class MenuSeeder extends Seeder
                 'id' => 'keuangan',
                 'label' => 'menu.finance',
                 'items' => [
-                    ['label' => 'menu.invoices', 'href' => route('management.invoices.index'), 'icon' => 'ReceiptText', 'permission' => PermissionName::INVOICE_VIEW],
-                    ['label' => 'menu.payments', 'href' => route('management.payments.index'), 'icon' => 'CreditCard', 'permission' => PermissionName::PAYMENT_VIEW],
+                    ['label' => 'menu.invoices', 'href' => route('management.invoices.index', [], false), 'icon' => 'ReceiptText', 'permission' => PermissionName::INVOICE_VIEW],
+                    ['label' => 'menu.payments', 'href' => route('management.payments.index', [], false), 'icon' => 'CreditCard', 'permission' => PermissionName::PAYMENT_VIEW],
                     ['label' => 'menu.reconciliation', 'href' => '#', 'icon' => 'FileBarChart2'],
                     ['label' => 'menu.reports', 'href' => '#', 'icon' => 'BarChart3'],
                 ],
@@ -66,9 +66,9 @@ class MenuSeeder extends Seeder
                         'label' => 'menu.rooms',
                         'icon'  => 'Bed',
                         'children' => [
-                            ['label' => 'menu.rooms.list', 'href' => route('management.rooms.index'), 'icon' => 'BedDouble', 'permission' => PermissionName::ROOM_MANAGE_VIEW],
-                            ['label' => 'menu.room_types', 'href' => "" . route('management.room-types.index') . "", 'icon' => 'Tags', 'permission' => PermissionName::ROOM_TYPE_VIEW],
-                            ['label' => 'menu.amenities', 'href' => "" . route('management.amenities.index') . "", 'icon' => 'AirVent', 'permission' => PermissionName::AMENITY_VIEW],
+                            ['label' => 'menu.rooms.list', 'href' => route('management.rooms.index', [], false), 'icon' => 'BedDouble', 'permission' => PermissionName::ROOM_MANAGE_VIEW],
+                            ['label' => 'menu.room_types', 'href' => route('management.room-types.index', [], false), 'icon' => 'Tags', 'permission' => PermissionName::ROOM_TYPE_VIEW],
+                            ['label' => 'menu.amenities', 'href' => route('management.amenities.index', [], false), 'icon' => 'AirVent', 'permission' => PermissionName::AMENITY_VIEW],
                         ],
                     ],
                     [
@@ -77,13 +77,13 @@ class MenuSeeder extends Seeder
                         'children' => [
                             [
                                 'label' => 'menu.buildings',
-                                'href' => "" . route('management.buildings.index') . "",
+                                'href' => route('management.buildings.index', [], false),
                                 'icon' => 'Building2',
                                 'permission' => PermissionName::BUILDING_VIEW,
                             ],
                             [
                                 'label' => 'menu.floors',
-                                'href' => "" . route('management.floors.index') . "",
+                                'href' => route('management.floors.index', [], false),
                                 'icon' => 'Layers',
                                 'permission' => PermissionName::FLOOR_VIEW,
                             ],
@@ -120,7 +120,7 @@ class MenuSeeder extends Seeder
                     ['label' => 'menu.packages', 'href' => '#', 'icon' => 'Package'],
                     [
                         'label' => 'menu.testimonies',
-                        'href' => route('management.testimonies.index'),
+                        'href' => route('management.testimonies.index', [], false),
                         'icon' => 'MessageSquareText',
                         'permission' => PermissionName::TESTIMONY_VIEW,
                     ],
@@ -131,13 +131,13 @@ class MenuSeeder extends Seeder
                 'id' => 'admin',
                 'label' => 'menu.admin',
                 'items' => [
-                    ['label' => 'menu.users', 'href' => route('management.users.index'), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
-                    ['label' => 'menu.roles', 'href' => route('management.roles.index'), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
-                    ['label' => 'menu.audit_log', 'href' => route('management.audit-logs.index'), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
-                    ['label' => 'menu.promotions', 'href' => route('management.promotions.index'), 'icon' => 'BadgePercent', 'permission' => PermissionName::PROMOTION_VIEW],
+                    ['label' => 'menu.users', 'href' => route('management.users.index', [], false), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
+                    ['label' => 'menu.roles', 'href' => route('management.roles.index', [], false), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
+                    ['label' => 'menu.audit_log', 'href' => route('management.audit-logs.index', [], false), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
+                    ['label' => 'menu.promotions', 'href' => route('management.promotions.index', [], false), 'icon' => 'BadgePercent', 'permission' => PermissionName::PROMOTION_VIEW],
                     [
                         'label' => 'menu.pages',
-                        'href' => route('management.pages.index'),
+                        'href' => route('management.pages.index', [], false),
                         'icon' => 'FileText',
                         'roles' => [
                             RoleName::SUPER_ADMIN->value,
@@ -152,12 +152,12 @@ class MenuSeeder extends Seeder
                 'id' => 'akun',
                 'label' => 'menu.account',
                 'items' => [
-                    ['label' => 'menu.profile', 'href' => route('profile.index'), 'icon' => 'User'],
+                    ['label' => 'menu.profile', 'href' => route('profile.index', [], false), 'icon' => 'User'],
                     [
                         'label' => 'menu.settings',
                         'icon' => 'Settings',
                         'children' => [
-                            ['label' => 'menu.security', 'href' => route('security.index'), 'icon' => 'KeyRound'],
+                            ['label' => 'menu.security', 'href' => route('security.index', [], false), 'icon' => 'KeyRound'],
                             ['label' => 'menu.notifications', 'href' => '#', 'icon' => 'Bell'],
                             ['label' => 'menu.preferences', 'href' => '#', 'icon' => 'Settings2'],
                         ],
@@ -210,6 +210,18 @@ class MenuSeeder extends Seeder
     {
         $hrefProvided = array_key_exists('href', $item);
         $href         = $hrefProvided ? ($item['href'] ?? null) : null;
+        // Normalize href to relative path (avoid host-dependent absolute URLs)
+        if (is_string($href) && $href !== '' && $href !== '#') {
+            // If somehow an absolute URL slipped in, parse and keep path+query only
+            $parsed = @parse_url($href);
+            if (is_array($parsed)) {
+                $path = $parsed['path'] ?? '';
+                $query = isset($parsed['query']) && $parsed['query'] !== '' ? ('?' . $parsed['query']) : '';
+                if ($path !== '' || $query !== '') {
+                    $href = $path . $query;
+                }
+            }
+        }
 
         $isPlaceholder = $hrefProvided && $href === '#';
         if (app()->environment('production') && $isPlaceholder) {
@@ -225,10 +237,21 @@ class MenuSeeder extends Seeder
             'menu_group_id' => $groupId,
             'parent_id'     => $parentId,
         ];
+        $existing = null;
         if (!empty($href) && $href !== '#') {
+            // Tolerant "insert-only" match for href: match exact relative
+            // or any existing absolute URL ending with the same path+query.
+            $existing = Menu::query()
+                ->where($match)
+                ->where(function ($q) use ($href) {
+                    $q->where('href', $href)
+                      ->orWhere('href', 'like', '%' . $href);
+                })
+                ->first();
             $match['href'] = $href;
         } else {
             $match['label'] = $item['label'];
+            $existing = Menu::where($match)->first();
         }
 
         $perm = $item['permission'] ?? null;
@@ -236,7 +259,7 @@ class MenuSeeder extends Seeder
             $perm = $perm->value;
         }
 
-        $menu = Menu::firstOrCreate(
+        $menu = $existing ?: Menu::firstOrCreate(
             $match,
             [
                 'href' => $href,

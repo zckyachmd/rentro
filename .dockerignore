@@ -35,3 +35,6 @@ public/hot
 # Docker
 Dockerfile
 .dockerignore
+
+# Docs
+*.md

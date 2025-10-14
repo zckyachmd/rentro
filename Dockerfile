@@ -15,8 +15,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && rm composer-setup.php
 COPY composer.json composer.lock ./
 RUN --mount=type=cache,target=/root/.composer/cache \
-    composer install --no-dev --prefer-dist --no-progress --no-interaction --no-scripts \
-    && composer update fakerphp/faker --no-dev --prefer-dist --no-progress --no-interaction || true
+    composer install --no-dev --prefer-dist --no-progress --no-interaction --no-scripts
 
 ############################
 # Node deps via pnpm (cached)
@@ -34,23 +33,26 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 # FE build (client CSR)
 ############################
 FROM fe_deps AS fe_build
-COPY . .
+COPY package.json pnpm-lock.yaml vite.config.* ./
+COPY resources ./resources
+COPY public ./public
+COPY tsconfig.json ./
 RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm run build
-# (SSR dibangun di stage ssr-runner)
 
 ############################
 # PHP base (Debian slim)
 ############################
 FROM php:8.3-fpm-bookworm AS php_base
 WORKDIR /var/www/html
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
     git unzip libicu-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev libpq-dev ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-# PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql intl gd zip opcache pcntl
-RUN pecl install redis && docker-php-ext-enable redis
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install -j"$(nproc)" pdo_pgsql intl gd zip opcache pcntl \
+ && pecl install redis \
+ && docker-php-ext-enable redis \
+ && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ############################
 # APP RUNNER (PHP-FPM)
@@ -61,6 +63,7 @@ COPY . .
 COPY --from=fe_build /app/public/build ./public/build
 COPY docker/app/entrypoint.sh /usr/local/bin/app-entrypoint.sh
 RUN chmod +x /usr/local/bin/app-entrypoint.sh
+RUN rm -rf node_modules tests .git
 # Keep a baked copy of the application to seed empty volumes at runtime
 RUN mkdir -p /var/www/appimage \
   && cp -a /var/www/html/. /var/www/appimage/
@@ -99,4 +102,6 @@ RUN --mount=type=cache,target=/root/.pnpm-store pnpm install --no-frozen-lockfil
   && pnpm prune --prod
 ENV NODE_ENV=production
 # ENV NODE_OPTIONS="--max-old-space-size=256"
-CMD ["node", "bootstrap/ssr/ssr.js"]
+COPY docker/ssr/entrypoint.sh /usr/local/bin/ssr-entrypoint.sh
+RUN chmod +x /usr/local/bin/ssr-entrypoint.sh
+CMD ["/usr/local/bin/ssr-entrypoint.sh"]

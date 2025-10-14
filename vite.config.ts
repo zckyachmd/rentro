@@ -126,7 +126,6 @@ export default defineConfig(({ mode }) => {
                 'i18next',
                 'react-i18next',
                 'date-fns',
-                'ziggy-js',
             ],
         },
         server: {

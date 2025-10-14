@@ -3,7 +3,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { renderToString } from 'react-dom/server';
 
-import { route as ziggyRoute } from 'ziggy-js';
+import route from 'ziggy-js';
 
 export default (page: Page<PageProps>) =>
     createInertiaApp({
@@ -15,8 +15,9 @@ export default (page: Page<PageProps>) =>
                 import.meta.glob('./pages/**/*.tsx'),
             ),
         setup: ({ App, props }) => {
-            (globalThis as unknown as { route: typeof ziggyRoute }).route =
-                ziggyRoute;
+            const ziggy: any = route as any;
+            (globalThis as unknown as { route: typeof route }).route =
+                ziggy?.route ?? ziggy;
             return <App {...props} />;
         },
     });
