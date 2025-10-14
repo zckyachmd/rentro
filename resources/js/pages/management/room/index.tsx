@@ -66,7 +66,6 @@ export default function RoomIndex(props: RoomsPageProps) {
         q: String(query.q ?? ''),
     });
 
-    // filter setters are inline where used; removed unused updateFilter helper
     const filteredFloors = React.useMemo(
         () =>
             floors.filter(

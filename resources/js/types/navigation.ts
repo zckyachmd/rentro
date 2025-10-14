@@ -18,14 +18,14 @@ export type MenuChild = {
     label: string;
     href?: string;
     name?: string;
-    icon?: IconComponent;
+    icon?: string | IconComponent;
 };
 
 export type MenuItem = {
     label: string;
     href?: string;
     name?: string;
-    icon?: IconComponent;
+    icon?: string | IconComponent;
     children?: MenuChild[];
 };
 

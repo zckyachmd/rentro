@@ -125,9 +125,13 @@ export default function PageSectionEdit() {
                                             return route('public.about');
                                         if (page === 'privacy')
                                             return route('public.privacy');
-                                        return page === 'home' ? '/' : `/${page}`;
+                                        return page === 'home'
+                                            ? '/'
+                                            : `/${page}`;
                                     } catch {
-                                        return page === 'home' ? '/' : `/${page}`;
+                                        return page === 'home'
+                                            ? '/'
+                                            : `/${page}`;
                                     }
                                 })()}
                                 target="_blank"
@@ -241,7 +245,10 @@ export default function PageSectionEdit() {
                                                             {k === 'body' ? (
                                                                 <Textarea
                                                                     {...field}
-                                                                    value={field.value ?? ''}
+                                                                    value={
+                                                                        field.value ??
+                                                                        ''
+                                                                    }
                                                                     rows={10}
                                                                     placeholder={tPages(
                                                                         'edit.fields.body_placeholder',
@@ -250,7 +257,10 @@ export default function PageSectionEdit() {
                                                             ) : (
                                                                 <Input
                                                                     {...field}
-                                                                    value={field.value ?? ''}
+                                                                    value={
+                                                                        field.value ??
+                                                                        ''
+                                                                    }
                                                                 />
                                                             )}
                                                         </FormControl>

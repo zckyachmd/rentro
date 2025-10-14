@@ -38,8 +38,6 @@ class MidtransController extends Controller
         }
     }
 
-    // computeOutstanding removed; inline in payVa for simplicity
-
     public function payVa(PayVaRequest $request, Invoice $invoice): JsonResponse
     {
         $user = $request->user();

@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react';
-import * as Icons from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +14,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import type { IconComponent, MenuChild, MenuGroup } from '@/types/navigation';
+import LazyIcon from '@/components/lazy-icon';
 
 function isRouteActive(name?: string): boolean {
     try {
@@ -40,17 +40,31 @@ function getIsActive(href?: string, name?: string): boolean {
     }
 }
 
-function IconOrFallback({
-    icon,
-    className,
-}: {
-    icon?: IconComponent;
-    className?: string;
-}) {
-    const Comp =
-        (icon as
-            | React.ComponentType<React.SVGProps<SVGSVGElement>>
-            | undefined) ?? Icons.Circle;
+function FallbackGlyph({ className }: { className?: string }) {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            width="1em"
+            height="1em"
+            stroke="currentColor"
+            strokeWidth={2}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+            aria-hidden
+        >
+            <circle cx="12" cy="12" r="4" />
+        </svg>
+    );
+}
+
+function IconOrFallback({ icon, className }: { icon?: string | IconComponent; className?: string }) {
+    if (typeof icon === 'string') {
+        return <LazyIcon name={icon} className={className} />;
+    }
+    const Comp = icon as React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined;
+    if (!Comp) return <FallbackGlyph className={className} />;
     return <Comp className={className} />;
 }
 

@@ -29,7 +29,7 @@ export default function PublicNavbar({
     showAuth = true,
     loginHref,
 }: PublicNavbarProps) {
-    const page = usePage();
+    const page = usePage<InertiaSharedProps & { auth?: { user?: unknown } }>();
     const serverItems = (page.props as unknown as InertiaSharedProps)
         ?.publicMenus as PublicMenuItem[] | undefined;
     const menuItems = React.useMemo(

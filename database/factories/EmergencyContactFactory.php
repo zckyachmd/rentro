@@ -27,11 +27,11 @@ class EmergencyContactFactory extends Factory
     {
         return [
             'user_id'      => null, // Should be set explicitly when creating
-            'name'         => fake()->name(),
-            'relationship' => fake()->randomElement(EmergencyRelationship::values()),
-            'phone'        => fake()->phoneNumber(),
-            'email'        => fake()->optional()->safeEmail(),
-            'address_line' => fake()->optional()->streetAddress(),
+            'name'         => $this->faker->name(),
+            'relationship' => $this->faker->randomElement(EmergencyRelationship::values()),
+            'phone'        => $this->faker->phoneNumber(),
+            'email'        => $this->faker->optional()->safeEmail(),
+            'address_line' => $this->faker->optional()->streetAddress(),
         ];
     }
 }

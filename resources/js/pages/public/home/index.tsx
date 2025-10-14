@@ -64,23 +64,20 @@ export default function PublicHome() {
         });
     };
 
-    // ----- Data (from backend) -----
-    // Types moved to '@/types/public/home'
-    const page =
-        usePage<
-            PageProps<{
-                rooms?: Room[];
-                testimonies?: Testimony[];
-                sections?: {
-                    hero?: {
-                        title?: string | null;
-                        subtitle?: string | null;
-                        cta_label?: string | null;
-                    };
+    const page = usePage<
+        PageProps<{
+            rooms?: Room[];
+            testimonies?: Testimony[];
+            sections?: {
+                hero?: {
+                    title?: string | null;
+                    subtitle?: string | null;
+                    cta_label?: string | null;
                 };
-                seo?: { title?: string; desc?: string };
-            }>
-        >();
+            };
+            seo?: { title?: string; desc?: string };
+        }>
+    >();
     const allRooms: Room[] = page.props.rooms ?? [];
     const isLoading = page.props.rooms === undefined;
     const testimonies: Testimony[] = page.props.testimonies ?? [];
@@ -173,8 +170,6 @@ export default function PublicHome() {
                         </Button>
                     </div>
                 </div>
-
-                {/* (Promo strip removed; promos now only as badges on cards) */}
 
                 <div className="w-full">
                     <ScrollArea

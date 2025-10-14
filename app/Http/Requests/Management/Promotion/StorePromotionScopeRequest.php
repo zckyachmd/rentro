@@ -69,11 +69,9 @@ class StorePromotionScopeRequest extends FormRequest
                         $v->errors()->add('building_id', __('management/promotions.scope_duplicate'));
                     }
                     // narrower floor/room already exist under this building
-                    $floorIds = Floor::query()->where('building_id', $bid)->pluck('id')->all();
-                    // Existing narrower floors will be reconciled (removed) in controller
+                    Floor::query()->where('building_id', $bid)->pluck('id')->all();
                     // so we do not error here.
-                    $roomIds = Room::query()->where('building_id', $bid)->pluck('id')->all();
-                    // Existing narrower rooms will be reconciled (removed) in controller.
+                    Room::query()->where('building_id', $bid)->pluck('id')->all();
                 }
             } elseif ($type === 'floor') {
                 $fid = (int) $this->input('floor_id');
@@ -85,12 +83,10 @@ class StorePromotionScopeRequest extends FormRequest
                     }
                     $floor = Floor::query()->find($fid);
                     if ($floor) {
-                        // broader building exists
                         $hasBuilding = $promotion->scopes()->where('scope_type', 'building')->where('building_id', (int) $floor->building_id)->exists();
                         if ($hasBuilding) {
                             $v->errors()->add('floor_id', __('management/promotions.scope_conflict_narrower'));
                         }
-                        // Existing narrower rooms will be reconciled (removed) in controller.
                     }
                 }
             } elseif ($type === 'room_type') {

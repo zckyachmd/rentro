@@ -154,7 +154,6 @@ export default function PagesIndex() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                {/* locale filter removed as requested */}
                             </div>
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>

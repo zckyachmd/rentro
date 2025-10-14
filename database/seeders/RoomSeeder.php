@@ -62,7 +62,7 @@ class RoomSeeder extends Seeder
                 ->has(RoomPhoto::factory()->cover(), 'photos')
                 ->has(RoomPhoto::factory()->count(2), 'photos')
                 ->hasAttached(
-                    $amenityPool->shuffle()->take(fake()->numberBetween(3, 7)),
+                    $amenityPool->shuffle()->take(random_int(3, 7)),
                     [],
                     'amenities'
                 )

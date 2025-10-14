@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\PageContent;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class ContentStore
 {
@@ -52,8 +53,7 @@ class ContentStore
             $flat[$key] = is_null($v) ? null : (string) $v;
         }
 
-        // Sync strategy: upsert provided keys and delete removed ones for this locale
-        \DB::transaction(function () use ($page, $section, $locale, $flat): void {
+        DB::transaction(function () use ($page, $section, $locale, $flat): void {
             $existing = PageContent::query()
                 ->where('page', $page)
                 ->where('section', $section)
@@ -125,7 +125,7 @@ class ContentStore
     {
         $keys = array_values(array_unique(array_map('strval', $keys)));
 
-        \DB::transaction(function () use ($page, $section, $keys, $locales): void {
+        DB::transaction(function () use ($page, $section, $keys, $locales): void {
             foreach ($locales as $locale) {
                 $existing = PageContent::query()
                     ->where('page', $page)

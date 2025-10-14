@@ -45,7 +45,7 @@ class WifiSetupSeeder extends Seeder
         // =========
         $policies = [
             [
-                'name'          => 'Tenant Default',
+                'name'          => 'Tenant',
                 'max_devices'   => 2,
                 'quota_bytes'   => 30 * 1024 * 1024 * 1024,
                 'quota' => [
@@ -65,7 +65,7 @@ class WifiSetupSeeder extends Seeder
                 ],
             ],
             [
-                'name'          => 'Management Default',
+                'name'          => 'Management',
                 'max_devices'   => 5,
                 'quota_bytes'   => null,
                 'quota' => [

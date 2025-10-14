@@ -1,214 +1,180 @@
-# Development docker-compose for Rentro (Laravel 12 + Inertia/React)
-# Compose Spec: version key omitted (modern Compose). See docs.
-# Services:
-# - app       : PHP-FPM (target: app-dev)
-# - web       : Nginx (serve Laravel via PHP-FPM; proxy_pass to app:9000)
-# - db        : PostgreSQL 15
-# - redis     : Redis 7 (queue/cache/session)
-# - horizon   : Laravel Horizon (queue worker)
-# - scheduler : Laravel Scheduler (schedule:work)
-# - vite      : Vite dev server (optional, enable via profile)
-# - mailhog   : Mail testing tool (SMTP capture + Web UI)
-
-name: rentro-dev
-
 services:
-  app:
-    build:
-      context: .
-      target: app-dev
-      args:
-        TZ: ${TZ:-Asia/Jakarta}
-        PHP_TAG: ${PHP_TAG:-8.4-fpm-bookworm}
-    env_file: [.env]
-    environment:
-      APP_ENV: ${APP_ENV:-local}
-      FPM_MAX_CHILDREN: ${FPM_MAX_CHILDREN:-20}
-      FPM_START_SERVERS: ${FPM_START_SERVERS:-4}
-      FPM_MIN_SPARE_SERVERS: ${FPM_MIN_SPARE_SERVERS:-4}
-      FPM_MAX_SPARE_SERVERS: ${FPM_MAX_SPARE_SERVERS:-8}
-      FPM_MAX_REQUESTS: ${FPM_MAX_REQUESTS:-300}
-      FPM_REQUEST_TERMINATE_TIMEOUT: ${FPM_REQUEST_TERMINATE_TIMEOUT:-60s}
-      DB_HOST: db
-      DB_PORT: 5432
-      REDIS_HOST: redis
-      MAIL_MAILER: smtp
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      MAIL_ENCRYPTION: ""
-    volumes:
-      - .:/var/www/html:cached
-      - vendor:/var/www/html/vendor
-      - node_modules:/var/www/html/node_modules
-    command: >-
-      sh -lc "if [ ! -f vendor/autoload.php ]; then \
-        echo '[app] composer install...'; \
-        composer install --no-interaction --no-progress; \
-      else \
-        echo '[app] vendor exists'; \
-      fi && /usr/local/sbin/php-fpm -F"
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-    init: true
-    healthcheck:
-      test: ["CMD", "php", "-v"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-
   web:
-    image: nginx:alpine
+    container_name: rentro_web
+    image: nginx:stable
     ports:
-      - "8080:80"
+      - "${APP_HTTP_PORT:-8888}:80"
     volumes:
-      - ./public:/var/www/html/public:cached
-      - ./storage:/var/www/html/storage:cached
-      - ./docker/nginx/dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - app_shared:/var/www/html:ro
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t >/dev/null 2>&1 || exit 1; pid=$$(cat /var/run/nginx.pid 2>/dev/null) || exit 1; kill -0 $$pid 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     depends_on:
       app:
         condition: service_healthy
     restart: unless-stopped
-    init: true
+    networks:
+      - rentro_net
 
-  db:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: ${DB_DATABASE:-rentro}
-      POSTGRES_USER: ${DB_USERNAME:-rentro}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
-      TZ: ${TZ:-Asia/Jakarta}
-    ports:
-      - "5435:5432"
+  app:
+    container_name: rentro_app
+    build:
+      context: .
+      target: app-runner
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - app_shared:/var/www/html
+    environment:
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL:-http://localhost:${APP_HTTP_PORT:-8888}}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-app}
+      DB_USERNAME: ${DB_USERNAME:-app}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      INERTIA_SSR_ENABLED: ${INERTIA_SSR_ENABLED:-true}
+      INERTIA_SSR_URL: ${INERTIA_SSR_URL:-http://ssr:13714}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 3s
+      test: ["CMD", "php", "-r", "exit((int)!@fsockopen('127.0.0.1', (int)(getenv('FPM_PORT')?:9000)));"]
+      interval: 30s
+      timeout: 5s
       retries: 5
+      start_period: 20s
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      ssr:
+        condition: service_healthy
     restart: unless-stopped
+    stop_grace_period: 15s
+    networks:
+      - rentro_net
 
   redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    container_name: rentro_redis
+    image: redis:7
+    command: ["redis-server","--save","","--appendonly","no"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
     restart: unless-stopped
+    networks:
+      - rentro_net
+
+  db:
+    container_name: rentro_db
+    image: postgres:16
+    ports:
+      - "${DB_EXPOSE_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-app}
+      POSTGRES_USER: ${DB_USERNAME:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes: ["pg_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - rentro_net
+
+  ssr:
+    container_name: rentro_ssr
+    build:
+      context: .
+      target: ssr-runner
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').request({host:'127.0.0.1',port:process.env.PORT||13714,path:'/'},r=>process.exit(0)).on('error',()=>process.exit(1)).end()"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    environment:
+      NODE_ENV: production
+      PORT: 13714
+      NODE_OPTIONS: --max-old-space-size=256
+    restart: unless-stopped
+    networks:
+      - rentro_net
 
   horizon:
+    container_name: rentro_horizon
     build:
       context: .
-      target: app-dev
-      args:
-        TZ: ${TZ:-Asia/Jakarta}
-        PHP_TAG: ${PHP_TAG:-8.4-fpm-bookworm}
-    command: php artisan horizon
-    env_file: [.env]
+      target: app-runner
+    entrypoint: ["/bin/sh","-lc"]
+    command: "su -s /bin/sh -c 'php artisan horizon' www-data"
+    volumes:
+      - app_shared:/var/www/html
     environment:
-      APP_ENV: ${APP_ENV:-local}
-      QUEUE_CONNECTION: redis
+      APP_KEY: ${APP_KEY}
       DB_HOST: db
       DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-app}
+      DB_USERNAME: ${DB_USERNAME:-app}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
       REDIS_HOST: redis
-      MAIL_MAILER: smtp
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      MAIL_ENCRYPTION: ""
-    volumes:
-      - .:/var/www/html:cached
-      - vendor:/var/www/html/vendor
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
     depends_on:
       app:
         condition: service_healthy
-      db:
-        condition: service_healthy
       redis:
         condition: service_healthy
+      db:
+        condition: service_healthy
     restart: unless-stopped
-    init: true
-    profiles: ["workers"]
+    networks:
+      - rentro_net
 
   scheduler:
+    container_name: rentro_scheduler
     build:
       context: .
-      target: app-dev
-      args:
-        TZ: ${TZ:-Asia/Jakarta}
-        PHP_TAG: ${PHP_TAG:-8.4-fpm-bookworm}
-    command: php artisan schedule:work
-    env_file: [.env]
+      target: app-runner
+    entrypoint: ["/bin/sh","-lc"]
+    command: "su -s /bin/sh -c 'while true; do php artisan schedule:run --no-interaction; sleep 60; done' www-data"
+    volumes:
+      - app_shared:/var/www/html
     environment:
-      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY}
       DB_HOST: db
       DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-app}
+      DB_USERNAME: ${DB_USERNAME:-app}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
       REDIS_HOST: redis
-      MAIL_MAILER: smtp
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      MAIL_ENCRYPTION: ""
-    volumes:
-      - .:/var/www/html:cached
-      - vendor:/var/www/html/vendor
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
     depends_on:
       app:
-        condition: service_healthy
-      db:
         condition: service_healthy
       redis:
         condition: service_healthy
+      db:
+        condition: service_healthy
     restart: unless-stopped
-    init: true
-    profiles: ["workers"]
-
-  vite:
-    image: node:20-alpine
-    working_dir: /var/www/html
-    environment:
-      LARAVEL_BYPASS_ENV_CHECK: "1"
-      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-false}
-      CHOKIDAR_INTERVAL: ${CHOKIDAR_INTERVAL:-500}
-    command: >-
-      sh -lc "if [ -x node_modules/.bin/vite ]; then \
-        echo '[vite] deps present, skipping install'; \
-      else \
-        echo '[vite] installing deps with npm...'; \
-        npm install --prefer-offline --no-audit --fund=false; \
-      fi && npm run dev -- --host"
-    ports:
-      - "5173:5173"
-    volumes:
-      - .:/var/www/html:cached
-      - node_modules:/var/www/html/node_modules
-    depends_on:
-      app:
-        condition: service_started
-    profiles: ["devtools"]
-    restart: unless-stopped
-
-  mailhog:
-    image: mailhog/mailhog:latest
-    ports:
-      - "8025:8025"
-      - "1025:1025"
-    restart: unless-stopped
-    profiles: ["devtools"]
+    networks:
+      - rentro_net
 
 volumes:
-  pgdata:
-  vendor:
-  node_modules:
+  app_shared:
+  pg_data:
+
+networks:
+  rentro_net:
+    driver: bridge

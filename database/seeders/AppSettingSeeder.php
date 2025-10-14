@@ -31,7 +31,6 @@ class AppSettingSeeder extends Seeder
             ['key' => 'billing.release_day_of_month', 'value' => 1, 'type' => 'int', 'description' => 'Tanggal acuan siklus tagihan bulanan (DOM)'],
             ['key' => 'billing.due_day_of_month', 'value' => 7, 'type' => 'int', 'description' => 'Tanggal jatuh tempo default untuk tagihan bulanan'],
             ['key' => 'billing.deposit_renewal_rollover', 'value' => true, 'type' => 'bool', 'description' => 'Deposit diperhitungkan/bergulir saat perpanjangan'],
-            // Removed: harga invoice selalu mengikuti nilai kontrak
 
             // Scheduler / automation
             ['key' => 'contract.auto_renew_lead_days', 'value' => 7, 'type' => 'int', 'description' => 'Hari sebelum akhir kontrak untuk memproses auto‑renew'],
@@ -71,7 +70,7 @@ class AppSettingSeeder extends Seeder
         ];
 
         foreach ($settings as $row) {
-            AppSetting::updateOrCreate(
+            AppSetting::firstOrCreate(
                 ['key' => $row['key']],
                 [
                     'value' => $row['value'],

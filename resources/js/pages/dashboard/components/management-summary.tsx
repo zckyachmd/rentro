@@ -13,17 +13,10 @@ import {
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TooltipProps } from 'recharts';
-import {
-    Area,
-    AreaChart,
-    Bar,
-    BarChart,
-    CartesianGrid,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from 'recharts';
+// Lazy-load recharts at runtime to keep initial bundle light
+const Recharts = {
+    mod: null as null | typeof import('recharts'),
+};
 
 import { DatePickerInput } from '@/components/date-picker';
 import { Badge } from '@/components/ui/badge';
@@ -125,6 +118,20 @@ export default function ManagementSummary({
         filters?.start || null,
     );
     const [end, setEnd] = React.useState<string | null>(filters?.end || null);
+
+    // Lazy-load recharts when this component mounts
+    const [chartsReady, setChartsReady] = React.useState(false);
+    React.useEffect(() => {
+        let mounted = true;
+        import('recharts').then((m) => {
+            if (!mounted) return;
+            Recharts.mod = m;
+            setChartsReady(true);
+        });
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const onApplyFilter = () => {
         const params: Record<string, string> = {};
@@ -767,64 +774,32 @@ export default function ManagementSummary({
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart
-                                data={management.payments?.series || []}
-                                margin={{
-                                    left: 8,
-                                    right: 8,
-                                    top: 8,
-                                    bottom: 0,
-                                }}
-                            >
-                                <defs>
-                                    <linearGradient
-                                        id="rev"
-                                        x1="0"
-                                        y1="0"
-                                        x2="0"
-                                        y2="1"
-                                    >
-                                        <stop
-                                            offset="5%"
-                                            stopColor="#16a34a"
-                                            stopOpacity={0.35}
-                                        />
-                                        <stop
-                                            offset="95%"
-                                            stopColor="#16a34a"
-                                            stopOpacity={0.02}
-                                        />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    className="stroke-muted"
-                                />
-                                <XAxis
-                                    dataKey="date"
-                                    tick={{ fontSize: 12 }}
-                                    hide={false}
-                                />
-                                <YAxis
-                                    tickFormatter={(v) =>
-                                        v >= 1000000
-                                            ? `${Math.round(v / 1000000)}jt`
-                                            : `${Math.round(v / 1000)}rb`
-                                    }
-                                    tick={{ fontSize: 12 }}
-                                    width={48}
-                                />
-                                <Tooltip content={<RevenueTooltipContent />} />
-                                <Area
-                                    type="monotone"
-                                    dataKey="amount"
-                                    stroke="#16a34a"
-                                    fill="url(#rev)"
-                                    strokeWidth={2}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                        {chartsReady && Recharts.mod ? (
+                            <Recharts.mod.ResponsiveContainer width="100%" height="100%">
+                                <Recharts.mod.AreaChart
+                                    data={management.payments?.series || []}
+                                    margin={{ left: 8, right: 8, top: 8, bottom: 0 }}
+                                >
+                                    <defs>
+                                        <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#16a34a" stopOpacity={0.35} />
+                                            <stop offset="95%" stopColor="#16a34a" stopOpacity={0.02} />
+                                        </linearGradient>
+                                    </defs>
+                                    <Recharts.mod.CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                    <Recharts.mod.XAxis dataKey="date" tick={{ fontSize: 12 }} hide={false} />
+                                    <Recharts.mod.YAxis
+                                        tickFormatter={(v: number) => (v >= 1000000 ? `${Math.round(v / 1000000)}jt` : `${Math.round(v / 1000)}rb`)}
+                                        tick={{ fontSize: 12 }}
+                                        width={48}
+                                    />
+                                    <Recharts.mod.Tooltip content={<RevenueTooltipContent />} />
+                                    <Recharts.mod.Area type="monotone" dataKey="amount" stroke="#16a34a" fill="url(#rev)" strokeWidth={2} />
+                                </Recharts.mod.AreaChart>
+                            </Recharts.mod.ResponsiveContainer>
+                        ) : (
+                            <div className="bg-muted/50 h-full animate-pulse rounded-md" />
+                        )}
                     </CardContent>
                 </Card>
 
@@ -839,45 +814,23 @@ export default function ManagementSummary({
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                                data={management.invoices?.series || []}
-                                margin={{
-                                    left: 8,
-                                    right: 8,
-                                    top: 8,
-                                    bottom: 0,
-                                }}
-                            >
-                                <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    className="stroke-muted"
-                                />
-                                <XAxis
-                                    dataKey="date"
-                                    tick={{ fontSize: 12 }}
-                                    hide={false}
-                                />
-                                <YAxis
-                                    tick={{ fontSize: 12 }}
-                                    width={28}
-                                    allowDecimals={false}
-                                />
-                                <Tooltip content={<InvoicesTooltipContent />} />
-                                <Bar
-                                    dataKey="issued"
-                                    name={t('dashboard.metrics.issued')}
-                                    fill="#3b82f6"
-                                    radius={[2, 2, 0, 0]}
-                                />
-                                <Bar
-                                    dataKey="paid"
-                                    name={t('dashboard.metrics.paid')}
-                                    fill="#16a34a"
-                                    radius={[2, 2, 0, 0]}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        {chartsReady && Recharts.mod ? (
+                            <Recharts.mod.ResponsiveContainer width="100%" height="100%">
+                                <Recharts.mod.BarChart
+                                    data={management.invoices?.series || []}
+                                    margin={{ left: 8, right: 8, top: 8, bottom: 0 }}
+                                >
+                                    <Recharts.mod.CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                    <Recharts.mod.XAxis dataKey="date" tick={{ fontSize: 12 }} hide={false} />
+                                    <Recharts.mod.YAxis tick={{ fontSize: 12 }} width={28} allowDecimals={false} />
+                                    <Recharts.mod.Tooltip content={<InvoicesTooltipContent />} />
+                                    <Recharts.mod.Bar dataKey="issued" name={t('dashboard.metrics.issued')} fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                                    <Recharts.mod.Bar dataKey="paid" name={t('dashboard.metrics.paid')} fill="#16a34a" radius={[2, 2, 0, 0]} />
+                                </Recharts.mod.BarChart>
+                            </Recharts.mod.ResponsiveContainer>
+                        ) : (
+                            <div className="bg-muted/50 h-full animate-pulse rounded-md" />
+                        )}
                     </CardContent>
                 </Card>
             </div>

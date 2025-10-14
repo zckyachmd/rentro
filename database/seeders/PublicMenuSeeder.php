@@ -12,8 +12,6 @@ class PublicMenuSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-            PublicMenu::query()->delete();
-
             // Header menus
             $menus = [
                 ['placement' => 'header', 'label' => 'Beranda', 'href' => '/',        'icon' => 'Home',      'sort' => 1],
@@ -104,11 +102,35 @@ class PublicMenuSeeder extends Seeder
                         'parent_id' => $parentId,
                     ];
 
+                    $labelI18n = $hasI18n ? $this->labelI18n($payload['label']) : null;
                     if ($hasI18n) {
-                        $payload['label_i18n'] = $this->labelI18n($payload['label']);
+                        $payload['label_i18n'] = $labelI18n;
                     }
 
-                    $created = PublicMenu::create($payload);
+                    // First-or-create with tolerant matching:
+                    //  - match by (placement, parent_id) and either href (if provided) or label
+                    //  - also consider existing rows where label may already be localized (e.g., EN)
+                    $query = PublicMenu::query()
+                        ->where('placement', $payload['placement'])
+                        ->where('parent_id', $payload['parent_id']);
+
+                    if (!empty($payload['href'])) {
+                        $query->where('href', $payload['href']);
+                    } else {
+                        $query->where(function ($q) use ($payload, $labelI18n) {
+                            $q->where('label', $payload['label']);
+                            // If an EN translation exists and differs, also match on it
+                            $en = is_array($labelI18n ?? null) ? ($labelI18n['en'] ?? null) : null;
+                            if (is_string($en) && $en !== '' && $en !== $payload['label']) {
+                                $q->orWhere('label', $en);
+                            }
+                        });
+                    }
+
+                    $created = $query->first();
+                    if (!$created) {
+                        $created = PublicMenu::create($payload);
+                    }
 
                     if (!empty($children)) {
                         $insert($children, $created->id);

@@ -9,7 +9,8 @@ The all-in-one rental property platform for landlords & property managers — ea
 2. [✨ Features](#-features)
 3. [🛠️ Tech Stack](#-tech-stack)
 4. [🏗️ Architecture](#-architecture)
-5. [⚙️ How to Use (Development)](#-how-to-use-development)
+5. [🐳 Containers (MVP)](#-containers-mvp)
+6. [⚙️ Environment Variables](#-environment-variables)
 6. [📄 License](#-license)
 
 ---
@@ -47,32 +48,107 @@ Rentro employs a modular, service-oriented architecture leveraging Laravel’s M
 
 ---
 
-## ⚙️ How to Use (Development)
+## 🐳 Containers (MVP)
 
-### Installation
+Services
+- `web`: Nginx serving `public/` and proxying to PHP-FPM.
+- `app`: PHP-FPM 8.3 (Laravel app). Entrypoint enforces PostgreSQL and requires `APP_KEY`.
+- `db`: PostgreSQL 16 with healthcheck.
+- `redis`: Redis 7 with healthcheck (provisioned; not required by default app config).
+- `ssr`: Node service rendering Inertia SSR bundle for SEO‑friendly HTML.
 
-1. Duplicate the environment configuration and generate the application key:
+Quickstart
+1) Copy env and set `APP_KEY` (required):
+   ```bash
+   cp .env.example .env
+   # Generate a secure key (writes to .env)
+   docker compose run --rm app php artisan key:generate --force
+   ```
+
+2) Build and start:
+   ```bash
+   docker compose up -d --build
+   ```
+
+3) Migrate DB (run once or per deploy as needed):
+   ```bash
+   docker compose exec app php artisan migrate --force
+   ```
+
+4) Seed core data (idempotent, runs in all envs via DatabaseSeeder):
+   ```bash
+   docker compose exec app php artisan db:seed --force
+   ```
+
+Notes
+- Default DB is PostgreSQL at service `db`. The app entrypoint will refuse to start if `DB_CONNECTION` is not `pgsql`.
+- The app builds config/route/view caches on boot for performance.
+- Health ordering: `db`/`redis` → `app` (healthy) → `web`.
+- HTTP port: Nginx maps to host `8888` by default. To customize, set `APP_HTTP_PORT` at compose runtime or edit the compose mapping.
+- SSR: The `ssr` service compiles and runs `bootstrap/ssr/ssr.js`. The app points to `INERTIA_SSR_URL=http://ssr:13714` and enables SSR by default via compose env. If you need to disable SSR quickly, set `INERTIA_SSR_ENABLED=false` on the `app` service.
+
+Later (optional)
+- SSR, Horizon, and Scheduler are intentionally disabled in MVP for stability. They can be reintroduced via additional services/profiles once the core stack is verified in your environment.
+
+## ⚙️ Environment Variables
+
+Minimal, production‑oriented env. Keep it simple—add more only when enabling features.
+
+Required
+- `APP_KEY`: 32‑char key (use `php artisan key:generate`).
+- `APP_URL`: Public base URL (e.g., `http://localhost:8888`).
+
+Application
+- `APP_NAME`, `APP_ENV`, `APP_DEBUG`, `APP_VERSION`
+- Locale/timezone: `APP_LOCALE`, `APP_FALLBACK_LOCALE`, `APP_FAKER_LOCALE`, `APP_TIMEZONE`
+- Maintenance: `APP_MAINTENANCE_DRIVER` (default `file`)
+
+Database (PostgreSQL)
+- `DB_CONNECTION=pgsql`, `DB_HOST=db`, `DB_PORT=5432`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+
+Runtime Stores
+- Sessions: `SESSION_DRIVER=file`
+- Cache: `CACHE_STORE=file`
+- Queue: `QUEUE_CONNECTION=sync`
+  - Redis is provisioned by compose but not required by defaults. Switch to Redis by setting `CACHE_STORE=redis` and/or `QUEUE_CONNECTION=redis` when ready.
+
+Redis (optional)
+- `REDIS_CLIENT=phpredis`, `REDIS_HOST=redis`, `REDIS_PORT=6379`
+
+Mail (SMTP)
+- `MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`
+- `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`
+
+Frontend (Vite/SSR)
+- `VITE_APP_NAME`, `VITE_APP_URL`
+- `INERTIA_SSR_ENABLED=false` (SSR disabled in MVP)
+- `VITE_I18N_PRELOAD_ALL=false`
+
+Tips
+- FE‐only variables use the `VITE_` prefix and are not consumed by Blade/PHP.
+- Keep `.env` minimal to avoid confusion; rely on sensible defaults in config files.
+
+## 🌱 Seeding Strategy
+
+- Core seeders (always run, production‑safe):
+  - `DatabaseSeeder` runs `CoreSeeder` by default in all environments.
+  - Includes settings, permissions, menus, base reference tables, and a default admin user.
+
+- Sample (faker) seeders (manual only):
+  - Use `SampleDataSeeder` to create demo users/rooms/promotions/testimonies.
+  - Not controlled by env flags; run explicitly when needed:
     ```bash
-    cp .env.example .env
-    docker compose exec app php artisan key:generate
+    docker compose exec app php artisan seed:sample --force
     ```
 
-### Running the Application
+- Production recommendation:
+  - Run only core seeding (`php artisan db:seed --force`).
+  - Use sample seeding only in non‑production contexts or controlled environments.
 
-2. Build and launch all services:
-    ```bash
-    docker compose up -d --build
-    ```
+### Handy Seeder Commands
 
-3. (Optional) Enable frontend hot-reloading during development:
-    ```bash
-    docker compose --profile devtools up -d vite
-    ```
-
-4. Apply database migrations:
-    ```bash
-    docker compose exec app php artisan migrate
-    ```
+- `php artisan seed:core` — seeds production‑safe core data (idempotent).
+- `php artisan seed:sample` — seeds demo/sample data (asks for confirmation in production unless `--force`).
 ---
 
 ## 🤝 Contributing

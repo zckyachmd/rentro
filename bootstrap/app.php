@@ -1,8 +1,11 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Console\Commands\SeedCore;
 use App\Http\Middleware\SetLocale;
+use App\Console\Commands\SeedSample;
 use App\Http\Middleware\PortalAccess;
+use App\Console\Commands\MenuNormalizePermissions;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\TrustedGateway;
 use App\Providers\RateLimitServiceProvider;
@@ -22,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        SeedCore::class,
+        SeedSample::class,
+    ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => RoleMiddleware::class,

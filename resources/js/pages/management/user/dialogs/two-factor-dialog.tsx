@@ -3,8 +3,6 @@ import { Eye, EyeOff, RefreshCcw, ScanFace } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-// removed status alert per request
-
 import {
     AlertDialog,
     AlertDialogAction,

@@ -87,7 +87,9 @@ export function createColumns(opts: {
             accessorKey: 'page',
             header: ({ table }) => {
                 void table;
-                return <HeaderLabel ns="management/pages" keyPath="table.page" />;
+                return (
+                    <HeaderLabel ns="management/pages" keyPath="table.page" />
+                );
             },
             cell: ({ row }) => (
                 <Badge variant="secondary" className="uppercase">
@@ -139,9 +141,7 @@ export function createColumns(opts: {
         {
             id: 'actions',
             header: () => <HeaderLabel keyPath="common.actions" />,
-            cell: ({ row }) => (
-                <ActionsCell row={row} onEdit={onEdit} />
-            ),
+            cell: ({ row }) => <ActionsCell row={row} onEdit={onEdit} />,
             enableSorting: false,
         },
     ];
