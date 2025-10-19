@@ -111,7 +111,11 @@ export default function AppLayout({
         return [];
     }, [breadcrumbs]);
 
-    const activeParentId = React.useMemo(() => {
+    // Compute active parent section only after mount to avoid SSR/client mismatch
+    const [activeParentId, setActiveParentId] = React.useState<
+        string | undefined
+    >(undefined);
+    React.useEffect(() => {
         try {
             const currentPath = window.location?.pathname || '';
             for (const group of menuGroups) {
@@ -123,15 +127,16 @@ export default function AppLayout({
                                   .pathname === currentPath
                             : false;
                         if (byHref) {
-                            return `${group.id}:${parent.label}`;
+                            setActiveParentId(`${group.id}:${parent.label}`);
+                            return;
                         }
                     }
                 }
             }
+            setActiveParentId(undefined);
         } catch {
-            /* ignore active parent */
+            setActiveParentId(undefined);
         }
-        return undefined;
     }, [menuGroups]);
 
     return (
