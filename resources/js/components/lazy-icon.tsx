@@ -1,8 +1,8 @@
 import React from 'react';
 
-// Lazy-load lucide icons by name to avoid bundling the whole set.
-// We dynamically import the mapping only when an icon is rendered,
-// so initial bundles don’t include the full map.
+import { getIconComponentSync, loadIcon } from '@/lib/lucide';
+
+// Progressive icon loader with registry to minimize flicker and avoid Suspense during hydration.
 
 export type LazyIconProps = React.SVGProps<SVGSVGElement> & {
     name: string;
@@ -28,67 +28,29 @@ function DefaultFallback({ className }: { className?: string }) {
     );
 }
 
-export default function LazyIcon({ name, fallback, ...svgProps }: LazyIconProps) {
-    const Icon = React.useMemo(
-        () =>
-            React.lazy(async () => {
-                // During SSR, render a lightweight fallback to avoid dynamic imports
-                if (typeof window === 'undefined') {
-                    return {
-                        default: (p: React.SVGProps<SVGSVGElement>) => (
-                            <DefaultFallback className={p.className} />
-                        ),
-                    };
-                }
-                try {
-                    const mod = await import('lucide-react/dynamicIconImports');
-                    // default export in newer versions, named in some setups
-                    const map = (mod as unknown as { default?: Record<string, () => Promise<{ default: React.ComponentType<React.SVGProps<SVGSVGElement>> }>>; dynamicIconImports?: Record<string, () => Promise<{ default: React.ComponentType<React.SVGProps<SVGSVGElement>> }>> }).default ??
-                        (mod as unknown as { dynamicIconImports?: Record<string, () => Promise<{ default: React.ComponentType<React.SVGProps<SVGSVGElement>> }>> }).dynamicIconImports ??
-                        {};
-                    const m = map as Record<string, () => Promise<{ default: React.ComponentType<React.SVGProps<SVGSVGElement>> }>>;
+export default function LazyIcon({
+    name,
+    fallback,
+    ...svgProps
+}: LazyIconProps) {
+    const [Comp, setComp] = React.useState(() => getIconComponentSync(name));
 
-                    const toKebab = (s: string) =>
-                        s
-                            .replace(/Icon$/i, '')
-                            .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-                            .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
-                            .replace(/[_\s]+/g, '-')
-                            .replace(/([a-zA-Z])(\d)/g, '$1-$2')
-                            .replace(/(\d)([a-zA-Z])/g, '$1-$2')
-                            .toLowerCase();
+    React.useEffect(() => {
+        let cancelled = false;
+        if (!Comp && typeof window !== 'undefined') {
+            loadIcon(name).then((c) => {
+                if (!cancelled && c) setComp(() => c);
+            });
+        }
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [name]);
 
-                    const candidates = Array.from(
-                        new Set([
-                            name,
-                            name.replace(/Icon$/i, ''),
-                            name.toLowerCase(),
-                            toKebab(name),
-                            toKebab(name.replace(/Icon$/i, '')),
-                        ]),
-                    );
-
-                    for (const key of candidates) {
-                        const importer = m[key];
-                        if (importer) return importer();
-                    }
-                } catch {
-                    // ignore and fall through to fallback
-                }
-                return {
-                    default: (p: React.SVGProps<SVGSVGElement>) => (
-                        <DefaultFallback className={p.className} />
-                    ),
-                };
-            }),
-        [name],
-    );
+    if (Comp) return <Comp {...svgProps} />;
 
     return (
-        <React.Suspense
-            fallback={fallback ?? <DefaultFallback className={svgProps.className} />}
-        >
-            <Icon {...svgProps} />
-        </React.Suspense>
+        <>{fallback ?? <DefaultFallback className={svgProps.className} />}</>
     );
 }

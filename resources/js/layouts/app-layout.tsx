@@ -1,5 +1,4 @@
 import { Head, usePage } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
 import React, {
     PropsWithChildren,
     ReactNode,
@@ -24,13 +23,7 @@ import type { MenuGroup } from '@/types/navigation';
 
 const LS_SIDEBAR = 'rentro:sidebar:collapsed';
 
-function makeLazyIcon(name?: string) {
-    if (!name) return undefined;
-    const C: React.ComponentType<React.SVGProps<SVGSVGElement>> = (props) => (
-        <LazyIcon name={name} {...props} />
-    );
-    return C as unknown as LucideIcon;
-}
+// note: icons are rendered via <LazyIcon /> directly
 
 type ServerMenuChild = { label: string; href?: string; icon?: string };
 
@@ -193,11 +186,14 @@ export default function AppLayout({
                                                     >
                                                         {titleIcon && (
                                                             <div className="h-6 w-6 place-self-center">
-                                                                {typeof titleIcon !== 'string' ? (
+                                                                {typeof titleIcon !==
+                                                                'string' ? (
                                                                     titleIcon
                                                                 ) : (
                                                                     <LazyIcon
-                                                                        name={titleIcon}
+                                                                        name={
+                                                                            titleIcon
+                                                                        }
                                                                         className="h-6 w-6"
                                                                     />
                                                                 )}

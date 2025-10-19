@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import LazyIcon from '@/components/lazy-icon';
 import {
     Accordion,
     AccordionContent,
@@ -14,7 +15,6 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import type { IconComponent, MenuChild, MenuGroup } from '@/types/navigation';
-import LazyIcon from '@/components/lazy-icon';
 
 function isRouteActive(name?: string): boolean {
     try {
@@ -59,11 +59,19 @@ function FallbackGlyph({ className }: { className?: string }) {
     );
 }
 
-function IconOrFallback({ icon, className }: { icon?: string | IconComponent; className?: string }) {
+function IconOrFallback({
+    icon,
+    className,
+}: {
+    icon?: string | IconComponent;
+    className?: string;
+}) {
     if (typeof icon === 'string') {
         return <LazyIcon name={icon} className={className} />;
     }
-    const Comp = icon as React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined;
+    const Comp = icon as
+        | React.ComponentType<React.SVGProps<SVGSVGElement>>
+        | undefined;
     if (!Comp) return <FallbackGlyph className={className} />;
     return <Comp className={className} />;
 }

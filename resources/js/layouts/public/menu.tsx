@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 
+import LazyIcon from '@/components/lazy-icon';
 import {
     Accordion,
     AccordionContent,
@@ -17,8 +18,11 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { PublicFooterSection, PublicLink, PublicMenuItem } from '@/types/navigation';
-import LazyIcon from '@/components/lazy-icon';
+import type {
+    PublicFooterSection,
+    PublicLink,
+    PublicMenuItem,
+} from '@/types/navigation';
 
 const Anchor: React.FC<{
     item: PublicLink;
@@ -164,7 +168,10 @@ export function PublicMobileMenu({
                             >
                                 <span className="inline-flex items-center gap-2">
                                     {it.icon ? (
-                                        <LazyIcon name={it.icon} className="h-4 w-4" />
+                                        <LazyIcon
+                                            name={it.icon}
+                                            className="h-4 w-4"
+                                        />
                                     ) : null}
                                     <span>{it.label}</span>
                                 </span>
@@ -176,7 +183,10 @@ export function PublicMobileMenu({
                             <AccordionTrigger className="px-3 py-2 text-sm font-medium">
                                 <span className="inline-flex items-center gap-2">
                                     {it.icon ? (
-                                        <LazyIcon name={it.icon} className="h-4 w-4" />
+                                        <LazyIcon
+                                            name={it.icon}
+                                            className="h-4 w-4"
+                                        />
                                     ) : null}
                                     <span>{it.label}</span>
                                 </span>

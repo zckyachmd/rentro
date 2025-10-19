@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-const http = require('http');
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 const fs = require('fs');
+const http = require('http');
 const path = require('path');
 
 function exists(p) {

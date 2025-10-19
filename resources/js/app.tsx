@@ -4,17 +4,18 @@ import React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
 import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
+import { prefetchIcons } from '@/lib/lucide';
 import '../css/app.css';
 
 const appName =
-    (import.meta as any)?.env?.VITE_APP_NAME ??
+    import.meta.env?.VITE_APP_NAME ??
     (typeof document !== 'undefined'
-        ? document
+        ? (document
               .querySelector('meta[name="application-name"]')
               ?.getAttribute('content') ??
           document
               .querySelector('meta[property="og:site_name"]')
-              ?.getAttribute('content')
+              ?.getAttribute('content'))
         : undefined) ??
     'Laravel';
 
@@ -65,16 +66,17 @@ createInertiaApp({
                 p?.page?.props?.i18n ??
                 undefined;
             if (cfg?.supported && Array.isArray(cfg.supported)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (i18n.options as any).supportedLngs = cfg.supported;
+                (
+                    i18n.options as unknown as { supportedLngs?: string[] }
+                ).supportedLngs = cfg.supported;
             }
             const rawLocale =
                 p?.initialPage?.props?.preferences?.locale ??
                 p?.page?.props?.preferences?.locale ??
-                'en';
+                'id';
 
             const toBase = (l?: string | null) =>
-                (l ?? 'en').toLowerCase().split('-')[0];
+                (l ?? 'id').toLowerCase().split('-')[0];
             const locale = toBase(rawLocale);
 
             const ensure = async () => {
@@ -83,6 +85,58 @@ createInertiaApp({
                         await i18n.changeLanguage(locale);
                     }
                     await preloadLocaleNamespaces(locale);
+                    // Preload icons likely needed on the initial view to avoid lazy flicker
+                    try {
+                        type MenuLike = {
+                            icon?: string;
+                            children?: MenuLike[];
+                        };
+                        type RootProps = {
+                            menus?: Array<{ items?: Array<MenuLike> }>;
+                            publicMenus?: MenuLike[];
+                        };
+                        const rootProps: RootProps = (p?.initialPage?.props ??
+                            p?.page?.props ??
+                            {}) as RootProps;
+                        const collect = new Set<string>();
+                        // App menus
+                        const menus = rootProps?.menus as
+                            | Array<{
+                                  items?: Array<{
+                                      icon?: string;
+                                      children?: Array<{ icon?: string }>;
+                                  }>;
+                              }>
+                            | undefined;
+                        if (Array.isArray(menus)) {
+                            for (const g of menus) {
+                                for (const it of g.items ?? []) {
+                                    if (it?.icon) collect.add(String(it.icon));
+                                    for (const ch of it.children ?? []) {
+                                        if (ch?.icon)
+                                            collect.add(String(ch.icon));
+                                    }
+                                }
+                            }
+                        }
+                        // Public menus
+                        const publicMenus = rootProps?.publicMenus;
+                        if (Array.isArray(publicMenus)) {
+                            const walk = (arr: MenuLike[]) => {
+                                for (const it of arr) {
+                                    if (it?.icon) collect.add(String(it.icon));
+                                    if (Array.isArray(it?.children))
+                                        walk(it.children);
+                                }
+                            };
+                            walk(publicMenus);
+                        }
+                        if (collect.size > 0) {
+                            await prefetchIcons(Array.from(collect));
+                        }
+                    } catch {
+                        // ignore icon preload failures
+                    }
                     try {
                         document.documentElement.lang = locale;
                     } catch {

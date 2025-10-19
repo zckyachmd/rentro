@@ -775,26 +775,67 @@ export default function ManagementSummary({
                     </CardHeader>
                     <CardContent className="h-64">
                         {chartsReady && Recharts.mod ? (
-                            <Recharts.mod.ResponsiveContainer width="100%" height="100%">
+                            <Recharts.mod.ResponsiveContainer
+                                width="100%"
+                                height="100%"
+                            >
                                 <Recharts.mod.AreaChart
                                     data={management.payments?.series || []}
-                                    margin={{ left: 8, right: 8, top: 8, bottom: 0 }}
+                                    margin={{
+                                        left: 8,
+                                        right: 8,
+                                        top: 8,
+                                        bottom: 0,
+                                    }}
                                 >
                                     <defs>
-                                        <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#16a34a" stopOpacity={0.35} />
-                                            <stop offset="95%" stopColor="#16a34a" stopOpacity={0.02} />
+                                        <linearGradient
+                                            id="rev"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="5%"
+                                                stopColor="#16a34a"
+                                                stopOpacity={0.35}
+                                            />
+                                            <stop
+                                                offset="95%"
+                                                stopColor="#16a34a"
+                                                stopOpacity={0.02}
+                                            />
                                         </linearGradient>
                                     </defs>
-                                    <Recharts.mod.CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                                    <Recharts.mod.XAxis dataKey="date" tick={{ fontSize: 12 }} hide={false} />
+                                    <Recharts.mod.CartesianGrid
+                                        strokeDasharray="3 3"
+                                        className="stroke-muted"
+                                    />
+                                    <Recharts.mod.XAxis
+                                        dataKey="date"
+                                        tick={{ fontSize: 12 }}
+                                        hide={false}
+                                    />
                                     <Recharts.mod.YAxis
-                                        tickFormatter={(v: number) => (v >= 1000000 ? `${Math.round(v / 1000000)}jt` : `${Math.round(v / 1000)}rb`)}
+                                        tickFormatter={(v: number) =>
+                                            v >= 1000000
+                                                ? `${Math.round(v / 1000000)}jt`
+                                                : `${Math.round(v / 1000)}rb`
+                                        }
                                         tick={{ fontSize: 12 }}
                                         width={48}
                                     />
-                                    <Recharts.mod.Tooltip content={<RevenueTooltipContent />} />
-                                    <Recharts.mod.Area type="monotone" dataKey="amount" stroke="#16a34a" fill="url(#rev)" strokeWidth={2} />
+                                    <Recharts.mod.Tooltip
+                                        content={<RevenueTooltipContent />}
+                                    />
+                                    <Recharts.mod.Area
+                                        type="monotone"
+                                        dataKey="amount"
+                                        stroke="#16a34a"
+                                        fill="url(#rev)"
+                                        strokeWidth={2}
+                                    />
                                 </Recharts.mod.AreaChart>
                             </Recharts.mod.ResponsiveContainer>
                         ) : (
@@ -815,17 +856,48 @@ export default function ManagementSummary({
                     </CardHeader>
                     <CardContent className="h-64">
                         {chartsReady && Recharts.mod ? (
-                            <Recharts.mod.ResponsiveContainer width="100%" height="100%">
+                            <Recharts.mod.ResponsiveContainer
+                                width="100%"
+                                height="100%"
+                            >
                                 <Recharts.mod.BarChart
                                     data={management.invoices?.series || []}
-                                    margin={{ left: 8, right: 8, top: 8, bottom: 0 }}
+                                    margin={{
+                                        left: 8,
+                                        right: 8,
+                                        top: 8,
+                                        bottom: 0,
+                                    }}
                                 >
-                                    <Recharts.mod.CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                                    <Recharts.mod.XAxis dataKey="date" tick={{ fontSize: 12 }} hide={false} />
-                                    <Recharts.mod.YAxis tick={{ fontSize: 12 }} width={28} allowDecimals={false} />
-                                    <Recharts.mod.Tooltip content={<InvoicesTooltipContent />} />
-                                    <Recharts.mod.Bar dataKey="issued" name={t('dashboard.metrics.issued')} fill="#3b82f6" radius={[2, 2, 0, 0]} />
-                                    <Recharts.mod.Bar dataKey="paid" name={t('dashboard.metrics.paid')} fill="#16a34a" radius={[2, 2, 0, 0]} />
+                                    <Recharts.mod.CartesianGrid
+                                        strokeDasharray="3 3"
+                                        className="stroke-muted"
+                                    />
+                                    <Recharts.mod.XAxis
+                                        dataKey="date"
+                                        tick={{ fontSize: 12 }}
+                                        hide={false}
+                                    />
+                                    <Recharts.mod.YAxis
+                                        tick={{ fontSize: 12 }}
+                                        width={28}
+                                        allowDecimals={false}
+                                    />
+                                    <Recharts.mod.Tooltip
+                                        content={<InvoicesTooltipContent />}
+                                    />
+                                    <Recharts.mod.Bar
+                                        dataKey="issued"
+                                        name={t('dashboard.metrics.issued')}
+                                        fill="#3b82f6"
+                                        radius={[2, 2, 0, 0]}
+                                    />
+                                    <Recharts.mod.Bar
+                                        dataKey="paid"
+                                        name={t('dashboard.metrics.paid')}
+                                        fill="#16a34a"
+                                        radius={[2, 2, 0, 0]}
+                                    />
                                 </Recharts.mod.BarChart>
                             </Recharts.mod.ResponsiveContainer>
                         ) : (

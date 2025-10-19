@@ -1,13 +1,40 @@
-import { Page, PageProps } from '@inertiajs/core';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { renderToString } from 'react-dom/server';
 
+import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import route from 'ziggy-js';
 
-export default (page: Page<PageProps>) =>
-    createInertiaApp({
-        page,
+type I18nCarrier = {
+    i18n?: { locale?: string | null };
+    preferences?: { locale?: string | null };
+};
+
+export default async (page: unknown) => {
+    // Ensure i18n is ready on the server before rendering to string
+    try {
+        // Read initial locale from the page props sent by Laravel
+        // Fallback to 'id' if missing (base language only)
+        const rawLocale =
+            (page as unknown as { props?: I18nCarrier })?.props?.i18n?.locale ??
+            (page as unknown as { props?: I18nCarrier })?.props?.preferences
+                ?.locale ??
+            'id';
+        const locale = String(rawLocale || 'id')
+            .toLowerCase()
+            .split('-')[0];
+
+        if (i18n.language !== locale) {
+            await i18n.changeLanguage(locale);
+        }
+        await preloadLocaleNamespaces(locale);
+    } catch {
+        // best-effort; avoid failing SSR for i18n issues
+    }
+
+    return createInertiaApp({
+        // Cast to satisfy SSR types without importing duplicate Page types
+        page: page as unknown as string,
         render: renderToString,
         resolve: (name: string) =>
             resolvePageComponent(
@@ -15,17 +42,24 @@ export default (page: Page<PageProps>) =>
                 import.meta.glob('./pages/**/*.tsx'),
             ),
         setup: ({ App, props }) => {
-            const ziggyAny: any = route as any;
+            const resolvedRoute =
+                (route as unknown as { route?: typeof route }).route ?? route;
             (globalThis as unknown as { route: typeof route }).route =
-                ziggyAny?.route ?? ziggyAny;
+                resolvedRoute;
 
             try {
                 // Prefer the Ziggy config sent via Inertia props
-                const p: any = props ?? {};
-                const pageProps: any = p?.initialPage?.props ?? p?.page?.props ?? {};
+                const p = (props ?? {}) as {
+                    initialPage?: { props?: unknown };
+                    page?: { props?: unknown };
+                };
+                const pageProps = (p?.initialPage?.props ??
+                    p?.page?.props ??
+                    {}) as { ziggy?: unknown };
                 const ziggyConfig = pageProps?.ziggy;
                 if (ziggyConfig) {
-                    (globalThis as any).Ziggy = ziggyConfig;
+                    (globalThis as unknown as { Ziggy?: unknown }).Ziggy =
+                        ziggyConfig;
                 }
             } catch {
                 // ignore
@@ -34,3 +68,4 @@ export default (page: Page<PageProps>) =>
             return <App {...props} />;
         },
     });
+};
