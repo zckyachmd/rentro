@@ -34,17 +34,17 @@ export default function DetailDialog({
     const { t: tAudit } = useTranslation('management/audit');
     const createdAt = React.useMemo(() => {
         try {
-            return new Date(item?.created_at || '').toLocaleString(
-                i18n.language,
-                {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                },
-            );
+            const d = new Date(item?.created_at || '');
+            if (isNaN(d.getTime())) return '-';
+            return new Intl.DateTimeFormat(i18n.language, {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZone: 'Asia/Jakarta',
+            }).format(d);
         } catch {
             return item?.created_at ?? '-';
         }

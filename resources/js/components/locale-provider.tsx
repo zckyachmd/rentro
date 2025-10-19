@@ -7,7 +7,7 @@ import React, {
 
 import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 
-export type AppLocale = 'en' | 'id';
+export type AppLocale = string;
 
 const STORAGE_KEY = 'rentro:preferences';
 
@@ -21,10 +21,19 @@ function readCookie(name: string): string | undefined {
 
 function normalizeLocale(v?: string | null): AppLocale | undefined {
     if (!v) return undefined;
-    const x = String(v).toLowerCase();
-    if (x === 'en' || x.startsWith('en-')) return 'en';
-    if (x === 'id' || x.startsWith('id-')) return 'id';
-    return undefined;
+    const raw = String(v).trim();
+    if (!raw) return undefined;
+    const x = raw.toLowerCase();
+    const supported =
+        ((i18n?.options as unknown as { supportedLngs?: unknown })
+            ?.supportedLngs as string[] | undefined) || undefined;
+    if (Array.isArray(supported) && supported.length) {
+        if (supported.includes(x)) return x;
+        const base = x.split('-')[0];
+        if (supported.includes(base)) return base;
+    }
+    // Fallback: trust the raw value; i18n will coerce/normalize if needed
+    return x;
 }
 
 export function useLocalePreference() {

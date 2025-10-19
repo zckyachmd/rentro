@@ -38,13 +38,25 @@ export function createColumns(
             title: i18n.t('common.time'),
             className: COL.time,
             sortable: true,
-            cell: ({ row }) => (
-                <div className={COL.time + ' whitespace-nowrap'}>
-                    {new Date(row.original.created_at).toLocaleString(
-                        i18n.language,
-                    )}
-                </div>
-            ),
+            cell: ({ row }) => {
+                const d = new Date(row.original.created_at);
+                const text = isNaN(d.getTime())
+                    ? '-'
+                    : new Intl.DateTimeFormat(i18n.language, {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                          timeZone: 'Asia/Jakarta',
+                      }).format(d);
+                return (
+                    <div className={COL.time + ' whitespace-nowrap'}>
+                        {text}
+                    </div>
+                );
+            },
         }),
         makeColumn<ActivityItem>({
             id: 'user',

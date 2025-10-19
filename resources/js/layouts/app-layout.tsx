@@ -64,14 +64,16 @@ export default function AppLayout({
     const { auth, menus: serverMenus } = usePage<AppPageProps>().props;
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
 
-    const [collapsed, setCollapsed] = useState<boolean>(() => {
+    // Read from localStorage on client after mount to avoid SSR mismatch
+    const [collapsed, setCollapsed] = useState<boolean>(false);
+    React.useEffect(() => {
         try {
             const raw = localStorage.getItem(LS_SIDEBAR);
-            return raw === '1';
+            setCollapsed(raw === '1');
         } catch {
-            return false;
+            // ignore
         }
-    });
+    }, []);
     const toggleCollapsed = useCallback(() => {
         setCollapsed((c) => {
             const next = !c;

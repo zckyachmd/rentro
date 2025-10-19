@@ -68,8 +68,18 @@ export default function PromosPage() {
     const [isLoading, setIsLoading] = React.useState(false);
 
     const todayISO = React.useMemo(() => {
-        const d = new Date();
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        try {
+            // Deterministic date in Asia/Jakarta to avoid SSR/CSR mismatch
+            return new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Jakarta',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }).format(new Date());
+        } catch {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
     }, []);
 
     const getStatus = React.useCallback(
@@ -87,16 +97,13 @@ export default function PromosPage() {
     const daysLeft = React.useCallback((p: PromotionLite): number | null => {
         if (!p.valid_until) return null;
         const end = new Date(p.valid_until + 'T00:00:00');
-        const today = new Date();
-        const d0 = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate(),
-        );
+        // Derive today from Asia/Jakarta normalized todayISO
+        const [y, m, d] = todayISO.split('-').map((n) => Number(n));
+        const d0 = new Date(y, m - 1, d);
         const d1 = new Date(end.getFullYear(), end.getMonth(), end.getDate());
         const diff = Math.ceil((d1.getTime() - d0.getTime()) / 86_400_000);
         return diff >= 0 ? diff : 0;
-    }, []);
+    }, [todayISO]);
 
     // Use server-provided master tag list so it doesn't shrink when filtering promos
     const allTags = React.useMemo(() => {

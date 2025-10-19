@@ -33,6 +33,7 @@ import {
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
 import { getJson } from '@/lib/api';
+import { formatDate } from '@/lib/format';
 import TenantHandoverDetailDialog from '@/pages/tenant/contract/dialogs/handover-detail-dialog';
 import type {
     TenantContractsPageProps as ContractsPageProps,
@@ -342,11 +343,7 @@ export default function TenantContractIndex(props: ContractsPageProps) {
                                         {t('contract.stop.summary.end_date')}
                                     </div>
                                     <div className="font-medium">
-                                        {stopTarget?.end_date
-                                            ? new Date(
-                                                  stopTarget.end_date,
-                                              ).toLocaleDateString()
-                                            : '-'}
+                                        {formatDate(stopTarget?.end_date)}
                                     </div>
                                 </div>
                                 <div className="min-w-0">

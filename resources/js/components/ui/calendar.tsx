@@ -7,6 +7,7 @@ import * as React from "react"
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
 
 import { Button, buttonVariants } from "@/components/ui/button"
+import { useTranslation } from 'react-i18next'
 import { cn } from "@/lib/utils"
 
 function Calendar({
@@ -22,6 +23,9 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const { i18n } = useTranslation()
+  // React to locale changes and keep timezone explicit for determinism
+  const locale = React.useMemo(() => i18n.language || 'id', [i18n.language])
 
   return (
     <DayPicker
@@ -35,7 +39,7 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
+          new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'Asia/Jakarta' }).format(date),
         ...formatters,
       }}
       classNames={{
@@ -188,7 +192,7 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
-      data-day={day.date.toLocaleDateString()}
+      data-day={`${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, '0')}-${String(day.date.getDate()).padStart(2, '0')}`}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&

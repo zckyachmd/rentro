@@ -20,11 +20,12 @@ import {
 import { Separator } from '@/components/ui/separator';
 import ShowMore from '@/components/ui/show-more';
 import { AppLayout } from '@/layouts';
+import { formatDate } from '@/lib/format';
 import type { ShowPageProps } from '@/types/profile';
 
 import ContactSection from './contact';
 
-const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : '-');
+const fmt = (d?: string | null) => formatDate(d ?? undefined, false);
 
 export default function ShowProfile() {
     const { t } = useTranslation();
