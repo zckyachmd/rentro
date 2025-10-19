@@ -68,6 +68,32 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Force HTTPS (behind proxies / tunnels)
+    |--------------------------------------------------------------------------
+    |
+    | When true, the application will force generated URLs to use the HTTPS
+    | scheme. Use this instead of calling env() at runtime so the value works
+    | correctly with config caching in production.
+    |
+    */
+
+    'force_https' => env('FORCE_HTTPS', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Asset URL
+    |--------------------------------------------------------------------------
+    |
+    | This value allows you to prefix asset URLs (e.g., when using a CDN).
+    | Leave it null unless you know you need it. If you set this, include the
+    | correct scheme (https) to avoid mixed content when serving over TLS.
+    |
+    */
+
+    'asset_url' => env('ASSET_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

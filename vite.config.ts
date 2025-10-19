@@ -11,6 +11,27 @@ export default defineConfig(({ mode }) => {
         (env.VITE_DISABLE_HMR || '').toLowerCase() === 'true' ||
         env.VITE_DISABLE_HMR === '1';
 
+    // When developing behind a tunnel / reverse proxy (e.g., Cloudflare Tunnel),
+    // set VITE_PUBLIC_URL to your public HTTPS origin (e.g., https://rentro.zacky.id)
+    // so Vite generates correct absolute URLs/HMR endpoints.
+    const publicUrl = (env.VITE_PUBLIC_URL || env.VITE_APP_URL || '').trim();
+    let hmrHost = '127.0.0.1';
+    let hmrProtocol: 'ws' | 'wss' = 'ws';
+    let hmrClientPort = 5173;
+    let serverOrigin: string | undefined = undefined;
+    try {
+        if (publicUrl && /https?:\/\//i.test(publicUrl)) {
+            const u = new URL(publicUrl);
+            serverOrigin = u.origin;
+            hmrHost = u.hostname;
+            const isHttps = u.protocol === 'https:';
+            hmrProtocol = isHttps ? 'wss' : 'ws';
+            hmrClientPort = isHttps ? 443 : Number(u.port || 80);
+        }
+    } catch {
+        // ignore invalid URL; fall back to defaults
+    }
+
     return {
         plugins: [
             laravel({
@@ -98,6 +119,8 @@ export default defineConfig(({ mode }) => {
             port: 5173,
             strictPort: true,
             cors: true,
+            // Ensure Vite knows the public origin when proxied through HTTPS
+            origin: serverOrigin,
             watch: {
                 usePolling: (process.env.CHOKIDAR_USEPOLLING || '').toLowerCase() === 'true',
                 interval: Number(process.env.CHOKIDAR_INTERVAL || '300'),
@@ -112,10 +135,10 @@ export default defineConfig(({ mode }) => {
             hmr: disableHmr
                 ? false
                 : {
-                      host: '127.0.0.1',
+                      host: hmrHost,
                       port: 5173,
-                      protocol: 'ws',
-                      clientPort: 5173,
+                      protocol: hmrProtocol,
+                      clientPort: hmrClientPort,
                   },
         },
     };

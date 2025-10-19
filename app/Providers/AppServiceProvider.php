@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Events\InvoicePaid;
 use App\Events\InvoiceReopened;
+use App\Inertia\Ssr\LoggingHttpGateway;
 use App\Listeners\ClearMenuCacheOnAuth;
 use App\Listeners\QueueLocaleCookieOnLogin;
 use App\Listeners\QueueThemeCookieOnLogin;
@@ -29,11 +30,10 @@ use App\Services\WifiService;
 use App\Services\ZiggyService;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Ssr\Gateway as InertiaSsrGateway;
-use App\Inertia\Ssr\LoggingHttpGateway;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -61,9 +61,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Vite::prefetch(concurrency: env('VITE_CONCURRENCY', 4));
+        Vite::prefetch(concurrency: (int) config('vite.concurrency', 4));
 
-        if (filter_var(env('FORCE_HTTPS', false), FILTER_VALIDATE_BOOL)) {
+        if (filter_var(config('app.force_https', false), FILTER_VALIDATE_BOOL)) {
             URL::forceScheme('https');
         }
 
