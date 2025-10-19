@@ -2,6 +2,7 @@
 
 use App\Enum\RoleName;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
@@ -239,6 +240,12 @@ Route::get('/.well-known/captive-portal/capport-venue.json', function (Request $
         'can-extend-session' => true,
     ]);
 })->name('capport.venue');
+
+if (config('diagnostics.proxy_debug_enabled')) {
+    Route::get('/__diag/proxy', [DiagnosticsController::class, 'proxy'])
+        ->withoutMiddleware([VerifyCsrfToken::class])
+        ->name('diag.proxy');
+}
 
 // Auth
 require __DIR__ . '/auth.php';

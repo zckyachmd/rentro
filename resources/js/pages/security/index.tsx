@@ -32,17 +32,27 @@ import PasswordTab from './password';
 import { SessionsTab } from './sessions';
 
 function getTabFromUrl(): TabKey {
-    const params = new URLSearchParams(window.location.search);
-    const t = params.get('t');
-    return (TAB_KEYS as readonly string[]).includes(t ?? '')
-        ? (t as TabKey)
-        : 'password';
+    if (typeof window === 'undefined') return 'password';
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('t');
+        return (TAB_KEYS as readonly string[]).includes(t ?? '')
+            ? (t as TabKey)
+            : 'password';
+    } catch {
+        return 'password';
+    }
 }
 
 function setTabInUrl(value: TabKey) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('t', value);
-    window.history.replaceState({}, '', url.toString());
+    if (typeof window === 'undefined') return;
+    try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('t', value);
+        window.history.replaceState({}, '', url.toString());
+    } catch {
+        // ignore
+    }
 }
 
 export default function SecurityIndex() {

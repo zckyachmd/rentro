@@ -31,36 +31,11 @@ return Application::configure(basePath: dirname(__DIR__))
         SeedSample::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust proxies & hosts for reverse proxy / Cloudflare setups
-        // Read from env if provided; fallback to trust all proxies and any host pattern
-        $trustedProxies = env('TRUSTED_PROXIES'); // comma-separated or "*"
-        $trustedHosts   = env('TRUSTED_HOSTS');   // pipe or comma-separated regex patterns
-
-        if ($trustedProxies !== null && $trustedProxies !== '') {
-            $list = array_values(array_filter(array_map('trim', preg_split('/[\s,]+/', (string) $trustedProxies))));
-            $middleware->trustProxies(at: $list);
-        } else {
-            // Default: trust all inside containerized / ingress environments
-            $middleware->trustProxies(at: ['*']);
-        }
-
-        // Forwarded headers to honor scheme/host/port from proxy
-        $middleware->trustProxies(headers: (
-            SymfonyRequest::HEADER_X_FORWARDED_FOR
-            | SymfonyRequest::HEADER_X_FORWARDED_HOST
-            | SymfonyRequest::HEADER_X_FORWARDED_PORT
-            | SymfonyRequest::HEADER_X_FORWARDED_PROTO
-            | SymfonyRequest::HEADER_X_FORWARDED_PREFIX
-        ));
-
-        if ($trustedHosts !== null && $trustedHosts !== '') {
-            // Support comma or pipe separated host regexes
-            $patterns = array_values(array_filter(array_map('trim', preg_split('/[\s,|]+/', (string) $trustedHosts))));
-            $middleware->trustHosts(at: $patterns);
-        } else {
-            // Default: accept any host (suitable for debug/tunnel)
-            $middleware->trustHosts(at: ['^.*$']);
-        }
+        // Trust proxies/hosts via explicit middleware for clarity (config/trusted.php)
+        $middleware->replace(\Illuminate\Http\Middleware\TrustProxies::class, \App\Http\Middleware\TrustProxies::class);
+        $middleware->replace(\Illuminate\Http\Middleware\TrustHosts::class, \App\Http\Middleware\TrustHosts::class);
+        // Enable TrustHosts; the patterns are provided by our custom middleware
+        $middleware->trustHosts();
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,

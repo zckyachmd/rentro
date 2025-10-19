@@ -1,8 +1,14 @@
 FROM nginx:1.26-alpine
 
+# Ensure we run entrypoint as root so we can test config
+USER root
+
 # Copy nginx configuration
 COPY docker/nginx/nginx.main.conf /etc/nginx/nginx.conf
 COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+# Make sure config files are world-readable (nginx master/worker can read)
+RUN chmod 0644 /etc/nginx/nginx.conf /etc/nginx/conf.d/default.conf \
+    && chown root:root /etc/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Entrypoint and healthcheck scripts
 COPY docker/nginx/entrypoint.sh /usr/local/bin/nginx-entrypoint.sh
