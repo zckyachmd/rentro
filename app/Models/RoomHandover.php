@@ -32,6 +32,8 @@ class RoomHandover extends Model
     ];
 
     protected $casts = [
+        'type'        => \App\Enum\RoomHandoverType::class,
+        'status'      => \App\Enum\RoomHandoverStatus::class,
         'meta'        => 'array',
         'attachments' => 'array',
     ];

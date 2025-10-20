@@ -112,8 +112,8 @@ class ContractManagementController extends Controller
         $confirmedCheckinIds = RoomHandover::query()
             ->select('contract_id')
             ->whereIn('contract_id', $contractIds)
-            ->where('type', 'checkin')
-            ->where('status', 'Confirmed')
+            ->where('type', \App\Enum\RoomHandoverType::CHECKIN->value)
+            ->where('status', \App\Enum\RoomHandoverStatus::CONFIRMED->value)
             ->pluck('contract_id')
             ->unique()
             ->flip();
@@ -121,15 +121,15 @@ class ContractManagementController extends Controller
         $confirmedCheckoutIds = RoomHandover::query()
             ->select('contract_id')
             ->whereIn('contract_id', $contractIds)
-            ->where('type', 'checkout')
-            ->where('status', 'Confirmed')
+            ->where('type', \App\Enum\RoomHandoverType::CHECKOUT->value)
+            ->where('status', \App\Enum\RoomHandoverStatus::CONFIRMED->value)
             ->pluck('contract_id')
             ->unique()
             ->flip();
 
         $latestCheckinByContract = RoomHandover::query()
             ->whereIn('contract_id', $contractIds)
-            ->where('type', 'checkin')
+            ->where('type', \App\Enum\RoomHandoverType::CHECKIN->value)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get(['contract_id', 'status'])
@@ -138,7 +138,7 @@ class ContractManagementController extends Controller
 
         $latestCheckoutByContract = RoomHandover::query()
             ->whereIn('contract_id', $contractIds)
-            ->where('type', 'checkout')
+            ->where('type', \App\Enum\RoomHandoverType::CHECKOUT->value)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get(['contract_id', 'status'])
@@ -160,19 +160,30 @@ class ContractManagementController extends Controller
             $latestCheckoutStatus = optional($latestCheckoutByContract->get($c->id))->status;
 
             return [
-                'id'                     => (string) $c->id,
-                'number'                 => (string) ($c->number ?? ''),
-                'tenant'                 => $tenant ? ['id' => $tenant->id, 'name' => $tenant->name, 'email' => $tenant->email] : null,
-                'room'                   => $room ? ['id' => (string) $room->id, 'number' => $room->number] : null,
-                'start_date'             => $c->start_date->format('Y-m-d'),
-                'end_date'               => $c->end_date?->format('Y-m-d'),
-                'rent_idr'               => (int) $c->rent_idr,
-                'status'                 => $c->status->value,
-                'auto_renew'             => (bool) $c->auto_renew,
-                'has_checkin'            => (bool) $hasConfirmedCheckin,
-                'has_checkout'           => (bool) $hasConfirmedCheckout,
-                'latest_checkin_status'  => $latestCheckinStatus,
-                'latest_checkout_status' => $latestCheckoutStatus,
+                'id'                          => (string) $c->id,
+                'number'                      => (string) ($c->number ?? ''),
+                'tenant'                      => $tenant ? ['id' => $tenant->id, 'name' => $tenant->name, 'email' => $tenant->email] : null,
+                'room'                        => $room ? ['id' => (string) $room->id, 'number' => $room->number] : null,
+                'start_date'                  => $c->start_date->format('Y-m-d'),
+                'end_date'                    => $c->end_date?->format('Y-m-d'),
+                'rent_idr'                    => (int) $c->rent_idr,
+                'status'                      => $c->status->value,
+                'status_label'                => method_exists($c->status, 'label') ? $c->status->label() : (string) $c->status->value,
+                'auto_renew'                  => (bool) $c->auto_renew,
+                'has_checkin'                 => (bool) $hasConfirmedCheckin,
+                'has_checkout'                => (bool) $hasConfirmedCheckout,
+                'latest_checkin_status'       => $latestCheckinStatus ? (string) ($latestCheckinStatus instanceof \BackedEnum ? $latestCheckinStatus->value : $latestCheckinStatus) : null,
+                'latest_checkout_status'      => $latestCheckoutStatus ? (string) ($latestCheckoutStatus instanceof \BackedEnum ? $latestCheckoutStatus->value : $latestCheckoutStatus) : null,
+                'latest_checkin_status_label' => ($latestCheckinStatus instanceof \BackedEnum)
+                    ? __('enum.handover.status.' . strtolower($latestCheckinStatus->name))
+                    : (is_string($latestCheckinStatus)
+                        ? __('enum.handover.status.' . strtolower($latestCheckinStatus))
+                        : null),
+                'latest_checkout_status_label' => ($latestCheckoutStatus instanceof \BackedEnum)
+                    ? __('enum.handover.status.' . strtolower($latestCheckoutStatus->name))
+                    : (is_string($latestCheckoutStatus)
+                        ? __('enum.handover.status.' . strtolower($latestCheckoutStatus))
+                        : null),
             ];
         });
         $page->setCollection($mapped);

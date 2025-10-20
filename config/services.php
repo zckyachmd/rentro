@@ -1,5 +1,13 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: services
+|--------------------------------------------------------------------------
+| Purpose: Third-party service credentials and endpoints.
+| Note: Set via corresponding *_CLIENT_ID / *_SECRET / *_REDIRECT env vars.
+*/
+
 return [
 
     /*

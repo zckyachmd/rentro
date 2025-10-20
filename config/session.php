@@ -1,5 +1,17 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: session
+|--------------------------------------------------------------------------
+| Purpose: Session storage, lifetime, cookie, and security headers.
+| Keys:
+| - driver (env SESSION_DRIVER): Session driver.
+| - lifetime (env SESSION_LIFETIME): Minutes until session expires.
+| - files, connection, table: Storage-specific options.
+| - cookie, path, domain, secure, http_only, same_site: Cookie policy.
+*/
+
 use Illuminate\Support\Str;
 
 return [

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enum\DocumentStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ return new class () extends Migration {
             $table->date('issued_at');
             $table->date('expires_at')->nullable();
 
-            $table->string('status', 50)->default('pending');
+            $table->string('status', 50)->default(DocumentStatus::PENDING->value);
             $table->timestamp('verified_at')->nullable();
             $table->text('notes')->nullable();
 

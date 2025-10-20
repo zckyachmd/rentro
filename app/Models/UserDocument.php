@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enum\DocumentStatus;
+use App\Enum\DocumentType;
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasAudit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +32,8 @@ class UserDocument extends Model
     ];
 
     protected $casts = [
+        'type'        => DocumentType::class,
+        'status'      => DocumentStatus::class,
         'issued_at'   => 'date',
         'expires_at'  => 'date',
         'verified_at' => 'datetime',

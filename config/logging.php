@@ -1,5 +1,15 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: logging
+|--------------------------------------------------------------------------
+| Purpose: Logging default channel and channel definitions.
+| Keys:
+| - default (env LOG_CHANNEL): Default log channel.
+| - channels.*: Monolog channels and stacks.
+*/
+
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -119,9 +129,9 @@ return [
         ],
 
         'ssr' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/ssr.log'),
-            'level' => env('LOG_SSR_LEVEL', 'warning'),
+            'driver'               => 'single',
+            'path'                 => storage_path('logs/ssr.log'),
+            'level'                => env('LOG_SSR_LEVEL', 'warning'),
             'replace_placeholders' => true,
         ],
 

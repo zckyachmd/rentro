@@ -1,5 +1,13 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: dompdf (barryvdh/laravel-dompdf)
+|--------------------------------------------------------------------------
+| Purpose: PDF rendering options for Dompdf integration.
+| Note: Refer to package docs; defaults retained, override as needed.
+*/
+
 return [
 
     /*

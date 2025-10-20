@@ -118,11 +118,22 @@ class MenuSeeder extends Seeder
                     ],
                     ['label' => 'menu.complaints', 'href' => '#', 'icon' => 'MessageSquareWarning'],
                     ['label' => 'menu.packages', 'href' => '#', 'icon' => 'Package'],
+                    ['label' => 'menu.promotions', 'href' => route('management.promotions.index', [], false), 'icon' => 'BadgePercent', 'permission' => PermissionName::PROMOTION_VIEW],
                     [
                         'label' => 'menu.testimonies',
                         'href' => route('management.testimonies.index', [], false),
                         'icon' => 'MessageSquareText',
                         'permission' => PermissionName::TESTIMONY_VIEW,
+                    ],
+                    [
+                        'label' => 'menu.pages',
+                        'href' => route('management.pages.index', [], false),
+                        'icon' => 'FileText',
+                        'roles' => [
+                            RoleName::SUPER_ADMIN->value,
+                            RoleName::OWNER->value,
+                            RoleName::MANAGER->value,
+                        ],
                     ],
                 ],
             ],
@@ -134,17 +145,6 @@ class MenuSeeder extends Seeder
                     ['label' => 'menu.users', 'href' => route('management.users.index', [], false), 'icon' => 'Users', 'permission' => PermissionName::USER_VIEW],
                     ['label' => 'menu.roles', 'href' => route('management.roles.index', [], false), 'icon' => 'KeySquare', 'permission' => PermissionName::ROLE_VIEW],
                     ['label' => 'menu.audit_log', 'href' => route('management.audit-logs.index', [], false), 'icon' => 'ShieldCheck', 'permission' => PermissionName::AUDIT_LOG_VIEW],
-                    ['label' => 'menu.promotions', 'href' => route('management.promotions.index', [], false), 'icon' => 'BadgePercent', 'permission' => PermissionName::PROMOTION_VIEW],
-                    [
-                        'label' => 'menu.pages',
-                        'href' => route('management.pages.index', [], false),
-                        'icon' => 'FileText',
-                        'roles' => [
-                            RoleName::SUPER_ADMIN->value,
-                            RoleName::OWNER->value,
-                            RoleName::MANAGER->value,
-                        ],
-                    ],
                 ],
             ],
 
@@ -245,7 +245,7 @@ class MenuSeeder extends Seeder
                 ->where($match)
                 ->where(function ($q) use ($href) {
                     $q->where('href', $href)
-                      ->orWhere('href', 'like', '%' . $href);
+                        ->orWhere('href', 'like', '%' . $href);
                 })
                 ->first();
             $match['href'] = $href;

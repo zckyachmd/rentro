@@ -1,5 +1,17 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: mail
+|--------------------------------------------------------------------------
+| Purpose: Mailer transports, defaults, and Markdown settings.
+| Keys:
+| - default (env MAIL_MAILER): Default mailer.
+| - mailers.*: Transport settings.
+| - from.* (env MAIL_FROM_*): Global "from" address.
+| - markdown.*: Mail Markdown paths and themes.
+*/
+
 return [
 
     /*

@@ -1,5 +1,16 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: filesystems
+|--------------------------------------------------------------------------
+| Purpose: Filesystem disks and default disk selection.
+| Keys:
+| - default (env FILESYSTEM_DISK): Default storage disk.
+| - disks.*: Disk definitions (local, s3, etc.).
+| - links: Public symlink mappings.
+*/
+
 return [
 
     /*

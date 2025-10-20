@@ -1,5 +1,17 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: database
+|--------------------------------------------------------------------------
+| Purpose: Database connections, migrations table, Redis, and options.
+| Keys:
+| - default (env DB_CONNECTION): Default connection name.
+| - connections.*: Per-driver DSN and options (env DB_* vars).
+| - migrations: Migrations table name.
+| - redis.*: Redis clients and options.
+*/
+
 use Illuminate\Support\Str;
 
 return [

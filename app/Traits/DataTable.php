@@ -22,11 +22,15 @@ trait DataTable
         Request $request,
         array $options,
     ): LengthAwarePaginator {
-        $searchParam = $options['search_param'] ?? 'search';
-        $searchable  = (array) ($options['searchable'] ?? []);
-        $sortable    = (array) ($options['sortable'] ?? []);
-        $defaultSort = $options['default_sort'] ?? null; // [col, dir]
-        $filters     = (array) ($options['filters'] ?? []);
+        $searchParam    = $options['search_param'] ?? 'search';
+        $searchable     = (array) ($options['searchable'] ?? []);
+        $sortable       = (array) ($options['sortable'] ?? []);
+        $defaultSort    = $options['default_sort'] ?? null; // [col, dir]
+        $filters        = (array) ($options['filters'] ?? []);
+        $searchModeOpt  = $options['search_mode'] ?? config('datatable.search_mode', 'any');
+        $searchMode     = in_array($searchModeOpt, ['any', 'all'], true) ? $searchModeOpt : 'any';
+        $defaultPerPage = max(1, (int) ($options['page_size_default'] ?? config('datatable.page_size_default', 20)));
+        $maxPerPage     = max($defaultPerPage, (int) ($options['page_size_max'] ?? config('datatable.page_size_max', 100)));
 
         // Optional select & with
         if (!empty($options['select'])) {
@@ -48,10 +52,13 @@ trait DataTable
         // - plain columns: 'number'
         // - relation columns: 'contract.tenant.name' or ['relation' => 'contract.tenant', 'column' => 'name']
         // - custom callbacks: function (Builder $q, string $term, string $like) { ... }
+        // - multi-term queries: separate terms by whitespace, use search_mode 'any' (default, OR across terms) or 'all' (AND across terms)
         $search = trim((string) $request->query($searchParam, ''));
         if ($search !== '' && !empty($searchable)) {
-            $like = $this->tableLikeOperator();
-            $query->where(function (Builder $q) use ($search, $like, $searchable) {
+            $like  = $this->tableLikeOperator();
+            $terms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+            $applyTermGroup = function (Builder $q, string $term) use ($searchable, $like): void {
                 $first = true;
 
                 $applyPlain = function (Builder $q, string $col, string $term, string $like, bool &$first): void {
@@ -80,13 +87,13 @@ trait DataTable
                     // Callback: receives (Builder $q, string $term, string $like)
                     if (is_callable($col)) {
                         if ($first) {
-                            $q->where(function (Builder $nq) use ($col, $search, $like) {
-                                $col($nq, $search, $like);
+                            $q->where(function (Builder $nq) use ($col, $term, $like) {
+                                $col($nq, $term, $like);
                             });
                             $first = false;
                         } else {
-                            $q->orWhere(function (Builder $nq) use ($col, $search, $like) {
-                                $col($nq, $search, $like);
+                            $q->orWhere(function (Builder $nq) use ($col, $term, $like) {
+                                $col($nq, $term, $like);
                             });
                         }
                         continue;
@@ -96,7 +103,7 @@ trait DataTable
                     if (is_array($col) && isset($col['relation'], $col['column'])) {
                         $relation = (string) $col['relation'];
                         $field    = (string) $col['column'];
-                        $applyRelation($q, $relation, $field, $search, $like, $first);
+                        $applyRelation($q, $relation, $field, $term, $like, $first);
                         continue;
                     }
 
@@ -107,17 +114,45 @@ trait DataTable
                         $field    = array_pop($parts);
                         $relation = implode('.', $parts);
                         if ($relation !== '' && $field !== '') {
-                            $applyRelation($q, $relation, $field, $search, $like, $first);
+                            $applyRelation($q, $relation, $field, $term, $like, $first);
                             continue;
                         }
                     }
 
                     // Fallback: plain column string
                     if (is_string($col) && $col !== '') {
-                        $applyPlain($q, $col, $search, $like, $first);
+                        $applyPlain($q, $col, $term, $like, $first);
                     }
                 }
-            });
+            };
+
+            // If multiple terms present, either match ANY (OR) or ALL (AND)
+            if (count($terms) > 1 && $searchMode === 'all') {
+                $query->where(function (Builder $q) use ($terms, $applyTermGroup) {
+                    foreach ($terms as $term) {
+                        $q->where(function (Builder $nq) use ($term, $applyTermGroup) {
+                            $applyTermGroup($nq, $term);
+                        });
+                    }
+                });
+            } else {
+                // Default: ANY term matches
+                $query->where(function (Builder $q) use ($terms, $applyTermGroup) {
+                    $firstGroup = true;
+                    foreach ($terms as $term) {
+                        if ($firstGroup) {
+                            $q->where(function (Builder $nq) use ($term, $applyTermGroup) {
+                                $applyTermGroup($nq, $term);
+                            });
+                            $firstGroup = false;
+                        } else {
+                            $q->orWhere(function (Builder $nq) use ($term, $applyTermGroup) {
+                                $applyTermGroup($nq, $term);
+                            });
+                        }
+                    }
+                });
+            }
         }
 
         // Sorting (allow mapping or callback per key)
@@ -138,7 +173,7 @@ trait DataTable
 
         // Pagination
         $page    = max(1, (int) $request->integer('page', 1));
-        $perPage = max(1, min(100, (int) $request->integer('per_page', 20)));
+        $perPage = max(1, min($maxPerPage, (int) $request->integer('per_page', $defaultPerPage)));
 
         return $query->paginate($perPage, ['*'], 'page', $page)->withQueryString();
     }

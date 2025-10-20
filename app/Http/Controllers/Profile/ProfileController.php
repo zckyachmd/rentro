@@ -39,11 +39,11 @@ class ProfileController extends Controller
         $hasAttachment = $doc && method_exists($doc, 'getAttachments') && !empty($doc->getAttachments('private'));
         $docDto        = $doc ? [
             'id'          => $doc->id,
-            'type'        => $doc->type,
+            'type'        => ($doc->type instanceof \BackedEnum) ? $doc->type->value : $doc->type,
             'number'      => $doc->number,
             'issued_at'   => $doc->issued_at,
             'expires_at'  => $doc->expires_at,
-            'status'      => $doc->status,
+            'status'      => ($doc->status instanceof \BackedEnum) ? $doc->status->value : $doc->status,
             'verified_at' => $doc->verified_at,
             'has_file'    => $hasAttachment,
         ] : null;
@@ -106,11 +106,11 @@ class ProfileController extends Controller
         $hasAttachment = $doc && method_exists($doc, 'getAttachments') && !empty($doc->getAttachments('private'));
         $docDto        = $doc ? [
             'id'          => $doc->id,
-            'type'        => $doc->type,
+            'type'        => ($doc->type instanceof \BackedEnum) ? $doc->type->value : $doc->type,
             'number'      => $doc->number,
             'issued_at'   => $doc->issued_at,
             'expires_at'  => $doc->expires_at,
-            'status'      => $doc->status,
+            'status'      => ($doc->status instanceof \BackedEnum) ? $doc->status->value : $doc->status,
             'verified_at' => $doc->verified_at,
             'has_file'    => $hasAttachment,
         ] : null;
@@ -210,7 +210,7 @@ class ProfileController extends Controller
                     'number'     => $docInput['number'] ?? null,
                     'issued_at'  => $docInput['issued_at'] ?? null,
                     'expires_at' => $docInput['expires_at'] ?? null,
-                    'status'     => 'pending',
+                    'status'     => \App\Enum\DocumentStatus::PENDING,
                 ]);
                 $doc->save();
                 $created = true;
@@ -234,7 +234,7 @@ class ProfileController extends Controller
             }
 
             if (!empty(array_intersect($dirtyKeys, ['type', 'number', 'issued_at', 'expires_at', 'attachments']))) {
-                $doc->status      = 'pending';
+                $doc->status      = \App\Enum\DocumentStatus::PENDING;
                 $doc->verified_at = null;
             }
 

@@ -1,5 +1,13 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: horizon
+|--------------------------------------------------------------------------
+| Purpose: Laravel Horizon dashboard, monitoring, and queue worker settings.
+| Note: See official Horizon docs for advanced balancing and environments.
+*/
+
 use Illuminate\Support\Str;
 
 return [

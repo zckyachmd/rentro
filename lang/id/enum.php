@@ -58,6 +58,15 @@ return [
         ],
     ],
 
+    'testimony' => [
+        'status' => [
+            'pending'   => 'Menunggu',
+            'approved'  => 'Disetujui',
+            'rejected'  => 'Ditolak',
+            'published' => 'Dipublikasikan',
+        ],
+    ],
+
     'payment' => [
         'method' => [
             'cash'            => 'Tunai',
@@ -98,6 +107,30 @@ return [
             'deluxe'   => 'Deluxe',
             'suite'    => 'Suite',
             'economy'  => 'Ekonomi',
+        ],
+    ],
+
+    'handover' => [
+        'status' => [
+            'pending'   => 'Menunggu',
+            'confirmed' => 'Terkonfirmasi',
+            'disputed'  => 'Disanggah',
+        ],
+        'type' => [
+            'checkin'  => 'Check‑in',
+            'checkout' => 'Check‑out',
+        ],
+    ],
+
+    'wifi' => [
+        'session' => [
+            'status' => [
+                'auth'    => 'Otorisasi',
+                'blocked' => 'Diblokir',
+                'revoked' => 'Dicabut',
+                'expired' => 'Kedaluwarsa',
+                'pending' => 'Menunggu',
+            ],
         ],
     ],
 

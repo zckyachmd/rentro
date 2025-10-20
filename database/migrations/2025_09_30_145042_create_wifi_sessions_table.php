@@ -1,5 +1,6 @@
 <?php
 
+use App\Enum\WifiSessionStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,7 +20,7 @@ return new class extends Migration
             $table->string('mac', 17)->index();
             $table->string('ip', 45)->nullable();
             $table->string('token', 64)->unique();
-            $table->enum('status', ['auth','blocked','revoked','expired','pending'])->default('pending');
+            $table->string('status', 20)->default(WifiSessionStatus::PENDING->value);
             $table->timestamp('started_at')->nullable();
             $table->timestamp('last_seen_at')->nullable();
             $table->timestamp('ended_at')->nullable();

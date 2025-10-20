@@ -1,5 +1,17 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: diagnostics
+|--------------------------------------------------------------------------
+| Purpose: Control internal diagnostics endpoints and access policy.
+| Keys:
+| - proxy_debug_enabled (env PROXY_DEBUG_ENABLED): Toggle the proxy debug endpoint.
+|   Defaults to true on non-production APP_ENV.
+| - proxy_debug_token (env PROXY_DEBUG_TOKEN): Optional shared token required
+|   via query (?t=TOKEN) to access the endpoint. Null disables token check.
+*/
+
 return [
     // Enable the proxy debug endpoint.
     // Default: enabled in non-production, disabled in production.

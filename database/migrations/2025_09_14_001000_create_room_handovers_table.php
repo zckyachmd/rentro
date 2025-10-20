@@ -1,5 +1,6 @@
 <?php
 
+use App\Enum\RoomHandoverStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,10 +13,10 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->primary();
             $table->foreignId('contract_id')->constrained()->cascadeOnDelete();
             $table->string('type', 20)->index(); // checkin | checkout
-            $table->string('status', 20)->default('Pending')->index(); // Pending | Confirmed | Disputed
+            $table->string('status', 20)->default(RoomHandoverStatus::PENDING->value)->index();
             $table->text('notes')->nullable();
             $table->json('meta')->nullable();
-            $table->json('attachments')->nullable(); // optional attachments not tied to specific items
+            $table->json('attachments')->nullable();
             $table->timestamps();
 
             $table->index(['contract_id', 'type']);

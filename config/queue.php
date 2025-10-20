@@ -1,5 +1,16 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: queue
+|--------------------------------------------------------------------------
+| Purpose: Queue connections, failed job handling, and batching.
+| Keys:
+| - default (env QUEUE_CONNECTION): Default queue connection.
+| - connections.*: Per-driver settings (sync, database, redis, etc.).
+| - failed.*: Failed jobs table and connection.
+*/
+
 return [
 
     /*

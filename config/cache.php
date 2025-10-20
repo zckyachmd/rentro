@@ -1,5 +1,16 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: cache
+|--------------------------------------------------------------------------
+| Purpose: Cache store selection, store definitions, and prefixing.
+| Keys:
+| - default (env CACHE_STORE): Default cache store.
+| - stores.*: Driver-specific settings for each cache store.
+| - prefix (env CACHE_PREFIX): Cache key prefixing for isolation.
+*/
+
 use Illuminate\Support\Str;
 
 return [

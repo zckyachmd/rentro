@@ -143,7 +143,7 @@ class WifiDogController extends Controller
                 'mac'          => $clientMac,
                 'ip'           => $clientIp,
                 'token'        => $token,
-                'status'       => WifiSession::STATUS_PENDING,
+                'status'       => \App\Enum\WifiSessionStatus::PENDING,
                 'started_at'   => now(),
                 'last_seen_at' => now(),
                 'meta'         => ['ssid' => $ssid],
@@ -191,7 +191,7 @@ class WifiDogController extends Controller
                 $session = WifiSession::where('token', $token)->where('mac', $mac)->first();
 
                 $auth = 0;
-                if ($session && $session->status === WifiSession::STATUS_AUTH) {
+                if ($session && $session->status === \App\Enum\WifiSessionStatus::AUTH) {
                     // Update aggregates on the session
                     $session->applyCounters($incoming, $outgoing, $uptime);
 
@@ -230,8 +230,8 @@ class WifiDogController extends Controller
             $result = $this->wifi->evaluateSession($session);
             if ($result['allowed']) {
                 $allow = true;
-                if ($session->status !== WifiSession::STATUS_AUTH) {
-                    $session->status = WifiSession::STATUS_AUTH;
+                if ($session->status !== \App\Enum\WifiSessionStatus::AUTH) {
+                    $session->status = \App\Enum\WifiSessionStatus::AUTH;
                     $session->save();
                 }
             } else {
@@ -267,7 +267,7 @@ class WifiDogController extends Controller
                 ->first();
         }
 
-        if (!$session || in_array($session->status, [WifiSession::STATUS_REVOKED, WifiSession::STATUS_EXPIRED, WifiSession::STATUS_BLOCKED])) {
+        if (!$session || in_array($session->status, [\App\Enum\WifiSessionStatus::REVOKED, \App\Enum\WifiSessionStatus::EXPIRED, \App\Enum\WifiSessionStatus::BLOCKED], true)) {
             return redirect()->route('wifidog.login');
         }
 

@@ -58,6 +58,15 @@ return [
         ],
     ],
 
+    'testimony' => [
+        'status' => [
+            'pending'   => 'Pending',
+            'approved'  => 'Approved',
+            'rejected'  => 'Rejected',
+            'published' => 'Published',
+        ],
+    ],
+
     'payment' => [
         'method' => [
             'cash'            => 'Cash',
@@ -98,6 +107,30 @@ return [
             'deluxe'   => 'Deluxe',
             'suite'    => 'Suite',
             'economy'  => 'Economy',
+        ],
+    ],
+
+    'handover' => [
+        'status' => [
+            'pending'   => 'Pending',
+            'confirmed' => 'Confirmed',
+            'disputed'  => 'Disputed',
+        ],
+        'type' => [
+            'checkin'  => 'Check‑in',
+            'checkout' => 'Check‑out',
+        ],
+    ],
+
+    'wifi' => [
+        'session' => [
+            'status' => [
+                'auth'    => 'Authorized',
+                'blocked' => 'Blocked',
+                'revoked' => 'Revoked',
+                'expired' => 'Expired',
+                'pending' => 'Pending',
+            ],
         ],
     ],
 

@@ -25,16 +25,16 @@ class HandoverManagementController extends Controller
             ->get();
 
         $redoByType = [
-            'checkin'  => $list->where('type', 'checkin')->count() > 1,
-            'checkout' => $list->where('type', 'checkout')->count() > 1,
+            'checkin'  => $list->where('type', \App\Enum\RoomHandoverType::CHECKIN)->count() > 1,
+            'checkout' => $list->where('type', \App\Enum\RoomHandoverType::CHECKOUT)->count() > 1,
         ];
 
         return response()->json([
             'handovers' => $list->map(function (RoomHandover $h) use ($redoByType) {
                 return [
                     'id'               => (string) $h->id,
-                    'type'             => $h->type,
-                    'status'           => $h->status,
+                    'type'             => $h->type->value,
+                    'status'           => $h->status->value,
                     'recorded_at'      => $h->created_at?->toDateTimeString(),
                     'notes'            => $h->notes,
                     'acknowledged'     => (bool) ($h->meta['acknowledged_by_tenant'] ?? false),
@@ -46,7 +46,7 @@ class HandoverManagementController extends Controller
                     'attachments'      => $h->getAttachments(),
                     'meta'             => [
                         'redo'   => $redoByType,
-                        'redone' => (bool) ($redoByType[$h->type] ?? false),
+                        'redone' => (bool) ($redoByType[$h->type->value] ?? false),
                     ],
                 ];
             }),

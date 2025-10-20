@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Enum\ContractStatus;
+use App\Enum\RoomHandoverStatus;
+use App\Enum\RoomHandoverType;
 use App\Enum\RoomStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\HandoverDisputeRequest;
@@ -32,14 +34,14 @@ class HandoverController extends Controller
 
         return response()->json([
             'handovers' => $list->map(function (RoomHandover $h) {
-                $status = strtolower((string) ($h->status ?? ''));
+                $status = strtolower($h->status->value);
                 $ack    = (bool) ($h->meta['acknowledged_by_tenant'] ?? false);
                 $disp   = (bool) ($h->meta['disputed_by_tenant'] ?? false);
 
                 return [
                     'id'              => (string) $h->id,
-                    'type'            => $h->type,
-                    'status'          => $h->status,
+                    'type'            => $h->type->value,
+                    'status'          => $h->status->value,
                     'recorded_at'     => $h->created_at?->toDateTimeString(),
                     'notes'           => $h->notes,
                     'acknowledged'    => $ack,
@@ -62,11 +64,11 @@ class HandoverController extends Controller
         $c = $handover->contract;
         abort_unless((string) ($c?->user_id) === (string) $request->user()->id, 404);
 
-        $status = (string) ($handover->status ?? '');
-        if (strtolower($status) !== 'pending') {
-            $msg = $status === 'Confirmed'
+        $status = $handover->status;
+        if ($status !== RoomHandoverStatus::PENDING) {
+            $msg = $status === RoomHandoverStatus::CONFIRMED
                 ? __('tenant/handover.confirmed_already')
-                : ($status === 'Disputed'
+                : ($status === RoomHandoverStatus::DISPUTED
                     ? __('tenant/handover.disputed_already')
                     : __('tenant/handover.status_invalid_for_confirm'));
 
@@ -79,7 +81,7 @@ class HandoverController extends Controller
         unset($meta['disputed_by_tenant'], $meta['disputed_at'], $meta['dispute_note']);
 
         $handover->update([
-            'status' => 'Confirmed',
+            'status' => RoomHandoverStatus::CONFIRMED,
             'meta'   => $meta,
         ]);
 
@@ -95,7 +97,7 @@ class HandoverController extends Controller
 
         try {
             $contract = $handover->contract;
-            if ($contract && $handover->type === 'checkin') {
+            if ($contract && $handover->type === RoomHandoverType::CHECKIN) {
                 $requireTenantAck = (bool) (AppSetting::config('handover.require_checkin_for_activate', AppSetting::config('handover.require_tenant_ack_for_activate', false)) ?? false);
                 if ($requireTenantAck && $contract->status->value !== ContractStatus::ACTIVE->value) {
                     $contract->forceFill(['status' => ContractStatus::ACTIVE])->save();
@@ -110,7 +112,7 @@ class HandoverController extends Controller
         }
 
         try {
-            if ($handover->type === 'checkout') {
+            if ($handover->type === RoomHandoverType::CHECKOUT) {
                 $requireTenantAckForComplete = (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false);
                 if ($requireTenantAckForComplete) {
                     $contract = $handover->contract;
@@ -131,11 +133,11 @@ class HandoverController extends Controller
         $c = $handover->contract;
         abort_unless((string) ($c?->user_id) === (string) $request->user()->id, 404);
 
-        $status = (string) ($handover->status ?? '');
-        if (strtolower($status) !== 'pending') {
-            $msg = $status === 'Confirmed'
+        $status = $handover->status;
+        if ($status !== RoomHandoverStatus::PENDING) {
+            $msg = $status === RoomHandoverStatus::CONFIRMED
                 ? __('tenant/handover.dispute_confirmed_already')
-                : ($status === 'Disputed'
+                : ($status === RoomHandoverStatus::DISPUTED
                     ? __('tenant/handover.dispute_already')
                     : __('tenant/handover.status_invalid_for_dispute'));
 
@@ -152,14 +154,14 @@ class HandoverController extends Controller
         $meta['acknowledge_note']       = null;
 
         $handover->update([
-            'status' => 'Disputed',
+            'status' => RoomHandoverStatus::DISPUTED,
             'meta'   => $meta,
         ]);
 
         // Jika checkout disanggah dan sistem auto-complete saat admin checkout (tanpa butuh konfirmasi tenant),
         // maka kembalikan kontrak ke ACTIVE agar admin bisa melakukan checkout ulang.
         try {
-            if ($handover->type === 'checkout') {
+            if ($handover->type === RoomHandoverType::CHECKOUT) {
                 $requireCheckoutComplete     = (bool) AppSetting::config('handover.require_checkout_for_complete', true);
                 $requireTenantAckForComplete = (bool) AppSetting::config('handover.require_tenant_ack_for_complete', false);
                 $contract                    = $handover->contract;

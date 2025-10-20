@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Enum\ContractStatus;
+use App\Enum\RoomHandoverStatus;
+use App\Enum\RoomHandoverType;
 use App\Enum\RoomStatus;
 use App\Models\AppSetting;
 use App\Models\Contract;
@@ -36,11 +38,11 @@ class HandoverService
         if ($contract->status->value === ContractStatus::ACTIVE->value) {
             $lastCheckin = $contract
                 ->hasMany(RoomHandover::class, 'contract_id')
-                ->where('type', 'checkin')
+                ->where('type', RoomHandoverType::CHECKIN->value)
                 ->orderByDesc('created_at')
                 ->orderByDesc('id')
                 ->first();
-            $allowActiveDisputedRedo = $lastCheckin && (string) $lastCheckin->status === 'Disputed';
+            $allowActiveDisputedRedo = $lastCheckin && $lastCheckin->status === RoomHandoverStatus::DISPUTED;
         }
 
         if (!in_array($contract->status->value, $allowedStatuses, true) && !$allowActiveDisputedRedo) {
@@ -54,8 +56,8 @@ class HandoverService
 
         $hasActiveCheckin = $contract
             ->hasMany(RoomHandover::class, 'contract_id')
-            ->where('type', 'checkin')
-            ->whereIn('status', ['Pending', 'Confirmed'])
+            ->where('type', RoomHandoverType::CHECKIN->value)
+            ->whereIn('status', [RoomHandoverStatus::PENDING->value, RoomHandoverStatus::CONFIRMED->value])
             ->exists();
         if ($hasActiveCheckin) {
             throw new \RuntimeException(__('management/handover.errors.pending_checkin_exists'));
@@ -77,27 +79,27 @@ class HandoverService
         if ($isCompleted) {
             $lastCheckout = $contract
                 ->hasMany(RoomHandover::class, 'contract_id')
-                ->where('type', 'checkout')
+                ->where('type', RoomHandoverType::CHECKOUT->value)
                 ->orderByDesc('created_at')
                 ->orderByDesc('id')
                 ->first();
-            $allowCompletedDisputed = $lastCheckout && (string) $lastCheckout->status === 'Disputed';
+            $allowCompletedDisputed = $lastCheckout && $lastCheckout->status === RoomHandoverStatus::DISPUTED;
         }
         if (!$isActive && !$allowCompletedDisputed) {
             throw new \RuntimeException(__('management/handover.errors.invalid_for_checkout'));
         }
         $hasConfirmedCheckin = $contract
             ->hasMany(RoomHandover::class, 'contract_id')
-            ->where('type', 'checkin')
-            ->where('status', 'Confirmed')
+            ->where('type', RoomHandoverType::CHECKIN->value)
+            ->where('status', RoomHandoverStatus::CONFIRMED->value)
             ->exists();
         if (!$hasConfirmedCheckin) {
             throw new \RuntimeException(__('management/handover.errors.no_confirmed_checkin'));
         }
         $hasCheckout = $contract
             ->hasMany(RoomHandover::class, 'contract_id')
-            ->where('type', 'checkout')
-            ->whereIn('status', ['Pending', 'Confirmed'])
+            ->where('type', RoomHandoverType::CHECKOUT->value)
+            ->whereIn('status', [RoomHandoverStatus::PENDING->value, RoomHandoverStatus::CONFIRMED->value])
             ->exists();
         if ($hasCheckout) {
             throw new \RuntimeException(__('management/handover.errors.checkout_already_exists'));
@@ -119,8 +121,8 @@ class HandoverService
                 if ($type === 'checkin') {
                     $hasActiveCheckin = $contract
                         ->hasMany(RoomHandover::class, 'contract_id')
-                        ->where('type', 'checkin')
-                        ->whereIn('status', ['Pending', 'Confirmed'])
+                        ->where('type', RoomHandoverType::CHECKIN->value)
+                        ->whereIn('status', [RoomHandoverStatus::PENDING->value, RoomHandoverStatus::CONFIRMED->value])
                         ->exists();
                     if ($hasActiveCheckin) {
                         throw new \RuntimeException(__('management/handover.errors.pending_checkin_exists'));
@@ -128,16 +130,16 @@ class HandoverService
                 } elseif ($type === 'checkout') {
                     $hasConfirmedCheckin = $contract
                         ->hasMany(RoomHandover::class, 'contract_id')
-                        ->where('type', 'checkin')
-                        ->where('status', 'Confirmed')
+                        ->where('type', RoomHandoverType::CHECKIN->value)
+                        ->where('status', RoomHandoverStatus::CONFIRMED->value)
                         ->exists();
                     if (!$hasConfirmedCheckin) {
                         throw new \RuntimeException(__('management/handover.errors.no_confirmed_checkin'));
                     }
                     $hasCheckout = $contract
                         ->hasMany(RoomHandover::class, 'contract_id')
-                        ->where('type', 'checkout')
-                        ->whereIn('status', ['Pending', 'Confirmed'])
+                        ->where('type', RoomHandoverType::CHECKOUT->value)
+                        ->whereIn('status', [RoomHandoverStatus::PENDING->value, RoomHandoverStatus::CONFIRMED->value])
                         ->exists();
                     if ($hasCheckout) {
                         throw new \RuntimeException(__('management/handover.errors.checkout_already_exists'));
@@ -148,8 +150,8 @@ class HandoverService
 
                 $handover = RoomHandover::create([
                     'contract_id' => $contract->id,
-                    'type'        => $type,
-                    'status'      => 'Pending',
+                    'type'        => $type === 'checkin' ? RoomHandoverType::CHECKIN : RoomHandoverType::CHECKOUT,
+                    'status'      => RoomHandoverStatus::PENDING,
                     'notes'       => $notes ?: null,
                 ]);
 

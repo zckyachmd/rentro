@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import type { Table } from "@tanstack/react-table"
 import { useTranslation } from 'react-i18next'
 
@@ -54,6 +55,13 @@ export function DataTablePagination<TData>({
   const sCanPrev = serverMeta ? serverMeta.currentPage > 1 : canPrev
   const sCanNext = serverMeta ? serverMeta.currentPage < (serverMeta.lastPage ?? 1) : canNext
 
+  const computedOptions = React.useMemo(() => {
+    // ensure current page size is present in the dropdown options
+    const nums = new Set<number>(pageSizeOptions.map(Number))
+    nums.add(Number(displayPageSize))
+    return Array.from(nums).sort((a, b) => a - b)
+  }, [pageSizeOptions, displayPageSize])
+
   const PageSize = () => (
     <div className="hidden items-center gap-2 md:flex">
       <span className="hidden text-sm text-muted-foreground md:inline">{t('datatable.per_page')}</span>
@@ -69,7 +77,7 @@ export function DataTablePagination<TData>({
           <SelectValue placeholder={t('datatable.per_page')} />
         </SelectTrigger>
         <SelectContent>
-          {pageSizeOptions.map((n) => (
+          {computedOptions.map((n) => (
             <SelectItem key={n} value={String(n)}>
               {n}
             </SelectItem>

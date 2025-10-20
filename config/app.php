@@ -1,5 +1,14 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: app
+|--------------------------------------------------------------------------
+| Purpose: Core application settings (name, env, URL, timezone, locales,
+| encryption keys, HTTPS enforcement, and maintenance mode driver).
+| Note: Many keys are fed from APP_* env vars; see inline comments.
+*/
+
 return [
 
     /*

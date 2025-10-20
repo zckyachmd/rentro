@@ -1,5 +1,18 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: auth
+|--------------------------------------------------------------------------
+| Purpose: Authentication guards, providers, password reset and timeouts.
+| Keys:
+| - defaults.guard/passwords: Default guard & broker.
+| - guards.*: Guard drivers & providers.
+| - providers.*: User providers (eloquent/database).
+| - passwords.*: Reset token settings and storage.
+| - password_timeout: Confirmation timeout seconds.
+*/
+
 return [
 
     /*

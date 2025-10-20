@@ -50,14 +50,14 @@ class ContractController extends Controller
         $ids               = $page->getCollection()->pluck('id');
         $pendingCheckinIds = RoomHandover::query()
             ->whereIn('contract_id', $ids)
-            ->where('type', 'checkin')
-            ->where('status', 'Pending')
+            ->where('type', \App\Enum\RoomHandoverType::CHECKIN->value)
+            ->where('status', \App\Enum\RoomHandoverStatus::PENDING->value)
             ->pluck('contract_id')
             ->unique();
         $pendingCheckoutIds = RoomHandover::query()
             ->whereIn('contract_id', $ids)
-            ->where('type', 'checkout')
-            ->where('status', 'Pending')
+            ->where('type', \App\Enum\RoomHandoverType::CHECKOUT->value)
+            ->where('status', \App\Enum\RoomHandoverStatus::PENDING->value)
             ->pluck('contract_id')
             ->unique();
 

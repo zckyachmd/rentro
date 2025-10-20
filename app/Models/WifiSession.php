@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enum\WifiSessionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,6 +28,7 @@ class WifiSession extends Model
     ];
 
     protected $casts = [
+        'status'       => WifiSessionStatus::class,
         'started_at'   => 'datetime',
         'last_seen_at' => 'datetime',
         'ended_at'     => 'datetime',
@@ -35,12 +37,6 @@ class WifiSession extends Model
         'uptime'       => 'integer',
         'meta'         => 'array',
     ];
-
-    public const STATUS_AUTH    = 'auth';
-    public const STATUS_BLOCKED = 'blocked';
-    public const STATUS_REVOKED = 'revoked';
-    public const STATUS_EXPIRED = 'expired';
-    public const STATUS_PENDING = 'pending';
 
     public function user(): BelongsTo
     {
@@ -64,7 +60,7 @@ class WifiSession extends Model
 
     public function scopeActive($q)
     {
-        return $q->whereIn('status', [self::STATUS_AUTH, self::STATUS_PENDING]);
+        return $q->whereIn('status', [WifiSessionStatus::AUTH->value, WifiSessionStatus::PENDING->value]);
     }
 
     public function applyCounters(int $incoming, int $outgoing, ?int $uptime): void
@@ -80,7 +76,7 @@ class WifiSession extends Model
 
     public function revoke(string $reason = 'revoked'): void
     {
-        $this->status       = self::STATUS_REVOKED;
+        $this->status       = WifiSessionStatus::REVOKED;
         $this->ended_reason = $reason;
         $this->ended_at     = now();
         $this->save();

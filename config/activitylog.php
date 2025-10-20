@@ -1,5 +1,13 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: activitylog (spatie/laravel-activitylog)
+|--------------------------------------------------------------------------
+| Purpose: Configure activity logging behavior, storage, and model.
+| Note: See package docs; keys preserved from upstream defaults.
+*/
+
 return [
 
     /*

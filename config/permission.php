@@ -1,5 +1,13 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: permission (spatie/laravel-permission)
+|--------------------------------------------------------------------------
+| Purpose: Role & permission settings and caching.
+| Note: See package docs for full details. This file retains upstream keys.
+*/
+
 return [
 
     'models' => [

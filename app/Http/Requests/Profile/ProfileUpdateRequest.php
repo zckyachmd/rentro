@@ -71,7 +71,7 @@ class ProfileUpdateRequest extends FormRequest
             'document.file'   => [
                 Rule::requiredIf(function () use ($user) {
                     $current    = $user->document;
-                    $isRejected = $current && (string) $current->status === (string) (DocumentStatus::REJECTED->value);
+                    $isRejected = $current && $current->status === DocumentStatus::REJECTED;
 
                     return $this->has('document') && $isRejected;
                 }),

@@ -1,5 +1,20 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Config: twofactor
+|--------------------------------------------------------------------------
+| Purpose: Parameters for TOTP-based Two-Factor Authentication.
+| Keys:
+| - window (env TOTP_WINDOW): Number of tolerated 30s steps for verification.
+| - period (env TOTP_PERIOD): Duration of each OTP code in seconds.
+| - digits (env TOTP_DIGITS): OTP code length.
+| - algorithm (env TOTP_ALGO): Hash algorithm (e.g., SHA1, SHA256, SHA512).
+| - qr_size (env TOTP_QR_SIZE): QR code size in pixels.
+| - issuer (env TOTP_ISSUER / fallback APP_NAME): Issuer label in authenticator app.
+| - session_expire (env TWOFACTOR_SESSION_EXPIRE): Pending 2FA session expiry minutes.
+*/
+
 return [
     /*
     |--------------------------------------------------------------------------

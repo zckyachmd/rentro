@@ -2,6 +2,17 @@
 
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
+/*
+|--------------------------------------------------------------------------
+| Config: trusted
+|--------------------------------------------------------------------------
+| Purpose: Configure trusted proxies and forwarded header handling.
+| Keys:
+| - proxies (env TRUSTED_PROXIES): CSV/CIDR list or '*' to trust all.
+| - headers: Bitmask of forwarded headers honored from proxies.
+| - hosts (env TRUSTED_HOSTS): Regex pattern(s) of allowed hosts.
+*/
+
 return [
     // Comma-separated list of proxies or CIDRs (e.g., "10.0.0.0/8, 172.16.0.0/12").
     // Use "*" to trust all proxies (typical in container / ingress / Cloudflare setups).

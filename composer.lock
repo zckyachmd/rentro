@@ -3370,31 +3370,31 @@
         },
         {
             "name": "nunomaduro/termwind",
-            "version": "v2.3.1",
+            "version": "v2.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nunomaduro/termwind.git",
-                "reference": "dfa08f390e509967a15c22493dc0bac5733d9123"
+                "reference": "eb61920a53057a7debd718a5b89c2178032b52c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nunomaduro/termwind/zipball/dfa08f390e509967a15c22493dc0bac5733d9123",
-                "reference": "dfa08f390e509967a15c22493dc0bac5733d9123",
+                "url": "https://api.github.com/repos/nunomaduro/termwind/zipball/eb61920a53057a7debd718a5b89c2178032b52c0",
+                "reference": "eb61920a53057a7debd718a5b89c2178032b52c0",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
                 "php": "^8.2",
-                "symfony/console": "^7.2.6"
+                "symfony/console": "^7.3.4"
             },
             "require-dev": {
-                "illuminate/console": "^11.44.7",
-                "laravel/pint": "^1.22.0",
+                "illuminate/console": "^11.46.1",
+                "laravel/pint": "^1.25.1",
                 "mockery/mockery": "^1.6.12",
-                "pestphp/pest": "^2.36.0 || ^3.8.2",
-                "phpstan/phpstan": "^1.12.25",
+                "pestphp/pest": "^2.36.0 || ^3.8.4",
+                "phpstan/phpstan": "^1.12.32",
                 "phpstan/phpstan-strict-rules": "^1.6.2",
-                "symfony/var-dumper": "^7.2.6",
+                "symfony/var-dumper": "^7.3.4",
                 "thecodingmachine/phpstan-strict-rules": "^1.0.0"
             },
             "type": "library",
@@ -3437,7 +3437,7 @@
             ],
             "support": {
                 "issues": "https://github.com/nunomaduro/termwind/issues",
-                "source": "https://github.com/nunomaduro/termwind/tree/v2.3.1"
+                "source": "https://github.com/nunomaduro/termwind/tree/v2.3.2"
             },
             "funding": [
                 {
@@ -3453,7 +3453,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-05-08T08:14:37+00:00"
+            "time": "2025-10-18T11:10:27+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
@@ -9067,16 +9067,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.88.2",
+            "version": "v3.89.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "a8d15584bafb0f0d9d938827840060fd4a3ebc99"
+                "reference": "4dd6768cb7558440d27d18f54909eee417317ce9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/a8d15584bafb0f0d9d938827840060fd4a3ebc99",
-                "reference": "a8d15584bafb0f0d9d938827840060fd4a3ebc99",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/4dd6768cb7558440d27d18f54909eee417317ce9",
+                "reference": "4dd6768cb7558440d27d18f54909eee417317ce9",
                 "shasum": ""
             },
             "require": {
@@ -9091,7 +9091,6 @@
                 "php": "^7.4 || ^8.0",
                 "react/child-process": "^0.6.6",
                 "react/event-loop": "^1.5",
-                "react/promise": "^3.3",
                 "react/socket": "^1.16",
                 "react/stream": "^1.4",
                 "sebastian/diff": "^4.0.6 || ^5.1.1 || ^6.0.2 || ^7.0",
@@ -9159,7 +9158,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.88.2"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.89.0"
             },
             "funding": [
                 {
@@ -9167,7 +9166,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-27T00:24:15+00:00"
+            "time": "2025-10-18T19:30:16+00:00"
         },
         {
             "name": "gitonomy/gitlib",
