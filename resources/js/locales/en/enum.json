@@ -99,6 +99,14 @@
         "weekly": "Weekly",
         "monthly": "Monthly"
     },
+    "booking": {
+        "status": {
+            "requested": "Requested",
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "cancelled": "Cancelled"
+        }
+    },
     "locale": {
         "en": "English",
         "id": "Indonesian"

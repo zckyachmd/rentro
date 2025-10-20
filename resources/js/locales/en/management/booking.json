@@ -1,0 +1,25 @@
+{
+    "title": "Bookings",
+    "desc": "Manage tenant bookings.",
+    "list": {
+        "title": "Booking List",
+        "empty": "No bookings found."
+    },
+    "filter": "Filter",
+    "status": "Status",
+    "search_placeholder": "Search booking number, tenant, or room…",
+    "table": {
+        "actions_for": "Actions for {{number}}",
+        "columns": {
+            "estimate": "Estimate"
+        }
+    },
+    "detail": {
+        "title_format": "Booking {{number}}",
+        "summary": "Summary",
+        "approve": "Approve",
+        "reject": "Reject",
+        "reason_placeholder": "Rejection reason (optional)"
+    }
+}
+

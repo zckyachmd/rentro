@@ -99,6 +99,14 @@
         "weekly": "Mingguan",
         "monthly": "Bulanan"
     },
+    "booking": {
+        "status": {
+            "requested": "Diminta",
+            "approved": "Disetujui",
+            "rejected": "Ditolak",
+            "cancelled": "Dibatalkan"
+        }
+    },
     "locale": {
         "en": "Inggris",
         "id": "Indonesia"

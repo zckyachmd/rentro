@@ -1,0 +1,25 @@
+{
+    "title": "Booking",
+    "desc": "Kelola booking tenant.",
+    "list": {
+        "title": "Daftar Booking",
+        "empty": "Tidak ada booking."
+    },
+    "filter": "Filter",
+    "status": "Status",
+    "search_placeholder": "Cari nomor booking, tenant, atau kamar…",
+    "table": {
+        "actions_for": "Aksi untuk {{number}}",
+        "columns": {
+            "estimate": "Estimasi"
+        }
+    },
+    "detail": {
+        "title_format": "Booking {{number}}",
+        "summary": "Ringkasan",
+        "approve": "Setujui",
+        "reject": "Tolak",
+        "reason_placeholder": "Alasan penolakan (opsional)"
+    }
+}
+
