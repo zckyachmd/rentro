@@ -13,30 +13,31 @@ class LoggingHttpGateway extends \Inertia\Ssr\HttpGateway implements \Inertia\Ss
     /**
      * Dispatch the Inertia page to the SSR engine via HTTP with timeouts and logging.
      *
-     * @param  array<string, mixed>  $page
+     * @param array<string, mixed> $page
      */
     public function dispatch(array $page): ?SsrResponse
     {
-        if (! $this->shouldDispatch()) {
+        if (!$this->shouldDispatch()) {
             return null;
         }
 
-        $connect = (float) env('INERTIA_SSR_CONNECT_TIMEOUT', 1.0);
-        $timeout = (float) env('INERTIA_SSR_TIMEOUT', 2.0);
-        $start = microtime(true);
+        $connect = (float) config('inertia.ssr.connect_timeout', 1.0);
+        $timeout = (float) config('inertia.ssr.timeout', 2.0);
+        $start   = microtime(true);
 
         try {
             $response = Http::connectTimeout($connect)
                 ->timeout($timeout)
                 ->post($this->getUrl('/render'), $page);
 
-            if (! $response->successful()) {
+            if (!$response->successful()) {
                 $dur = (int) ((microtime(true) - $start) * 1000);
                 Log::channel('ssr')->warning('SSR non-success response', [
-                    'status' => $response->status(),
+                    'status'      => $response->status(),
                     'duration_ms' => $dur,
-                    'url' => $this->getUrl('/render'),
+                    'url'         => $this->getUrl('/render'),
                 ]);
+
                 return null;
             }
 
@@ -47,15 +48,16 @@ class LoggingHttpGateway extends \Inertia\Ssr\HttpGateway implements \Inertia\Ss
 
             return new SsrResponse(
                 implode("\n", $json['head']),
-                $json['body']
+                $json['body'],
             );
         } catch (Exception $e) {
             $dur = (int) ((microtime(true) - $start) * 1000);
             Log::channel('ssr')->warning('SSR exception', [
-                'error' => $e->getMessage(),
+                'error'       => $e->getMessage(),
                 'duration_ms' => $dur,
-                'url' => $this->getUrl('/render'),
+                'url'         => $this->getUrl('/render'),
             ]);
+
             return null;
         }
     }
@@ -65,12 +67,12 @@ class LoggingHttpGateway extends \Inertia\Ssr\HttpGateway implements \Inertia\Ss
      */
     public function isHealthy(): bool
     {
-        $connect = (float) env('INERTIA_SSR_CONNECT_TIMEOUT', 1.0);
-        $timeout = (float) env('INERTIA_SSR_TIMEOUT', 2.0);
+        $connect = (float) config('inertia.ssr.connect_timeout', 1.0);
+        $timeout = (float) config('inertia.ssr.timeout', 2.0);
+
         return Http::connectTimeout($connect)
             ->timeout($timeout)
             ->get($this->getUrl('/health'))
             ->successful();
     }
 }
-

@@ -16,11 +16,12 @@ return [
     */
 
     'ssr' => [
-        'enabled' => env('INERTIA_SSR_ENABLED', true),
+        'enabled' => env('INERTIA_SSR_ENABLED', false),
         'url'     => env('INERTIA_SSR_URL', 'http://ssr:13714'),
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
-        // Health checks are handled by gateway with timeouts set via env
         'ensure_bundle_exists' => true,
+        'connect_timeout'      => env('INERTIA_SSR_CONNECT_TIMEOUT', 1.0),
+        'timeout'              => env('INERTIA_SSR_TIMEOUT', 2.0),
 
     ],
 

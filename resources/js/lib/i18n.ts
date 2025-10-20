@@ -56,6 +56,8 @@ const supported = (() => {
 })();
 const fallbackSetting = 'id';
 
+const warnedMissing = new Set<string>();
+
 const dynamicBackend = {
     type: 'backend' as const,
 
@@ -105,12 +107,16 @@ const dynamicBackend = {
                 }
             }
 
-            if (import.meta.env?.DEV) {
-                console.warn(
-                    `[i18n] Missing locale for ${language}/${namespace}. Checked:`,
-                    candidates.map((c) => c.key),
-                );
-            }
+            try {
+                const key = `${language}::${namespace}`.toLowerCase();
+                if (!warnedMissing.has(key)) {
+                    warnedMissing.add(key);
+                    const total = candidates.length;
+                    const sample = candidates[0]?.key ?? '-';
+                    // eslint-disable-next-line no-console
+                    console.warn(`[i18n] Missing ${language}/${namespace} (tried ${total} paths, e.g. ${sample})`);
+                }
+            } catch {}
 
             throw new Error(
                 `i18n: no locale found for ${language}/${namespace}`,
@@ -166,7 +172,8 @@ if (!i18n.isInitialized) {
 
             react: { useSuspense: false },
 
-            debug: !!import.meta.env?.DEV,
+            // Keep i18next internal debug OFF to avoid verbose logs; custom minimal logs are handled above
+            debug: false,
         })
         .then(() => {
             const active = (i18n.language || fallbackSetting).toLowerCase();

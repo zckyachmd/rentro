@@ -65,7 +65,7 @@ Quickstart
    docker compose run --rm app php artisan key:generate --force
    ```
 
-2) Build and start:
+2) Build and start (Compose loads variables from `.env` into containers automatically via `env_file`):
    ```bash
    docker compose up -d --build
    ```
@@ -83,9 +83,21 @@ Quickstart
 Notes
 - Default DB is PostgreSQL at service `db`. The app entrypoint will refuse to start if `DB_CONNECTION` is not `pgsql`.
 - The app builds config/route/view caches on boot for performance.
+- Container services receive environment variables from your project `.env` (no need to mount `.env` as a volume).
 - Health ordering: `db`/`redis` → `app` (healthy) → `web`.
-- HTTP port: Nginx maps to host `8888` by default. To customize, set `APP_HTTP_PORT` at compose runtime or edit the compose mapping.
-- SSR: The `ssr` service compiles and runs `bootstrap/ssr/ssr.js`. The app points to `INERTIA_SSR_URL=http://ssr:13714` and enables SSR by default via compose env. If you need to disable SSR quickly, set `INERTIA_SSR_ENABLED=false` on the `app` service.
+- HTTP port: Nginx maps to host `8888` by default. To customize, set `APP_PORT` at compose runtime or edit the compose mapping. The app itself reads `APP_URL` (including its port) for URL generation.
+
+- SSR container is optional via Compose profile:
+  - Run with SSR: `docker compose --profile ssr up -d`
+  - Default `up` without profile will skip the SSR container.
+- Workers (Horizon/Scheduler) are optional via profile and off by default:
+  - Run with workers: `docker compose --profile workers up -d`
+  - Default `up` will not start these services.
+
+Docker Hub outages/rate limits
+- Base images are pulled via Google's public mirror by default (`mirror.gcr.io/library/*`) to avoid Docker Hub anonymous token issues (e.g., 503/500).
+- To force Docker Hub, pass build arg or env: `BASE_REGISTRY=docker.io/library`.
+- SSR behavior: The app auto‑enables SSR when public pages are enabled (AppSetting `public.enabled = true`), and disables SSR in admin‑only mode. The SSR server endpoint defaults to `http://ssr:13714` (configurable via `INERTIA_SSR_URL`), but no ENV is required by default.
 
 Later (optional)
 - SSR, Horizon, and Scheduler are intentionally disabled in MVP for stability. They can be reintroduced via additional services/profiles once the core stack is verified in your environment.
@@ -120,9 +132,24 @@ Mail (SMTP)
 - `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`
 
 Frontend (Vite/SSR)
-- `VITE_APP_NAME`, `VITE_APP_URL`
-- `INERTIA_SSR_ENABLED=false` (SSR disabled in MVP)
+- `VITE_APP_NAME` (optional). The frontend infers its base URL from the page origin; no need to set `VITE_APP_URL`.
+- HMR control (dev):
+  - `VITE_DISABLE_HMR` — set to `true` to fully disable HMR (fallback to full page reloads)
+  - `VITE_HOST` — dev server host (default `127.0.0.1`)
+  - Optional overrides for tunnels/proxies:
+    - `VITE_HMR_HOST` — HMR host override
+    - `VITE_HMR_PROTOCOL` — `ws` or `wss` (defaults to `wss` if `APP_URL` is https)
+    - `VITE_HMR_CLIENT_PORT` — HMR client port (default `5173`)
+- SSR control: backend auto‑enables SSR when public pages are enabled (no ENV required). Start the SSR container with `--profile ssr` when using SSR.
 - `VITE_I18N_PRELOAD_ALL=false`
+  
+  i18n (browser console)
+  - `VITE_I18N_DEBUG` — enable minimal i18next debug logs (default OFF). Missing‑locale warnings are deduped per language/namespace.
+
+Database bootstrap (containers)
+- Auto-migrate/seed run inside containers by default on start:
+  - `AUTO_MIGRATE=1` and `AUTO_SEED=1` (default). Set to `0`/`false` to disable.
+  - Applied for `app`, and if enabled via profile, also for `horizon` and `scheduler`.
 
 Tips
 - FE‐only variables use the `VITE_` prefix and are not consumed by Blade/PHP.

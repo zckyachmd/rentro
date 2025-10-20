@@ -28,6 +28,7 @@ use App\Services\PromotionService;
 use App\Services\TwoFactorService;
 use App\Services\WifiService;
 use App\Services\ZiggyService;
+use App\Support\AppFeatures;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
@@ -75,5 +76,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, QueueThemeCookieOnLogin::class);
         Event::listen(Login::class, QueueLocaleCookieOnLogin::class);
         Event::subscribe(ClearMenuCacheOnAuth::class);
+
+        config(['inertia.ssr.enabled' => AppFeatures::publicEnabled()]);
     }
 }

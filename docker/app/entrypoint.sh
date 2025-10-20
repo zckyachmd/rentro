@@ -127,10 +127,32 @@ warmup_caches() {
   run_in_app "php artisan view:cache" || warn "view:cache skipped"
 }
 
+to_bool() {
+  # usage: to_bool "$VALUE" "$DEFAULT"
+  v="${1:-}"
+  d="${2:-1}"
+  [ -n "$v" ] || v="$d"
+  v_lc=$(printf '%s' "$v" | tr '[:upper:]' '[:lower:]')
+  if [ "$v_lc" = "0" ] || [ "$v_lc" = "false" ] || [ "$v_lc" = "off" ]; then
+    echo "0"
+  else
+    echo "1"
+  fi
+}
+
 maybe_run_migrations() {
-  if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
+  want="$(to_bool "${AUTO_MIGRATE:-${RUN_MIGRATIONS:-}}" 1)"
+  if [ "$want" = "1" ]; then
     log "Running database migrations (force)"
     run_in_app "php artisan migrate --force --no-interaction" || warn "migrate failed (non-fatal)"
+  fi
+}
+
+maybe_run_seeders() {
+  want="$(to_bool "${AUTO_SEED:-${RUN_SEEDERS:-}}" 1)"
+  if [ "$want" = "1" ]; then
+    log "Running database seeders (force)"
+    run_in_app "php artisan db:seed --force --no-interaction" || warn "db:seed failed (non-fatal)"
   fi
 }
 
@@ -162,6 +184,7 @@ else
   fi
 fi
 maybe_run_migrations
+maybe_run_seeders
 fix_runtime_ownership
 
 # Diagnostics (non-fatal)

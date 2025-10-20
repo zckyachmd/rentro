@@ -7,9 +7,6 @@ use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
 use App\Http\Controllers\Profile\ProfileController;
-use App\Http\Controllers\Public\HomeController;
-use App\Http\Controllers\Public\NewsletterController;
-use App\Http\Controllers\Public\PromotionsController;
 use App\Http\Controllers\Security\SecurityController;
 use App\Http\Controllers\Security\TwoFactorController;
 use App\Http\Controllers\Tenant\BookingController as TenantBookingController;
@@ -19,31 +16,8 @@ use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
 use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
-use App\Http\Controllers\WifiDogController;
-use App\Models\WifiSession;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/', [HomeController::class, 'index'])->name('home');
-
-Route::prefix('')->name('public.')->group(function (): void {
-    Route::get('/catalog', [HomeController::class, 'catalog'])->name('catalog');
-    Route::get('/promos', [PromotionsController::class, 'index'])->name('promos');
-    Route::get('/promos/{slug}', [PromotionsController::class, 'show'])->name('promos.show');
-    Route::get('/blog', [HomeController::class, 'blogIndex'])->name('blog.index');
-    Route::get('/blog/{slug}', [HomeController::class, 'blogShow'])->name('blog.show');
-    Route::get('/help', [HomeController::class, 'help'])->name('help');
-    Route::get('/about', \App\Http\Controllers\Public\AboutController::class)->name('about');
-    Route::get('/privacy', \App\Http\Controllers\Public\PrivacyController::class)->name('privacy');
-    Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
-    Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
-
-    // Newsletter
-    Route::post('/newsletter', [NewsletterController::class, 'subscribe'])
-        ->middleware('throttle:ui-preferences')
-        ->name('newsletter.subscribe');
-});
 
 // Preferences (visual + language)
 Route::prefix('preferences')
@@ -53,6 +27,36 @@ Route::prefix('preferences')
         Route::post('/theme', [PreferencesController::class, 'updateTheme'])->name('theme');
         Route::post('/locale', [PreferencesController::class, 'updateLocale'])->name('locale');
     });
+
+// Payment redirect endpoints (generic + provider-specific)
+Route::prefix('payments')->name('payments.')->group(function (): void {
+    // Generic redirect routes
+    Route::prefix('redirect')->name('redirect.')->group(function (): void {
+        // /payments/redirect/{status}
+        Route::get('/{status}', [PaymentRedirectController::class, 'status'])
+            ->where('status', 'finish|unfinish|error')
+            ->name('status');
+        // /payments/redirect/{provider}/{status}
+        Route::get('/{provider}/{status}', [PaymentRedirectController::class, 'providerStatus'])
+            ->where('status', 'finish|unfinish|error')
+            ->name('provider.status');
+    });
+});
+
+// Midtrans webhooks
+Route::prefix('webhooks/midtrans')
+    ->name('webhooks.midtrans.')
+    ->withoutMiddleware([VerifyCsrfToken::class])
+    ->group(function (): void {
+        Route::post('/', [MidtransWebhookController::class, 'handle'])->name('index');
+        Route::post('/recurring', [MidtransWebhookController::class, 'handleRecurring'])->name('recurring');
+    });
+
+if (config('diagnostics.proxy_debug_enabled')) {
+    Route::get('/__diag/proxy', [DiagnosticsController::class, 'proxy'])
+        ->withoutMiddleware([VerifyCsrfToken::class])
+        ->name('diag.proxy');
+}
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -188,64 +192,8 @@ Route::middleware('auth')->group(function (): void {
     require __DIR__ . '/management.php';
 });
 
-// Payment redirect endpoints (generic + provider-specific)
-Route::prefix('payments')->name('payments.')->group(function (): void {
-    // Generic redirect routes
-    Route::prefix('redirect')->name('redirect.')->group(function (): void {
-        // /payments/redirect/{status}
-        Route::get('/{status}', [PaymentRedirectController::class, 'status'])
-            ->where('status', 'finish|unfinish|error')
-            ->name('status');
-        // /payments/redirect/{provider}/{status}
-        Route::get('/{provider}/{status}', [PaymentRedirectController::class, 'providerStatus'])
-            ->where('status', 'finish|unfinish|error')
-            ->name('provider.status');
-    });
-});
-
-// Midtrans webhooks
-Route::prefix('webhooks/midtrans')
-    ->name('webhooks.midtrans.')
-    ->withoutMiddleware([VerifyCsrfToken::class])
-    ->group(function (): void {
-        Route::post('/', [MidtransWebhookController::class, 'handle'])->name('index');
-        Route::post('/recurring', [MidtransWebhookController::class, 'handleRecurring'])->name('recurring');
-    });
-
-// WifiDog
-Route::prefix('wifi')->name('wifi.')->group(function () {
-    Route::middleware('trusted.gateway')->group(function () {
-        Route::get('/ping', [WifiDogController::class, 'ping']);
-        Route::match(['get', 'post'], '/auth', [WifiDogController::class, 'auth'])
-            ->withoutMiddleware([VerifyCsrfToken::class]);
-    });
-
-    Route::get('/login', [WifiDogController::class, 'login'])->name('login');
-    Route::post('/login', [WifiDogController::class, 'login'])->name('login.submit');
-
-    Route::get('/portal', [WifiDogController::class, 'portal'])
-        ->middleware('portal.access')
-        ->name('portal');
-    Route::post('/logout', [WifiDogController::class, 'logout'])->name('logout');
-});
-
-Route::get('/.well-known/captive-portal/capport-venue.json', function (Request $r) {
-    $active = WifiSession::where('ip', $r->ip())
-        ->where('status', 'auth')
-        ->exists();
-
-    return response()->json([
-        'captive'            => !$active,
-        'user-portal-url'    => route('wifi.portal'),
-        'can-extend-session' => true,
-    ]);
-})->name('capport.venue');
-
-if (config('diagnostics.proxy_debug_enabled')) {
-    Route::get('/__diag/proxy', [DiagnosticsController::class, 'proxy'])
-        ->withoutMiddleware([VerifyCsrfToken::class])
-        ->name('diag.proxy');
-}
-
 // Auth
 require __DIR__ . '/auth.php';
+
+// WifiDog routes extracted
+require __DIR__ . '/wifi.php';

@@ -4,9 +4,11 @@ services:
     build:
       context: .
       dockerfile: docker/nginx/Dockerfile
+      args:
+        BASE_REGISTRY: ${BASE_REGISTRY:-mirror.gcr.io/library}
     image: rentro/web:prod
     ports:
-      - "${APP_HTTP_PORT:-8888}:80"
+      - "${APP_PORT:-8888}:80"
     volumes:
       - app_shared:/var/www/html:ro
     read_only: true
@@ -41,17 +43,16 @@ services:
     build:
       context: .
       dockerfile: docker/app/Dockerfile
+      args:
+        BASE_REGISTRY: ${BASE_REGISTRY:-mirror.gcr.io/library}
     image: rentro/app:prod
     working_dir: /var/www/html
     volumes:
       - app_shared:/var/www/html
-      - ./.env:/var/www/html/.env:ro
+    env_file:
+      - .env
     environment:
       DB_CONNECTION: pgsql
-      APP_KEY: ${APP_KEY}
-      APP_URL: ${APP_URL:-http://localhost:${APP_HTTP_PORT:-8888}}
-      PROXY_DEBUG_ENABLED: ${PROXY_DEBUG_ENABLED:-false}
-      PROXY_DEBUG_TOKEN: ${PROXY_DEBUG_TOKEN:-}
       DB_HOST: db
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-app}
@@ -60,13 +61,12 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
-      INERTIA_SSR_ENABLED: ${INERTIA_SSR_ENABLED:-true}
-      INERTIA_SSR_URL: ${INERTIA_SSR_URL:-http://ssr:13714}
-      INERTIA_SSR_ONLY_PUBLIC: ${INERTIA_SSR_ONLY_PUBLIC:-true}
       CACHE_STORE: redis
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
       BROADCAST_DRIVER: redis
+      AUTO_MIGRATE: ${AUTO_MIGRATE:-1}
+      AUTO_SEED: ${AUTO_SEED:-1}
     security_opt:
       - no-new-privileges:true
     healthcheck:
@@ -125,6 +125,8 @@ services:
     build:
       context: .
       dockerfile: docker/ssr/Dockerfile
+      args:
+        BASE_REGISTRY: ${BASE_REGISTRY:-mirror.gcr.io/library}
     image: rentro/ssr:prod
     working_dir: /srv
     user: node
@@ -152,18 +154,20 @@ services:
       NODE_OPTIONS: --max-old-space-size=512
     restart: unless-stopped
     init: true
+    profiles: ["ssr"]
 
   horizon:
     container_name: rentro_horizon
     image: rentro/app:prod
     command: ["php", "artisan", "horizon"]
+    profiles: ["workers"]
     working_dir: /var/www/html
     volumes:
       - app_shared:/var/www/html
-      - ./.env:/var/www/html/.env:ro
+    env_file:
+      - .env
     environment:
       DB_CONNECTION: pgsql
-      APP_KEY: ${APP_KEY}
       DB_HOST: db
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-app}
@@ -172,11 +176,14 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
-      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+      QUEUE_CONNECTION: redis
       CACHE_STORE: redis
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
       BROADCAST_DRIVER: redis
+      # Auto-migrate/seed controls (default ON; set to 0/false in .env to disable)
+      AUTO_MIGRATE: ${AUTO_MIGRATE:-1}
+      AUTO_SEED: ${AUTO_SEED:-1}
     security_opt:
       - no-new-privileges:true
     healthcheck:
@@ -199,13 +206,14 @@ services:
     container_name: rentro_scheduler
     image: rentro/app:prod
     command: ["php", "artisan", "schedule:work", "--no-interaction"]
+    profiles: ["workers"]
     working_dir: /var/www/html
     volumes:
       - app_shared:/var/www/html
-      - ./.env:/var/www/html/.env:ro
+    env_file:
+      - .env
     environment:
       DB_CONNECTION: pgsql
-      APP_KEY: ${APP_KEY}
       DB_HOST: db
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-app}
@@ -214,11 +222,14 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
-      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+      QUEUE_CONNECTION: redis
       CACHE_STORE: redis
       CACHE_DRIVER: redis
       SESSION_DRIVER: redis
       BROADCAST_DRIVER: redis
+      # Auto-migrate/seed controls (default ON; set to 0/false in .env to disable)
+      AUTO_MIGRATE: ${AUTO_MIGRATE:-1}
+      AUTO_SEED: ${AUTO_SEED:-1}
     security_opt:
       - no-new-privileges:true
     healthcheck:

@@ -1,4 +1,5 @@
-FROM nginx:1.26-alpine
+ARG BASE_REGISTRY=mirror.gcr.io/library
+FROM ${BASE_REGISTRY}/nginx:1.26-alpine
 
 # Ensure we run entrypoint as root so we can test config
 USER root

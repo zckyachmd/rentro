@@ -1,9 +1,10 @@
-# syntax=docker/dockerfile:1.7
+
 
 ############################
 # Composer deps (cached)
 ############################
-FROM php:8.3-cli-bookworm AS composer_deps
+ARG BASE_REGISTRY=mirror.gcr.io/library
+FROM ${BASE_REGISTRY}/php:8.3-cli-bookworm AS composer_deps
 WORKDIR /app
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends git unzip ca-certificates \
@@ -22,7 +23,7 @@ RUN --mount=type=cache,target=/root/.composer/cache \
 ############################
 # Node deps via pnpm (cached)
 ############################
-FROM node:20-bookworm-slim AS node_base
+FROM ${BASE_REGISTRY}/node:20-bookworm-slim AS node_base
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
@@ -47,7 +48,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 ############################
 # PHP base (Debian slim)
 ############################
-FROM php:8.3-fpm-bookworm AS php_base
+FROM ${BASE_REGISTRY}/php:8.3-fpm-bookworm AS php_base
 WORKDIR /var/www/html
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
  apt-get update \

@@ -1,4 +1,5 @@
-FROM node:20-alpine AS runtime
+ARG BASE_REGISTRY=mirror.gcr.io/library
+FROM ${BASE_REGISTRY}/node:20-alpine AS runtime
 WORKDIR /srv
 ENV NODE_ENV=production
 RUN corepack enable && corepack prepare pnpm@9 --activate

@@ -67,6 +67,9 @@ class AppSettingSeeder extends Seeder
 
             // Profile
             ['key' => 'profile.emergency_contacts_max', 'value' => 3, 'type' => 'int', 'description' => 'Batas maksimal jumlah kontak darurat per pengguna'],
+
+            // Public pages toggle
+            ['key' => 'public.enabled', 'value' => false, 'type' => 'bool', 'description' => 'Aktifkan halaman publik (home, katalog, blog, dst)'],
         ];
 
         foreach ($settings as $row) {

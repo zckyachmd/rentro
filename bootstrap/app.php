@@ -1,14 +1,13 @@
 <?php
 
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use App\Console\Commands\SeedCore;
 use App\Http\Middleware\SetLocale;
 use App\Console\Commands\SeedSample;
 use App\Http\Middleware\PortalAccess;
-use App\Console\Commands\MenuNormalizePermissions;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\TrustedGateway;
+use App\Providers\RouteServiceProvider;
 use App\Providers\RateLimitServiceProvider;
 use App\Http\Middleware\HandleInertiaRequests;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -53,6 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['sidebar_state', 'theme', 'locale']);
     })
     ->withProviders([
+        RouteServiceProvider::class,
         RateLimitServiceProvider::class,
     ])
     ->withExceptions(function (Exceptions $exceptions) {

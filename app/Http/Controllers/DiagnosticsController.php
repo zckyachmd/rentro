@@ -11,7 +11,11 @@ class DiagnosticsController extends Controller
     {
         $token = config('diagnostics.proxy_debug_token');
         if (is_string($token) && $token !== '') {
-            if ($r->query('t') !== $token) {
+            $provided = $r->query('t');
+            if ($provided === null) {
+                $provided = $r->query('token'); // accept alias "token" for convenience
+            }
+            if ($provided !== $token) {
                 abort(403);
             }
         }

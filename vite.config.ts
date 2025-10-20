@@ -11,28 +11,34 @@ export default defineConfig(({ mode }) => {
         (env.VITE_DISABLE_HMR || '').toLowerCase() === 'true' ||
         env.VITE_DISABLE_HMR === '1';
 
-    // When developing behind a tunnel / reverse proxy (e.g., Cloudflare Tunnel),
-    // set VITE_PUBLIC_URL to your public HTTPS origin (e.g., https://rentro.zacky.id)
-    // so Vite generates correct absolute URLs/HMR endpoints.
-    const publicUrl = (env.VITE_PUBLIC_URL || env.VITE_APP_URL || '').trim();
-    let hmrHost = '127.0.0.1';
+    const publicUrl = (env.VITE_PUBLIC_URL || env.VITE_APP_URL || env.APP_URL || '').trim();
+    const devHost = env.VITE_HOST || '127.0.0.1';
+    let hmrHost = env.VITE_HMR_HOST || devHost;
     let hmrProtocol: 'ws' | 'wss' = 'ws';
-    let hmrClientPort = 5173;
-    let serverOrigin: string | undefined = undefined;
+    if (env.VITE_HMR_PROTOCOL) {
+        const p = String(env.VITE_HMR_PROTOCOL).toLowerCase();
+        hmrProtocol = p === 'wss' ? 'wss' : 'ws';
+    }
+    let hmrClientPort = Number(env.VITE_HMR_CLIENT_PORT || '') || 5173;
     try {
         if (publicUrl && /https?:\/\//i.test(publicUrl)) {
             const u = new URL(publicUrl);
-            serverOrigin = u.origin;
-            hmrHost = u.hostname;
-            const isHttps = u.protocol === 'https:';
-            hmrProtocol = isHttps ? 'wss' : 'ws';
-            hmrClientPort = isHttps ? 443 : Number(u.port || 80);
+            if (!env.VITE_HMR_HOST) {
+                hmrHost = u.hostname;
+            }
+            if (!env.VITE_HMR_PROTOCOL) {
+                const isHttps = u.protocol === 'https:';
+                hmrProtocol = isHttps ? 'wss' : 'ws';
+            }
         }
     } catch {
-        // ignore invalid URL; fall back to defaults
+        // ignore invalid URL;
     }
 
     return {
+        define: {
+            'import.meta.env.VITE_APP_DEBUG': JSON.stringify(env.APP_DEBUG ?? ''),
+        },
         plugins: [
             laravel({
                 input: ['resources/css/app.css', 'resources/js/app.tsx'],
@@ -61,31 +67,25 @@ export default defineConfig(({ mode }) => {
             target: 'es2020',
             cssCodeSplit: true,
             modulePreload: { polyfill: false },
-            // esbuild is fast; for even smaller bundles you can switch to 'terser'
             minify: 'esbuild',
             reportCompressedSize: false,
             sourcemap: false,
-            // Raise slightly to avoid noise once chunks are well-split
             chunkSizeWarningLimit: 1600,
             rollupOptions: {
                 output: {
                     manualChunks(id) {
                         if (!id.includes('node_modules')) return;
 
-                        // Be robust for pnpm paths like .../node_modules/.pnpm/pkg@ver/node_modules/pkg
                         const segmentsAfterNm = id.split('node_modules/');
                         const last = segmentsAfterNm[segmentsAfterNm.length - 1] || '';
                         const segs = last.split('/');
                         const first = segs[0] || '';
                         const pkg = first.startsWith('@') && segs.length > 1 ? `${first}/${segs[1]}` : first;
 
-                        // Core buckets
                         if (pkg === 'react' || pkg === 'react-dom') return 'react';
                         if (pkg === '@inertiajs/react' || pkg === '@inertiajs/core' || pkg === 'ziggy-js') return 'inertia';
                         if (pkg === 'i18next' || pkg === 'react-i18next') return 'i18n';
-                        // Fine-grained splitting for lucide-react icons. Avoid bundling all icons together.
                         if (pkg === 'lucide-react') {
-                            // Split per-icon file when path contains /icons/
                             const marker = `${path.sep}icons${path.sep}`;
                             const idx = id.lastIndexOf(marker);
                             if (idx !== -1) {
@@ -94,13 +94,11 @@ export default defineConfig(({ mode }) => {
                                 const base = file.replace(/\.[a-zA-Z0-9]+$/, '');
                                 return `icon-${base}`;
                             }
-                            // Otherwise let Rollup decide (don’t group entire lucide into one chunk)
                             return undefined;
                         }
                         if (pkg === 'lodash' || pkg === 'lodash-es') return 'lodash';
                         if (pkg === 'date-fns') return 'date-fns';
 
-                        // Fallback: split per top-level package to avoid giant vendor bundles
                         return `vendor-${pkg.replace('@', '').replace('/', '-')}`;
                     },
                 },
@@ -110,17 +108,13 @@ export default defineConfig(({ mode }) => {
             alias: {
                 '@': path.resolve(__dirname, 'resources/js'),
             },
-            // Ensure a single React instance is used
             dedupe: ['react', 'react-dom'],
         },
-        // Keep defaults for SSR bundling; the SSR container installs node_modules.
         server: {
-            host: '0.0.0.0',
+            host: devHost,
             port: 5173,
             strictPort: true,
             cors: true,
-            // Ensure Vite knows the public origin when proxied through HTTPS
-            origin: serverOrigin,
             watch: {
                 usePolling: (process.env.CHOKIDAR_USEPOLLING || '').toLowerCase() === 'true',
                 interval: Number(process.env.CHOKIDAR_INTERVAL || '300'),
@@ -134,12 +128,7 @@ export default defineConfig(({ mode }) => {
             },
             hmr: disableHmr
                 ? false
-                : {
-                      host: hmrHost,
-                      port: 5173,
-                      protocol: hmrProtocol,
-                      clientPort: hmrClientPort,
-                  },
+                : { host: hmrHost, port: 5173, protocol: hmrProtocol, clientPort: hmrClientPort },
         },
     };
 });
