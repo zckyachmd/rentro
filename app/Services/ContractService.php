@@ -155,11 +155,16 @@ class ContractService implements ContractServiceInterface
                     'notes'          => $data['notes'] ?? null,
                 ]);
 
-                $mode = (string) ($data['monthly_payment_mode'] ?? 'per_month');
+                $mode         = (string) ($data['monthly_payment_mode'] ?? 'per_month');
+                $promoOptions = $data['promo'] ?? null;
                 if ($period === BillingPeriod::MONTHLY->value && $mode === 'full') {
-                    $this->invoices->generate($contract, ['full' => true, 'include_deposit' => true]);
+                    $opts = ['full' => true, 'include_deposit' => true];
+                    if (is_array($promoOptions)) {
+                        $opts['promo'] = $promoOptions;
+                    }
+                    $this->invoices->generate($contract, $opts);
                 } else {
-                    $this->generateInitialInvoice($contract);
+                    $this->generateInitialInvoice($contract, $promoOptions);
                 }
 
                 if ($room->status->value !== RoomStatus::OCCUPIED->value && $room->status->value !== RoomStatus::RESERVED->value) {
@@ -306,7 +311,7 @@ class ContractService implements ContractServiceInterface
         }
     }
 
-    public function generateInitialInvoice(Contract $contract): void
+    public function generateInitialInvoice(Contract $contract, ?array $promoOptions = null): void
     {
         try {
             // If any invoice exists already, do nothing
@@ -315,7 +320,11 @@ class ContractService implements ContractServiceInterface
                 return;
             }
 
-            $this->invoices->generate($contract, ['first' => true]);
+            $opts = ['first' => true];
+            if (is_array($promoOptions)) {
+                $opts['promo'] = $promoOptions;
+            }
+            $this->invoices->generate($contract, $opts);
         } catch (\Throwable $e) {
             Log::error('ContractService::generateInitialInvoice failed', [
                 'contract_id' => $contract->id,

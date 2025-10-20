@@ -3,11 +3,13 @@
 use App\Enum\PermissionName;
 use App\Http\Controllers\Management\AmenityManagementController;
 use App\Http\Controllers\Management\AuditLogController;
+use App\Http\Controllers\Management\BookingManagementController;
 use App\Http\Controllers\Management\BuildingManagementController;
 use App\Http\Controllers\Management\ContractManagementController;
 use App\Http\Controllers\Management\FloorManagementController;
 use App\Http\Controllers\Management\HandoverManagementController;
 use App\Http\Controllers\Management\InvoiceManagementController;
+use App\Http\Controllers\Management\PageContentController;
 use App\Http\Controllers\Management\PaymentManagementController;
 use App\Http\Controllers\Management\PromotionManagementController;
 use App\Http\Controllers\Management\RoleManagementController;
@@ -20,15 +22,33 @@ use Illuminate\Support\Facades\Route;
 
 // Management
 Route::prefix('management')->name('management.')->group(function (): void {
+    // Bookings
+    Route::prefix('bookings')->name('bookings.')->group(function (): void {
+        Route::get('/', [BookingManagementController::class, 'index'])
+            ->middleware('can:' . PermissionName::BOOKING_VIEW->value)
+            ->name('index');
+        Route::get('/{booking}', [BookingManagementController::class, 'show'])
+            ->middleware('can:' . PermissionName::BOOKING_VIEW->value)
+            ->whereNumber('booking')
+            ->name('show');
+        Route::post('/{booking}/approve', [BookingManagementController::class, 'approve'])
+            ->middleware(['can:' . PermissionName::BOOKING_APPROVE->value, 'throttle:secure-sensitive'])
+            ->whereNumber('booking')
+            ->name('approve');
+        Route::post('/{booking}/reject', [BookingManagementController::class, 'reject'])
+            ->middleware(['can:' . PermissionName::BOOKING_REJECT->value, 'throttle:secure-sensitive'])
+            ->whereNumber('booking')
+            ->name('reject');
+    });
     // Pages (mini CMS)
     Route::prefix('pages')->name('pages.')
         ->middleware('role:' . \App\Enum\RoleName::SUPER_ADMIN->value . '|' . \App\Enum\RoleName::OWNER->value . '|' . \App\Enum\RoleName::MANAGER->value)
         ->group(function (): void {
-            Route::get('/', [\App\Http\Controllers\Management\PageContentController::class, 'index'])
+            Route::get('/', [PageContentController::class, 'index'])
             ->name('index');
-            Route::get('/{page}/{section}', [\App\Http\Controllers\Management\PageContentController::class, 'edit'])
+            Route::get('/{page}/{section}', [PageContentController::class, 'edit'])
             ->name('edit');
-            Route::post('/{page}/{section}', [\App\Http\Controllers\Management\PageContentController::class, 'update'])
+            Route::post('/{page}/{section}', [PageContentController::class, 'update'])
             ->name('update');
         });
     // Users

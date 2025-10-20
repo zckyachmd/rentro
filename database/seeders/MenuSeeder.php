@@ -22,7 +22,7 @@ class MenuSeeder extends Seeder
                 'label' => 'menu.overview',
                 'items' => [
                     ['label' => 'menu.dashboard', 'href' => route('dashboard', [], false), 'icon' => 'Home'],
-                    ['label' => 'menu.booking', 'href' => '#', 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
+                    ['label' => 'menu.booking', 'href' => route('tenant.bookings.index', [], false), 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
                     [
                         'label' => 'menu.contracts',
                         'href' => route('tenant.contracts.index', [], false),
@@ -42,7 +42,12 @@ class MenuSeeder extends Seeder
                 'id' => 'sewa',
                 'label' => 'menu.rent',
                 'items' => [
-                    ['label' => 'menu.booking', 'href' => '#', 'icon' => 'CalendarCheck'],
+                    [
+                        'label' => 'menu.booking',
+                        'href' => route('management.bookings.index', [], false),
+                        'icon' => 'CalendarCheck',
+                        'permission' => PermissionName::BOOKING_VIEW,
+                    ],
                     ['label' => 'menu.contracts', 'href' => route('management.contracts.index', [], false), 'icon' => 'ScrollText', 'permission' => PermissionName::CONTRACT_VIEW],
                 ],
             ],

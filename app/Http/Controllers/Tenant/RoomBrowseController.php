@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Http\Controllers\Tenant;
+
+use App\Enum\RoomStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Room;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class RoomBrowseController extends Controller
+{
+    public function index(Request $request)
+    {
+        $building = (string) $request->query('building', '');
+        $type     = (string) $request->query('type', '');
+
+        $q = Room::query()
+            ->select('id', 'number', 'name', 'status', 'room_type_id', 'building_id', 'floor_id', 'price_overrides', 'deposit_overrides')
+            ->with(['type:id,name,prices', 'building:id,name,code'])
+            ->where('status', RoomStatus::VACANT->value)
+            ->orderBy('number');
+
+        if ($building !== '') {
+            $q->whereHas('building', function ($b) use ($building) {
+                $like = config('database.default') === 'pgsql' ? 'ILIKE' : 'LIKE';
+                $b->where('name', $like, "%{$building}%");
+            });
+        }
+        if ($type !== '') {
+            $q->whereHas('type', function ($t) use ($type) {
+                $like = config('database.default') === 'pgsql' ? 'ILIKE' : 'LIKE';
+                $t->where('name', $like, "%{$type}%");
+            });
+        }
+
+        $rooms = $q->paginate(12)->through(function (Room $r) {
+            return [
+                'id'          => (string) $r->id,
+                'number'      => $r->number,
+                'name'        => $r->name,
+                'building'    => $r->building?->name,
+                'type'        => $r->type?->name,
+                'status'      => (string) $r->status->value,
+                'price_month' => (int) ($r->effectivePriceCents('monthly') ?? 0),
+                'deposit'     => (int) ($r->effectiveDepositCents('monthly') ?? 0),
+            ];
+        });
+
+        return Inertia::render('tenant/booking/browse', [
+            'rooms' => $rooms,
+            'query' => [
+                'building' => $building,
+                'type'     => $type,
+            ],
+        ]);
+    }
+}

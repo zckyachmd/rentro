@@ -7,17 +7,17 @@ use App\Models\User;
 use Database\Factories\EmergencyContactFactory;
 use Database\Factories\UserAddressFactory;
 use Database\Factories\UserDocumentFactory;
-use Database\Seeders\SampleDataSeeder;
+use Database\Seeders\DemoDataSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 
-class SeedSample extends Command
+class SeedDemo extends Command
 {
     use ConfirmableTrait;
 
-    protected $signature = 'seed:sample {--tenants=30 : Number of demo tenants to create (with addresses, document, emergency contacts)} {--force : Run without confirmation prompt}';
+    protected $signature = 'seed:demo {--tenants=30 : Number of demo tenants to create (with addresses, document, emergency contacts)} {--force : Run without confirmation prompt}';
 
-    protected $description = 'Seed sample faker data (demo users, rooms, promotions, testimonies)';
+    protected $description = 'Seed demo data (faker users, rooms, promotions, testimonies)';
 
     public function handle(): int
     {
@@ -40,7 +40,7 @@ class SeedSample extends Command
         }
 
         $this->call('db:seed', [
-            '--class' => SampleDataSeeder::class,
+            '--class' => DemoDataSeeder::class,
             '--force' => true,
         ]);
         $this->info('Sample data seeded.');

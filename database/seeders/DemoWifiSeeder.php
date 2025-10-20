@@ -8,13 +8,11 @@ use App\Models\WifiPolicy;
 use App\Models\WifiWhitelist;
 use App\Enum\RoleName;
 
-class WifiSetupSeeder extends Seeder
+class DemoWifiSeeder extends Seeder
 {
     public function run(): void
     {
-        // =========
-        // Gateways
-        // =========
+        // Gateways (deterministic)
         $gateways = [
             [
                 'gw_id'       => 'GW-KOSTAN-01',
@@ -40,9 +38,7 @@ class WifiSetupSeeder extends Seeder
             );
         }
 
-        // =========
         // Policies (role-based)
-        // =========
         $policies = [
             [
                 'name'          => 'Tenant',
@@ -105,9 +101,7 @@ class WifiSetupSeeder extends Seeder
             );
         }
 
-        // =========
-        // Whitelist pra-login
-        // =========
+        // Whitelist pra-login (domains + IP)
         $domainWhitelist = [
             ['type' => 'domain', 'value' => 'fonts.googleapis.com',      'notes' => 'Google Fonts CSS'],
             ['type' => 'domain', 'value' => 'fonts.gstatic.com',         'notes' => 'Google Fonts files'],
@@ -116,23 +110,15 @@ class WifiSetupSeeder extends Seeder
             ['type' => 'domain', 'value' => 'www.googletagmanager.com',  'notes' => 'Google Tag Manager'],
             ['type' => 'domain', 'value' => 'www.google-analytics.com',  'notes' => 'Google Analytics'],
         ];
-
         $ipWhitelist = [
             ['type' => 'ip', 'value' => '1.1.1.1', 'notes' => 'Cloudflare DNS'],
             ['type' => 'ip', 'value' => '8.8.8.8', 'notes' => 'Google Public DNS'],
         ];
-
         foreach (array_merge($domainWhitelist, $ipWhitelist) as $w) {
             WifiWhitelist::updateOrCreate(
                 ['type' => $w['type'], 'value' => $w['value']],
                 ['notes' => $w['notes']]
             );
         }
-
-        // Contoh jika perlu whitelist MAC perangkat internal (printer/CCTV):
-        // WifiWhitelist::updateOrCreate(
-        //     ['type' => 'mac', 'value' => 'AA:BB:CC:DD:EE:FF'],
-        //     ['notes' => 'Printer Lantai 1']
-        // );
     }
 }

@@ -15,11 +15,12 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
-class PromotionSeeder extends Seeder
+class DemoPromotionSeeder extends Seeder
 {
     public function run(): void
     {
-        $today = Carbon::now()->startOfDay();
+        // Deterministic base dates for demo
+        $today = Carbon::create(2025, 1, 1)->startOfDay();
         $tomorrow = $today->copy()->addDay();
 
         // Targets for scoped promotions (safe fallbacks)

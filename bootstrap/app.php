@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use App\Console\Commands\SeedCore;
 use App\Http\Middleware\SetLocale;
-use App\Console\Commands\SeedSample;
+use App\Console\Commands\SeedDemo;
 use App\Http\Middleware\PortalAccess;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\TrustedGateway;
@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         SeedCore::class,
-        SeedSample::class,
+        SeedDemo::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
         // Trust proxies/hosts via explicit middleware for clarity (config/trusted.php)

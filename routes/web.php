@@ -15,6 +15,7 @@ use App\Http\Controllers\Tenant\HandoverController as TenantHandoverController;
 use App\Http\Controllers\Tenant\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Tenant\MidtransController as TenantMidtransController;
 use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
+use App\Http\Controllers\Tenant\RoomBrowseController as TenantRoomBrowseController;
 use App\Http\Controllers\Webhook\MidtransWebhookController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
@@ -120,9 +121,15 @@ Route::middleware('auth')->group(function (): void {
 
     // Tenant
     Route::prefix('tenant')->name('tenant.')->middleware(['role:' . RoleName::TENANT->value])->group(function (): void {
+        // Rooms browse (tenant scope)
+        Route::prefix('rooms')->name('rooms.')->group(function (): void {
+            Route::get('/', [TenantRoomBrowseController::class, 'index'])->name('index');
+        });
         // Bookings
         Route::prefix('bookings')->name('bookings.')->group(function (): void {
             Route::get('/', [TenantBookingController::class, 'index'])->name('index');
+            Route::get('/{booking}', [TenantBookingController::class, 'show'])->whereNumber('booking')->name('show');
+            Route::post('/', [TenantBookingController::class, 'store'])->name('store');
         });
 
         // Contracts

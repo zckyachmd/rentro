@@ -65,6 +65,14 @@ enum PermissionName: string
     case CONTRACT_CANCEL = 'contract.cancel';
     case CONTRACT_RENEW  = 'contract.renew';
 
+    // Bookings (management)
+    case BOOKING_VIEW    = 'booking.view';
+    case BOOKING_CREATE  = 'booking.create';
+    case BOOKING_UPDATE  = 'booking.update';
+    case BOOKING_DELETE  = 'booking.delete';
+    case BOOKING_APPROVE = 'booking.approve';
+    case BOOKING_REJECT  = 'booking.reject';
+
     // Invoices
     case INVOICE_VIEW   = 'invoice.view';
     case INVOICE_CREATE = 'invoice.create';
