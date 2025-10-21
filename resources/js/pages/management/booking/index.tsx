@@ -4,15 +4,26 @@ import { Filter } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTableServer, type QueryBag } from '@/components/ui/data-table-server';
+import {
+    DataTableServer,
+    type QueryBag,
+} from '@/components/ui/data-table-server';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import {
+    createColumns,
+    type BookingRow,
+} from '@/pages/management/booking/tables/columns';
 import type { PageProps } from '@/types';
-import { createColumns, type BookingRow } from '@/pages/management/booking/tables/columns';
 
 type PageData = {
     bookings: {
@@ -31,8 +42,11 @@ type PageData = {
 export default function ManagementBookingsIndex() {
     const { t } = useTranslation();
     const { t: tBooking, i18n } = useTranslation('management/booking');
-    const { bookings: paginator, options, query } =
-        usePage<PageProps<any>>().props as unknown as PageData;
+    const {
+        bookings: paginator,
+        options,
+        query,
+    } = usePage<PageProps<any>>().props as unknown as PageData;
     const rows = React.useMemo(() => paginator?.data ?? [], [paginator?.data]);
 
     const currentPath = React.useMemo(
@@ -57,7 +71,9 @@ export default function ManagementBookingsIndex() {
         void lang;
         return createColumns<BookingRow>({
             onDetail: (b) =>
-                router.visit(route('management.bookings.show', { booking: b.id })),
+                router.visit(
+                    route('management.bookings.show', { booking: b.id }),
+                ),
             onApprove: (b) =>
                 router.post(
                     route('management.bookings.approve', { booking: b.id }),
@@ -68,7 +84,10 @@ export default function ManagementBookingsIndex() {
     }, [lang]);
 
     return (
-        <AppLayout pageTitle={tBooking('title')} pageDescription={tBooking('desc')}>
+        <AppLayout
+            pageTitle={tBooking('title')}
+            pageDescription={tBooking('desc')}
+        >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
@@ -93,7 +112,9 @@ export default function ManagementBookingsIndex() {
                                 >
                                     <SelectTrigger className="w-[160px]">
                                         <SelectValue
-                                            placeholder={t('common.all_statuses')}
+                                            placeholder={t(
+                                                'common.all_statuses',
+                                            )}
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -110,11 +131,15 @@ export default function ManagementBookingsIndex() {
                                                     key={s.value}
                                                     value={s.value}
                                                 >
-                                                    {t(`booking.status.${slug}`, {
-                                                        ns: 'enum',
-                                                        defaultValue:
-                                                            s.label || String(s.value),
-                                                    })}
+                                                    {t(
+                                                        `booking.status.${slug}`,
+                                                        {
+                                                            ns: 'enum',
+                                                            defaultValue:
+                                                                s.label ||
+                                                                String(s.value),
+                                                        },
+                                                    )}
                                                 </SelectItem>
                                             );
                                         })}
@@ -133,7 +158,10 @@ export default function ManagementBookingsIndex() {
                             columns={columns}
                             rows={rows}
                             paginator={paginator ?? null}
-                            search={((q as QueryBag & { q?: string | null }).q ?? '') as string}
+                            search={
+                                ((q as QueryBag & { q?: string | null }).q ??
+                                    '') as string
+                            }
                             onSearchChange={(v) =>
                                 onQueryChange({ page: 1, q: v || null })
                             }

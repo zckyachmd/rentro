@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Enum\RoomStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
 use App\Models\Room;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -15,10 +17,23 @@ class RoomBrowseController extends Controller
         $building = (string) $request->query('building', '');
         $type     = (string) $request->query('type', '');
 
+        $softHoldHours = (int) AppSetting::config('booking.soft_hold_hours', 48);
+        $softHoldHours = max(0, $softHoldHours);
+        $holdThreshold = Carbon::now()->subHours($softHoldHours)->toDateTimeString();
+
         $q = Room::query()
             ->select('id', 'number', 'name', 'status', 'room_type_id', 'building_id', 'floor_id', 'price_overrides', 'deposit_overrides')
             ->with(['type:id,name,prices', 'building:id,name,code'])
             ->where('status', RoomStatus::VACANT->value)
+            ->whereDoesntHave('holdingContracts')
+            // Soft hold: hide rooms with recent booking requests (last 48 hours)
+            ->whereNotExists(function ($sub) use ($holdThreshold) {
+                $sub->selectRaw('1')
+                    ->from('bookings')
+                    ->whereColumn('bookings.room_id', 'rooms.id')
+                    ->where('bookings.status', 'requested')
+                    ->where('bookings.created_at', '>=', $holdThreshold);
+            })
             ->orderBy('number');
 
         if ($building !== '') {

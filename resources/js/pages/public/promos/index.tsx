@@ -94,16 +94,23 @@ export default function PromosPage() {
         [todayISO],
     );
 
-    const daysLeft = React.useCallback((p: PromotionLite): number | null => {
-        if (!p.valid_until) return null;
-        const end = new Date(p.valid_until + 'T00:00:00');
-        // Derive today from Asia/Jakarta normalized todayISO
-        const [y, m, d] = todayISO.split('-').map((n) => Number(n));
-        const d0 = new Date(y, m - 1, d);
-        const d1 = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-        const diff = Math.ceil((d1.getTime() - d0.getTime()) / 86_400_000);
-        return diff >= 0 ? diff : 0;
-    }, [todayISO]);
+    const daysLeft = React.useCallback(
+        (p: PromotionLite): number | null => {
+            if (!p.valid_until) return null;
+            const end = new Date(p.valid_until + 'T00:00:00');
+            // Derive today from Asia/Jakarta normalized todayISO
+            const [y, m, d] = todayISO.split('-').map((n) => Number(n));
+            const d0 = new Date(y, m - 1, d);
+            const d1 = new Date(
+                end.getFullYear(),
+                end.getMonth(),
+                end.getDate(),
+            );
+            const diff = Math.ceil((d1.getTime() - d0.getTime()) / 86_400_000);
+            return diff >= 0 ? diff : 0;
+        },
+        [todayISO],
+    );
 
     // Use server-provided master tag list so it doesn't shrink when filtering promos
     const allTags = React.useMemo(() => {

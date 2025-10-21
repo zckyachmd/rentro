@@ -163,13 +163,13 @@ export default function ShowProfile() {
                                             <DialogContent className="animate-none">
                                                 <DialogHeader>
                                                     <DialogTitle>
-                                                        {t(
-                                                            'profile.verify_resend_title',
+                                                        {tProfile(
+                                                            'verify_resend_title',
                                                         )}
                                                     </DialogTitle>
                                                     <DialogDescription>
-                                                        {t(
-                                                            'profile.verify_resend_desc',
+                                                        {tProfile(
+                                                            'verify_resend_desc',
                                                         )}{' '}
                                                         <span className="font-medium">
                                                             {user.email}
@@ -194,11 +194,11 @@ export default function ShowProfile() {
                                                         disabled={sending}
                                                     >
                                                         {sending
-                                                            ? t(
-                                                                  'profile.verifying',
+                                                            ? tProfile(
+                                                                  'verifying',
                                                               )
-                                                            : t(
-                                                                  'profile.verify_send',
+                                                            : tProfile(
+                                                                  'verify_send',
                                                               )}
                                                     </Button>
                                                 </DialogFooter>

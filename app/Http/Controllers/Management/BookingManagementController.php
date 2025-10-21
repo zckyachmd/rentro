@@ -119,7 +119,7 @@ class BookingManagementController extends Controller
                 ];
                 if (!empty($booking->promo_code)) {
                     $payload['promo'] = [
-                        'channel'     => 'tenant',
+                        'channel'     => 'public',
                         'coupon_code' => (string) $booking->promo_code,
                     ];
                 }

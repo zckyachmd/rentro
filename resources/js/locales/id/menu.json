@@ -14,6 +14,8 @@
         "account": "Akun",
         "help": "Bantuan",
         "booking": "Booking",
+        "booking_list": "Booking Saya",
+        "booking_browse": "Browse Kamar",
         "reconciliation": "Rekonsiliasi",
         "reports": "Laporan",
         "rooms": { "label": "Kamar", "list": "Daftar Kamar" },

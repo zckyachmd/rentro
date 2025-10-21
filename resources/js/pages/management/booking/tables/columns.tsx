@@ -120,7 +120,9 @@ export const createColumns = <T extends BookingRow>(
         title: i18n.t('common.start'),
         className: COL.start,
         cell: ({ row }) => (
-            <div className={COL.start}>{formatDate(row.original.start_date)}</div>
+            <div className={COL.start}>
+                {formatDate(row.original.start_date)}
+            </div>
         ),
     }),
     makeColumn<T>({
@@ -166,7 +168,9 @@ export const createColumns = <T extends BookingRow>(
             });
             return (
                 <div className={COL.status}>
-                    <Badge variant={variantForBookingStatus(raw)}>{label}</Badge>
+                    <Badge variant={variantForBookingStatus(raw)}>
+                        {label}
+                    </Badge>
                 </div>
             );
         },
@@ -223,4 +227,3 @@ export const createColumns = <T extends BookingRow>(
         },
     }),
 ];
-

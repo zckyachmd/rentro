@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Management;
 
 use App\Enum\CacheKey;
+use App\Enum\DocumentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\User\CreateUserRequest;
 use App\Http\Requests\Management\User\ForceLogoutRequest;
@@ -12,6 +13,7 @@ use App\Http\Requests\Management\User\UpdateRolesRequest;
 use App\Jobs\SendUserInvitationEmail;
 use App\Models\Session;
 use App\Models\User;
+use App\Models\UserDocument;
 use App\Services\TwoFactorService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
@@ -20,6 +22,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -39,7 +42,7 @@ class UserManagementController extends Controller
 
         $options = [
             'select'       => ['id', 'name', 'email', 'phone', 'two_factor_secret', 'two_factor_confirmed_at', 'avatar_path'],
-            'with'         => ['roles:id,name', 'latestSession'],
+            'with'         => ['roles:id,name', 'latestSession', 'document'],
             'search_param' => 'search',
             'searchable'   => ['name', 'email', 'phone'],
             'sortable'     => [
@@ -59,6 +62,16 @@ class UserManagementController extends Controller
             'filters'      => [
                 'role_id' => function ($q, $roleId) {
                     $q->whereHas('roles', fn ($r) => $r->where('id', $roleId));
+                },
+                // Optional filter to quickly find users by document verification status
+                'document_status' => function ($q, $status) {
+                    $status = is_string($status) ? trim(strtolower($status)) : null;
+                    if (!$status) {
+                        return;
+                    }
+                    $q->whereHas('document', function ($d) use ($status) {
+                        $d->where('status', $status);
+                    });
                 },
             ],
         ];
@@ -80,6 +93,12 @@ class UserManagementController extends Controller
             /** @var \Illuminate\Support\Collection<int, \Spatie\Permission\Models\Role> $roles */
             $roles = $u->roles;
 
+            $doc              = $u->document;
+            $attachmentsCount = 0;
+            if ($doc && method_exists($doc, 'getAttachments')) {
+                $attachmentsCount = count($doc->getAttachments('private'));
+            }
+
             return [
                 'id'                 => $u->id,
                 'name'               => $u->name,
@@ -89,6 +108,13 @@ class UserManagementController extends Controller
                 'roles'              => $roles->map(fn (Role $r) => ['id' => $r->id, 'name' => $r->name])->values()->all(),
                 'two_factor_enabled' => !empty($u->two_factor_secret) && !empty($u->two_factor_confirmed_at),
                 'last_active_at'     => $last,
+                'document'           => $doc ? [
+                    'id'          => $doc->id,
+                    'status'      => ($doc->status instanceof \BackedEnum) ? $doc->status->value : $doc->status,
+                    'type'        => ($doc->type instanceof \BackedEnum) ? $doc->type->value : $doc->type,
+                    'attachments' => $attachmentsCount,
+                    'has_file'    => $attachmentsCount > 0,
+                ] : null,
             ];
         });
 
@@ -107,14 +133,141 @@ class UserManagementController extends Controller
             'users' => $usersPayload,
             'roles' => $roles,
             'query' => [
-                'page'    => $usersPayload['current_page'],
-                'perPage' => $usersPayload['per_page'],
-                'sort'    => $request->query('sort'),
-                'dir'     => $request->query('dir'),
-                'search'  => $request->query('search'),
-                'roleId'  => $request->query('role_id'),
+                'page'           => $usersPayload['current_page'],
+                'perPage'        => $usersPayload['per_page'],
+                'sort'           => $request->query('sort'),
+                'dir'            => $request->query('dir'),
+                'search'         => $request->query('search'),
+                'roleId'         => $request->query('role_id'),
+                'documentStatus' => $request->query('document_status'),
             ],
         ]);
+    }
+
+    public function show(User $user)
+    {
+        $user->load([
+            'addresses' => fn ($q) => $q->orderBy('id'),
+            'document',
+            'emergencyContacts' => fn ($q) => $q->orderBy('id'),
+        ]);
+
+        $doc           = $user->document;
+        $hasAttachment = $doc && method_exists($doc, 'getAttachments') && !empty($doc->getAttachments('private'));
+        $docDto        = $doc ? [
+            'id'          => $doc->id,
+            'type'        => ($doc->type instanceof \BackedEnum) ? $doc->type->value : $doc->type,
+            'number'      => $doc->number,
+            'issued_at'   => $doc->issued_at,
+            'expires_at'  => $doc->expires_at,
+            'status'      => ($doc->status instanceof \BackedEnum) ? $doc->status->value : $doc->status,
+            'verified_at' => $doc->verified_at,
+            'has_file'    => $hasAttachment,
+            'attachments' => $doc->getAttachments('private'),
+            'notes'       => $doc->notes,
+        ] : null;
+
+        return Inertia::render('management/user/show', [
+            'user' => $user->append('avatar_url')->only([
+                'id', 'name', 'username', 'email', 'phone', 'gender', 'dob', 'avatar_url', 'created_at', 'email_verified_at',
+            ]),
+            'addresses' => $user->addresses->map->only([
+                'id', 'label', 'address_line', 'village', 'district', 'city', 'province', 'postal_code', 'country', 'is_primary',
+            ]),
+            'document' => $docDto,
+            'contacts' => $user->emergencyContacts->map->only([
+                'id', 'name', 'relationship', 'phone', 'email', 'address_line', 'is_primary',
+            ]),
+            'options' => [
+                'documentTypes'    => \App\Enum\DocumentType::values(),
+                'documentStatuses' => \App\Enum\DocumentStatus::values(),
+            ],
+        ]);
+    }
+
+    public function documentAttachment(User $user, string $path)
+    {
+        $doc = $user->document;
+        abort_unless($doc instanceof UserDocument, 404);
+
+        $raw      = urldecode(trim($path));
+        $bucket   = str_contains($raw, '/private/') ? 'private' : (str_contains($raw, '/public/') || str_contains($raw, '/general/') ? 'public' : null);
+        $resolved = $doc->resolveAttachmentPath($raw, $bucket);
+        $disk     = $doc->attachmentDiskName($bucket);
+
+        abort_unless($resolved && Storage::disk($disk)->exists($resolved), 404);
+
+        return response()->file(Storage::disk($disk)->path($resolved));
+    }
+
+    public function approveDocument(Request $request, User $user): RedirectResponse
+    {
+        /** @var UserDocument|null $doc */
+        $doc = $user->document;
+        if (!$doc) {
+            return back()->with('error', __('management/users.document.not_found'));
+        }
+
+        if ($doc->status !== DocumentStatus::PENDING) {
+            return back()->with('error', __('management/users.document.invalid_status'));
+        }
+
+        $note = null;
+        if ($request->filled('note')) {
+            $note = trim((string) $request->input('note'));
+            if ($note === '') {
+                $note = null;
+            }
+        }
+
+        $doc->status      = DocumentStatus::APPROVED;
+        $doc->verified_at = now();
+        $doc->notes       = $note;
+        $doc->save();
+
+        activity()
+            ->performedOn($doc)
+            ->causedBy($request->user())
+            ->event('user_document_approved')
+            ->withProperties([
+                'user_id' => $user->id,
+            ])
+            ->log('User document approved by admin');
+
+        return back()->with('success', __('management/users.document.approved'));
+    }
+
+    public function rejectDocument(Request $request, User $user): RedirectResponse
+    {
+        /** @var UserDocument|null $doc */
+        $doc = $user->document;
+        if (!$doc) {
+            return back()->with('error', __('management/users.document.not_found'));
+        }
+
+        if ($doc->status !== DocumentStatus::PENDING) {
+            return back()->with('error', __('management/users.document.invalid_status'));
+        }
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'min:10'],
+        ]);
+
+        $doc->status      = DocumentStatus::REJECTED;
+        $doc->verified_at = null;
+        $doc->notes       = $validated['reason'];
+        $doc->save();
+
+        activity()
+            ->performedOn($doc)
+            ->causedBy($request->user())
+            ->event('user_document_rejected')
+            ->withProperties([
+                'user_id' => $user->id,
+            ])
+            ->log('User document rejected by admin');
+
+        return back()->with('success', __('management/users.document.rejected'));
     }
 
     public function createUser(CreateUserRequest $request): RedirectResponse

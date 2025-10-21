@@ -21,8 +21,18 @@ type BookingDetail = {
     promo_code?: string | null;
     notes?: string | null;
     tenant?: { name?: string; email?: string } | null;
-    room?: { number?: string | null; name?: string | null; building?: string | null; type?: string | null } | null;
-    estimate?: { total: number; final_rent?: number; final_deposit?: number; duration?: number } | null;
+    room?: {
+        number?: string | null;
+        name?: string | null;
+        building?: string | null;
+        type?: string | null;
+    } | null;
+    estimate?: {
+        total: number;
+        final_rent?: number;
+        final_deposit?: number;
+        duration?: number;
+    } | null;
     contract_id?: string | null;
 };
 
@@ -109,9 +119,7 @@ export default function ManagementBookingDetail() {
                                     {tEnum(`billing_period.${booking.period}`)}
                                 </div>
                                 {booking.promo_code ? (
-                                    <div>
-                                        Promo:&nbsp;{booking.promo_code}
-                                    </div>
+                                    <div>Promo:&nbsp;{booking.promo_code}</div>
                                 ) : null}
                             </div>
                             <div className="space-y-2">
@@ -122,7 +130,9 @@ export default function ManagementBookingDetail() {
                                 <div className="grid gap-2">
                                     <Button
                                         onClick={approve}
-                                        disabled={booking.status !== 'requested'}
+                                        disabled={
+                                            booking.status !== 'requested'
+                                        }
                                     >
                                         <Check className="mr-2 h-4 w-4" />
                                         {tBooking('detail.approve')}

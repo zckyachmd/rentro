@@ -352,11 +352,6 @@ export default function RoomUpsertForm({
         if (mode === 'create') {
             beginSkip();
             post(route('management.rooms.store'), {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': token || '',
-                },
                 forceFormData: true,
                 preserveScroll: true,
                 onSuccess: () => {
@@ -375,11 +370,6 @@ export default function RoomUpsertForm({
             transform((current) => ({ ...current, _method: 'put' as const }));
             beginSkip();
             post(route('management.rooms.update', room.id), {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': token || '',
-                },
                 forceFormData: true,
                 preserveScroll: true,
                 onSuccess: () => {

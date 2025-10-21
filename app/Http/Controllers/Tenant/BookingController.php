@@ -83,7 +83,7 @@ class BookingController extends Controller
     {
         $data   = $request->validated();
         $user   = $request->user();
-        $room   = Room::query()->with(['building', 'type'])->findOrFail((int) $data['room_id']);
+        $room   = Room::query()->with(['building', 'type'])->whereKey($data['room_id'])->firstOrFail();
         $start  = Carbon::parse($data['start_date'])->startOfDay();
         $period = (string) $data['billing_period'];
         $months = (int) $data['duration_count'];
@@ -94,7 +94,7 @@ class BookingController extends Controller
         $depositBase = (int) ($room->effectiveDepositCents($period) ?? 0);
         $promoCtx    = [
             'user'                  => $user,
-            'channel'               => 'tenant',
+            'channel'               => 'public',
             'coupon_code'           => $coupon !== '' ? $coupon : null,
             'base_rent_override'    => $rentBase,
             'base_deposit_override' => $depositBase,

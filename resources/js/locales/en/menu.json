@@ -14,6 +14,8 @@
         "account": "Account",
         "help": "Help",
         "booking": "Booking",
+        "booking_list": "My Bookings",
+        "booking_browse": "Browse Rooms",
         "reconciliation": "Reconciliation",
         "reports": "Reports",
         "rooms": { "label": "Rooms", "list": "Room List" },

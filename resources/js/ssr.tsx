@@ -77,7 +77,7 @@ export default async (page: unknown) => {
         resolve: (name: string) =>
             resolvePageComponent(
                 `./pages/${name}.tsx`,
-                import.meta.glob('./pages/**/*.tsx'),
+                import.meta.glob('./pages/**/*.{tsx,ts,jsx,js}'),
             ),
         setup: ({ App, props }) => {
             const resolvedRoute =

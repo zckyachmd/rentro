@@ -113,8 +113,10 @@ const dynamicBackend = {
                     warnedMissing.add(key);
                     const total = candidates.length;
                     const sample = candidates[0]?.key ?? '-';
-                    // eslint-disable-next-line no-console
-                    console.warn(`[i18n] Missing ${language}/${namespace} (tried ${total} paths, e.g. ${sample})`);
+                     
+                    console.warn(
+                        `[i18n] Missing ${language}/${namespace} (tried ${total} paths, e.g. ${sample})`,
+                    );
                 }
             } catch {}
 

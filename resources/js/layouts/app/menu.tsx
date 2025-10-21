@@ -178,7 +178,9 @@ export function MenuGroups(props: MenuGroupsProps) {
                             className={
                                 isMobile
                                     ? 'text-muted-foreground px-1 pb-1 text-[10px] font-medium uppercase'
-                                    : group.id !== 'general'
+                                    : !['general', 'overview'].includes(
+                                            group.id,
+                                        )
                                       ? 'text-muted-foreground px-3 pb-1 text-[10px] font-medium uppercase'
                                       : 'sr-only'
                             }

@@ -13,6 +13,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -30,10 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
         SeedDemo::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust proxies/hosts via explicit middleware for clarity (config/trusted.php)
         $middleware->replace(\Illuminate\Http\Middleware\TrustProxies::class, \App\Http\Middleware\TrustProxies::class);
         $middleware->replace(\Illuminate\Http\Middleware\TrustHosts::class, \App\Http\Middleware\TrustHosts::class);
-        // Enable TrustHosts; the patterns are provided by our custom middleware
         $middleware->trustHosts();
         $middleware->alias([
             'role' => RoleMiddleware::class,
@@ -44,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
+            AuthenticateSession::class,
             SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

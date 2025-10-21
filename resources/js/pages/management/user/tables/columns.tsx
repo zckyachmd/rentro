@@ -1,13 +1,8 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import {
-    KeyRound,
-    LogOut,
-    MoreHorizontal,
-    ScanFace,
-    ShieldCheck,
-} from 'lucide-react';
+import { KeyRound, LogOut, MoreHorizontal, ScanFace, ShieldCheck, Eye } from 'lucide-react';
+import DocumentStatusBadge from '@/pages/profile/components/document-status-badge';
 
 import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,6 +28,7 @@ const COL = {
     name: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
     email: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
     roles: 'shrink-0 w-[80px] md:w-[130px] lg:w-[170px]',
+    doc: 'shrink-0 w-[90px] md:w-[120px]',
     twofa: 'shrink-0 w-[74px] md:w-[92px]',
     last: 'shrink-0 w-[86px] md:w-[100px]',
     actions: 'shrink-0 w-10 md:w-[48px]',
@@ -51,17 +47,21 @@ export const createColumns = (
             const u = row.original;
             return (
                 <div className={`flex min-w-0 items-center gap-3 ${COL.name}`}>
-                    <Avatar className="h-9 w-9">
-                        {u.avatar ? (
-                            <AvatarImage src={u.avatar} alt={u.name} />
-                        ) : (
-                            <AvatarFallback>
-                                {(u.name?.slice(0, 1) ?? '?').toUpperCase()}
-                            </AvatarFallback>
-                        )}
-                    </Avatar>
+                    <a href={route('management.users.show', u.id)} aria-label={`${i18n.t('common.view_detail')}: ${u.name}`} className="shrink-0">
+                        <Avatar className="h-9 w-9">
+                            {u.avatar ? (
+                                <AvatarImage src={u.avatar} alt={u.name} />
+                            ) : (
+                                <AvatarFallback>
+                                    {(u.name?.slice(0, 1) ?? '?').toUpperCase()}
+                                </AvatarFallback>
+                            )}
+                        </Avatar>
+                    </a>
                     <div className="min-w-0">
-                        <div className="truncate font-medium">{u.name}</div>
+                        <a href={route('management.users.show', u.id)} className="truncate font-medium hover:underline">
+                            {u.name}
+                        </a>
                         {u.phone && (
                             <div
                                 className="text-muted-foreground truncate text-xs"
@@ -166,6 +166,23 @@ export const createColumns = (
         },
     }),
     makeColumn<UserItem>({
+        id: 'document',
+        title: i18n.t('document.title', { ns: 'profile' }),
+        className: COL.doc,
+        cell: ({ row }) => {
+            const d = row.original.document;
+            return (
+                <div className={`${COL.doc} flex items-center gap-1`}>
+                    {d?.status ? (
+                        <DocumentStatusBadge status={d.status} />
+                    ) : (
+                        <span className="text-muted-foreground">—</span>
+                    )}
+                </div>
+            );
+        },
+    }),
+    makeColumn<UserItem>({
         id: 'twofa',
         title: i18n.t('tabs.2fa', { ns: 'security' }),
         className: COL.twofa,
@@ -219,6 +236,11 @@ export const createColumns = (
                             <DropdownMenuLabel>
                                 {i18n.t('common.actions')}
                             </DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                                <a href={route('management.users.show', row.original.id)}>
+                                    <Eye className="mr-2 h-4 w-4" /> {i18n.t('common.view_detail')}
+                                </a>
+                            </DropdownMenuItem>
                             <Can all={['user.role.manage']}>
                                 <DropdownMenuItem
                                     onClick={() => opts?.onManageRoles?.(u)}

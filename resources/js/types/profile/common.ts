@@ -34,4 +34,5 @@ export type DocumentDTO = {
     expires_at?: string | null;
     verified_at?: string | null;
     notes?: string | null;
+    attachments?: string[] | null;
 };

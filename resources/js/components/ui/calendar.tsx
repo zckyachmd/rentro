@@ -5,9 +5,9 @@ import {
 } from "lucide-react"
 import * as React from "react"
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import { useTranslation } from 'react-i18next'
 
 import { Button, buttonVariants } from "@/components/ui/button"
-import { useTranslation } from 'react-i18next'
 import { cn } from "@/lib/utils"
 
 function Calendar({

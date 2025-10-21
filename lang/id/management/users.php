@@ -30,6 +30,12 @@ return [
         'sent'   => 'Email verifikasi juga telah dikirim.',
         'failed' => 'Email verifikasi tidak terkirim. Pengguna dapat meminta verifikasi dari profil atau Anda dapat mengirim ulang.',
     ],
+    'document' => [
+        'approved'  => 'Dokumen pengguna disetujui.',
+        'rejected'  => 'Dokumen pengguna ditolak.',
+        'not_found' => 'Pengguna ini belum mengirim dokumen.',
+        'invalid_status' => 'Hanya dokumen berstatus pending yang dapat diverifikasi.',
+    ],
     'errors' => [
         'self_edit_forbidden'      => 'Anda tidak diperbolehkan mengubah peran Anda sendiri. Hubungi administrator.',
         'cannot_edit_super'        => 'Anda tidak memiliki izin untuk mengubah peran pengguna dengan peran Super Admin.',

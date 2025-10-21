@@ -12,6 +12,8 @@ enum PermissionName: string
     case USER_TWO_FACTOR     = 'user.two-factor';
     case USER_FORCE_LOGOUT   = 'user.force-logout';
     case USER_DISABLE        = 'user.disable';
+    // User Document Verification
+    case USER_DOCUMENT_VERIFY = 'user.document.verify';
 
     // Role
     case ROLE_VIEW              = 'role.view';

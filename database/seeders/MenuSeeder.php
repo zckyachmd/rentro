@@ -22,17 +22,33 @@ class MenuSeeder extends Seeder
                 'label' => 'menu.overview',
                 'items' => [
                     ['label' => 'menu.dashboard', 'href' => route('dashboard', [], false), 'icon' => 'Home'],
-                    ['label' => 'menu.booking', 'href' => route('tenant.bookings.index', [], false), 'icon' => 'CalendarCheck', 'roles' => [RoleName::TENANT->value]],
+                    [
+                        'label' => 'menu.booking',
+                        'icon'  => 'CalendarCheck',
+                        'roles' => [RoleName::TENANT->value],
+                        'children' => [
+                            [
+                                'label' => 'booking_list',
+                                'href'  => route('tenant.bookings.index', [], false),
+                                'icon'  => 'List',
+                            ],
+                            [
+                                'label' => 'booking_browse',
+                                'href'  => route('tenant.rooms.index', [], false),
+                                'icon'  => 'BedDouble',
+                            ],
+                        ],
+                    ],
                     [
                         'label' => 'menu.contracts',
-                        'href' => route('tenant.contracts.index', [], false),
-                        'icon' => 'ScrollText',
+                        'href'  => route('tenant.contracts.index', [], false),
+                        'icon'  => 'ScrollText',
                         'roles' => [RoleName::TENANT->value],
                     ],
                     [
                         'label' => 'menu.invoices',
-                        'href' => route('tenant.invoices.index', [], false),
-                        'icon' => 'ReceiptText',
+                        'href'  => route('tenant.invoices.index', [], false),
+                        'icon'  => 'ReceiptText',
                         'roles' => [RoleName::TENANT->value],
                     ],
                 ],

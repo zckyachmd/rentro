@@ -57,6 +57,26 @@ Route::prefix('management')->name('management.')->group(function (): void {
             ->middleware('can:' . PermissionName::USER_VIEW->value)
             ->name('index');
 
+        // Detail user + document verification
+        Route::get('/{user}', [UserManagementController::class, 'show'])
+            ->middleware('can:' . PermissionName::USER_VIEW->value)
+            ->whereNumber('user')
+            ->name('show');
+
+        // View user document attachments (private files)
+        Route::get('/{user}/document/attachments/{path}', [UserManagementController::class, 'documentAttachment'])
+            ->middleware('can:' . PermissionName::USER_VIEW->value)
+            ->where('path', '.*')
+            ->name('document.attachment');
+
+        // Verify user document (requires dedicated permission)
+        Route::post('/{user}/document/approve', [UserManagementController::class, 'approveDocument'])
+            ->middleware('can:' . PermissionName::USER_DOCUMENT_VERIFY->value)
+            ->name('document.approve');
+        Route::post('/{user}/document/reject', [UserManagementController::class, 'rejectDocument'])
+            ->middleware('can:' . PermissionName::USER_DOCUMENT_VERIFY->value)
+            ->name('document.reject');
+
         Route::post('/', [UserManagementController::class, 'createUser'])
             ->middleware('can:' . PermissionName::USER_CREATE->value)
             ->name('store');

@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
         const p = String(env.VITE_HMR_PROTOCOL).toLowerCase();
         hmrProtocol = p === 'wss' ? 'wss' : 'ws';
     }
-    let hmrClientPort = Number(env.VITE_HMR_CLIENT_PORT || '') || 5173;
+    const hmrClientPort = Number(env.VITE_HMR_CLIENT_PORT || '') || 5173;
     try {
         if (publicUrl && /https?:\/\//i.test(publicUrl)) {
             const u = new URL(publicUrl);

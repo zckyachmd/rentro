@@ -8,6 +8,13 @@ export type UserItem = {
     two_factor_enabled: boolean;
     last_active_at?: string | null;
     initials?: string | null;
+    document?: {
+        id?: number | null;
+        status?: 'pending' | 'approved' | 'rejected' | null;
+        type?: string | null;
+        attachments?: number;
+        has_file?: boolean | null;
+    } | null;
 };
 
 export type ForceLogoutDialogProps = {

@@ -68,6 +68,10 @@ class AppSettingSeeder extends Seeder
             // Profile
             ['key' => 'profile.emergency_contacts_max', 'value' => 3, 'type' => 'int', 'description' => 'Batas maksimal jumlah kontak darurat per pengguna'],
 
+            // Booking limits & holds (tenant)
+            ['key' => 'booking.max_active_requests', 'value' => 3, 'type' => 'int', 'description' => 'Maksimal jumlah booking REQUESTED aktif per pengguna'],
+            ['key' => 'booking.soft_hold_hours', 'value' => 48, 'type' => 'int', 'description' => 'Durasi soft hold (jam) untuk suatu kamar saat ada booking REQUESTED masuk'],
+
             // Public pages toggle
             ['key' => 'public.enabled', 'value' => false, 'type' => 'bool', 'description' => 'Aktifkan halaman publik (home, katalog, blog, dst)'],
         ];

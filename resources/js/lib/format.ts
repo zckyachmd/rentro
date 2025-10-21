@@ -76,6 +76,11 @@ export function formatDate(
               minute: '2-digit',
               timeZone: 'Asia/Jakarta',
           }
-        : { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'Asia/Jakarta' };
+        : {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              timeZone: 'Asia/Jakarta',
+          };
     return new Intl.DateTimeFormat(pickLocale(locale), opts).format(d);
 }
