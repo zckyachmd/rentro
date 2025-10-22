@@ -24,20 +24,9 @@ class MenuSeeder extends Seeder
                     ['label' => 'menu.dashboard', 'href' => route('dashboard', [], false), 'icon' => 'Home'],
                     [
                         'label' => 'menu.booking',
+                        'href'  => route('tenant.bookings.index', [], false),
                         'icon'  => 'CalendarDays',
                         'roles' => [RoleName::TENANT->value],
-                        'children' => [
-                            [
-                                'label' => 'booking_list',
-                                'href'  => route('tenant.bookings.index', [], false),
-                                'icon'  => 'List',
-                            ],
-                            [
-                                'label' => 'booking_browse',
-                                'href'  => route('tenant.rooms.index', [], false),
-                                'icon'  => 'BedDouble',
-                            ],
-                        ],
                     ],
                     [
                         'label' => 'menu.contracts',
@@ -260,8 +249,7 @@ class MenuSeeder extends Seeder
         ];
         $existing = null;
         if (!empty($href) && $href !== '#') {
-            // Tolerant "insert-only" match for href: match exact relative
-            // or any existing absolute URL ending with the same path+query.
+            // Tolerant match by href (relative or absolute ending with same path+query)
             $existing = Menu::query()
                 ->where($match)
                 ->where(function ($q) use ($href) {
@@ -269,10 +257,18 @@ class MenuSeeder extends Seeder
                         ->orWhere('href', 'like', '%' . $href);
                 })
                 ->first();
+            // Fallback: migrate existing placeholder matched by label -> convert into a link item
+            if (!$existing) {
+                $existing = Menu::query()
+                    ->where('menu_group_id', $groupId)
+                    ->where('parent_id', $parentId)
+                    ->where('label', $item['label'])
+                    ->first();
+            }
             $match['href'] = $href;
         } else {
             $match['label'] = $item['label'];
-            $existing = Menu::where($match)->first();
+            $existing       = Menu::where($match)->first();
         }
 
         $perm = $item['permission'] ?? null;
@@ -280,19 +276,33 @@ class MenuSeeder extends Seeder
             $perm = $perm->value;
         }
 
-        $menu = $existing ?: Menu::firstOrCreate(
-            $match,
-            [
-                'href' => $href,
-                'icon' => $item['icon'] ?? 'Circle',
-                'permission_name' => is_string($perm) ? $perm : null,
-                'allowed_roles'   => $item['roles'] ?? null,
-                'excluded_roles'  => $item['exclude_roles'] ?? null,
-                'sort_order' => $order,
-                'is_active' => $isActive,
-                'label' => $item['label'],
-            ]
-        );
+        if ($existing) {
+            $existing->forceFill([
+                'href'             => $href,
+                'icon'             => $item['icon'] ?? $existing->icon,
+                'permission_name'  => is_string($perm) ? $perm : $existing->permission_name,
+                'allowed_roles'    => $item['roles'] ?? $existing->allowed_roles,
+                'excluded_roles'   => $item['exclude_roles'] ?? $existing->excluded_roles,
+                'sort_order'       => $order,
+                'is_active'        => $isActive,
+                'label'            => $item['label'] ?? $existing->label,
+            ])->save();
+            $menu = $existing;
+        } else {
+            $menu = Menu::firstOrCreate(
+                $match,
+                [
+                    'href'            => $href,
+                    'icon'            => $item['icon'] ?? 'Circle',
+                    'permission_name' => is_string($perm) ? $perm : null,
+                    'allowed_roles'   => $item['roles'] ?? null,
+                    'excluded_roles'  => $item['exclude_roles'] ?? null,
+                    'sort_order'      => $order,
+                    'is_active'       => $isActive,
+                    'label'           => $item['label'],
+                ]
+            );
+        }
 
         if (!empty($item['children']) && is_array($item['children'])) {
             foreach (array_values($item['children']) as $cIdx => $child) {

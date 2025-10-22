@@ -13,8 +13,8 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { PublicDesktopMenu, PublicMobileMenu } from '@/layouts/public/menu';
-import type { PublicMenuItem } from '@/types/navigation';
 import type { PageProps } from '@/types';
+import type { PublicMenuItem } from '@/types/navigation';
 import type { InertiaSharedProps } from '@/types/shared';
 
 type PublicNavbarProps = {

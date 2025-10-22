@@ -18,11 +18,19 @@ class AppFeatures
             return $memo;
         }
         try {
-            $memo = Schema::hasTable('app_settings')
-                ? (bool) AppSetting::config('public.enabled', false)
-                : false;
+            // 1) Explicit config override wins (works with config caching)
+            $cfg = config('app.public_enabled');
+            if ($cfg !== null) {
+                return $memo = filter_var($cfg, FILTER_VALIDATE_BOOLEAN);
+            }
+
+            // 2) DB-backed setting, default to true so public pages exist by default
+            $default = true;
+            $memo    = Schema::hasTable('app_settings')
+                ? (bool) AppSetting::config('public.enabled', $default)
+                : $default;
         } catch (\Throwable) {
-            $memo = false;
+            $memo = true;
         }
 
         return $memo;

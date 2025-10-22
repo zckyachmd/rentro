@@ -1,8 +1,17 @@
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    Banknote,
+    Building2,
+    HelpCircle,
+    Info,
+    ShieldCheck,
+    Tag,
+} from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { Badge } from '@/components/ui/badge';
+import { DatePickerInput } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -22,8 +31,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 import { AppLayout } from '@/layouts';
+import RoomDetailDialog from '@/pages/tenant/booking/dialogs/room-detail-dialog';
+import BookingGuideDialog from '@/pages/tenant/booking/guide-dialog';
 import type { PageProps } from '@/types';
 
 type RoomItem = {
@@ -35,6 +51,11 @@ type RoomItem = {
     status: string;
     price_month: number;
     deposit: number;
+    photo_url?: string | null;
+    photo_urls?: string[];
+    size_m2?: number | null;
+    max_occupancy?: number | null;
+    amenities?: string[];
 };
 
 type Paginator<T> = {
@@ -42,16 +63,25 @@ type Paginator<T> = {
 };
 
 export default function TenantRoomBrowse() {
-    const { rooms, query } = usePage<PageProps<Record<string, unknown>>>()
-        .props as unknown as {
+    const { rooms, query, options } = usePage<
+        PageProps<Record<string, unknown>>
+    >().props as unknown as {
         rooms: Paginator<RoomItem>;
         query: { building?: string; type?: string };
+        options: { buildings: string[]; types: string[] };
     };
 
+    const SELECT_ALL = '__ALL__';
     const [building, setBuilding] = React.useState<string>(
-        query?.building || '',
+        query?.building && String(query.building).length > 0
+            ? String(query.building)
+            : SELECT_ALL,
     );
-    const [type, setType] = React.useState<string>(query?.type || '');
+    const [type, setType] = React.useState<string>(
+        query?.type && String(query.type).length > 0
+            ? String(query.type)
+            : SELECT_ALL,
+    );
 
     const [startDate, setStartDate] = React.useState<string>('');
     const [duration, setDuration] = React.useState<string>('6');
@@ -67,18 +97,42 @@ export default function TenantRoomBrowse() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Auto-select when there is only one option available
+    React.useEffect(() => {
+        try {
+            if (
+                building === SELECT_ALL &&
+                Array.isArray(options?.buildings) &&
+                options.buildings.length === 1
+            ) {
+                setBuilding(options.buildings[0] || '');
+            }
+            if (
+                type === SELECT_ALL &&
+                Array.isArray(options?.types) &&
+                options.types.length === 1
+            ) {
+                setType(options.types[0] || '');
+            }
+        } catch {
+            // ignore
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [options?.buildings, options?.types]);
+
     const applyFilter = () => {
         const params = new URLSearchParams();
-        if (building) params.set('building', building);
-        if (type) params.set('type', type);
+        if (building && building !== SELECT_ALL)
+            params.set('building', building);
+        if (type && type !== SELECT_ALL) params.set('type', type);
         router.visit(
             `${route('tenant.rooms.index')}${params.toString() ? `?${params.toString()}` : ''}`,
         );
     };
 
     const resetFilter = () => {
-        setBuilding('');
-        setType('');
+        setBuilding(SELECT_ALL);
+        setType(SELECT_ALL);
         router.visit(route('tenant.rooms.index'));
     };
 
@@ -86,6 +140,9 @@ export default function TenantRoomBrowse() {
     const [confirmOpen, setConfirmOpen] = React.useState(false);
     const [confirmRoom, setConfirmRoom] = React.useState<RoomItem | null>(null);
     const [notes, setNotes] = React.useState<string>('');
+    const [guideOpen, setGuideOpen] = React.useState(false);
+    const [detailOpen, setDetailOpen] = React.useState(false);
+    const [detailRoom, setDetailRoom] = React.useState<RoomItem | null>(null);
 
     const book = async (roomId: string) => {
         if (!startDate || !duration) {
@@ -168,10 +225,57 @@ export default function TenantRoomBrowse() {
         <AppLayout
             pageTitle="Browse Kamar"
             pageDescription="Pilih kamar tersedia, atur rencana sewa, dan booking."
+            actions={
+                <div className="flex items-center gap-2">
+                    <Button asChild size="sm">
+                        <Link href={route('tenant.bookings.index')}>
+                            <ArrowLeft className="mr-1 h-4 w-4" /> Kembali ke
+                            Booking
+                        </Link>
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setGuideOpen(true)}
+                    >
+                        <HelpCircle className="mr-1 h-4 w-4" /> Panduan Booking
+                    </Button>
+                </div>
+            }
         >
             <div className="space-y-4">
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between gap-2">
+                            <div>
+                                <CardTitle className="text-base font-medium">
+                                    Cari Kamar
+                                </CardTitle>
+                                <p className="text-muted-foreground text-sm">
+                                    Gunakan filter dan rencana sewa untuk
+                                    melihat estimasi biaya sebelum booking.
+                                </p>
+                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className="text-muted-foreground hover:text-foreground mt-0.5"
+                                        aria-label="Info rencana sewa"
+                                    >
+                                        <Info className="h-4 w-4" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Rencana dipakai untuk menghitung estimasi
+                                    dan mempermudah Booking cepat pada setiap
+                                    kamar.
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                             <div className="space-y-2">
                                 <div className="text-sm font-medium">
@@ -182,33 +286,57 @@ export default function TenantRoomBrowse() {
                                         <Label className="text-muted-foreground text-xs">
                                             Gedung
                                         </Label>
-                                        <Input
+                                        <Select
                                             value={building}
-                                            onChange={(e) =>
-                                                setBuilding(e.target.value)
-                                            }
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter')
-                                                    applyFilter();
-                                            }}
-                                            placeholder="Mis. Gedung A"
-                                        />
+                                            onValueChange={setBuilding}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Pilih gedung" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value={SELECT_ALL}>
+                                                    Semua
+                                                </SelectItem>
+                                                {(options?.buildings ?? []).map(
+                                                    (b) => (
+                                                        <SelectItem
+                                                            key={b}
+                                                            value={b}
+                                                        >
+                                                            {b}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div>
                                         <Label className="text-muted-foreground text-xs">
                                             Tipe
                                         </Label>
-                                        <Input
+                                        <Select
                                             value={type}
-                                            onChange={(e) =>
-                                                setType(e.target.value)
-                                            }
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter')
-                                                    applyFilter();
-                                            }}
-                                            placeholder="Mis. Standard"
-                                        />
+                                            onValueChange={setType}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Pilih tipe" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value={SELECT_ALL}>
+                                                    Semua
+                                                </SelectItem>
+                                                {(options?.types ?? []).map(
+                                                    (t) => (
+                                                        <SelectItem
+                                                            key={t}
+                                                            value={t}
+                                                        >
+                                                            {t}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="flex items-center gap-2 sm:col-span-2">
                                         <Button
@@ -223,7 +351,10 @@ export default function TenantRoomBrowse() {
                                             size="sm"
                                             variant="outline"
                                             onClick={resetFilter}
-                                            disabled={!building && !type}
+                                            disabled={
+                                                building === SELECT_ALL &&
+                                                type === SELECT_ALL
+                                            }
                                         >
                                             Reset
                                         </Button>
@@ -240,11 +371,10 @@ export default function TenantRoomBrowse() {
                                         <Label className="text-muted-foreground text-xs">
                                             Tanggal Mulai
                                         </Label>
-                                        <Input
-                                            type="date"
+                                        <DatePickerInput
                                             value={startDate}
-                                            onChange={(e) =>
-                                                setStartDate(e.target.value)
+                                            onChange={(v) =>
+                                                setStartDate(v || '')
                                             }
                                         />
                                     </div>
@@ -291,10 +421,7 @@ export default function TenantRoomBrowse() {
                                         </p>
                                     </div>
                                 </div>
-                                <p className="text-muted-foreground text-xs">
-                                    Gunakan rencana ini untuk tombol Booking
-                                    cepat pada setiap kamar.
-                                </p>
+                                {null}
                             </div>
                         </div>
                     </CardContent>
@@ -333,37 +460,75 @@ export default function TenantRoomBrowse() {
                                                 </span>
                                             ) : null}
                                         </CardTitle>
-                                        <div className="flex flex-wrap gap-1.5 pt-1">
+                                        <div className="flex flex-wrap gap-2 pt-1 text-xs">
                                             {r.building ? (
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="text-xs"
-                                                >
+                                                <span className="text-muted-foreground inline-flex items-center gap-1">
+                                                    <Building2 className="h-3.5 w-3.5" />
                                                     {r.building}
-                                                </Badge>
+                                                </span>
                                             ) : null}
                                             {r.type ? (
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-xs"
-                                                >
+                                                <span className="text-muted-foreground inline-flex items-center gap-1">
+                                                    <Tag className="h-3.5 w-3.5" />
                                                     {r.type}
-                                                </Badge>
+                                                </span>
                                             ) : null}
                                         </div>
                                     </CardHeader>
                                     <CardContent className="pt-0">
-                                        <div className="text-sm">
-                                            Harga/bulan:{' '}
-                                            <span className="font-medium">
-                                                Rp {formatIDR(r.price_month)}
-                                            </span>
-                                        </div>
-                                        <div className="mt-1 text-sm">
-                                            Deposit:{' '}
-                                            <span className="font-medium">
-                                                Rp {formatIDR(r.deposit)}
-                                            </span>
+                                        <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                                                <Banknote className="text-muted-foreground h-4 w-4" />
+                                                <div>
+                                                    <div className="text-muted-foreground flex items-center gap-1 text-[11px] leading-3">
+                                                        <span>Harga/bulan</span>
+                                                        <Tooltip>
+                                                            <TooltipTrigger
+                                                                asChild
+                                                            >
+                                                                <Info className="h-3 w-3" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                Tarif sewa per
+                                                                bulan (sebelum
+                                                                promo).
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+                                                    <div className="font-medium">
+                                                        Rp{' '}
+                                                        {formatIDR(
+                                                            r.price_month,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                                                <ShieldCheck className="text-muted-foreground h-4 w-4" />
+                                                <div>
+                                                    <div className="text-muted-foreground flex items-center gap-1 text-[11px] leading-3">
+                                                        <span>Deposit</span>
+                                                        <Tooltip>
+                                                            <TooltipTrigger
+                                                                asChild
+                                                            >
+                                                                <Info className="h-3 w-3" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                Jaminan
+                                                                dikembalikan
+                                                                saat akhir sewa
+                                                                sesuai
+                                                                ketentuan.
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+                                                    <div className="font-medium">
+                                                        Rp{' '}
+                                                        {formatIDR(r.deposit)}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         {est != null ? (
                                             <div className="mt-2 text-sm">
@@ -395,6 +560,17 @@ export default function TenantRoomBrowse() {
                                             >
                                                 Booking
                                             </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="ml-2"
+                                                onClick={() => {
+                                                    setDetailRoom(r);
+                                                    setDetailOpen(true);
+                                                }}
+                                            >
+                                                Detail
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -418,6 +594,21 @@ export default function TenantRoomBrowse() {
                             Periksa kembali detail berikut sebelum melanjutkan.
                         </DialogDescription>
                     </DialogHeader>
+                    <div className="bg-muted/60 text-muted-foreground mb-2 rounded-md p-2 text-xs">
+                        Booking akan masuk status{' '}
+                        <span className="font-medium">On Hold</span> untuk
+                        diverifikasi. Lihat progress di menu{' '}
+                        <span className="font-medium">Booking Saya</span> atau
+                        baca
+                        <button
+                            type="button"
+                            className="text-primary ml-1 underline-offset-2 hover:underline"
+                            onClick={() => setGuideOpen(true)}
+                        >
+                            panduan
+                        </button>
+                        .
+                    </div>
                     <div className="space-y-1 text-sm">
                         <div>
                             Kamar:{' '}
@@ -510,6 +701,34 @@ export default function TenantRoomBrowse() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Panduan Booking */}
+            <BookingGuideDialog open={guideOpen} onOpenChange={setGuideOpen} />
+
+            {/* Detail Kamar */}
+            <RoomDetailDialog
+                open={detailOpen}
+                onOpenChange={(o) => {
+                    setDetailOpen(o);
+                    if (!o) setDetailRoom(null);
+                }}
+                room={detailRoom}
+                onBook={(roomId) => {
+                    // reuse existing flow
+                    const target = items.find((it) => it.id === roomId);
+                    if (!target) return;
+                    if (!hasPlan) {
+                        toast.warning(
+                            'Lengkapi rencana sewa dulu (tanggal & durasi).',
+                        );
+                        return;
+                    }
+                    setDetailOpen(false);
+                    setConfirmRoom(target);
+                    setConfirmOpen(true);
+                }}
+                bookDisabled={submittingId === detailRoom?.id}
+            />
         </AppLayout>
     );
 }

@@ -121,9 +121,14 @@ Route::middleware('auth')->group(function (): void {
 
     // Tenant
     Route::prefix('tenant')->name('tenant.')->middleware(['role:' . RoleName::TENANT->value])->group(function (): void {
+        // Default tenant home -> bookings list
+        Route::get('/', function () {
+            return redirect()->route('tenant.bookings.index');
+        })->name('home');
         // Rooms browse (tenant scope)
         Route::prefix('rooms')->name('rooms.')->group(function (): void {
             Route::get('/', [TenantRoomBrowseController::class, 'index'])->name('index');
+            Route::get('/{room}', [TenantRoomBrowseController::class, 'show'])->whereNumber('room')->name('show');
         });
         // Bookings
         Route::prefix('bookings')->name('bookings.')->group(function (): void {
