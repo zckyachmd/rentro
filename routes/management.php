@@ -27,6 +27,9 @@ Route::prefix('management')->name('management.')->group(function (): void {
         Route::get('/', [BookingManagementController::class, 'index'])
             ->middleware('can:' . PermissionName::BOOKING_VIEW->value)
             ->name('index');
+        Route::get('/export', [BookingManagementController::class, 'export'])
+            ->middleware('can:' . PermissionName::BOOKING_VIEW->value)
+            ->name('export');
         Route::get('/{booking}', [BookingManagementController::class, 'show'])
             ->middleware('can:' . PermissionName::BOOKING_VIEW->value)
             ->whereNumber('booking')
@@ -425,6 +428,9 @@ Route::prefix('management')->name('management.')->group(function (): void {
             ->name('actions.destroy');
 
         // Coupons
+        Route::get('/coupons/lookup', [PromotionManagementController::class, 'lookupCoupons'])
+            ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
+            ->name('coupons.lookup');
         Route::get('/{promotion}/coupons/list', [PromotionManagementController::class, 'listCoupons'])
             ->middleware('can:' . PermissionName::PROMOTION_VIEW->value)
             ->name('coupons.list');

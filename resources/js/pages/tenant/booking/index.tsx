@@ -1,5 +1,11 @@
 import { Link, usePage } from '@inertiajs/react';
-import { CalendarCheck, CheckCircle2, Hash, XCircle, CircleSlash } from 'lucide-react';
+import {
+    CalendarCheck,
+    CheckCircle2,
+    CircleSlash,
+    Hash,
+    XCircle,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +32,7 @@ type BookingItem = {
 type Paginator<T> = { data: T[] };
 
 export default function TenantBookingsIndex() {
-    const { bookings } = usePage<PageProps<any>>().props as unknown as {
+    const { bookings } = usePage<PageProps<Record<string, unknown>>>().props as unknown as {
         bookings: Paginator<BookingItem>;
     };
     const items = bookings?.data || [];
@@ -40,28 +46,28 @@ export default function TenantBookingsIndex() {
         const key = String(status || '').toLowerCase();
         if (key === 'requested') {
             return (
-                <Badge className="bg-yellow-500/15 text-yellow-700 hover:bg-yellow-500/20 inline-flex items-center gap-1">
+                <Badge className="inline-flex items-center gap-1 bg-yellow-500/15 text-yellow-700 hover:bg-yellow-500/20">
                     <CalendarCheck className="h-3 w-3" /> On Hold
                 </Badge>
             );
         }
         if (key === 'approved') {
             return (
-                <Badge className="bg-green-500/15 text-green-700 hover:bg-green-500/20 inline-flex items-center gap-1">
+                <Badge className="inline-flex items-center gap-1 bg-green-500/15 text-green-700 hover:bg-green-500/20">
                     <CheckCircle2 className="h-3 w-3" /> Approved
                 </Badge>
             );
         }
         if (key === 'rejected') {
             return (
-                <Badge className="bg-red-500/15 text-red-700 hover:bg-red-500/20 inline-flex items-center gap-1">
+                <Badge className="inline-flex items-center gap-1 bg-red-500/15 text-red-700 hover:bg-red-500/20">
                     <XCircle className="h-3 w-3" /> Rejected
                 </Badge>
             );
         }
         if (key === 'cancelled') {
             return (
-                <Badge className="bg-zinc-500/15 text-zinc-700 hover:bg-zinc-500/20 inline-flex items-center gap-1">
+                <Badge className="inline-flex items-center gap-1 bg-zinc-500/15 text-zinc-700 hover:bg-zinc-500/20">
                     <CircleSlash className="h-3 w-3" /> Cancelled
                 </Badge>
             );
@@ -100,22 +106,47 @@ export default function TenantBookingsIndex() {
                             </CardHeader>
                             <CardContent className="space-y-1.5">
                                 <div className="text-sm">
-                                    Kamar: <span className="font-medium">{b.room?.number || '-'}</span>
+                                    Kamar:{' '}
+                                    <span className="font-medium">
+                                        {b.room?.number || '-'}
+                                    </span>
                                     {b.room?.name ? (
-                                        <span className="text-muted-foreground"> • {b.room.name}</span>
+                                        <span className="text-muted-foreground">
+                                            {' '}
+                                            • {b.room.name}
+                                        </span>
                                     ) : null}
                                 </div>
                                 {(b.room?.building || b.room?.type) && (
                                     <div className="text-muted-foreground text-xs">
-                                        {(b.room?.building || '-') + ' • ' + (b.room?.type || '-')}
+                                        {(b.room?.building || '-') +
+                                            ' • ' +
+                                            (b.room?.type || '-')}
                                     </div>
                                 )}
-                                <div className="text-sm pt-1">Mulai: <span className="font-medium">{b.start_date}</span></div>
-                                <div className="text-sm">Durasi: <span className="font-medium">{b.duration} bulan</span></div>
-                                <div className="text-sm">Estimasi: <span className="font-semibold">Rp {formatIDR(b.estimate?.total)}</span></div>
+                                <div className="pt-1 text-sm">
+                                    Mulai:{' '}
+                                    <span className="font-medium">
+                                        {b.start_date}
+                                    </span>
+                                </div>
+                                <div className="text-sm">
+                                    Durasi:{' '}
+                                    <span className="font-medium">
+                                        {b.duration} bulan
+                                    </span>
+                                </div>
+                                <div className="text-sm">
+                                    Estimasi:{' '}
+                                    <span className="font-semibold">
+                                        Rp {formatIDR(b.estimate?.total)}
+                                    </span>
+                                </div>
                                 <div className="pt-2">
                                     <Link
-                                        href={route('tenant.bookings.show', { booking: b.id })}
+                                        href={route('tenant.bookings.show', {
+                                            booking: b.id,
+                                        })}
                                         className="text-primary text-sm hover:underline"
                                     >
                                         Lihat detail

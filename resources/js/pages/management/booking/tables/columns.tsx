@@ -1,7 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Check, Eye, MoreHorizontal } from 'lucide-react';
+import { Eye, MoreHorizontal } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatDate, formatIDR } from '@/lib/format';
@@ -35,7 +34,6 @@ export type BookingRow = {
 
 type CreateColumnsOpts<T extends BookingRow> = {
     onDetail?: (row: T) => void;
-    onApprove?: (row: T) => void;
 };
 
 const COL = {
@@ -182,7 +180,6 @@ export const createColumns = <T extends BookingRow>(
         cell: ({ row }) => {
             const b = row.original;
             const t = i18n.t.bind(i18n);
-            const canApprove = (b.status || '').toLowerCase() === 'requested';
             return (
                 <div className={`${COL.actions} flex items-center justify-end`}>
                     <DropdownMenu>
@@ -208,18 +205,6 @@ export const createColumns = <T extends BookingRow>(
                                 <Eye className="mr-2 h-4 w-4" />{' '}
                                 {t('common.view_detail')}
                             </DropdownMenuItem>
-                            {canApprove ? (
-                                <DropdownMenuItem
-                                    onClick={() => opts?.onApprove?.(b)}
-                                >
-                                    <Check className="mr-2 h-4 w-4" />{' '}
-                                    {t('detail.approve', {
-                                        ns: 'management/booking',
-                                        defaultValue: 'Approve',
-                                    })}
-                                </DropdownMenuItem>
-                            ) : null}
-                            <DropdownMenuSeparator />
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

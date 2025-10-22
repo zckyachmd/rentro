@@ -24,7 +24,7 @@ class MenuSeeder extends Seeder
                     ['label' => 'menu.dashboard', 'href' => route('dashboard', [], false), 'icon' => 'Home'],
                     [
                         'label' => 'menu.booking',
-                        'icon'  => 'CalendarCheck',
+                        'icon'  => 'CalendarDays',
                         'roles' => [RoleName::TENANT->value],
                         'children' => [
                             [
@@ -61,7 +61,7 @@ class MenuSeeder extends Seeder
                     [
                         'label' => 'menu.booking',
                         'href' => route('management.bookings.index', [], false),
-                        'icon' => 'CalendarCheck',
+                        'icon' => 'CalendarDays',
                         'permission' => PermissionName::BOOKING_VIEW,
                     ],
                     ['label' => 'menu.contracts', 'href' => route('management.contracts.index', [], false), 'icon' => 'ScrollText', 'permission' => PermissionName::CONTRACT_VIEW],

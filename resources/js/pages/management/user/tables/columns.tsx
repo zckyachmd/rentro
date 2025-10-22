@@ -1,8 +1,14 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { KeyRound, LogOut, MoreHorizontal, ScanFace, ShieldCheck, Eye } from 'lucide-react';
-import DocumentStatusBadge from '@/pages/profile/components/document-status-badge';
+import {
+    Eye,
+    KeyRound,
+    LogOut,
+    MoreHorizontal,
+    ScanFace,
+    ShieldCheck,
+} from 'lucide-react';
 
 import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,6 +25,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import i18n from '@/lib/i18n';
+import DocumentStatusBadge from '@/pages/profile/components/document-status-badge';
 import type {
     UserColumnOptions as ColumnFactoryOptions,
     UserItem,
@@ -47,7 +54,11 @@ export const createColumns = (
             const u = row.original;
             return (
                 <div className={`flex min-w-0 items-center gap-3 ${COL.name}`}>
-                    <a href={route('management.users.show', u.id)} aria-label={`${i18n.t('common.view_detail')}: ${u.name}`} className="shrink-0">
+                    <a
+                        href={route('management.users.show', u.id)}
+                        aria-label={`${i18n.t('common.view_detail')}: ${u.name}`}
+                        className="shrink-0"
+                    >
                         <Avatar className="h-9 w-9">
                             {u.avatar ? (
                                 <AvatarImage src={u.avatar} alt={u.name} />
@@ -59,7 +70,10 @@ export const createColumns = (
                         </Avatar>
                     </a>
                     <div className="min-w-0">
-                        <a href={route('management.users.show', u.id)} className="truncate font-medium hover:underline">
+                        <a
+                            href={route('management.users.show', u.id)}
+                            className="truncate font-medium hover:underline"
+                        >
                             {u.name}
                         </a>
                         {u.phone && (
@@ -237,8 +251,14 @@ export const createColumns = (
                                 {i18n.t('common.actions')}
                             </DropdownMenuLabel>
                             <DropdownMenuItem asChild>
-                                <a href={route('management.users.show', row.original.id)}>
-                                    <Eye className="mr-2 h-4 w-4" /> {i18n.t('common.view_detail')}
+                                <a
+                                    href={route(
+                                        'management.users.show',
+                                        row.original.id,
+                                    )}
+                                >
+                                    <Eye className="mr-2 h-4 w-4" />{' '}
+                                    {i18n.t('common.view_detail')}
                                 </a>
                             </DropdownMenuItem>
                             <Can all={['user.role.manage']}>

@@ -26,12 +26,22 @@ type BookingDetail = {
         final_rent?: number;
         final_deposit?: number;
         duration?: number;
+        promo?: {
+            coupon_code?: string | null;
+            applied?: Array<{
+                id: number;
+                name: string;
+                discount_rent: number;
+                discount_deposit: number;
+                coupon_id?: number | null;
+            }>;
+        } | null;
     } | null;
     contract_id?: string | null;
 };
 
 export default function TenantBookingDetail() {
-    const { booking } = usePage<PageProps<any>>().props as unknown as {
+    const { booking } = usePage<PageProps<Record<string, unknown>>>().props as unknown as {
         booking: BookingDetail;
     };
 
@@ -58,6 +68,33 @@ export default function TenantBookingDetail() {
                                     <div>Promo: {booking.promo_code}</div>
                                 )}
                             </div>
+                            {booking.estimate?.promo ? (
+                                <div className="mt-2 space-y-1 text-sm">
+                                    <div>
+                                        Kode Promo:{' '}
+                                        {booking.estimate.promo.coupon_code || '-'}
+                                    </div>
+                                    {Array.isArray(booking.estimate.promo.applied) &&
+                                    booking.estimate.promo.applied.length > 0 ? (
+                                        <div className="text-muted-foreground text-xs">
+                                            Promo diterapkan:
+                                            <ul className="ml-4 list-disc">
+                                                {booking.estimate.promo.applied.map((p) => (
+                                                    <li key={p.id}>
+                                                        {p.name} — Diskon sewa Rp
+                                                        {new Intl.NumberFormat('id-ID').format(
+                                                            p.discount_rent,
+                                                        )}
+                                                        {p.discount_deposit
+                                                            ? ` · Diskon deposit Rp${new Intl.NumberFormat('id-ID').format(p.discount_deposit)}`
+                                                            : ''}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            ) : null}
                             <div className="space-y-1 text-sm">
                                 <div className="flex items-center gap-2">
                                     <Badge className="inline-flex items-center gap-1 capitalize">

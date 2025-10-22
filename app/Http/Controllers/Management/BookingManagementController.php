@@ -6,8 +6,10 @@ use App\Enum\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\Contracts\ContractServiceInterface;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class BookingManagementController extends Controller
@@ -18,13 +20,31 @@ class BookingManagementController extends Controller
 
     public function index(Request $request)
     {
-        $status = (string) $request->query('status', BookingStatus::REQUESTED->value);
+        $status = (string) $request->query('status', '');
+        $start  = $request->query('start');
+        $end    = $request->query('end');
 
         $q = Booking::query()
             ->with(['tenant:id,name,email', 'room:id,number,building_id,room_type_id', 'room.building:id,name', 'room.type:id,name'])
             ->orderByDesc('created_at');
         if ($status !== '') {
             $q->where('status', $status);
+        }
+        if ($start) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                $q->whereDate('start_date', '>=', $d);
+            } catch (\Throwable) {
+                // ignore invalid date
+            }
+        }
+        if ($end) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                $q->whereDate('start_date', '<=', $d);
+            } catch (\Throwable) {
+                // ignore invalid date
+            }
         }
         $search = (string) $request->query('q', '');
         if ($search !== '') {
@@ -58,21 +78,152 @@ class BookingManagementController extends Controller
             ];
         });
 
+        // Summary (respect simple filters)
+        $sumBase = Booking::query();
+        if ($status !== '') {
+            $sumBase->where('status', $status);
+        }
+        if ($start) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                $sumBase->whereDate('start_date', '>=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        if ($end) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                $sumBase->whereDate('start_date', '<=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        $countAll       = (int) $sumBase->count('id');
+        $countRequested = (int) (clone $sumBase)->where('status', BookingStatus::REQUESTED->value)->count('id');
+        $countApproved  = (int) (clone $sumBase)->where('status', BookingStatus::APPROVED->value)->count('id');
+        $countRejected  = (int) (clone $sumBase)->where('status', BookingStatus::REJECTED->value)->count('id');
+
         return Inertia::render('management/booking/index', [
             'bookings' => $page,
             'query'    => [
                 'status' => $status,
                 'q'      => $search,
+                'start'  => $start,
+                'end'    => $end,
             ],
             'options' => [
                 'statuses' => BookingStatus::options(),
             ],
+            'summary' => [
+                'count'           => $countAll,
+                'count_requested' => $countRequested,
+                'count_approved'  => $countApproved,
+                'count_rejected'  => $countRejected,
+            ],
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $q = Booking::query()->with([
+            'tenant:id,name,email',
+            'room:id,number,name,building_id,room_type_id',
+            'room.building:id,name',
+            'room.type:id,name',
+        ]);
+
+        $status = (string) $request->query('status', '');
+        if ($status !== '') {
+            $q->where('status', $status);
+        }
+        $start = $request->query('start');
+        $end   = $request->query('end');
+        if ($start) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                $q->whereDate('start_date', '>=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        if ($end) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                $q->whereDate('start_date', '<=', $d);
+            } catch (\Throwable) {
+            }
+        }
+        $search = (string) $request->query('q', '');
+        if ($search !== '') {
+            $like = config('database.default') === 'pgsql' ? 'ILIKE' : 'LIKE';
+            $q->where(function ($qq) use ($search, $like) {
+                $qq->orWhere('number', $like, "%{$search}%")
+                    ->orWhereHas('tenant', function ($t) use ($search, $like) {
+                        $t->where('name', $like, "%{$search}%")
+                            ->orWhere('email', $like, "%{$search}%");
+                    })
+                    ->orWhereHas('room', function ($r) use ($search, $like) {
+                        $r->where('number', $like, "%{$search}%")
+                            ->orWhere('name', $like, "%{$search}%");
+                    });
+            });
+        }
+
+        $q->orderByDesc('created_at')->orderByDesc('id');
+
+        $filename = 'bookings_' . now()->format('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($q): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, [
+                'Number',
+                'Start Date',
+                'Status',
+                'Tenant',
+                'Room',
+                'Building',
+                'Type',
+                'Duration',
+                'Period',
+                'Estimate Total (cents)',
+                'Promo Code',
+            ]);
+            $q->chunk(1000, function ($rows) use ($out) {
+                foreach ($rows as $b) {
+                    /** @var Booking $b */
+                    $estimate = is_array($b->estimate) ? $b->estimate : [];
+                    fputcsv($out, [
+                        (string) ($b->number ?? (string) $b->id),
+                        optional($b->start_date)->toDateString(),
+                        (string) $b->status->value,
+                        optional($b->tenant)->name,
+                        optional($b->room)->number ?? optional($b->room)->name,
+                        optional($b->room?->building)->name,
+                        optional($b->room?->type)->name,
+                        (int) $b->duration_count,
+                        (string) $b->billing_period->value,
+                        (int) ($estimate['total'] ?? 0),
+                        (string) ($b->promo_code ?? ''),
+                    ]);
+                }
+            });
+            fclose($out);
+        }, $filename, [
+            'Content-Type'        => 'text/csv',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
     public function show(Booking $booking)
     {
-        $booking->load(['tenant:id,name,email', 'room:id,number,name,building_id,room_type_id', 'room.building:id,name', 'room.type:id,name']);
+        $booking->load([
+            'tenant:id,name,email,phone',
+            'room:id,number,name,building_id,room_type_id,floor_id,size_m2,status,gender_policy,max_occupancy,notes',
+            'room.building:id,name',
+            'room.type:id,name',
+            'room.floor:id,name',
+            'room.photos:id,room_id,path,is_cover,ordering',
+            'room.amenities:id,name,icon',
+        ]);
 
         return Inertia::render('management/booking/detail', [
             'booking' => [
@@ -87,13 +238,48 @@ class BookingManagementController extends Controller
                 'tenant'     => $booking->tenant ? [
                     'name'  => $booking->tenant->name,
                     'email' => $booking->tenant->email,
+                    'phone' => method_exists($booking->tenant, 'getAttribute') ? ($booking->tenant->getAttribute('phone') ?? null) : null,
                 ] : null,
-                'room' => $booking->room ? [
-                    'number'   => $booking->room->number,
-                    'name'     => $booking->room->name,
-                    'building' => $booking->room->building?->name,
-                    'type'     => $booking->room->type?->name,
-                ] : null,
+                'room' => $booking->room ? (function () use ($booking) {
+                    $r           = $booking->room;
+                    $status      = $r->status;
+                    $gender      = $r->gender_policy;
+                    $statusValue = ($status instanceof \BackedEnum) ? (string) $status->value : (is_string($status) ? $status : (string) $status);
+                    $genderValue = ($gender instanceof \BackedEnum) ? (string) $gender->value : (is_string($gender) ? $gender : (string) $gender);
+
+                    $photos = $r->photos->map(fn ($p) => [
+                        'id'       => (string) $p->id,
+                        'url'      => Storage::url((string) $p->path),
+                        'is_cover' => (bool) $p->is_cover,
+                        'ordering' => (int) ($p->ordering ?? 0),
+                    ])->all();
+                    $amenities = $r->amenities->map(fn ($a) => [
+                        'id'   => (int) $a->id,
+                        'name' => (string) $a->name,
+                        'icon' => (string) ($a->icon ?? ''),
+                    ])->all();
+
+                    $prices   = $r->effectivePrices();
+                    $deposits = $r->effectiveDeposits();
+
+                    return [
+                        'id'            => (string) $r->id,
+                        'number'        => $r->number,
+                        'name'          => $r->name,
+                        'building'      => $r->building?->name,
+                        'type'          => $r->type?->name,
+                        'floor'         => $r->floor?->name,
+                        'size_m2'       => $r->size_m2 ? (string) $r->size_m2 : null,
+                        'status'        => $statusValue,
+                        'gender_policy' => $genderValue,
+                        'max_occupancy' => $r->max_occupancy ? (int) $r->max_occupancy : null,
+                        'photos'        => $photos,
+                        'amenities'     => $amenities,
+                        'prices'        => $prices,
+                        'deposits'      => $deposits,
+                        'notes'         => (string) ($r->notes ?? ''),
+                    ];
+                })() : null,
                 'estimate'    => $booking->estimate,
                 'contract_id' => $booking->contract_id ? (string) $booking->contract_id : null,
             ],
@@ -133,7 +319,7 @@ class BookingManagementController extends Controller
                 ])->save();
             });
         } catch (\Throwable $e) {
-            return back()->with('error', __('management/bookings.approve_failed'));
+            return back()->with('error', $e->getMessage());
         }
 
         return back()->with('success', __('management/bookings.approved'));
@@ -145,12 +331,12 @@ class BookingManagementController extends Controller
             return back()->with('error', __('management/bookings.reject_invalid_state'));
         }
 
-        $reason = (string) $request->input('reason', '');
+        $reason = trim((string) $request->input('reason', ''));
 
         $booking->forceFill([
             'status'      => BookingStatus::REJECTED,
             'rejected_at' => now(),
-            'notes'       => trim($booking->notes . "\nReject reason: " . $reason),
+            'notes'       => $reason !== '' ? $reason : '-',
         ])->save();
 
         return back()->with('success', __('management/bookings.rejected'));

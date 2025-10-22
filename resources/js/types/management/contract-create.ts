@@ -55,6 +55,7 @@ export type ContractCreateForm = {
     billing_day: string;
     auto_renew: boolean;
     notes?: string;
+    promo_code?: string;
 };
 
 export type ContractCreateLocal = {

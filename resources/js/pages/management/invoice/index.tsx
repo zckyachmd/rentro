@@ -5,6 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { DatePickerInput } from '@/components/date-picker';
+import { QuickRange } from '@/components/quick-range';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { QueryBag } from '@/components/ui/data-table-server';
@@ -55,29 +56,6 @@ export default function InvoiceIndex() {
     const [end, setEnd] = React.useState<string | null>(
         (props.query?.end as string | undefined) || null,
     );
-    const setPreset = (days: number) => {
-        const e = new Date();
-        const s = new Date();
-        s.setDate(e.getDate() - (days - 1));
-        const toIso = (d: Date) =>
-            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        onQueryChange({ page: 1, start: ss, end: ee });
-    };
-    const setPresetMTD = () => {
-        const e = new Date();
-        const s = new Date(e.getFullYear(), e.getMonth(), 1);
-        const toIso = (d: Date) =>
-            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        onQueryChange({ page: 1, start: ss, end: ee });
-    };
 
     const [processing, setProcessing] = React.useState(false);
     const [genOpen, setGenOpen] = React.useState(false);
@@ -99,39 +77,6 @@ export default function InvoiceIndex() {
     }, [start, end, onQueryChange]);
     const statusValue: string =
         (q as QueryBag & { status?: string | null }).status ?? 'all';
-    const toIso = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const setPresetWTD = () => {
-        const e = new Date();
-        const dow = e.getDay();
-        const mondayOffset = (dow + 6) % 7;
-        const s = new Date(e);
-        s.setDate(e.getDate() - mondayOffset);
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        onQueryChange({ page: 1, start: ss, end: ee });
-    };
-    const setPresetQTD = () => {
-        const e = new Date();
-        const qStartMonth = Math.floor(e.getMonth() / 3) * 3;
-        const s = new Date(e.getFullYear(), qStartMonth, 1);
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        onQueryChange({ page: 1, start: ss, end: ee });
-    };
-    const setPresetYTD = () => {
-        const e = new Date();
-        const s = new Date(e.getFullYear(), 0, 1);
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        onQueryChange({ page: 1, start: ss, end: ee });
-    };
 
     const [cancel, setCancel] = React.useState<CancelState>({
         target: null,
@@ -310,89 +255,47 @@ export default function InvoiceIndex() {
                         </div>
                         <div className="mt-3 flex items-center justify-between gap-2">
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-muted-foreground text-xs">
-                                    {t('dashboard.filters.quick')}:
-                                </span>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={() => setPreset(7)}
-                                >
-                                    7D
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={() => setPreset(30)}
-                                >
-                                    30D
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={() => setPreset(90)}
-                                >
-                                    90D
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={setPresetMTD}
-                                >
-                                    {t('dashboard.filters.mtd')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={setPresetWTD}
-                                >
-                                    {t('dashboard.filters.wtd')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={setPresetQTD}
-                                >
-                                    {t('dashboard.filters.qtd')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs"
-                                    onClick={setPresetYTD}
-                                >
-                                    {t('dashboard.filters.ytd')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-muted-foreground h-7 px-2 text-xs"
-                                    onClick={() => {
-                                        setStart(null);
-                                        setEnd(null);
+                                <QuickRange
+                                    onSelect={(s, e) => {
+                                        setStart(s);
+                                        setEnd(e);
                                         onQueryChange({
                                             page: 1,
-                                            start: null,
-                                            end: null,
+                                            start: s,
+                                            end: e,
                                         });
                                     }}
-                                >
-                                    {t('common.reset')}
-                                </Button>
+                                    disabledOptions={['qtd']}
+                                custom={[
+                                        {
+                                            key: '14d',
+                                            label: '14D',
+                                            getRange: () => {
+                                                const e = new Date();
+                                                const s = new Date();
+                                                s.setDate(e.getDate() - 13);
+                                                const toIso = (d: Date) =>
+                                                    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                                                return {
+                                                    start: toIso(s),
+                                                    end: toIso(e),
+                                                };
+                                            },
+                                        },
+                                    ]}
+                                
+                                showReset
+                                resetDisabled={!start && !end}
+                                onReset={() => {
+                                    setStart(null);
+                                    setEnd(null);
+                                    onQueryChange({
+                                        page: 1,
+                                        start: null,
+                                        end: null,
+                                    });
+                                }}
+                            />
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button

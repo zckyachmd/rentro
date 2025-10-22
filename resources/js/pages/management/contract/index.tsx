@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
 import { DatePickerInput } from '@/components/date-picker';
+import { QuickRange } from '@/components/quick-range';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -80,58 +81,6 @@ export default function ContractIndex(props: ContractsPageProps) {
     const [end, setEnd] = React.useState<string | null>(
         (query as { end?: string | null }).end ?? null,
     );
-    const toIso = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const setPreset = (days: number) => {
-        const e = new Date();
-        const s = new Date();
-        s.setDate(e.getDate() - (days - 1));
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
-    };
-    const setPresetMTD = () => {
-        const e = new Date();
-        const s = new Date(e.getFullYear(), e.getMonth(), 1);
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
-    };
-    const setPresetWTD = () => {
-        const e = new Date();
-        const dow = e.getDay();
-        const mondayOffset = (dow + 6) % 7;
-        const s = new Date(e);
-        s.setDate(e.getDate() - mondayOffset);
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
-    };
-    const setPresetQTD = () => {
-        const e = new Date();
-        const qStartMonth = Math.floor(e.getMonth() / 3) * 3;
-        const s = new Date(e.getFullYear(), qStartMonth, 1);
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
-    };
-    const setPresetYTD = () => {
-        const e = new Date();
-        const s = new Date(e.getFullYear(), 0, 1);
-        const ss = toIso(s);
-        const ee = toIso(e);
-        setStart(ss);
-        setEnd(ee);
-        safeOnQueryChange({ page: 1, start: ss, end: ee } as SafePayload);
-    };
 
     const qinit = (query as QueryInit) || {};
     const initial: QueryBag | undefined = Object.keys(qinit).length
@@ -362,81 +311,19 @@ export default function ContractIndex(props: ContractsPageProps) {
                         <div className="flex flex-col gap-2 pt-2 md:col-span-12">
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <span className="text-muted-foreground text-xs">
-                                        {t('dashboard.filters.quick')}:
-                                    </span>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs"
-                                        onClick={() => setPreset(7)}
-                                    >
-                                        7D
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs"
-                                        onClick={() => setPreset(30)}
-                                    >
-                                        30D
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs"
-                                        onClick={() => setPreset(90)}
-                                    >
-                                        90D
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs"
-                                        onClick={setPresetMTD}
-                                    >
-                                        {t('dashboard.filters.mtd')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs"
-                                        onClick={setPresetWTD}
-                                    >
-                                        {t('dashboard.filters.wtd')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs"
-                                        onClick={setPresetQTD}
-                                    >
-                                        {t('dashboard.filters.qtd')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-xs"
-                                        onClick={setPresetYTD}
-                                    >
-                                        {t('dashboard.filters.ytd')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-muted-foreground h-7 px-2 text-xs"
-                                        onClick={resetFilter}
-                                    >
-                                        {t('common.reset')}
-                                    </Button>
+                                    <QuickRange
+                                        onSelect={(s, e) => {
+                                            setStart(s);
+                                            setEnd(e);
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                start: s,
+                                                end: e,
+                                            } as SafePayload);
+                                        }}
+                                        showReset
+                                        onReset={resetFilter}
+                                    />
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
                                     <Button

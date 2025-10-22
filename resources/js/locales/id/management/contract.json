@@ -155,6 +155,19 @@
         "costs": { "rent": "Sewa", "deposit": "Deposit" }
     },
     "create": {
+        "coupon": {
+            "label": "Kode Promo",
+            "select_placeholder": "Cari kode kupon aktif",
+            "helper": "Pilih dari kupon aktif atau isi manual.",
+            "no_data": "Tidak ada kupon aktif.",
+            "slider_title": "Voucher Tersedia",
+            "filter_placeholder": "Cari voucher",
+            "clear": "Hapus",
+            "exp": "exp {{date}}",
+            "remaining": "Sisa {{count}}",
+            "no_expiry": "tanpa kedaluwarsa",
+            "almost_out": "Hampir habis"
+        },
         "guide": {
             "button": "Panduan & Ketentuan",
             "title": "Panduan & Ketentuan Kontrak",

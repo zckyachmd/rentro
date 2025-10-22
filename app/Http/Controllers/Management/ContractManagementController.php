@@ -410,6 +410,14 @@ class ContractManagementController extends Controller
     public function store(StoreContractRequest $request)
     {
         $data = $request->validated();
+        // Map promo_code into promo options for ContractService
+        $promoCode = trim((string) $request->input('promo_code', ''));
+        if ($promoCode !== '') {
+            $data['promo'] = [
+                'channel'     => 'admin',
+                'coupon_code' => $promoCode,
+            ];
+        }
         try {
             $this->contracts->create($data);
         } catch (\RuntimeException $e) {

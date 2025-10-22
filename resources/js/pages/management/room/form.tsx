@@ -347,7 +347,7 @@ export default function RoomUpsertForm({
             }
         }
 
-        const token = await ensureXsrfToken();
+        await ensureXsrfToken();
 
         if (mode === 'create') {
             beginSkip();

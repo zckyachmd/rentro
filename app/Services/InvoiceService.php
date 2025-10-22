@@ -413,6 +413,13 @@ class InvoiceService implements InvoiceServiceInterface
         };
         $freeThresholdDays = (int) AppSetting::config('billing.prorata_free_threshold_days', 7);
 
+        // Only apply promotions when user explicitly uses one (coupon/channel)
+        $shouldApplyPromos = is_array($promoOptions)
+            && (
+                (!empty($promoOptions['coupon_code']))
+                || (!empty($promoOptions['channel']))
+            );
+
         // Promotion evaluation helpers
         $promoCtxBase = function () use ($contract, $promoOptions) {
             $ctx = [
@@ -453,7 +460,7 @@ class InvoiceService implements InvoiceServiceInterface
                     if ($totalDays > 0) {
                         // Apply promotions to prorata line
                         $appliedPromo = [];
-                        if ($room) {
+                        if ($shouldApplyPromos && $room) {
                             $ctx                         = $promoCtxBase();
                             $ctx['current_period_index'] = 1;
                             $ctx['per_day_rate_idr']     = $perDay;
@@ -501,7 +508,7 @@ class InvoiceService implements InvoiceServiceInterface
                     // Apply promotions per month line
                     $lineRent = $rent;
                     $applied  = [];
-                    if ($room) {
+                    if ($shouldApplyPromos && $room) {
                         $ctx                         = $promoCtxBase();
                         $ctx['current_period_index'] = $i + 1;
                         $ctx['per_day_rate_idr']     = (int) round($lineRent / 30);
@@ -565,7 +572,7 @@ class InvoiceService implements InvoiceServiceInterface
                     if ($totalDays > 0) {
                         // Apply promotions to prorata line (per_month plan)
                         $appliedPromo = [];
-                        if ($room) {
+                        if ($shouldApplyPromos && $room) {
                             $ctx                         = $promoCtxBase();
                             $ctx['current_period_index'] = 1;
                             $ctx['per_day_rate_idr']     = $perDay;
@@ -610,7 +617,7 @@ class InvoiceService implements InvoiceServiceInterface
                     ->translatedFormat('F Y');
                 $lineRent = $rent;
                 $applied  = [];
-                if ($room) {
+                if ($shouldApplyPromos && $room) {
                     $ctx                         = $promoCtxBase();
                     $ctx['current_period_index'] = 1;
                     $ctx['per_day_rate_idr']     = (int) round($lineRent / 30);
@@ -653,7 +660,7 @@ class InvoiceService implements InvoiceServiceInterface
             for ($i = 0; $i < max(1, (int) $duration); $i++) {
                 $lineRent = $rent;
                 $applied  = [];
-                if ($room) {
+                if ($shouldApplyPromos && $room) {
                     $ctx                         = $promoCtxBase();
                     $ctx['current_period_index'] = $i + 1;
                     $ctx['per_day_rate_idr']     = $unitLabel === 'day' ? $lineRent : (int) round($lineRent / 7);
@@ -697,7 +704,7 @@ class InvoiceService implements InvoiceServiceInterface
         if ($deposit > 0) {
             $finalDeposit = $deposit;
             $applied      = [];
-            if ($room) {
+            if ($shouldApplyPromos && $room) {
                 $ctx                          = $promoCtxBase();
                 $ctx['current_period_index']  = 1;
                 $ctx['base_deposit_override'] = $finalDeposit;

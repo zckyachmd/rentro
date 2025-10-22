@@ -14,11 +14,23 @@
             "estimate": "Estimasi"
         }
     },
+    "summary": {
+        "requested": "Menunggu",
+        "approved": "Disetujui",
+        "rejected": "Ditolak"
+    },
     "detail": {
         "title_format": "Booking {{number}}",
         "summary": "Ringkasan",
         "approve": "Setujui",
         "reject": "Tolak",
-        "reason_placeholder": "Alasan penolakan (opsional)"
+        "reason_placeholder": "Alasan penolakan (opsional)",
+        "open_room": "Lihat Detail Kamar",
+        "location": "Lokasi",
+        "size": "Luas",
+        "max_occupancy": "Kapasitas",
+        "prices": "Harga",
+        "deposits": "Deposit",
+        "photos": "Foto"
     }
 }

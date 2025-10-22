@@ -34,6 +34,8 @@ class StoreContractRequest extends FormRequest
             'billing_day'    => ['nullable', 'integer', 'between:1,31'],
             'auto_renew'     => ['nullable', 'boolean'],
             'notes'          => ['nullable', 'string', 'max:500'],
+            // Optional promo code that a manager can supply during contract creation
+            'promo_code' => ['nullable', 'string', 'max:64'],
 
             'duration_count'       => ['required', 'integer', 'min:1'],
             'monthly_payment_mode' => [

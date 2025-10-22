@@ -61,7 +61,9 @@ const warnedMissing = new Set<string>();
 const dynamicBackend = {
     type: 'backend' as const,
 
-    init() {},
+    init() {
+        // no-op
+    },
     async read(
         language: string,
         namespace: string,
@@ -113,12 +115,14 @@ const dynamicBackend = {
                     warnedMissing.add(key);
                     const total = candidates.length;
                     const sample = candidates[0]?.key ?? '-';
-                     
+
                     console.warn(
                         `[i18n] Missing ${language}/${namespace} (tried ${total} paths, e.g. ${sample})`,
                     );
                 }
-            } catch {}
+            } catch (e) {
+                // ignore log warning errors in environments without console
+            }
 
             throw new Error(
                 `i18n: no locale found for ${language}/${namespace}`,

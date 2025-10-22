@@ -13,12 +13,12 @@ import {
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TooltipProps } from 'recharts';
-// Lazy-load recharts at runtime to keep initial bundle light
 const Recharts = {
     mod: null as null | typeof import('recharts'),
 };
 
 import { DatePickerInput } from '@/components/date-picker';
+import { QuickRange } from '@/components/quick-range';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -142,80 +142,6 @@ export default function ManagementSummary({
             preserveState: true,
         });
     };
-    const setPreset = (days: number) => {
-        const e = new Date();
-        const s = new Date();
-        s.setDate(e.getDate() - (days - 1));
-        const sISO = toISO(s);
-        const eISO = toISO(e);
-        setStart(sISO);
-        setEnd(eISO);
-        router.get(
-            route('dashboard'),
-            { start: sISO, end: eISO },
-            {
-                preserveScroll: true,
-                preserveState: true,
-            },
-        );
-    };
-    const setPresetMTD = () => {
-        const e = new Date();
-        const s = new Date(e.getFullYear(), e.getMonth(), 1);
-        const sISO = toISO(s);
-        const eISO = toISO(e);
-        setStart(sISO);
-        setEnd(eISO);
-        router.get(
-            route('dashboard'),
-            { start: sISO, end: eISO },
-            { preserveScroll: true, preserveState: true },
-        );
-    };
-    const setPresetWTD = () => {
-        const e = new Date();
-        const dow = e.getDay();
-        const mondayOffset = (dow + 6) % 7;
-        const s = new Date(e);
-        s.setDate(e.getDate() - mondayOffset);
-        const sISO = toISO(s);
-        const eISO = toISO(e);
-        setStart(sISO);
-        setEnd(eISO);
-        router.get(
-            route('dashboard'),
-            { start: sISO, end: eISO },
-            { preserveScroll: true, preserveState: true },
-        );
-    };
-    const setPresetQTD = () => {
-        const e = new Date();
-        const m = e.getMonth();
-        const qStartMonth = Math.floor(m / 3) * 3;
-        const s = new Date(e.getFullYear(), qStartMonth, 1);
-        const sISO = toISO(s);
-        const eISO = toISO(e);
-        setStart(sISO);
-        setEnd(eISO);
-        router.get(
-            route('dashboard'),
-            { start: sISO, end: eISO },
-            { preserveScroll: true, preserveState: true },
-        );
-    };
-    const setPresetYTD = () => {
-        const e = new Date();
-        const s = new Date(e.getFullYear(), 0, 1);
-        const sISO = toISO(s);
-        const eISO = toISO(e);
-        setStart(sISO);
-        setEnd(eISO);
-        router.get(
-            route('dashboard'),
-            { start: sISO, end: eISO },
-            { preserveScroll: true, preserveState: true },
-        );
-    };
 
     return (
         <div className="space-y-6">
@@ -256,78 +182,38 @@ export default function ManagementSummary({
                         </div>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <span className="text-muted-foreground text-xs">
-                            {t('dashboard.filters.quick')}:
-                        </span>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => setPreset(7)}
-                        >
-                            7D
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => setPreset(30)}
-                        >
-                            30D
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => setPreset(90)}
-                        >
-                            90D
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={setPresetMTD}
-                        >
-                            {t('dashboard.filters.mtd')}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={setPresetWTD}
-                        >
-                            {t('dashboard.filters.wtd')}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={setPresetQTD}
-                        >
-                            {t('dashboard.filters.qtd')}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={setPresetYTD}
-                        >
-                            {t('dashboard.filters.ytd')}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground h-7 px-2 text-xs"
-                            onClick={() => {
+                        <QuickRange
+                            onSelect={(s, e) => {
+                                setStart(s);
+                                setEnd(e);
+                                router.get(
+                                    route('dashboard'),
+                                    { start: s, end: e },
+                                    {
+                                        preserveScroll: true,
+                                        preserveState: true,
+                                    },
+                                );
+                            }}
+                            disabledOptions={['qtd']}
+                            custom={[
+                                {
+                                    key: '14d',
+                                    label: '14D',
+                                    getRange: () => {
+                                        const endD = new Date();
+                                        const startD = new Date();
+                                        startD.setDate(endD.getDate() - 13);
+                                        return {
+                                            start: toISO(startD),
+                                            end: toISO(endD),
+                                        };
+                                    },
+                                },
+                            ]}
+                            showReset
+                            resetDisabled={!start && !end}
+                            onReset={() => {
                                 setStart(null);
                                 setEnd(null);
                                 router.get(
@@ -339,9 +225,7 @@ export default function ManagementSummary({
                                     },
                                 );
                             }}
-                        >
-                            {t('common.reset')}
-                        </Button>
+                        />
                     </div>
                 </CardContent>
             </Card>

@@ -686,6 +686,61 @@ class PromotionManagementController extends Controller
     }
 
     // Coupons
+    public function lookupCoupons(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+        $limit  = min(200, max(1, (int) $request->query('limit', 100)));
+        $today  = now();
+
+        $q = PromotionCoupon::query()
+            ->with(['promotion:id,name,slug,is_active,valid_from,valid_until,require_coupon'])
+            ->where('is_active', true)
+            ->where(function ($qq) use ($today) {
+                $qq->whereNull('expires_at')->orWhere('expires_at', '>=', $today->toDateString());
+            })
+            ->whereHas('promotion', function ($qp) use ($today) {
+                $qp->where('is_active', true)
+                    ->where(function ($q1) use ($today) {
+                        $q1->whereNull('valid_from')->orWhere('valid_from', '<=', $today->toDateString());
+                    })
+                    ->where(function ($q2) use ($today) {
+                        $q2->whereNull('valid_until')->orWhere('valid_until', '>=', $today->toDateString());
+                    });
+            })
+            ->orderByDesc('id');
+
+        if ($search !== '') {
+            $q->where('code', 'like', '%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%');
+        }
+
+        $rows = $q->limit($limit)->get(['id', 'promotion_id', 'code', 'max_redemptions', 'redeemed_count', 'expires_at']);
+
+        $items = $rows->map(function (PromotionCoupon $c): array {
+            $max  = $c->max_redemptions !== null ? (int) $c->max_redemptions : null;
+            $used = (int) ($c->redeemed_count ?? 0);
+            $left = $max !== null ? max(0, $max - $used) : null;
+
+            $promo     = $c->promotion;
+            $promoData = ($promo instanceof \App\Models\Promotion) ? [
+                'id'   => (int) $promo->id,
+                'name' => (string) ($promo->name ?? ''),
+                'slug' => (string) ($promo->slug ?? ''),
+            ] : null;
+
+            return [
+                'id'              => (int) $c->id,
+                'code'            => (string) $c->code,
+                'expires_at'      => optional($c->expires_at)->toDateString(),
+                'max_redemptions' => $max,
+                'redeemed_count'  => $used,
+                'remaining'       => $left,
+                'promotion'       => $promoData,
+            ];
+        })->all();
+
+        return response()->json(['data' => $items]);
+    }
+
     public function listCoupons(Request $request, Promotion $promotion): JsonResponse
     {
         $query   = $promotion->coupons()->getQuery();

@@ -155,6 +155,19 @@
         "costs": { "rent": "Rent", "deposit": "Deposit" }
     },
     "create": {
+        "coupon": {
+            "label": "Promo Code",
+            "select_placeholder": "Search active coupon codes",
+            "helper": "Pick from active coupons or type manually.",
+            "no_data": "No active coupons available.",
+            "slider_title": "Available Vouchers",
+            "filter_placeholder": "Search vouchers",
+            "clear": "Clear",
+            "exp": "exp {{date}}",
+            "remaining": "{{count}} left",
+            "no_expiry": "no expiry",
+            "almost_out": "Almost gone"
+        },
         "title": "Create Contract",
         "guide": {
             "button": "Guide & Terms",

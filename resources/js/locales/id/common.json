@@ -1,5 +1,5 @@
 {
-  "common": {
+    "common": {
         "active": "Aktif",
         "actions": "Aksi",
         "all": "Semua",
@@ -83,17 +83,17 @@
         "max": "Maksimal",
         "billing_period": "Periode Tagihan",
         "billing_day": "Tanggal Penagihan",
-    "open": "Buka",
-    "open": "Buka",
-    "attachments": "Lampiran",
-    "view_detail": "Lihat Detail",
-    "preview_files": "Pratinjau lampiran",
-    "notes": "Catatan",
-    "not_submitted": "Belum dikirim",
-    "note_placeholder": "Catatan opsional untuk persetujuan atau alasan penolakan",
-    "note_required_hint": "(wajib saat menolak)",
-    "approve": "Terima",
-    "reject": "Tolak",
+        "open": "Buka",
+        "open": "Buka",
+        "attachments": "Lampiran",
+        "view_detail": "Lihat Detail",
+        "preview_files": "Pratinjau lampiran",
+        "notes": "Catatan",
+        "not_submitted": "Belum dikirim",
+        "note_placeholder": "Catatan opsional untuk persetujuan atau alasan penolakan",
+        "note_required_hint": "(wajib saat menolak)",
+        "approve": "Terima",
+        "reject": "Tolak",
         "files": "{{count}} file",
         "filter": "Filter",
         "view_all_attachments": "Lihat semua lampiran",
@@ -116,6 +116,11 @@
         "valid": "Berlaku",
         "expiry": "Kedaluwarsa"
     },
+    "promo_code": "Kode Promo",
+    "promotions_applied": "Promo Diterapkan",
+    "discount_rent": "Diskon Sewa",
+    "discount_deposit": "Diskon Deposit",
+    "none": "Tidak ada",
 
     "dashboard": {
         "desc": "Ringkasan aktivitas harian, status hunian, dan metrik penting di kost Anda.",

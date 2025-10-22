@@ -42,7 +42,7 @@ type Paginator<T> = {
 };
 
 export default function TenantRoomBrowse() {
-    const { rooms, query } = usePage<PageProps<any>>().props as unknown as {
+    const { rooms, query } = usePage<PageProps<Record<string, unknown>>>().props as unknown as {
         rooms: Paginator<RoomItem>;
         query: { building?: string; type?: string };
     };
@@ -283,6 +283,9 @@ export default function TenantRoomBrowse() {
                                             }
                                             placeholder="PROMO10"
                                         />
+                                        <p className="text-muted-foreground mt-1 text-[11px]">
+                                            Jika diisi, promo yang valid akan diterapkan ke estimasi saat booking dibuat.
+                                        </p>
                                     </div>
                                 </div>
                                 <p className="text-muted-foreground text-xs">

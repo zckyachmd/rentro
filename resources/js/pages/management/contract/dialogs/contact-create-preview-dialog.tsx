@@ -208,6 +208,17 @@ export default function ContractCreatePreviewDialog({
                                         {data.end_date || '-'}
                                     </span>
                                 </div>
+                                <div className="bg-muted/30 grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md p-3">
+                                    <span className="text-muted-foreground">
+                                        {t('common.promo_code')}
+                                    </span>
+                                    <span
+                                        className="min-w-0 justify-self-end truncate text-right font-medium"
+                                        title={data.promo_code || '-'}
+                                    >
+                                        {data.promo_code || '-'}
+                                    </span>
+                                </div>
                                 <div className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
                                     <div className="bg-muted/30 grid h-full grid-cols-[auto_1fr] items-center gap-3 rounded-md p-3">
                                         <span className="text-muted-foreground">

@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import type { SearchOption } from '@/components/ui/search-select';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { SearchOption } from '@/components/ui/search-select';
 import {
     Select,
     SelectContent,
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { LeaveGuardDialog, useLeaveGuard } from '@/hooks/use-leave-guard';
 import { AppLayout } from '@/layouts';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatIDR } from '@/lib/format';
 import NominalRow from '@/pages/management/contract/components/nominal-row';
 import NotesPanel from '@/pages/management/contract/components/notes-panel';
@@ -108,10 +109,64 @@ export default function ContractCreate() {
             notes: '',
             duration_count: '',
             monthly_payment_mode: 'per_month',
+            promo_code: '',
         });
 
     const selectedPeriod = periods.find((p) => p.value === data.billing_period);
     const canEditDetails = Boolean(data.room_id);
+
+    // Coupon lookup options (active & valid)
+    const [couponOptions, setCouponOptions] = React.useState<SearchOption[]>([]);
+    const [couponLoaded, setCouponLoaded] = React.useState(false);
+    const [couponLoading, setCouponLoading] = React.useState(false);
+    const voucherRef = React.useRef<HTMLDivElement | null>(null);
+    const scrollVouchers = React.useCallback((dir: 'left' | 'right') => {
+        const el = voucherRef.current;
+        if (!el) return;
+        const delta = Math.round((el.clientWidth || 600) * 0.75);
+        el.scrollBy({ left: dir === 'left' ? -delta : delta, behavior: 'smooth' });
+    }, []);
+    React.useEffect(() => {
+        if (!canEditDetails || couponLoaded) return;
+        const url = route('management.promotions.coupons.lookup');
+        (async () => {
+            try {
+                setCouponLoading(true);
+                const res = await fetch(url, { headers: { Accept: 'application/json' } });
+                const json = await res.json();
+                const items = (json?.data ?? []) as Array<{
+                    code: string;
+                    expires_at?: string | null;
+                    remaining?: number | null;
+                    promotion?: { name?: string | null } | null;
+                }>;
+                const opts: SearchOption[] = items.map((it) => {
+                    const parts: string[] = [];
+                    if (it.promotion?.name) parts.push(String(it.promotion.name));
+                    parts.push(
+                        it.expires_at
+                            ? tContract('create.coupon.exp', { date: it.expires_at })
+                            : tContract('create.coupon.no_expiry', 'no expiry'),
+                    );
+                    if (typeof it.remaining === 'number') {
+                        parts.push(tContract('create.coupon.remaining', { count: it.remaining }));
+                    }
+                    return {
+                        value: it.code,
+                        label: it.code,
+                        description: parts.join(' • '),
+                        payload: it,
+                    };
+                });
+                setCouponOptions(opts);
+            } catch {
+                setCouponOptions([]);
+            } finally {
+                setCouponLoading(false);
+                setCouponLoaded(true);
+            }
+        })();
+    }, [canEditDetails, couponLoaded, tContract]);
 
     const roomOptions: SearchOption[] = rooms.map((r) => ({
         value: String(r.id),
@@ -303,6 +358,7 @@ export default function ContractCreate() {
                 d.billing_period === 'monthly'
                     ? d.monthly_payment_mode
                     : undefined,
+            promo_code: d.promo_code || undefined,
         }));
 
         guard.skipWhile(() =>
@@ -554,6 +610,139 @@ export default function ContractCreate() {
                                 onChange={(v) => setData('notes', v)}
                                 error={errors.notes}
                             />
+                        </fieldset>
+
+                        <fieldset
+                            disabled={!canEditDetails}
+                            className="contents"
+                        >
+                            <div className="space-y-2">
+                                <Label>{tContract('create.coupon.label', t('common.promo_code'))}</Label>
+
+                                {couponLoading ? (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-[13px] md:text-sm text-muted-foreground">
+                                                {tContract('create.coupon.slider_title', 'Available Vouchers')}
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3 overflow-hidden">
+                                            <Skeleton className="h-24 w-[220px] sm:w-[260px]" />
+                                            <Skeleton className="h-24 w-[220px] sm:w-[260px]" />
+                                            <Skeleton className="h-24 w-[220px] sm:w-[260px]" />
+                                        </div>
+                                    </div>
+                                ) : couponOptions.length > 0 ? (
+                                    <div className="space-y-2">
+                                        <Input
+                                            value={(data as any).voucherFilter || ''}
+                                            onChange={(e) => (setData as any)('voucherFilter', e.target.value)}
+                                            placeholder={tContract('create.coupon.filter_placeholder', 'Search vouchers')}
+                                            className="h-9"
+                                        />
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-[13px] md:text-sm text-muted-foreground">
+                                                {tContract('create.coupon.slider_title', 'Available Vouchers')}
+                                            </div>
+                                            {data.promo_code ? (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 px-2 text-xs"
+                                                    onClick={() => setData('promo_code', '')}
+                                                >
+                                                    {tContract('create.coupon.clear', 'Clear')}
+                                                </Button>
+                                            ) : null}
+                                        </div>
+                                        <div className="relative">
+                                            <div ref={voucherRef} className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2">
+                                                {(couponOptions.filter((opt) => {
+                                                    const q = String((data as any).voucherFilter || '').trim().toLowerCase();
+                                                    if (!q) return true;
+                                                    const payload = opt.payload as any;
+                                                    const promoName = (payload?.promotion?.name as string | undefined) || '';
+                                                    return (
+                                                        String(opt.label).toLowerCase().includes(q) ||
+                                                        promoName.toLowerCase().includes(q)
+                                                    );
+                                                })).map((opt) => {
+                                                    const selected = (data.promo_code || '') === opt.value;
+                                                    const payload = opt.payload as any;
+                                                    const promoName = payload?.promotion?.name as string | undefined;
+                                                    const remaining = typeof payload?.remaining === 'number' ? (payload.remaining as number) : null;
+                                                    const expiresAt = (payload?.expires_at as string | undefined) || null;
+                                                    return (
+                                                        <button
+                                                            key={opt.value}
+                                                            type="button"
+                                                            aria-pressed={selected}
+                                                            onClick={() => setData('promo_code', selected ? '' : opt.value)}
+                                                            className={
+                                                                'snap-start shrink-0 min-w-[220px] sm:min-w-[260px] rounded-lg border p-3 text-left transition-all ' +
+                                                                (selected
+                                                                    ? 'border-primary ring-2 ring-primary/60 bg-gradient-to-br from-primary/5 to-transparent'
+                                                                    : 'hover:border-foreground/30 bg-muted/20')
+                                                            }
+                                                            title={opt.label}
+                                                        >
+                                                            <div className="text-xs text-muted-foreground">{tContract('create.coupon.label', 'Promo Code')}</div>
+                                                            <div className="mt-1 text-base font-semibold tracking-wide">{opt.label}</div>
+                                                            {promoName ? (
+                                                                <div className="text-[12px] mt-0.5 text-muted-foreground truncate">{promoName}</div>
+                                                            ) : null}
+                                                            <div className="mt-2 flex items-center gap-2 text-[12px] text-muted-foreground">
+                                                                <span>
+                                                                    {expiresAt
+                                                                        ? tContract('create.coupon.exp', { date: expiresAt })
+                                                                        : tContract('create.coupon.no_expiry')}
+                                                                </span>
+                                                                {typeof remaining === 'number' ? (
+                                                                    <>
+                                                                        <span>• {tContract('create.coupon.remaining', { count: remaining })}</span>
+                                                                        {remaining < 3 ? (
+                                                                            <span className="ml-1 inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                                                                                {tContract('create.coupon.almost_out', 'Almost gone')}
+                                                                            </span>
+                                                                        ) : null}
+                                                                    </>
+                                                                ) : null}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                            <div className="absolute inset-y-0 left-1 flex items-center">
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => scrollVouchers('left')}>
+                                                    ‹
+                                                </Button>
+                                            </div>
+                                            <div className="absolute inset-y-0 right-1 flex items-center">
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => scrollVouchers('right')}>
+                                                    ›
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-muted-foreground text-[13px] md:text-sm">
+                                        {tContract('create.coupon.no_data')}
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
+                                    <Input
+                                        value={data.promo_code || ''}
+                                        onChange={(e) => setData('promo_code', e.target.value)}
+                                        className="h-9"
+                                        placeholder={t('common.promo_code')}
+                                    />
+                                    <div className="text-muted-foreground text-[12px] sm:text-xs self-center sm:text-right">
+                                        {tContract('create.coupon.helper')}
+                                    </div>
+                                </div>
+                                <InputError message={errors.promo_code} />
+                            </div>
                         </fieldset>
 
                         {data.billing_period === 'monthly' && (

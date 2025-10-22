@@ -14,11 +14,23 @@
             "estimate": "Estimate"
         }
     },
+    "summary": {
+        "requested": "Requested",
+        "approved": "Approved",
+        "rejected": "Rejected"
+    },
     "detail": {
         "title_format": "Booking {{number}}",
         "summary": "Summary",
         "approve": "Approve",
         "reject": "Reject",
-        "reason_placeholder": "Rejection reason (optional)"
+        "reason_placeholder": "Rejection reason (optional)",
+        "open_room": "Open Room Page",
+        "location": "Location",
+        "size": "Size",
+        "max_occupancy": "Max Occupancy",
+        "prices": "Prices",
+        "deposits": "Deposits",
+        "photos": "Photos"
     }
 }
