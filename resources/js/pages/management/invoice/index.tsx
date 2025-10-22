@@ -266,7 +266,7 @@ export default function InvoiceIndex() {
                                         });
                                     }}
                                     disabledOptions={['qtd']}
-                                custom={[
+                                    custom={[
                                         {
                                             key: '14d',
                                             label: '14D',
@@ -283,19 +283,18 @@ export default function InvoiceIndex() {
                                             },
                                         },
                                     ]}
-                                
-                                showReset
-                                resetDisabled={!start && !end}
-                                onReset={() => {
-                                    setStart(null);
-                                    setEnd(null);
-                                    onQueryChange({
-                                        page: 1,
-                                        start: null,
-                                        end: null,
-                                    });
-                                }}
-                            />
+                                    showReset
+                                    resetDisabled={!start && !end}
+                                    onReset={() => {
+                                        setStart(null);
+                                        setEnd(null);
+                                        onQueryChange({
+                                            page: 1,
+                                            start: null,
+                                            end: null,
+                                        });
+                                    }}
+                                />
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button

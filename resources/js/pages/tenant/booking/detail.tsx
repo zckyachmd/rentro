@@ -41,7 +41,8 @@ type BookingDetail = {
 };
 
 export default function TenantBookingDetail() {
-    const { booking } = usePage<PageProps<Record<string, unknown>>>().props as unknown as {
+    const { booking } = usePage<PageProps<Record<string, unknown>>>()
+        .props as unknown as {
         booking: BookingDetail;
     };
 
@@ -72,24 +73,33 @@ export default function TenantBookingDetail() {
                                 <div className="mt-2 space-y-1 text-sm">
                                     <div>
                                         Kode Promo:{' '}
-                                        {booking.estimate.promo.coupon_code || '-'}
+                                        {booking.estimate.promo.coupon_code ||
+                                            '-'}
                                     </div>
-                                    {Array.isArray(booking.estimate.promo.applied) &&
-                                    booking.estimate.promo.applied.length > 0 ? (
+                                    {Array.isArray(
+                                        booking.estimate.promo.applied,
+                                    ) &&
+                                    booking.estimate.promo.applied.length >
+                                        0 ? (
                                         <div className="text-muted-foreground text-xs">
                                             Promo diterapkan:
                                             <ul className="ml-4 list-disc">
-                                                {booking.estimate.promo.applied.map((p) => (
-                                                    <li key={p.id}>
-                                                        {p.name} — Diskon sewa Rp
-                                                        {new Intl.NumberFormat('id-ID').format(
-                                                            p.discount_rent,
-                                                        )}
-                                                        {p.discount_deposit
-                                                            ? ` · Diskon deposit Rp${new Intl.NumberFormat('id-ID').format(p.discount_deposit)}`
-                                                            : ''}
-                                                    </li>
-                                                ))}
+                                                {booking.estimate.promo.applied.map(
+                                                    (p) => (
+                                                        <li key={p.id}>
+                                                            {p.name} — Diskon
+                                                            sewa Rp
+                                                            {new Intl.NumberFormat(
+                                                                'id-ID',
+                                                            ).format(
+                                                                p.discount_rent,
+                                                            )}
+                                                            {p.discount_deposit
+                                                                ? ` · Diskon deposit Rp${new Intl.NumberFormat('id-ID').format(p.discount_deposit)}`
+                                                                : ''}
+                                                        </li>
+                                                    ),
+                                                )}
                                             </ul>
                                         </div>
                                     ) : null}

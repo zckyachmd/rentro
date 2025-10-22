@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { PublicDesktopMenu, PublicMobileMenu } from '@/layouts/public/menu';
 import type { PublicMenuItem } from '@/types/navigation';
+import type { PageProps } from '@/types';
 import type { InertiaSharedProps } from '@/types/shared';
 
 type PublicNavbarProps = {
@@ -29,7 +30,7 @@ export default function PublicNavbar({
     showAuth = true,
     loginHref,
 }: PublicNavbarProps) {
-    const page = usePage<InertiaSharedProps & { auth?: { user?: unknown } }>();
+    const page = usePage<PageProps<Record<string, unknown>>>();
     const serverItems = (page.props as unknown as InertiaSharedProps)
         ?.publicMenus as PublicMenuItem[] | undefined;
     const menuItems = React.useMemo(

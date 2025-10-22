@@ -120,7 +120,7 @@ const dynamicBackend = {
                         `[i18n] Missing ${language}/${namespace} (tried ${total} paths, e.g. ${sample})`,
                     );
                 }
-            } catch (e) {
+            } catch {
                 // ignore log warning errors in environments without console
             }
 

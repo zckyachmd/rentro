@@ -32,7 +32,8 @@ type BookingItem = {
 type Paginator<T> = { data: T[] };
 
 export default function TenantBookingsIndex() {
-    const { bookings } = usePage<PageProps<Record<string, unknown>>>().props as unknown as {
+    const { bookings } = usePage<PageProps<Record<string, unknown>>>()
+        .props as unknown as {
         bookings: Paginator<BookingItem>;
     };
     const items = bookings?.data || [];

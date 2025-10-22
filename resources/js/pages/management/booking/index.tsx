@@ -56,7 +56,8 @@ export default function ManagementBookingsIndex() {
         options,
         query,
         summary,
-    } = usePage<PageProps<Record<string, unknown>>>().props as unknown as PageData;
+    } = usePage<PageProps<Record<string, unknown>>>()
+        .props as unknown as PageData;
     const rows = React.useMemo(() => paginator?.data ?? [], [paginator?.data]);
 
     const currentPath = React.useMemo(
