@@ -65,3 +65,18 @@ export function showWebNotification(
         /* noop - ignore web notification failures */
     }
 }
+
+export function ensureWebNotificationPermission(): void {
+    try {
+        type NotificationCtor = typeof Notification;
+        const N = (globalThis as { Notification?: NotificationCtor })
+            .Notification;
+        if (!N) return;
+        if (N.permission === 'default' && !askedOnce) {
+            askedOnce = true;
+            N.requestPermission?.().catch(() => void 0);
+        }
+    } catch {
+        /* noop */
+    }
+}

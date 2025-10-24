@@ -33,13 +33,13 @@ export const useNotificationsStore = create<State & Actions>((set) => ({
 
     add: (item) => {
         const now = new Date().toISOString();
-        const obj: NotificationItem = {
-            created_at: now,
-            ...item,
-        };
+        const obj: NotificationItem = { created_at: now, ...item };
+        const isPersisted =
+            Boolean(obj.id) ||
+            Boolean((obj.meta as { persist?: unknown } | null)?.persist);
         set((s) => ({
             items: [obj, ...s.items],
-            unreadCount: s.unreadCount + 1,
+            unreadCount: isPersisted ? s.unreadCount + 1 : s.unreadCount,
         }));
     },
 
@@ -54,10 +54,16 @@ export const useNotificationsStore = create<State & Actions>((set) => ({
                     items[idx] = { ...items[idx], ...obj };
                     return { items } as Partial<State>;
                 }
+                // If a new persisted notification with id arrives, add and bump unread
+                return {
+                    items: [obj, ...s.items],
+                    unreadCount: s.unreadCount + 1,
+                } as Partial<State>;
             }
+            // No id -> ephemeral: add to list but do not bump unread
             return {
                 items: [obj, ...s.items],
-                unreadCount: s.unreadCount + 1,
+                unreadCount: s.unreadCount,
             } as Partial<State>;
         }),
 
@@ -91,5 +97,12 @@ export const useNotificationsStore = create<State & Actions>((set) => ({
             unreadCount: 0,
         })),
 
-    syncFromServer: (items, unread) => set({ items, unreadCount: unread }),
+    syncFromServer: (items, unread) =>
+        set((s) => {
+            const ephemerals = s.items.filter((it) => !it.id);
+            return {
+                items: [...ephemerals, ...items],
+                unreadCount: unread,
+            } as Partial<State>;
+        }),
 }));

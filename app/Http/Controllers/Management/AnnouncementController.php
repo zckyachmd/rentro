@@ -6,6 +6,7 @@ use App\Events\AnnouncementCreatedBroadcast;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendAnnouncement;
 use App\Models\Announcement;
+use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -26,6 +27,8 @@ class AnnouncementController extends Controller
     public function index(Request $request): InertiaResponse
     {
         $roles = Role::query()->select(['id', 'name'])->orderBy('name')->get();
+        // Lightweight user list for compose dialog (first 50 by name)
+        $users = User::query()->select(['id', 'name', 'email'])->orderBy('name')->limit(50)->get();
 
         $q       = trim((string) $request->query('q', ''));
         $scope   = (string) $request->query('scope', ''); // '', 'global', 'role'
@@ -92,7 +95,12 @@ class AnnouncementController extends Controller
         ];
 
         return Inertia::render('management/notifications/index', [
-            'roles'     => $roles->map(fn (Role $r) => ['id' => (int) $r->id, 'name' => $r->name])->values(),
+            'roles' => $roles->map(fn (Role $r) => ['id' => (int) $r->id, 'name' => $r->name])->values(),
+            'users' => $users->map(fn (User $u) => [
+                'id'    => (int) $u->id,
+                'name'  => $u->name,
+                'email' => $u->email,
+            ])->values(),
             'rows'      => $rows,
             'paginator' => $paginator,
             'filters'   => [
@@ -170,14 +178,43 @@ class AnnouncementController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'target'       => ['required', 'string', 'in:global,role'],
+            'target'       => ['required', 'string', 'in:global,role,user'],
             'role_id'      => ['nullable', 'integer', Rule::exists(Role::class, 'id')],
+            'user_id'      => ['nullable', 'integer', Rule::exists(User::class, 'id')],
             'title'        => ['required', 'string'],
             'message'      => ['required', 'string'],
             'action_url'   => ['nullable', 'url'],
             'persist'      => ['sometimes', 'boolean'],
             'scheduled_at' => ['nullable', 'date'],
         ]);
+
+        // Special-case: send to specific user (do not create Announcement row)
+        if ($data['target'] === 'user') {
+            $userId = (int) ($data['user_id'] ?? 0);
+            if ($userId <= 0) {
+                return back()->withErrors(['user_id' => 'User is required'])->withInput();
+            }
+            $payload = [
+                'title'      => $data['title'],
+                'message'    => $data['message'],
+                'action_url' => $data['action_url'] ?? null,
+                'meta'       => ['scope' => 'user'],
+            ];
+            $scheduledAt = isset($data['scheduled_at']) && $data['scheduled_at']
+                ? \Carbon\Carbon::parse((string) $data['scheduled_at'])
+                : null;
+            if ($scheduledAt && now()->lt($scheduledAt)) {
+                dispatch(new \App\Jobs\SendUserNotification($userId, $payload))->delay($scheduledAt);
+            } else {
+                dispatch(new \App\Jobs\SendUserNotification($userId, $payload));
+            }
+
+            if ($request->wantsJson()) {
+                return response()->json(['status' => 'ok']);
+            }
+
+            return Redirect::route('management.announcements.index')->with('success', 'Notification queued');
+        }
 
         $a               = new Announcement();
         $a->scope        = $data['target'];
@@ -186,7 +223,7 @@ class AnnouncementController extends Controller
         $a->message      = $data['message'];
         $a->action_url   = $data['action_url'] ?? null;
         $a->persist      = (bool) ($data['persist'] ?? false);
-        $a->scheduled_at = isset($data['scheduled_at'])
+        $a->scheduled_at = isset($data['scheduled_at']) && $data['scheduled_at']
             ? \Carbon\Carbon::parse((string) $data['scheduled_at'])
             : null;
         $a->status     = $a->scheduled_at && now()->lt($a->scheduled_at) ? 'scheduled' : 'queued';

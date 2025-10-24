@@ -193,7 +193,7 @@ class MenuSeeder extends Seeder
                         'icon' => 'Settings',
                         'children' => [
                             ['label' => 'menu.security', 'href' => route('security.index', [], false), 'icon' => 'KeyRound'],
-                            ['label' => 'menu.notifications', 'href' => '#', 'icon' => 'Bell'],
+                            ['label' => 'menu.notifications', 'href' => route('notifications.index', [], false), 'icon' => 'Bell'],
                             ['label' => 'menu.preferences', 'href' => '#', 'icon' => 'Settings2'],
                         ],
                     ],

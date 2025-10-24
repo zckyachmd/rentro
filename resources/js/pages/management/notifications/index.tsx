@@ -4,14 +4,18 @@ import {
     ExternalLink,
     Eye,
     Filter,
+    Globe,
     Megaphone,
     MoreHorizontal,
     Send,
+    Tag,
 } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import {
@@ -32,6 +36,12 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/ui/input-error';
 import { Label } from '@/components/ui/label';
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import SearchSelect, { type SearchOption } from '@/components/ui/search-select';
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -41,9 +51,11 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { AppLayout } from '@/layouts';
+import { formatDate } from '@/lib/format';
 import type { PageProps as InertiaPageProps } from '@/types';
 
 type Role = { id: number; name: string };
+type UserItem = { id: number; name: string; email?: string };
 type HistoryItem = {
     id: number;
     scope: 'global' | 'role';
@@ -80,6 +92,7 @@ type Filters = {
 
 type Props = InertiaPageProps<{
     roles: Role[];
+    users: UserItem[];
     rows: HistoryItem[];
     paginator: PaginatorMeta;
     filters: Filters;
@@ -89,21 +102,31 @@ export default function ManagementNotificationsPage() {
     const { t } = useTranslation();
     const { props } = usePage<Props>();
     const roles = props.roles || [];
+    const users = props.users || [];
 
     // Compose dialog state
     const [openCompose, setOpenCompose] = React.useState(false);
 
     // Unified announcement form state
-    const [target, setTarget] = React.useState<'global' | 'role'>('global');
+    const [target, setTarget] = React.useState<'global' | 'role' | 'user'>(
+        'global',
+    );
     const [roleId, setRoleId] = React.useState<string>(
         roles[0]?.id ? String(roles[0].id) : '',
+    );
+    const [userId, setUserId] = React.useState<string>(
+        users[0]?.id ? String(users[0].id) : '',
     );
     const [title, setTitle] = React.useState('');
     const [message, setMessage] = React.useState('');
     const [actionUrl, setActionUrl] = React.useState('');
-    const [persist, setPersist] = React.useState(false);
+    const [persist, setPersist] = React.useState(true);
     const [schedule, setSchedule] = React.useState(false);
     const [scheduledAt, setScheduledAt] = React.useState<string>('');
+    const [scheduledDate, setScheduledDate] = React.useState<Date | undefined>(
+        undefined,
+    );
+    const [scheduledTime, setScheduledTime] = React.useState<string>('');
     const [errors, setErrors] = React.useState<
         Record<string, string | undefined>
     >({});
@@ -112,13 +135,26 @@ export default function ManagementNotificationsPage() {
     const resetCompose = () => {
         setTarget('global');
         setRoleId(roles[0]?.id ? String(roles[0].id) : '');
+        setUserId(users[0]?.id ? String(users[0].id) : '');
         setTitle('');
         setMessage('');
         setActionUrl('');
-        setPersist(false);
+        setPersist(true);
         setSchedule(false);
         setScheduledAt('');
+        setScheduledDate(undefined);
+        setScheduledTime('');
         setErrors({});
+    };
+
+    const formatDateTime = (d?: Date, t?: string) => {
+        if (!d) return '';
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const year = d.getFullYear();
+        const month = pad(d.getMonth() + 1);
+        const day = pad(d.getDate());
+        const [hh = '00', mm = '00'] = (t || '').split(':');
+        return `${year}-${month}-${day} ${pad(Number(hh))}:${pad(Number(mm))}`;
     };
 
     const submitUnified = (e?: React.FormEvent) => {
@@ -130,6 +166,7 @@ export default function ManagementNotificationsPage() {
             data: {
                 target,
                 role_id: target === 'role' ? Number(roleId) : undefined,
+                user_id: target === 'user' ? Number(userId) : undefined,
                 title,
                 message,
                 action_url: actionUrl || undefined,
@@ -395,10 +432,7 @@ export default function ManagementNotificationsPage() {
 
     return (
         <AppLayout
-            pageTitle={t(
-                'management.notifications.title',
-                'Notifications Management',
-            )}
+            pageTitle={t('management.notifications.title', 'Announcements')}
             pageDescription={t(
                 'management.notifications.desc',
                 'Send announcements in real time or schedule them',
@@ -412,7 +446,7 @@ export default function ManagementNotificationsPage() {
                             <Filter className="h-4 w-4" />
                             {t(
                                 'management.notifications.title',
-                                'Notifications Management',
+                                'Announcements',
                             )}
                         </CardTitle>
                         <p className="text-muted-foreground text-sm">
@@ -638,7 +672,9 @@ export default function ManagementNotificationsPage() {
                                 <Select
                                     value={target}
                                     onValueChange={(v) =>
-                                        setTarget(v as 'global' | 'role')
+                                        setTarget(
+                                            v as 'global' | 'role' | 'user',
+                                        )
                                     }
                                 >
                                     <SelectTrigger id="target">
@@ -655,6 +691,12 @@ export default function ManagementNotificationsPage() {
                                             {t(
                                                 'management.notifications.target_role',
                                                 'Role',
+                                            )}
+                                        </SelectItem>
+                                        <SelectItem value="user">
+                                            {t(
+                                                'management.notifications.target_user',
+                                                'User',
                                             )}
                                         </SelectItem>
                                     </SelectContent>
@@ -699,6 +741,36 @@ export default function ManagementNotificationsPage() {
                                     <InputError
                                         name="role_id"
                                         message={errors.role_id}
+                                    />
+                                </div>
+                            )}
+                            {target === 'user' && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="user">
+                                        {t(
+                                            'management.notifications.user_select',
+                                            'User',
+                                        )}
+                                    </Label>
+                                    <SearchSelect
+                                        value={userId}
+                                        onChange={(v) => setUserId(v)}
+                                        options={
+                                            users.map((u) => ({
+                                                value: String(u.id),
+                                                label: u.name || `#${u.id}`,
+                                                description:
+                                                    u.email || undefined,
+                                            })) as SearchOption[]
+                                        }
+                                        placeholder={t(
+                                            'management.notifications.choose_user',
+                                            'Choose user',
+                                        )}
+                                    />
+                                    <InputError
+                                        name="user_id"
+                                        message={errors.user_id}
                                     />
                                 </div>
                             )}
@@ -771,29 +843,31 @@ export default function ManagementNotificationsPage() {
                                     message={errors.action_url}
                                 />
                             </div>
-                            <div className="flex items-center justify-between gap-2">
-                                <div>
-                                    <Label htmlFor="persist">
-                                        {t(
-                                            'management.notifications.persist_label',
-                                            'Persist per user',
-                                        )}
-                                    </Label>
-                                    <p className="text-muted-foreground text-xs">
-                                        {t(
-                                            'management.notifications.persist_hint',
-                                            'Create stored notifications for each user (queued).',
-                                        )}
-                                    </p>
+                            {target !== 'user' && (
+                                <div className="flex items-center justify-between gap-2">
+                                    <div>
+                                        <Label htmlFor="persist">
+                                            {t(
+                                                'management.notifications.persist_label',
+                                                'Persist per user',
+                                            )}
+                                        </Label>
+                                        <p className="text-muted-foreground text-xs">
+                                            {t(
+                                                'management.notifications.persist_hint',
+                                                'Create stored notifications for each user (queued).',
+                                            )}
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        id="persist"
+                                        checked={persist}
+                                        onCheckedChange={(v) =>
+                                            setPersist(Boolean(v))
+                                        }
+                                    />
                                 </div>
-                                <Switch
-                                    id="persist"
-                                    checked={persist}
-                                    onCheckedChange={(v) =>
-                                        setPersist(Boolean(v))
-                                    }
-                                />
-                            </div>
+                            )}
                             <div className="flex items-center justify-between gap-2">
                                 <div>
                                     <Label htmlFor="schedule">
@@ -819,20 +893,76 @@ export default function ManagementNotificationsPage() {
                             </div>
                             {schedule && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="scheduledAt">
+                                    <Label>
                                         {t(
                                             'management.notifications.when',
                                             'When',
                                         )}
                                     </Label>
-                                    <Input
-                                        id="scheduledAt"
-                                        type="datetime-local"
-                                        value={scheduledAt}
-                                        onChange={(e) =>
-                                            setScheduledAt(e.target.value)
-                                        }
-                                    />
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full sm:w-auto"
+                                                >
+                                                    {scheduledDate
+                                                        ? formatDateTime(
+                                                              scheduledDate,
+                                                              scheduledTime,
+                                                          )
+                                                        : t(
+                                                              'common.pick_date',
+                                                              'Pick date',
+                                                          )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent
+                                                className="p-0"
+                                                align="start"
+                                            >
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={scheduledDate}
+                                                    onSelect={(d) => {
+                                                        setScheduledDate(
+                                                            d || undefined,
+                                                        );
+                                                        const next =
+                                                            formatDateTime(
+                                                                d || undefined,
+                                                                scheduledTime,
+                                                            );
+                                                        setScheduledAt(next);
+                                                    }}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                        <div className="flex items-center gap-2">
+                                            <Label
+                                                htmlFor="scheduledTime"
+                                                className="text-xs sm:text-sm"
+                                            >
+                                                Time
+                                            </Label>
+                                            <Input
+                                                id="scheduledTime"
+                                                type="time"
+                                                value={scheduledTime}
+                                                onChange={(e) => {
+                                                    const v = e.target.value;
+                                                    setScheduledTime(v);
+                                                    const next = formatDateTime(
+                                                        scheduledDate,
+                                                        v,
+                                                    );
+                                                    setScheduledAt(next);
+                                                }}
+                                                className="h-9 w-full sm:w-[140px]"
+                                            />
+                                        </div>
+                                    </div>
                                     <InputError
                                         name="scheduled_at"
                                         message={errors.scheduled_at}
@@ -886,12 +1016,37 @@ export default function ManagementNotificationsPage() {
                                 {view?.title}
                             </DialogTitle>
                             <DialogDescription>
-                                {view?.scope === 'global'
-                                    ? t(
-                                          'management.notifications.global',
-                                          'Global',
-                                      )
-                                    : `${t('management.notifications.role', 'Role')}${view?.role_name ? ': ' + view.role_name : ''}`}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {view?.scope === 'global' ? (
+                                        <Badge
+                                            variant="secondary"
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <Globe className="h-3.5 w-3.5" />
+                                            {t(
+                                                'management.notifications.target_global',
+                                                'Global',
+                                            )}
+                                        </Badge>
+                                    ) : (
+                                        <Badge
+                                            variant="secondary"
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <Tag className="h-3.5 w-3.5" />
+                                            {t(
+                                                'management.notifications.target_role',
+                                                'Role',
+                                            )}
+                                            {view?.role_name
+                                                ? `: ${view.role_name}`
+                                                : ''}
+                                        </Badge>
+                                    )}
+                                    {view?.persist && (
+                                        <Badge variant="outline">Persist</Badge>
+                                    )}
+                                </div>
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-3">
@@ -929,7 +1084,7 @@ export default function ManagementNotificationsPage() {
                                     </div>
                                 </div>
                             )}
-                            <div className="grid gap-1 text-sm">
+                            <div className="grid gap-2 text-sm">
                                 <div>
                                     <Label className="text-muted-foreground text-xs uppercase">
                                         {t(
@@ -937,10 +1092,8 @@ export default function ManagementNotificationsPage() {
                                             'Status',
                                         )}
                                     </Label>
-                                    <div className="mt-0.5">
-                                        {String(
-                                            view?.status || '',
-                                        ).toUpperCase()}
+                                    <div className="mt-0.5 font-medium uppercase">
+                                        {String(view?.status || '')}
                                     </div>
                                 </div>
                                 {view?.scheduled_at ? (
@@ -952,7 +1105,10 @@ export default function ManagementNotificationsPage() {
                                             )}
                                         </Label>
                                         <div className="mt-0.5">
-                                            {view?.scheduled_at}
+                                            {formatDate(
+                                                view?.scheduled_at,
+                                                true,
+                                            )}
                                         </div>
                                     </div>
                                 ) : null}
@@ -965,7 +1121,7 @@ export default function ManagementNotificationsPage() {
                                             )}
                                         </Label>
                                         <div className="mt-0.5">
-                                            {view?.sent_at}
+                                            {formatDate(view?.sent_at, true)}
                                         </div>
                                     </div>
                                 ) : null}

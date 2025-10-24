@@ -329,7 +329,7 @@ export function useRealtimeNotifications(params: Params) {
                                       }
                                     : undefined,
                             });
-                        if (allowToast && canToast())
+                        if (allowToast)
                             showWebNotification(
                                 String(title || 'Notification'),
                                 String(message || ''),
@@ -469,7 +469,7 @@ export function useRealtimeNotifications(params: Params) {
                                         : undefined,
                                 },
                             );
-                        if (allowToast && canToast())
+                        if (allowToast)
                             showWebNotification(
                                 String(
                                     (data as { title?: unknown }).title ||
@@ -590,7 +590,7 @@ export function useRealtimeNotifications(params: Params) {
                                     : undefined,
                             },
                         );
-                    if (allowToast && canToast())
+                    if (allowToast)
                         showWebNotification(
                             String(
                                 (data as { title?: unknown }).title ||

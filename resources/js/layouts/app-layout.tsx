@@ -19,6 +19,7 @@ import { hasChildren } from '@/layouts/app/menu';
 import Navbar from '@/layouts/app/navbar';
 import Sidebar from '@/layouts/app/sidebar';
 import { getAppName } from '@/lib/env';
+import { ensureWebNotificationPermission } from '@/lib/web-notify';
 import {
     useNotificationsStore,
     type NotificationItem,
@@ -90,7 +91,9 @@ export default function AppLayout({
     useRealtimeNotifications({
         enabled: true,
         userId: auth?.user?.id ?? undefined,
-        roleIds: [],
+        roleIds:
+            (auth?.user as unknown as { role_ids?: Array<number | string> })
+                ?.role_ids ?? [],
         globalChannel:
             (import.meta.env as Record<string, string | undefined>)
                 .VITE_NOTIFICATIONS_GLOBAL_CHANNEL || 'global',
@@ -101,8 +104,17 @@ export default function AppLayout({
             ) === 'true',
         enableSound: true,
         minToastPriority: 'normal',
+        includeAnnouncementsInBell: true,
         resyncIntervalMs: 90_000,
     });
+
+    React.useEffect(() => {
+        try {
+            ensureWebNotificationPermission();
+        } catch {
+            // ignore
+        }
+    }, []);
 
     // Hydrate notifications store once from shared props so Navbar has data on refresh
     const { setInitial, items: notifItems } = useNotificationsStore();
@@ -178,7 +190,7 @@ export default function AppLayout({
             items: (g.items ?? []).map((m) => ({
                 label: m.label,
                 href: m.href,
-                icon: m.icon, // pass through name; Menu renders LazyIcon
+                icon: m.icon,
                 children: (m.children ?? undefined)?.map((c) => ({
                     label: c.label,
                     href: c.href,
@@ -193,7 +205,6 @@ export default function AppLayout({
         return [];
     }, [breadcrumbs]);
 
-    // Compute active parent section only after mount to avoid SSR/client mismatch
     const [activeParentId, setActiveParentId] = React.useState<
         string | undefined
     >(undefined);
