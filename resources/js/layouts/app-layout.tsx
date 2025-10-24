@@ -13,6 +13,7 @@ import LazyIcon from '@/components/lazy-icon';
 import { LocaleProvider } from '@/components/locale-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { useNotificationsPolling } from '@/hooks/useNotificationsPolling';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import Footer from '@/layouts/app/footer';
 import { hasChildren } from '@/layouts/app/menu';
@@ -85,10 +86,20 @@ export default function AppLayout({
         notifications: notifSummary,
     } = usePage<AppPageProps>().props;
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
-    // Subscribe to realtime notifications when a user is available
+    const useWs =
+        String(
+            (import.meta.env as Record<string, string | undefined>)
+                .VITE_NOTIFICATIONS_USE_WS || '',
+        ) === 'true';
+
+    // Always call hooks in a consistent order; enable only one mode
     useRealtimeNotifications({
+        enabled: useWs,
         userId: auth?.user?.id ?? undefined,
         roleIds: [],
+        globalChannel:
+            (import.meta.env as Record<string, string | undefined>)
+                .VITE_NOTIFICATIONS_GLOBAL_CHANNEL || 'global',
         globalPrivate:
             String(
                 (import.meta.env as Record<string, string | undefined>)
@@ -102,6 +113,12 @@ export default function AppLayout({
         enableSound: true,
         minToastPriority: 'normal',
         resyncIntervalMs: 90_000,
+    });
+    useNotificationsPolling({
+        enabled: !useWs,
+        userId: auth?.user?.id ?? undefined,
+        intervalMs: 15_000,
+        immediate: true,
     });
 
     // Hydrate notifications store once from shared props so Navbar has data on refresh

@@ -15,6 +15,7 @@ type Params = {
     enableSound?: boolean; // default: true
     minToastPriority?: 'low' | 'normal' | 'high'; // default: 'low'
     resyncIntervalMs?: number; // default: 120_000
+    enabled?: boolean; // default: true
 };
 
 /**
@@ -43,13 +44,14 @@ type EchoLike = {
 export function useRealtimeNotifications(params: Params) {
     const { upsert, syncFromServer } = useNotificationsStore();
     useEffect(() => {
+        if (params.enabled === false) return;
         const Echo = (globalThis as { Echo?: EchoLike }).Echo;
         if (!Echo) return;
 
         const userId = params.userId ? String(params.userId) : undefined;
         const roleIds = (params.roleIds || []).map((r) => String(r));
         const globalChannel = params.globalChannel || 'global';
-        const globalPrivate = Boolean(params.globalPrivate);
+        // We no longer use globalPrivate at runtime (we subscribe to both)
 
         const subs: Array<{ leave: () => void }> = [];
         // Always include announcements in bell unless explicitly disabled by param
@@ -436,9 +438,11 @@ export function useRealtimeNotifications(params: Params) {
         // Global announcements
         try {
             const name = String(globalChannel || 'global');
-            const ch = globalPrivate ? Echo.private(name) : Echo.channel(name);
+            // Subscribe to both public and private to avoid server/client config mismatch
+            const chPub = Echo.channel(name);
+            const chPriv = Echo.private(name);
             subs.push({ leave: () => Echo.leave(name) });
-            ch.listen?.('.global.announcement', (e: unknown) => {
+            const onGlobal = (e: unknown) => {
                 const data = (e || {}) as Record<string, unknown>;
                 const persist = Boolean(
                     (data as Record<string, unknown>)?.persist,
@@ -528,9 +532,16 @@ export function useRealtimeNotifications(params: Params) {
                 } catch {
                     /* noop */
                 }
-            });
+            };
+            chPub.listen?.('.global.announcement', onGlobal);
+            chPriv.listen?.('.global.announcement', onGlobal);
             try {
-                ch.subscribed?.(() => console.log('[Echo] Subscribed global channel', name));
+                chPub.subscribed?.(() =>
+                    console.log('[Echo] Subscribed global channel (public)', name),
+                );
+                chPriv.subscribed?.(() =>
+                    console.log('[Echo] Subscribed global channel (private)', name),
+                );
                 scheduleResync(1200);
             } catch {
                 /* noop */
