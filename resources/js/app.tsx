@@ -9,7 +9,6 @@ import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import { prefetchIcons } from '@/lib/lucide';
 import '../css/app.css';
 
-// Make Echo config explicit to avoid env mismatch during dev
 (() => {
     const env = ((import.meta as any)?.env || {}) as Record<string, unknown>;
     const dequote = (v: unknown) =>
@@ -53,7 +52,6 @@ import '../css/app.css';
     });
 })();
 
-// Optional: small debug hook to know Echo is ready
 try {
     const Echo: any = (globalThis as any).Echo;
     if (Echo?.connector?.pusher?.connection) {
@@ -115,53 +113,6 @@ createInertiaApp({
                 );
             }
         };
-
-        // ---- Realtime notifications bridge ----
-        function RealtimeNotificationsBridge({ userId }: { userId?: number }) {
-            React.useEffect(() => {
-                if (!userId) return;
-                const Echo: any = (globalThis as any).Echo;
-                if (!Echo) return;
-
-                const channel = Echo.private(
-                    `App.Models.User.${userId}`,
-                ).notification((payload: any) => {
-                    try {
-                        // 1) Fire a global event for UI components to react to
-                        const detail = {
-                            id: payload?.id ?? crypto.randomUUID(),
-                            title: payload?.title ?? 'Notification',
-                            message: payload?.message ?? '',
-                            url: payload?.url ?? null,
-                            created_at: new Date().toISOString(),
-                        };
-                        window.dispatchEvent(
-                            new CustomEvent('notifications:incoming', {
-                                detail,
-                            }),
-                        );
-                        // 2) Increment a lightweight global unread counter
-                        window.dispatchEvent(
-                            new CustomEvent('notifications:inc-unread', {
-                                detail: { by: 1 },
-                            }),
-                        );
-                    } catch {
-                        /* ignore */
-                    }
-                });
-
-                return () => {
-                    try {
-                        channel?.unsubscribe?.();
-                    } catch {
-                        /* noop */
-                    }
-                };
-            }, [userId]);
-
-            return null;
-        }
 
         try {
             type PrefProps = {
@@ -261,43 +212,19 @@ createInertiaApp({
                         void 0;
                     }
 
-                    // Try to infer authenticated user id from Inertia shared props
-                    let userId: number | undefined;
-                    try {
-                        const anyProps: any = (p?.initialPage?.props ??
-                            p?.page?.props ??
-                            {}) as any;
-                        userId =
-                            anyProps?.auth?.user?.id ??
-                            anyProps?.user?.id ??
-                            undefined;
-                    } catch {
-                        /* ignore */
-                    }
-
-                    // Patch the render function to include realtime bridge with userId
+                    // Patch the render function
                     render = () => {
                         if (el.hasChildNodes()) {
                             hydrateRoot(
                                 el,
                                 <React.Suspense fallback={null}>
-                                    <>
-                                        <RealtimeNotificationsBridge
-                                            userId={userId}
-                                        />
-                                        <App {...props} />
-                                    </>
+                                    <App {...props} />
                                 </React.Suspense>,
                             );
                         } else {
                             createRoot(el).render(
                                 <React.Suspense fallback={null}>
-                                    <>
-                                        <RealtimeNotificationsBridge
-                                            userId={userId}
-                                        />
-                                        <App {...props} />
-                                    </>
+                                    <App {...props} />
                                 </React.Suspense>,
                             );
                         }

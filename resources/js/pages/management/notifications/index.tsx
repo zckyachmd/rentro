@@ -149,7 +149,14 @@ export default function ManagementNotificationsPage() {
     const filters: Filters = props.filters || {};
     const [search, setSearch] = React.useState<string>(String(filters.q || ''));
 
-    const handleQueryChange = (next: Partial<Filters> & { search?: string }) => {
+    const handleQueryChange = (next: {
+        [key: string]: unknown;
+        page?: number;
+        per_page?: number;
+        search?: string;
+        sort?: string | null;
+        dir?: 'asc' | 'desc' | null;
+    }) => {
         const current = new URL(window.location.href);
         const q = new URLSearchParams(current.search);
         const apply = (k: string, v?: unknown) => {
@@ -197,14 +204,16 @@ export default function ManagementNotificationsPage() {
 
     // Realtime updates via Reverb (Echo)
     React.useEffect(() => {
-        const Echo = (globalThis as {
-            Echo?: {
-                private: (name: string) => {
-                    listen: (event: string, cb: () => void) => void;
+        const Echo = (
+            globalThis as {
+                Echo?: {
+                    private: (name: string) => {
+                        listen: (event: string, cb: () => void) => void;
+                    };
+                    leave: (name: string) => void;
                 };
-                leave: (name: string) => void;
-            };
-        }).Echo;
+            }
+        ).Echo;
         if (!Echo) return;
         try {
             const name = 'management.announcements';
@@ -379,7 +388,7 @@ export default function ManagementNotificationsPage() {
                 },
             },
         ],
-        [t, filters],
+        [t],
     );
 
     // filters rendered in the card above the table

@@ -84,3 +84,32 @@ export function formatDate(
           };
     return new Intl.DateTimeFormat(pickLocale(locale), opts).format(d);
 }
+
+export function formatTimeAgo(
+    input?: string | Date | null,
+    locale?: string,
+): string {
+    if (!input) return '';
+    const d = input instanceof Date ? input : new Date(input);
+    if (isNaN(d.getTime())) return '';
+    const now = Date.now();
+    const diffSec = Math.round((d.getTime() - now) / 1000); // negative for past
+    const absSec = Math.abs(diffSec);
+
+    const rtf = new Intl.RelativeTimeFormat(pickLocale(locale), {
+        numeric: 'auto',
+    });
+
+    if (absSec < 60) return rtf.format(diffSec, 'second');
+    const diffMin = Math.round(diffSec / 60);
+    const absMin = Math.abs(diffMin);
+    if (absMin < 60) return rtf.format(diffMin, 'minute');
+    const diffHour = Math.round(diffSec / 3600);
+    const absHour = Math.abs(diffHour);
+    if (absHour < 24) return rtf.format(diffHour, 'hour');
+    const diffDay = Math.round(diffSec / 86400);
+    const absDay = Math.abs(diffDay);
+    if (absDay < 7) return rtf.format(diffDay, 'day');
+    // For older than a week, show absolute date with time
+    return formatDate(d, true, locale);
+}

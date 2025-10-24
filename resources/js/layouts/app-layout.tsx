@@ -99,6 +99,9 @@ export default function AppLayout({
                 (import.meta.env as Record<string, string | undefined>)
                     .VITE_BELL_INCLUDE_ANNOUNCEMENTS || '',
             ) === 'true',
+        enableSound: true,
+        minToastPriority: 'normal',
+        resyncIntervalMs: 90_000,
     });
 
     // Hydrate notifications store once from shared props so Navbar has data on refresh
@@ -119,13 +122,15 @@ export default function AppLayout({
                         message:
                             (typeof d.message === 'string' && d.message) || '',
                         action_url:
-                            (typeof d.action_url === 'string' && d.action_url) ||
+                            (typeof d.action_url === 'string' &&
+                                d.action_url) ||
                             (typeof (d as { url?: unknown }).url === 'string' &&
                                 (d as { url?: string }).url) ||
                             undefined,
                         meta: (d.meta as Record<string, unknown>) || undefined,
                         created_at:
-                            (typeof d.created_at === 'string' && d.created_at) ||
+                            (typeof d.created_at === 'string' &&
+                                d.created_at) ||
                             n.created_at ||
                             undefined,
                         read_at: n.read_at || null,

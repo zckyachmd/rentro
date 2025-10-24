@@ -201,15 +201,18 @@ Route::middleware('auth')->group(function (): void {
         });
     });
 
-    // Management (extracted routes)
-    require __DIR__ . '/management.php';
-
     // User Notifications
     Route::prefix('notifications')->name('notifications.')->middleware(['verified'])->group(function (): void {
         Route::get('/', [UserNotificationController::class, 'index'])->name('index');
+        Route::get('/summary', [UserNotificationController::class, 'summary'])
+            ->middleware('throttle:60,1')
+            ->name('summary');
         Route::put('/{id}/read', [UserNotificationController::class, 'markRead'])->name('read');
         Route::put('/read-all', [UserNotificationController::class, 'markAllRead'])->name('read_all');
     });
+
+    // Management (extracted routes)
+    require __DIR__ . '/management.php';
 });
 
 // Auth

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppLayout } from '@/layouts';
+import { formatDate, formatTimeAgo } from '@/lib/format';
 import {
     NotificationItem,
     useNotificationsStore,
@@ -68,10 +69,8 @@ export default function NotificationsIndex({
             return {
                 id: n.id,
                 title:
-                    (typeof d.title === 'string' && d.title) ||
-                    'Notification',
-                message:
-                    (typeof d.message === 'string' && d.message) || '',
+                    (typeof d.title === 'string' && d.title) || 'Notification',
+                message: (typeof d.message === 'string' && d.message) || '',
                 action_url:
                     (typeof d.action_url === 'string' && d.action_url) ||
                     (typeof (d as { url?: unknown }).url === 'string' &&
@@ -202,13 +201,13 @@ export default function NotificationsIndex({
                                             ? n.message
                                             : ''}
                                     </div>
-                                    <div className="text-muted-foreground mt-1 text-xs">
-                                        {n.created_at
-                                            ? new Date(
-                                                  n.created_at,
-                                              ).toLocaleString()
-                                            : ''}
-                                    </div>
+                                    <time
+                                        dateTime={n.created_at || undefined}
+                                        title={formatDate(n.created_at, true)}
+                                        className="text-muted-foreground mt-1 text-xs"
+                                    >
+                                        {formatTimeAgo(n.created_at)}
+                                    </time>
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     {n.action_url && (

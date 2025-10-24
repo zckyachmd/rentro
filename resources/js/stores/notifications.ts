@@ -18,6 +18,7 @@ type State = {
 type Actions = {
     setInitial: (items: NotificationItem[], unread: number) => void;
     add: (item: NotificationItem) => void;
+    upsert: (item: NotificationItem) => void;
     update: (id: string, patch: Partial<NotificationItem>) => void;
     markRead: (id: string) => void;
     markAllRead: () => void;
@@ -41,6 +42,24 @@ export const useNotificationsStore = create<State & Actions>((set) => ({
             unreadCount: s.unreadCount + 1,
         }));
     },
+
+    upsert: (item) =>
+        set((s) => {
+            const now = new Date().toISOString();
+            const obj: NotificationItem = { created_at: now, ...item };
+            if (obj.id) {
+                const idx = s.items.findIndex((it) => it.id === obj.id);
+                if (idx >= 0) {
+                    const items = s.items.slice();
+                    items[idx] = { ...items[idx], ...obj };
+                    return { items } as Partial<State>;
+                }
+            }
+            return {
+                items: [obj, ...s.items],
+                unreadCount: s.unreadCount + 1,
+            } as Partial<State>;
+        }),
 
     update: (id, patch) =>
         set((s) => ({

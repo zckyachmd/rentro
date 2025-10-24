@@ -32,8 +32,6 @@ class NotificationController extends Controller
             ];
         });
 
-        // Keep paginator types intact; pass transformed items separately.
-
         return Inertia::render('notifications/index', [
             'page' => [
                 'data'  => $items,
@@ -85,5 +83,30 @@ class NotificationController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * Lightweight JSON summary for client resync: unread count + latest items.
+     */
+    public function summary(Request $request)
+    {
+        $user = $request->user();
+        $latest = $user->notifications()
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get()
+            ->map(function (DatabaseNotification $n) {
+                return [
+                    'id'         => (string) $n->id,
+                    'data'       => $n->data,
+                    'read_at'    => optional($n->read_at)->toDateTimeString(),
+                    'created_at' => optional($n->created_at)->toDateTimeString(),
+                ];
+            });
+
+        return response()->json([
+            'unread' => (int) $user->unreadNotifications()->count(),
+            'latest' => $latest,
+        ]);
     }
 }

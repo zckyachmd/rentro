@@ -71,8 +71,9 @@ export default async (page: unknown) => {
     }
 
     return createInertiaApp({
-        // Cast to satisfy SSR types without importing duplicate Page types
-        page: page as unknown as string,
+        // Ensure SSR overload is selected (render provided)
+        // Cast page to a compatible type without using 'any'
+        page: page as unknown as never,
         render: renderToString,
         resolve: (name: string) =>
             resolvePageComponent(
