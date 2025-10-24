@@ -11,6 +11,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -40,10 +41,13 @@ class RegisteredUserController extends Controller
             'password' => $validated['password'],
         ]);
 
+        // Ensure default role exists in testing/dev
+        Role::findOrCreate(RoleName::TENANT->value);
         $user->assignRole(RoleName::TENANT->value);
 
         event(new Registered($user));
 
+        // Keep user on login so they can verify email before accessing dashboard
         return redirect()->route('login')->with('success', __('auth.registered'));
     }
 }

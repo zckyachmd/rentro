@@ -8,6 +8,7 @@ use App\Inertia\Ssr\LoggingHttpGateway;
 use App\Listeners\ClearMenuCacheOnAuth;
 use App\Listeners\QueueLocaleCookieOnLogin;
 use App\Listeners\QueueThemeCookieOnLogin;
+use App\Listeners\RealtimeEventSubscriber;
 use App\Listeners\UpdateContractStatusOnInvoicePaid;
 use App\Listeners\UpdateContractStatusOnInvoiceReopened;
 use App\Services\Contracts\ContractServiceInterface;
@@ -76,6 +77,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, QueueThemeCookieOnLogin::class);
         Event::listen(Login::class, QueueLocaleCookieOnLogin::class);
         Event::subscribe(ClearMenuCacheOnAuth::class);
+        Event::subscribe(RealtimeEventSubscriber::class);
 
         config(['inertia.ssr.enabled' => AppFeatures::publicEnabled()]);
     }

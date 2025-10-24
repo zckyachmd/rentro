@@ -3,6 +3,7 @@
 use App\Enum\RoleName;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticsController;
+use App\Http\Controllers\NotificationController as UserNotificationController;
 use App\Http\Controllers\PaymentRedirectController;
 use App\Http\Controllers\PreferencesController;
 use App\Http\Controllers\Profile\EmergencyContactController;
@@ -68,7 +69,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/', [ProfileController::class, 'index'])->name('index');
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
-        // Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+        Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
 
         Route::prefix('emergency-contacts')->name('contacts.')->group(function (): void {
             Route::post('/', [EmergencyContactController::class, 'store'])->name('store');
@@ -202,6 +203,13 @@ Route::middleware('auth')->group(function (): void {
 
     // Management (extracted routes)
     require __DIR__ . '/management.php';
+
+    // User Notifications
+    Route::prefix('notifications')->name('notifications.')->middleware(['verified'])->group(function (): void {
+        Route::get('/', [UserNotificationController::class, 'index'])->name('index');
+        Route::put('/{id}/read', [UserNotificationController::class, 'markRead'])->name('read');
+        Route::put('/read-all', [UserNotificationController::class, 'markAllRead'])->name('read_all');
+    });
 });
 
 // Auth

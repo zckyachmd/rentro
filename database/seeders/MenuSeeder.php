@@ -94,6 +94,16 @@ class MenuSeeder extends Seeder
                     ],
                     ['label' => 'menu.complaints', 'href' => '#', 'icon' => 'MessageSquareWarning'],
                     ['label' => 'menu.packages', 'href' => '#', 'icon' => 'Package'],
+                    [
+                        'label' => 'menu.announcements',
+                        'href' => route('management.announcements.index', [], false),
+                        'icon' => 'Megaphone',
+                        'roles' => [
+                            RoleName::SUPER_ADMIN->value,
+                            RoleName::OWNER->value,
+                            RoleName::MANAGER->value,
+                        ],
+                    ],
                     // Promotions stays as a direct operational item
                     [
                         'label' => 'menu.promotions',

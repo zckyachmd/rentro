@@ -2,13 +2,15 @@
 
 use Illuminate\Http\Request;
 use App\Console\Commands\SeedCore;
-use App\Http\Middleware\SetLocale;
 use App\Console\Commands\SeedDemo;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\PortalAccess;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\TrustedGateway;
 use App\Providers\RouteServiceProvider;
+use App\Providers\BroadcastServiceProvider;
 use App\Providers\RateLimitServiceProvider;
+use Illuminate\Broadcasting\BroadcastManager;
 use App\Http\Middleware\HandleInertiaRequests;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -54,6 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([
         RouteServiceProvider::class,
         RateLimitServiceProvider::class,
+        BroadcastServiceProvider::class,
     ])
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Throwable $e, Request $request) {

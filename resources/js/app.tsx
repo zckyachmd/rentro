@@ -6,6 +6,67 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import { prefetchIcons } from '@/lib/lucide';
 import '../css/app.css';
+import { configureEcho } from '@laravel/echo-react';
+
+// Make Echo config explicit to avoid env mismatch during dev
+(() => {
+    const env = ((import.meta as any)?.env || {}) as Record<string, unknown>;
+    const dequote = (v: unknown) =>
+        typeof v === 'string' ? v.replace(/^['"]|['"]$/g, '') : (v as any);
+    const key = dequote(env.VITE_REVERB_APP_KEY) as string | undefined;
+    const host =
+        (dequote(env.VITE_REVERB_HOST) as string | undefined) ||
+        (typeof window !== 'undefined' ? window.location.hostname : undefined);
+    const portStr = dequote(env.VITE_REVERB_PORT) as string | undefined;
+    const port = portStr && !Number.isNaN(Number(portStr)) ? Number(portStr) : 8080;
+    const scheme = (dequote(env.VITE_REVERB_SCHEME) as string | undefined) || 'https';
+    const wsPath = dequote(env.VITE_REVERB_WS_PATH) as string | undefined;
+    // Extract CSRF token for private channel auth
+    let csrf: string | undefined;
+    try {
+        csrf = (typeof document !== 'undefined'
+            ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            : undefined) || undefined;
+    } catch { /* ignore */ }
+
+    configureEcho({
+        broadcaster: 'reverb',
+        key,
+        wsHost: host,
+        wsPort: port,
+        wssPort: port,
+        forceTLS: scheme === 'https',
+        enabledTransports: ['ws', 'wss'],
+        wsPath: wsPath || undefined,
+        authEndpoint: '/broadcasting/auth',
+        auth: {
+            headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {},
+        },
+    });
+})();
+
+// Optional: small debug hook to know Echo is ready
+try {
+    const Echo: any = (globalThis as any).Echo;
+    if (Echo?.connector?.pusher?.connection) {
+        Echo.connector.pusher.connection.bind('connected', () => {
+            try {
+                const opts = Echo?.connector?.pusher?.config || {};
+                console.info('[Echo] Connected to Reverb', {
+                    host: opts.wsHost,
+                    port: opts.wsPort,
+                    forceTLS: opts.forceTLS,
+                    path: opts.wsPath,
+                });
+            } catch {
+                console.info('[Echo] Connected to Reverb');
+            }
+        });
+        Echo.connector.pusher.connection.bind('error', (e: any) => {
+            console.warn('[Echo] Connection error', e);
+        });
+    }
+} catch {/* ignore */}
 
 const appName =
     import.meta.env?.VITE_APP_NAME ??

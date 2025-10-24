@@ -182,5 +182,15 @@ class RateLimitServiceProvider extends ServiceProvider
                 Limit::perMinute(60)->by('listener:invoice:' . $key),
             ];
         });
+
+        // Broadcasting auth route throttling
+        RateLimiter::for('broadcasting-auth', function (Request $request) use ($makeKey) {
+            return [
+                // Per-user/IP key to avoid abuse
+                Limit::perMinute(120)->by($makeKey($request, 'broadcast-auth')),
+                // Global IP cap
+                Limit::perMinute(300)->by('ip:' . $request->ip()),
+            ];
+        });
     }
 }

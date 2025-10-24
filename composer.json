@@ -17,6 +17,7 @@
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^12.0",
         "laravel/horizon": "^5.34",
+        "laravel/reverb": "^1.6",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "midtrans/midtrans-php": "^2.6",
@@ -73,12 +74,12 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#34d399,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:work --tries=1 --backoff=1 --sleep=1\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,worker,schedule,logs,vite --kill-others"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#34d399,#fb7185,#fdba74,#60a5fa\" \"php artisan serve\" \"php artisan queue:work --tries=1 --backoff=1 --sleep=1\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"npm run dev\" \"php artisan reverb:start\" --names=server,worker,schedule,logs,vite,reverb --kill-others"
         ],
         "dev:ssr": [
             "npm run build:ssr",
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#34d399,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:work --tries=1 --backoff=1 --sleep=1\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,worker,schedule,logs,ssr --kill-others"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#34d399,#fb7185,#fdba74,#60a5fa\" \"php artisan serve\" \"php artisan queue:work --tries=1 --backoff=1 --sleep=1\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" \"php artisan reverb:start\" --names=server,worker,schedule,logs,ssr,reverb --kill-others"
         ],
         "test": [
             "@php artisan config:clear --ansi",

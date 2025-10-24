@@ -18,12 +18,12 @@ import { hasChildren } from '@/layouts/app/menu';
 import Navbar from '@/layouts/app/navbar';
 import Sidebar from '@/layouts/app/sidebar';
 import { getAppName } from '@/lib/env';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import type { PageProps as InertiaPageProps } from '@/types';
 import type { MenuGroup } from '@/types/navigation';
+import { useNotificationsStore, type NotificationItem } from '@/stores/notifications';
 
 const LS_SIDEBAR = 'rentro:sidebar:collapsed';
-
-// note: icons are rendered via <LazyIcon /> directly
 
 type ServerMenuChild = { label: string; href?: string; icon?: string };
 
@@ -47,6 +47,21 @@ type AppLayoutProps = PropsWithChildren<{
 
 type AppPageProps = InertiaPageProps<{
     menus?: ServerMenuGroup[];
+    notifications?: {
+        unread: number;
+        latest: Array<{
+            id: string;
+            data: {
+                title?: unknown;
+                message?: unknown;
+                action_url?: string | null;
+                meta?: unknown;
+                created_at?: string | null;
+            };
+            read_at?: string | null;
+            created_at?: string | null;
+        }>;
+    };
 }>;
 
 export default function AppLayout({
@@ -61,8 +76,43 @@ export default function AppLayout({
     const { t } = useTranslation();
     const brandLabel = getAppName();
 
-    const { auth, menus: serverMenus } = usePage<AppPageProps>().props;
+    const { auth, menus: serverMenus, notifications: notifSummary } = usePage<AppPageProps>().props;
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
+    // Subscribe to realtime notifications when a user is available
+    useRealtimeNotifications({
+        userId: (user as any)?.id,
+        roleIds: (auth as any)?.user?.role_ids ?? [],
+        globalPrivate:
+            String((import.meta as any)?.env?.VITE_NOTIFICATIONS_GLOBAL_PRIVATE || '') ===
+            'true',
+        includeAnnouncementsInBell:
+            String((import.meta as any)?.env?.VITE_BELL_INCLUDE_ANNOUNCEMENTS || '') ===
+            'true',
+    });
+
+    // Hydrate notifications store once from shared props so Navbar has data on refresh
+    const { setInitial, items: notifItems } = useNotificationsStore();
+    React.useEffect(() => {
+        try {
+            if (!notifSummary) return;
+            // Only hydrate if store is empty to avoid clobbering live updates
+            if (notifItems && notifItems.length > 0) return;
+            const mapped: NotificationItem[] = (notifSummary.latest || []).map((n) => ({
+                id: n.id,
+                title: (n.data as any)?.title ?? 'Notification',
+                message: (n.data as any)?.message ?? '',
+                action_url:
+                    (n.data as any)?.action_url ?? (n.data as any)?.url ?? undefined,
+                meta: (n.data as any)?.meta || undefined,
+                created_at: (n.data as any)?.created_at || n.created_at || undefined,
+                read_at: n.read_at || null,
+            }));
+            setInitial(mapped, Number(notifSummary.unread || 0));
+        } catch {
+            // ignore hydration errors
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [notifSummary]);
 
     // Read from localStorage on client after mount to avoid SSR mismatch
     const [collapsed, setCollapsed] = useState<boolean>(false);

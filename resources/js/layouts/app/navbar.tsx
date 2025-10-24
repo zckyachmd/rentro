@@ -1,12 +1,5 @@
 import { Link } from '@inertiajs/react';
-import {
-    Bell,
-    LogOut,
-    PanelLeft,
-    PanelRight,
-    Search,
-    User,
-} from 'lucide-react';
+import { LogOut, PanelLeft, PanelRight, Search, User } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -32,6 +25,7 @@ import {
 } from '@/components/ui/sheet';
 import { MenuGroups } from '@/layouts/app/menu';
 import type { MenuGroup } from '@/types/navigation';
+import { NotificationBell } from '@/components/notification-bell';
 
 type NavbarProps = {
     collapsed: boolean;
@@ -205,27 +199,7 @@ export default function Navbar({
                 {/* Right: Actions */}
                 <div className="flex items-center gap-1 md:gap-2">
                     <ModeToggle />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label={tNav('nav.notifications.label')}
-                            >
-                                <Bell className="h-5 w-5" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-72">
-                            <DropdownMenuLabel>
-                                {tNav('nav.notifications.label')}
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-muted-foreground">
-                                {tNav('nav.notifications.empty')}
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <NotificationBell />
 
                     {/* Language toggle */}
                     <LocaleToggle />

@@ -1,7 +1,9 @@
 <?php
 
 use App\Enum\PermissionName;
+use App\Enum\RoleName;
 use App\Http\Controllers\Management\AmenityManagementController;
+use App\Http\Controllers\Management\AnnouncementController;
 use App\Http\Controllers\Management\AuditLogController;
 use App\Http\Controllers\Management\BookingManagementController;
 use App\Http\Controllers\Management\BuildingManagementController;
@@ -22,6 +24,30 @@ use Illuminate\Support\Facades\Route;
 
 // Management
 Route::prefix('management')->name('management.')->group(function (): void {
+    // Announcements (role/global)
+    Route::prefix('announcements')->name('announcements.')
+        ->middleware('role:' . RoleName::SUPER_ADMIN->value . '|' . RoleName::OWNER->value . '|' . RoleName::MANAGER->value)
+        ->group(function (): void {
+            Route::get('/', [AnnouncementController::class, 'index'])
+                ->name('index');
+            Route::post('/', [AnnouncementController::class, 'store'])
+                ->middleware('throttle:secure-sensitive')
+                ->name('store');
+            Route::post('/{announcement}/send-now', [AnnouncementController::class, 'sendNow'])
+                ->middleware('throttle:secure-sensitive')
+                ->whereNumber('announcement')
+                ->name('send_now');
+            Route::post('/{announcement}/resend', [AnnouncementController::class, 'resend'])
+                ->middleware('throttle:secure-sensitive')
+                ->whereNumber('announcement')
+                ->name('resend');
+            Route::post('/role', [AnnouncementController::class, 'role'])
+                ->middleware('throttle:secure-sensitive')
+                ->name('role');
+            Route::post('/global', [AnnouncementController::class, 'global'])
+                ->middleware('throttle:secure-sensitive')
+                ->name('global');
+        });
     // Bookings
     Route::prefix('bookings')->name('bookings.')->group(function (): void {
         Route::get('/', [BookingManagementController::class, 'index'])

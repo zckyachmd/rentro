@@ -18,13 +18,16 @@ test('profile information can be updated', function (): void {
     $response = $this
         ->actingAs($user)
         ->patch('/profile', [
-            'name'  => 'Test User',
-            'email' => 'test@example.com',
+            'name'     => 'Test User',
+            'username' => 'validuser',
+            'email'    => 'test@example.com',
+            'phone'    => $user->phone ?? '081234567890',
+            'gender'   => 'male',
         ]);
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect('/profile');
+        ->assertRedirect('/profile/edit');
 
     $user->refresh();
 
@@ -39,13 +42,16 @@ test('email verification status is unchanged when the email address is unchanged
     $response = $this
         ->actingAs($user)
         ->patch('/profile', [
-            'name'  => 'Test User',
-            'email' => $user->email,
+            'name'     => 'Test User',
+            'username' => 'validuser',
+            'email'    => $user->email,
+            'phone'    => $user->phone ?? '081234567890',
+            'gender'   => 'male',
         ]);
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect('/profile');
+        ->assertRedirect('/profile/edit');
 
     $this->assertNotNull($user->refresh()->email_verified_at);
 });

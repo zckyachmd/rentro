@@ -65,11 +65,14 @@ class HandleInertiaRequests extends Middleware
                 ]);
 
                 $roles       = $user->getRoleNames()->values()->all();
+                $roleRows    = $user->roles()->select('id', 'name')->get();
+                $roleIds     = $roleRows->pluck('id')->values()->all();
                 $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
 
                 return [
                     'user' => array_merge($base, [
                         'roles'       => $roles,
+                        'role_ids'    => $roleIds,
                         'permissions' => $permissions,
                     ]),
                 ];
@@ -127,6 +130,35 @@ class HandleInertiaRequests extends Middleware
                     return $locale ?? app()->getLocale();
                 },
             ],
+            // Lightweight notifications summary shared to every page
+            'notifications' => function () use ($request) {
+                $user = $request->user();
+                if (!$user) {
+                    return [
+                        'unread' => 0,
+                        'latest' => [],
+                    ];
+                }
+
+                $latest = $user->notifications()
+                    ->orderByDesc('created_at')
+                    ->limit(8)
+                    ->get()
+                    ->map(function (\Illuminate\Notifications\DatabaseNotification $n) {
+                        return [
+                            'id'         => (string) $n->id,
+                            'data'       => $n->data,
+                            'read_at'    => optional($n->read_at)->toDateTimeString(),
+                            'created_at' => optional($n->created_at)->toDateTimeString(),
+                        ];
+                    })
+                    ->values();
+
+                return [
+                    'unread' => (int) $user->unreadNotifications()->count(),
+                    'latest' => $latest,
+                ];
+            },
         ];
     }
 }
