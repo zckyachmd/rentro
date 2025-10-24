@@ -131,7 +131,7 @@ export default function InvoiceIndex() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                             <CardTitle className="flex items-center gap-2 text-base font-semibold">
                                 <Filter className="h-4 w-4" />{' '}
                                 {t('common.filter')}
@@ -175,7 +175,7 @@ export default function InvoiceIndex() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid gap-3 md:grid-cols-[160px_1fr_1fr_auto] md:items-end">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-[160px_1fr_1fr_auto] md:items-end">
                             <div>
                                 <Label
                                     htmlFor="status"
@@ -192,7 +192,7 @@ export default function InvoiceIndex() {
                                         })
                                     }
                                 >
-                                    <SelectTrigger className="w-[160px]">
+                                    <SelectTrigger className="w-full md:w-[160px]">
                                         <SelectValue
                                             placeholder={t(
                                                 'common.all_statuses',
@@ -253,7 +253,7 @@ export default function InvoiceIndex() {
                                 </Button>
                             </div>
                         </div>
-                        <div className="mt-3 flex items-center justify-between gap-2">
+                        <div className="mt-3 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
                                 <QuickRange
                                     onSelect={(s, e) => {
@@ -296,7 +296,7 @@ export default function InvoiceIndex() {
                                     }}
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex w-full items-center justify-end gap-2 md:w-auto">
                                 <Button
                                     type="button"
                                     variant="outline"

@@ -37,7 +37,7 @@ class InvoiceManagementController extends Controller
         $query = Invoice::query()
             ->with([
                 'contract:id,user_id,room_id',
-                'contract.tenant:id,name',
+                'contract.tenant:id,name,email',
                 'contract.room:id,number',
             ]);
 
@@ -94,14 +94,15 @@ class InvoiceManagementController extends Controller
             $outstanding = (int) ($inv->outstanding_idr ?? 0);
 
             return [
-                'id'          => (string) $inv->id,
-                'number'      => $inv->number,
-                'due_date'    => $inv->due_date->format('Y-m-d'),
-                'amount_idr'  => (int) $inv->amount_idr,
-                'status'      => $inv->status->value,
-                'tenant'      => $tenant?->name,
-                'room_number' => $room?->number,
-                'outstanding' => $outstanding,
+                'id'           => (string) $inv->id,
+                'number'       => $inv->number,
+                'due_date'     => $inv->due_date->format('Y-m-d'),
+                'amount_idr'   => (int) $inv->amount_idr,
+                'status'       => $inv->status->value,
+                'tenant'       => $tenant?->name,
+                'tenant_email' => $tenant?->email,
+                'room_number'  => $room?->number,
+                'outstanding'  => $outstanding,
             ];
         });
         $page->setCollection($mapped);

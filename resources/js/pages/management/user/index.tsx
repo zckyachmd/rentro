@@ -137,7 +137,7 @@ export default function UsersIndex() {
                                         })
                                     }
                                 >
-                                    <SelectTrigger className="w-[160px]">
+                                    <SelectTrigger className="w-full md:w-[160px]">
                                         <SelectValue
                                             placeholder={tUser('all_roles')}
                                         />

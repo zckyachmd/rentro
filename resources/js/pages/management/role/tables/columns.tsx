@@ -22,10 +22,10 @@ import type {
 } from '@/types/management';
 
 const COL = {
-    name: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
-    guard: 'shrink-0 w-[100px] md:w-[120px]',
-    users: 'shrink-0 w-[64px] md:w-[80px] text-right',
-    permissions: 'shrink-0 w-[80px] md:w-[100px] text-right',
+    name: 'shrink-0 w-[192px] md:w-[224px] lg:w-[248px]',
+    guard: 'shrink-0 w-[108px] md:w-[124px]',
+    users: 'shrink-0 w-[88px] md:w-[104px]',
+    permissions: 'shrink-0 w-[136px] md:w-[156px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 };
 

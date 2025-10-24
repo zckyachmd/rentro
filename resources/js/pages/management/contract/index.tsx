@@ -184,7 +184,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                 />
                 <Card>
                     <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                             <CardTitle className="flex items-center gap-2 text-base font-semibold">
                                 <Filter className="h-4 w-4" />{' '}
                                 {t('common.filter')}
@@ -234,7 +234,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <div className="grid gap-3 md:grid-cols-[160px_1fr_1fr_auto] md:items-end">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-[160px_1fr_1fr_auto] md:items-end">
                             <div>
                                 <Label
                                     htmlFor="status"
@@ -255,7 +255,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                                 >
                                     <SelectTrigger
                                         id="status"
-                                        className="w-[160px]"
+                                        className="w-full md:w-[160px]"
                                     >
                                         <SelectValue
                                             placeholder={t('common.all')}
@@ -309,7 +309,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                         </div>
 
                         <div className="flex flex-col gap-2 pt-2 md:col-span-12">
-                            <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-between">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <QuickRange
                                         onSelect={(s, e) => {
@@ -325,7 +325,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                                         onReset={resetFilter}
                                     />
                                 </div>
-                                <div className="flex shrink-0 items-center gap-2">
+                                <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto md:shrink-0 md:flex-nowrap">
                                     <Button
                                         type="button"
                                         variant="outline"

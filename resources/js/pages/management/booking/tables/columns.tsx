@@ -26,6 +26,7 @@ export type BookingRow = {
     period: string;
     promo_code?: string | null;
     tenant?: string | null;
+    tenant_email?: string | null;
     room?: string | null;
     building?: string | null;
     type?: string | null;
@@ -37,13 +38,13 @@ type CreateColumnsOpts<T extends BookingRow> = {
 };
 
 const COL = {
-    number: 'shrink-0 w-[200px] md:w-[240px] lg:w-[280px]',
-    tenant: 'shrink-0 w-[160px] md:w-[200px] lg:w-[260px]',
-    room: 'shrink-0 w-[90px] md:w-[110px] lg:w-[130px]',
-    start: 'shrink-0 w-[120px] md:w-[140px]',
-    duration: 'shrink-0 w-[130px] md:w-[150px]',
-    estimate: 'shrink-0 w-[130px] md:w-[160px] text-right',
-    status: 'shrink-0 w-[120px] md:w-[140px]',
+    number: 'shrink-0 w-[156px] md:w-[188px] lg:w-[204px]',
+    tenant: 'shrink-0 w-[156px] md:w-[188px] lg:w-[200px]',
+    room: 'shrink-0 w-[60px] md:w-[76px] lg:w-[102px]',
+    start: 'shrink-0 w-[70px] md:w-[100px]',
+    duration: 'shrink-0 w-[50px] md:w-[80px]',
+    estimate: 'shrink-0 w-[60px] md:w-[90px]',
+    status: 'shrink-0 w-[50px] md:w-[80px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 } as const;
 
@@ -75,7 +76,7 @@ export const createColumns = <T extends BookingRow>(
                 <div className={`flex items-center gap-2 ${COL.number}`}>
                     <button
                         type="button"
-                        className="text-left font-mono text-xs hover:underline"
+                        className="text-left font-mono text-xs underline underline-offset-2"
                         onClick={() => opts?.onDetail?.(b)}
                         aria-label={t('common.view_detail') + ' ' + b.number}
                         title={t('common.view_detail')}
@@ -97,11 +98,21 @@ export const createColumns = <T extends BookingRow>(
         id: 'tenant',
         title: i18n.t('common.tenant'),
         className: COL.tenant,
-        cell: ({ row }) => (
-            <div className={`${COL.tenant} truncate`}>
-                {row.original.tenant ?? '—'}
-            </div>
-        ),
+        cell: ({ row }) => {
+            const name = row.original.tenant ?? '—';
+            const email = (row.original as { tenant_email?: string | null })
+                .tenant_email;
+            return (
+                <div className={COL.tenant + ' flex flex-col'}>
+                    <span className="truncate font-medium">{name}</span>
+                    {email ? (
+                        <span className="text-muted-foreground truncate text-xs">
+                            {email}
+                        </span>
+                    ) : null}
+                </div>
+            );
+        },
     }),
     makeColumn<T>({
         id: 'room',

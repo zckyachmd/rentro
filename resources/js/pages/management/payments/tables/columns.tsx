@@ -26,12 +26,12 @@ import { variantForPaymentStatus } from '@/lib/status';
 import type { PaymentRow } from '@/types/management';
 
 const COL = {
-    date: 'shrink-0 w-[124px] md:w-[160px]',
-    invoice: 'shrink-0 w-[160px] md:w-[200px] lg:w-[240px]',
-    tenant: 'shrink-0 w-[160px] md:w-[220px] lg:w-[280px] truncate',
-    method: 'shrink-0 w-[120px]',
-    status: 'shrink-0 w-[120px]',
-    amount: 'shrink-0 w-[140px] text-right',
+    date: 'shrink-0 w-[120px] md:w-[144px]',
+    invoice: 'shrink-0 w-[176px] md:w-[208px] lg:w-[224px]',
+    tenant: 'shrink-0 w-[176px] md:w-[208px] lg:w-[240px] truncate',
+    method: 'shrink-0 w-[104px] md:w-[120px]',
+    status: 'shrink-0 w-[104px] md:w-[120px]',
+    amount: 'shrink-0 w-[128px] md:w-[152px] text-right',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 } as const;
 
@@ -60,7 +60,7 @@ export const createColumns = (opts?: {
                 <button
                     type="button"
                     onClick={() => opts?.onShowDetail?.(p)}
-                    className={`${COL.date} text-primary truncate text-left hover:underline`}
+                    className={`${COL.date} text-primary truncate text-left underline underline-offset-2`}
                     title={i18n.t('common.view_detail')}
                 >
                     {p.paid_at}
@@ -84,11 +84,21 @@ export const createColumns = (opts?: {
         accessorKey: 'tenant',
         title: i18n.t('common.tenant'),
         className: COL.tenant,
-        cell: ({ row }) => (
-            <div className={`${COL.tenant} truncate`}>
-                {row.original.tenant ?? '—'}
-            </div>
-        ),
+        cell: ({ row }) => {
+            const name = row.original.tenant ?? '—';
+            const email = (row.original as { tenant_email?: string | null })
+                .tenant_email;
+            return (
+                <div className={COL.tenant + ' flex flex-col'}>
+                    <span className="truncate font-medium">{name}</span>
+                    {email ? (
+                        <span className="text-muted-foreground truncate text-xs">
+                            {email}
+                        </span>
+                    ) : null}
+                </div>
+            );
+        },
     }),
     makeColumn<PaymentRow>({
         id: 'method',

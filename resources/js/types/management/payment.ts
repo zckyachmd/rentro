@@ -6,6 +6,7 @@ export type PaymentRow = {
     paid_at?: string | null;
     invoice?: string | null;
     tenant?: string | null;
+    tenant_email?: string | null;
 };
 
 import type { PaginatorMeta } from '@/components/ui/data-table-server';

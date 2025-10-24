@@ -1,22 +1,29 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Eye } from 'lucide-react';
+import { Eye, MoreHorizontal } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import i18n from '@/lib/i18n';
 import type { ActivityItem } from '@/types/management';
 
 const COL = {
-    id: 'shrink-0 w-[80px]',
-    time: 'shrink-0 w-[160px]',
-    user: 'shrink-0 w-[200px]',
-    subject: 'shrink-0 w-[240px]',
-    event: 'shrink-0 w-[120px]',
-    desc: 'min-w-[200px]',
-    actions: 'shrink-0 w-[96px] text-right',
+    id: 'shrink-0 w-[72px]',
+    time: 'shrink-0 w-[148px] md:w-[168px]',
+    user: 'shrink-0 w-[200px] md:w-[232px] lg:w-[256px]',
+    subject: 'shrink-0 w-[200px] md:w-[232px] lg:w-[256px]',
+    event: 'shrink-0 w-[112px] md:w-[132px]',
+    desc: 'min-w-[240px]',
+    actions: 'shrink-0 w-10 md:w-[28px] text-right',
 };
 
 export function subjectLabel(
@@ -133,19 +140,33 @@ export function createColumns(
         makeColumn<ActivityItem>({
             id: 'actions',
             title: i18n.t('common.actions'),
-            className: COL.actions + ' flex justify-end items-center',
+            className: `${COL.actions} pr-2 md:pr-3 flex justify-end items-center`,
             cell: ({ row }) => (
-                <div className={COL.actions + ' flex items-center justify-end'}>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => toDetail?.(row.original)}
-                        className="flex items-center gap-1"
-                    >
-                        <Eye className="h-4 w-4" />
-                        {i18n.t('common.view_detail')}
-                    </Button>
+                <div
+                    className={`${COL.actions} flex items-center justify-end pr-2 md:pr-3`}
+                >
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={i18n.t('common.actions')}
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem
+                                onClick={() => toDetail?.(row.original)}
+                            >
+                                <Eye className="mr-2 h-4 w-4" />
+                                {i18n.t('common.view_detail')}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             ),
         }),

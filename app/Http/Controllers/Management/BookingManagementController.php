@@ -63,18 +63,19 @@ class BookingManagementController extends Controller
 
         $page = $q->paginate(15)->through(function (Booking $b) {
             return [
-                'id'         => (string) $b->id,
-                'number'     => (string) ($b->number ?? ''),
-                'status'     => (string) $b->status->value,
-                'start_date' => optional($b->start_date)->toDateString(),
-                'duration'   => (int) $b->duration_count,
-                'period'     => (string) $b->billing_period->value,
-                'promo_code' => (string) ($b->promo_code ?? ''),
-                'tenant'     => $b->tenant?->name,
-                'room'       => $b->room?->number,
-                'building'   => $b->room?->building?->name,
-                'type'       => $b->room?->type?->name,
-                'estimate'   => $b->estimate,
+                'id'           => (string) $b->id,
+                'number'       => (string) ($b->number ?? ''),
+                'status'       => (string) $b->status->value,
+                'start_date'   => optional($b->start_date)->toDateString(),
+                'duration'     => (int) $b->duration_count,
+                'period'       => (string) $b->billing_period->value,
+                'promo_code'   => (string) ($b->promo_code ?? ''),
+                'tenant'       => $b->tenant?->name,
+                'tenant_email' => $b->tenant?->email,
+                'room'         => $b->room?->number,
+                'building'     => $b->room?->building?->name,
+                'type'         => $b->room?->type?->name,
+                'estimate'     => $b->estimate,
             ];
         });
 

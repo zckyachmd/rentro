@@ -32,13 +32,13 @@ import type {
 } from '@/types/management';
 
 const COL = {
-    name: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
-    email: 'shrink-0 w-[180px] md:w-[260px] lg:w-[300px]',
-    roles: 'shrink-0 w-[80px] md:w-[130px] lg:w-[170px]',
-    doc: 'shrink-0 w-[90px] md:w-[120px]',
-    twofa: 'shrink-0 w-[74px] md:w-[92px]',
-    last: 'shrink-0 w-[86px] md:w-[100px]',
-    actions: 'shrink-0 w-10 md:w-[48px]',
+    name: 'shrink-0 w-[200px] md:w-[232px] lg:w-[256px]',
+    email: 'shrink-0 w-[200px] md:w-[232px] lg:w-[256px]',
+    roles: 'shrink-0 w-[132px] md:w-[152px] lg:w-[172px]',
+    doc: 'shrink-0 w-[104px] md:w-[120px]',
+    twofa: 'shrink-0 w-[96px] md:w-[112px]',
+    last: 'shrink-0 w-[148px] md:w-[168px]',
+    actions: 'shrink-0 w-10 md:w-[48px] text-right',
 } as const;
 
 export const createColumns = (
@@ -231,11 +231,13 @@ export const createColumns = (
     makeColumn<UserItem>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: `text-right ${COL.actions} flex justify-end items-center`,
+        className: `${COL.actions} pr-2 md:pr-3 flex justify-end items-center`,
         cell: ({ row }) => {
             const u = row.original;
             return (
-                <div className={`text-right ${COL.actions}`}>
+                <div
+                    className={`${COL.actions} flex items-center justify-end pr-2 md:pr-3`}
+                >
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button

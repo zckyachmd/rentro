@@ -30,13 +30,13 @@ import { variantForInvoiceStatus } from '@/lib/status';
 import type { BaseInvoiceRow, CreateColumnsOpts } from '@/types/management';
 
 const COL = {
-    number: 'shrink-0 w-[220px] md:w-[260px] lg:w-[280px]',
-    tenant: 'shrink-0 w-[160px] md:w-[200px] lg:w-[260px]',
-    room: 'shrink-0 w-[80px] md:w-[100px] lg:w-[120px]',
-    due: 'shrink-0 w-[114px] md:w-[140px]',
-    status: 'shrink-0 w-[110px] md:w-[130px]',
-    amount: 'shrink-0 w-[130px] md:w-[160px] text-right',
-    outstanding: 'shrink-0 w-[130px] md:w-[160px] text-right',
+    number: 'shrink-0 w-[176px] md:w-[208px] lg:w-[224px]',
+    tenant: 'shrink-0 w-[176px] md:w-[208px] lg:w-[240px]',
+    room: 'shrink-0 w-[60px] md:w-[76px] lg:w-[102px]',
+    due: 'shrink-0 w-[100px] md:w-[116px]',
+    status: 'shrink-0 w-[52px] md:w-[78px]',
+    amount: 'shrink-0 w-[66px] md:w-[88px]',
+    outstanding: 'shrink-0 w-[66px] md:w-[88px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 } as const;
 
@@ -55,7 +55,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                 <div className={`flex items-center gap-2 ${COL.number}`}>
                     <button
                         type="button"
-                        className="text-left font-mono text-xs hover:underline"
+                        className="text-left font-mono text-xs underline underline-offset-2"
                         onClick={() => opts?.onShowDetail?.(inv)}
                         aria-label={t('common.view_detail') + ' ' + inv.number}
                         title={t('common.view_detail')}
@@ -77,11 +77,21 @@ export const createColumns = <T extends BaseInvoiceRow>(
         id: 'tenant',
         title: i18n.t('common.tenant'),
         className: COL.tenant,
-        cell: ({ row }) => (
-            <div className={`${COL.tenant} truncate`}>
-                {row.original.tenant ?? '—'}
-            </div>
-        ),
+        cell: ({ row }) => {
+            const name = row.original.tenant ?? '—';
+            const email = (row.original as { tenant_email?: string | null })
+                .tenant_email;
+            return (
+                <div className={COL.tenant + ' flex flex-col'}>
+                    <span className="truncate font-medium">{name}</span>
+                    {email ? (
+                        <span className="text-muted-foreground truncate text-xs">
+                            {email}
+                        </span>
+                    ) : null}
+                </div>
+            );
+        },
     }),
     makeColumn<T>({
         id: 'room',

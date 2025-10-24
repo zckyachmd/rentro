@@ -154,14 +154,14 @@ export function DataTableToolbar<TData>({
   const placeholderText = placeholder ?? t('datatable.search_placeholder')
 
   return (
-    <div className="flex items-center gap-2 py-2">
+    <div className="flex flex-col gap-2 py-2 md:flex-row md:items-center md:gap-3 min-w-0">
       {column && (
         <>
           <Input
             value={showSubmitButton && isControlled ? draft : value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholderText}
-            className="max-w-xs"
+            className="w-full md:max-w-xs"
             onKeyDown={showSubmitButton ? (e) => { if (e.key === 'Enter') submitSearch() } : undefined}
           />
           {showSubmitButton && (
@@ -176,11 +176,11 @@ export function DataTableToolbar<TData>({
         </>
       )}
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:flex-nowrap">
         {showColumn && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
+              <Button variant="outline" className="md:ml-auto shrink-0">
                 {columnsButtonLabel ?? t('datatable.columns')} <ChevronDown />
               </Button>
             </DropdownMenuTrigger>
@@ -221,7 +221,7 @@ export function DataTableToolbar<TData>({
         {typeof onAutoRefreshChange === 'function' && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
+              <Button variant="outline" className="md:ml-auto shrink-0">
                 {t('datatable.auto_refresh')}: {(autoRefreshValue ?? 'off') === 'off' ? t('datatable.off') : (autoRefreshValue ?? '')}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>

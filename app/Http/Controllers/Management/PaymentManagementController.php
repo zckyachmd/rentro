@@ -37,7 +37,7 @@ class PaymentManagementController extends Controller
         $query = Payment::query()->with([
             'invoice:id,number,contract_id',
             'invoice.contract:id,user_id,room_id',
-            'invoice.contract.tenant:id,name',
+            'invoice.contract.tenant:id,name,email',
         ]);
 
         $options = [
@@ -100,13 +100,14 @@ class PaymentManagementController extends Controller
             $tenant   = $contract?->tenant;
 
             return [
-                'id'         => (string) $p->id,
-                'method'     => (string) $p->method->value,
-                'status'     => (string) $p->status->value,
-                'amount_idr' => (int) $p->amount_idr,
-                'paid_at'    => $p->paid_at?->toDateTimeString(),
-                'invoice'    => $invoice?->number,
-                'tenant'     => $tenant?->name,
+                'id'           => (string) $p->id,
+                'method'       => (string) $p->method->value,
+                'status'       => (string) $p->status->value,
+                'amount_idr'   => (int) $p->amount_idr,
+                'paid_at'      => $p->paid_at?->toDateTimeString(),
+                'invoice'      => $invoice?->number,
+                'tenant'       => $tenant?->name,
+                'tenant_email' => $tenant?->email,
             ];
         });
 

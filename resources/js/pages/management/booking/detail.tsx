@@ -1,28 +1,28 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Building2,
     CalendarCheck,
     Check,
-    Hash,
-    User,
-    X,
-    Building2,
-    Layers,
     FileText,
+    Hash,
+    Layers,
     Ruler,
     ShieldCheck,
     Tag,
+    User,
     Users as UsersIcon,
+    X,
 } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import LazyIcon from '@/components/lazy-icon';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CopyInline } from '@/components/ui/copy-inline';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import LazyIcon from '@/components/lazy-icon';
 import {
     Dialog,
     DialogContent,
@@ -127,7 +127,9 @@ export default function ManagementBookingDetail() {
     // Compute end date for better context
     const endDateStr = React.useMemo(() => {
         try {
-            const start = booking.start_date ? new Date(`${booking.start_date}T00:00:00`) : null;
+            const start = booking.start_date
+                ? new Date(`${booking.start_date}T00:00:00`)
+                : null;
             const count = Number(booking.duration || 0);
             const period = String(booking.period || '').toLowerCase();
             if (!start || !count || !period) return null;
@@ -310,7 +312,9 @@ export default function ManagementBookingDetail() {
                                                     <div className="text-muted-foreground text-[11px]">
                                                         {t('common.end')}
                                                     </div>
-                                                    <div className="font-medium">{endDateStr}</div>
+                                                    <div className="font-medium">
+                                                        {endDateStr}
+                                                    </div>
                                                 </div>
                                             ) : null}
                                             <div>
@@ -360,7 +364,7 @@ export default function ManagementBookingDetail() {
                                                 </Button>
                                             </div>
                                         </div>
-                                        
+
                                         {booking.room?.name ? (
                                             <div className="text-muted-foreground">
                                                 {booking.room.name}
@@ -414,7 +418,8 @@ export default function ManagementBookingDetail() {
                                         {booking.estimate?.promo ? (
                                             <>
                                                 {' '}
-                                                · {t('common.promotions_applied')}
+                                                ·{' '}
+                                                {t('common.promotions_applied')}
                                             </>
                                         ) : null}
                                     </div>
@@ -582,24 +587,32 @@ export default function ManagementBookingDetail() {
                                 href={route('management.bookings.index')}
                                 className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
                             >
-                                <ArrowLeft className="h-4 w-4" /> {t('common.back')}
+                                <ArrowLeft className="h-4 w-4" />{' '}
+                                {t('common.back')}
                             </Link>
                             <div className="ml-auto">
                                 {hasContract ? (
                                     <Link
-                                        href={route('management.contracts.show', {
-                                            contract: booking.contract_id,
-                                        })}
+                                        href={route(
+                                            'management.contracts.show',
+                                            {
+                                                contract: booking.contract_id,
+                                            },
+                                        )}
                                         className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
                                     >
-                                        {tBooking('detail.open_contract')} <FileText className="h-4 w-4" />
+                                        {tBooking('detail.open_contract')}{' '}
+                                        <FileText className="h-4 w-4" />
                                     </Link>
                                 ) : statusKey === 'approved' ? (
                                     <Link
-                                        href={route('management.contracts.create')}
+                                        href={route(
+                                            'management.contracts.create',
+                                        )}
                                         className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
                                     >
-                                        {tBooking('detail.create_contract')} <FileText className="h-4 w-4" />
+                                        {tBooking('detail.create_contract')}{' '}
+                                        <FileText className="h-4 w-4" />
                                     </Link>
                                 ) : null}
                             </div>
@@ -763,7 +776,14 @@ export default function ManagementBookingDetail() {
                                 <div className="overflow-hidden rounded-md">
                                     <AspectRatio ratio={16 / 9}>
                                         <img
-                                            src={photoUrls[Math.min(activePhotoIdx, photoUrls.length - 1)]}
+                                            src={
+                                                photoUrls[
+                                                    Math.min(
+                                                        activePhotoIdx,
+                                                        photoUrls.length - 1,
+                                                    )
+                                                ]
+                                            }
                                             alt={roomTitle}
                                             className="h-full w-full object-cover"
                                             loading="lazy"
@@ -774,9 +794,17 @@ export default function ManagementBookingDetail() {
                                                     type="button"
                                                     className="bg-background/70 absolute top-1/2 left-2 -translate-y-1/2 rounded-full px-2 py-1 text-sm shadow"
                                                     onClick={() =>
-                                                        setActivePhotoIdx((i) => (i - 1 + photoUrls.length) % photoUrls.length)
+                                                        setActivePhotoIdx(
+                                                            (i) =>
+                                                                (i -
+                                                                    1 +
+                                                                    photoUrls.length) %
+                                                                photoUrls.length,
+                                                        )
                                                     }
-                                                    aria-label={t('datatable.prev')}
+                                                    aria-label={t(
+                                                        'datatable.prev',
+                                                    )}
                                                 >
                                                     ‹
                                                 </button>
@@ -784,9 +812,15 @@ export default function ManagementBookingDetail() {
                                                     type="button"
                                                     className="bg-background/70 absolute top-1/2 right-2 -translate-y-1/2 rounded-full px-2 py-1 text-sm shadow"
                                                     onClick={() =>
-                                                        setActivePhotoIdx((i) => (i + 1) % photoUrls.length)
+                                                        setActivePhotoIdx(
+                                                            (i) =>
+                                                                (i + 1) %
+                                                                photoUrls.length,
+                                                        )
                                                     }
-                                                    aria-label={t('datatable.next')}
+                                                    aria-label={t(
+                                                        'datatable.next',
+                                                    )}
                                                 >
                                                     ›
                                                 </button>
@@ -800,10 +834,14 @@ export default function ManagementBookingDetail() {
                                             <button
                                                 key={`${p}-${idx}`}
                                                 type="button"
-                                                onClick={() => setActivePhotoIdx(idx)}
+                                                onClick={() =>
+                                                    setActivePhotoIdx(idx)
+                                                }
                                                 className={[
                                                     'relative h-16 w-24 shrink-0 overflow-hidden rounded-md border',
-                                                    activePhotoIdx === idx ? 'ring-primary ring-2' : 'hover:opacity-90',
+                                                    activePhotoIdx === idx
+                                                        ? 'ring-primary ring-2'
+                                                        : 'hover:opacity-90',
                                                 ].join(' ')}
                                                 aria-label={`${t('common.photo')} ${idx + 1}`}
                                             >
@@ -824,52 +862,88 @@ export default function ManagementBookingDetail() {
                             <div className="space-y-3">
                                 <div className="flex flex-wrap gap-2">
                                     {booking.room?.building ? (
-                                        <Badge variant="secondary" className="inline-flex items-center gap-1">
-                                            <Building2 className="h-3.5 w-3.5" /> {booking.room.building}
+                                        <Badge
+                                            variant="secondary"
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <Building2 className="h-3.5 w-3.5" />{' '}
+                                            {booking.room.building}
                                         </Badge>
                                     ) : null}
                                     {booking.room?.floor ? (
-                                        <Badge variant="outline" className="inline-flex items-center gap-1">
-                                            <Layers className="h-3.5 w-3.5" /> {booking.room.floor}
+                                        <Badge
+                                            variant="outline"
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <Layers className="h-3.5 w-3.5" />{' '}
+                                            {booking.room.floor}
                                         </Badge>
                                     ) : null}
                                     {booking.room?.type ? (
-                                        <Badge variant="outline" className="inline-flex items-center gap-1">
-                                            <Tag className="h-3.5 w-3.5" /> {booking.room.type}
+                                        <Badge
+                                            variant="outline"
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <Tag className="h-3.5 w-3.5" />{' '}
+                                            {booking.room.type}
                                         </Badge>
                                     ) : null}
                                     {booking.room?.size_m2 ? (
-                                        <Badge variant="outline" className="inline-flex items-center gap-1">
-                                            <Ruler className="h-3.5 w-3.5" /> {booking.room.size_m2} m²
+                                        <Badge
+                                            variant="outline"
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <Ruler className="h-3.5 w-3.5" />{' '}
+                                            {booking.room.size_m2} m²
                                         </Badge>
                                     ) : null}
                                     {booking.room?.max_occupancy ? (
-                                        <Badge variant="outline" className="inline-flex items-center gap-1">
-                                            <UsersIcon className="h-3.5 w-3.5" /> {t('common.max')} {booking.room.max_occupancy}
+                                        <Badge
+                                            variant="outline"
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <UsersIcon className="h-3.5 w-3.5" />{' '}
+                                            {t('common.max')}{' '}
+                                            {booking.room.max_occupancy}
                                         </Badge>
                                     ) : null}
                                 </div>
 
-                                {Array.isArray(booking.room?.amenities) && booking.room!.amenities!.length > 0 ? (
+                                {Array.isArray(booking.room?.amenities) &&
+                                booking.room!.amenities!.length > 0 ? (
                                     <div>
-                                        <div className="text-sm font-medium">{t('common.amenities')}</div>
-                                        <AmenitiesList items={booking.room!.amenities!} />
+                                        <div className="text-sm font-medium">
+                                            {t('common.amenities')}
+                                        </div>
+                                        <AmenitiesList
+                                            items={booking.room!.amenities!}
+                                        />
                                     </div>
                                 ) : null}
                             </div>
 
                             <div className="space-y-2 rounded-md border p-3">
-                                <div className="text-sm">{tBooking('detail.price_month')}</div>
-                                <div className="text-2xl leading-6 font-semibold">
-                                    {formatIDR((booking.room?.prices?.monthly ?? 0) as number)}
+                                <div className="text-sm">
+                                    {tBooking('detail.price_month')}
                                 </div>
-                                <div className="text-muted-foreground text-xs">{tBooking('detail.price_note')}</div>
+                                <div className="text-2xl leading-6 font-semibold">
+                                    {formatIDR(
+                                        (booking.room?.prices?.monthly ??
+                                            0) as number,
+                                    )}
+                                </div>
+                                <div className="text-muted-foreground text-xs">
+                                    {tBooking('detail.price_note')}
+                                </div>
                                 <div className="mt-2 flex items-center gap-2 rounded-md border p-2">
                                     <ShieldCheck className="text-muted-foreground h-4 w-4" />
                                     <div className="text-sm">
-                                        {t('common.deposit')}: 
+                                        {t('common.deposit')}:
                                         <span className="font-medium">
-                                            {formatIDR((booking.room?.deposits?.monthly ?? 0) as number)}
+                                            {formatIDR(
+                                                (booking.room?.deposits
+                                                    ?.monthly ?? 0) as number,
+                                            )}
                                         </span>
                                     </div>
                                 </div>
@@ -877,7 +951,10 @@ export default function ManagementBookingDetail() {
                         </div>
 
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setRoomDialog(false)}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setRoomDialog(false)}
+                            >
                                 {t('common.close')}
                             </Button>
                         </DialogFooter>
@@ -889,18 +966,33 @@ export default function ManagementBookingDetail() {
 }
 
 type AmenityItem = { name: string; icon?: string | null };
-function AmenitiesList({ items }: { items: AmenityItem[] }) {
+type AmenityInput = AmenityItem | string | null | undefined;
+function isAmenityItem(v: unknown): v is AmenityItem {
+    return (
+        typeof v === 'object' &&
+        v !== null &&
+        'name' in (v as Record<string, unknown>) &&
+        typeof (v as { name?: unknown }).name === 'string'
+    );
+}
+function AmenitiesList({ items }: { items: AmenityInput[] }) {
     const { t } = useTranslation();
     const [expanded, setExpanded] = React.useState(false);
-    const all: AmenityItem[] = (items || []).map((it) => ({
-        name: (it as any).name ?? String(it ?? ''),
-        icon: (it as any).icon ?? null,
-    }));
+    const all: AmenityItem[] = (items || []).map((it) => {
+        if (typeof it === 'string') return { name: it, icon: null };
+        if (isAmenityItem(it)) return { name: it.name, icon: it.icon ?? null };
+        // Fallback when shape is unknown
+        return { name: String(it ?? ''), icon: null };
+    });
     const shown = expanded ? all : all.slice(0, 8);
     return (
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {shown.map((a, idx) => (
-                <Badge key={`${a.name}-${idx}`} variant="outline" className="inline-flex items-center gap-1 text-xs">
+                <Badge
+                    key={`${a.name}-${idx}`}
+                    variant="outline"
+                    className="inline-flex items-center gap-1 text-xs"
+                >
                     {a.icon ? (
                         <LazyIcon name={a.icon} className="h-3.5 w-3.5" />
                     ) : null}
@@ -913,7 +1005,9 @@ function AmenitiesList({ items }: { items: AmenityItem[] }) {
                     className="text-primary ml-1 text-xs hover:underline"
                     onClick={() => setExpanded((v) => !v)}
                 >
-                    {expanded ? t('datatable.hide_all') : t('datatable.show_all')}
+                    {expanded
+                        ? t('datatable.hide_all')
+                        : t('datatable.show_all')}
                 </button>
             ) : null}
         </div>

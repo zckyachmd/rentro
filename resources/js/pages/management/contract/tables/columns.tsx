@@ -49,13 +49,13 @@ const CANCELABLE: ReadonlyArray<string> = [CS.PENDING_PAYMENT, CS.BOOKED];
 const RENEW_ALLOWED: ReadonlyArray<string> = [CS.BOOKED, CS.PAID, CS.ACTIVE];
 
 const COL = {
-    tenant: 'shrink-0 min-w-[200px] md:w-[260px]',
-    room: 'shrink-0 w-[110px]',
-    start: 'shrink-0 w-[120px]',
-    end: 'shrink-0 w-[120px]',
-    rent: 'shrink-0 w-[140px] text-right',
-    status: 'shrink-0 w-[120px]',
-    daysLeft: 'shrink-0 w-[120px] text-right',
+    tenant: 'shrink-0 w-[176px] md:w-[208px] lg:w-[240px]',
+    room: 'shrink-0 w-[80px] md:w-[96px] lg:w-[112px]',
+    start: 'shrink-0 w-[120px] md:w-[140px]',
+    end: 'shrink-0 w-[120px] md:w-[140px]',
+    rent: 'shrink-0 w-[130px] md:w-[160px]',
+    status: 'shrink-0 w-[110px] md:w-[130px]',
+    daysLeft: 'shrink-0 w-[110px] md:w-[130px]',
     renew: 'shrink-0 w-[120px]',
     actions: 'shrink-0 w-10 md:w-[48px] text-right',
 };
@@ -68,14 +68,14 @@ export const createColumns = (
     makeColumn<ContractItem>({
         id: 'number',
         title: i18n.t('common.number'),
-        className: 'shrink-0 w-[200px] font-mono',
+        className: 'shrink-0 w-[176px] md:w-[208px] lg:w-[224px] font-mono',
         cell: ({ row }) => {
             const no = row.original.number || '';
             const href = route('management.contracts.show', {
                 contract: row.original.id,
             });
             return (
-                <div className="w-[200px] shrink-0 font-mono">
+                <div className="w-[176px] shrink-0 font-mono md:w-[208px] lg:w-[224px]">
                     {no ? (
                         <Link
                             href={href}

@@ -7,6 +7,7 @@ export type BaseInvoiceRow = {
     ticket_url?: string | null;
     status: string; // e.g., 'pending' | 'overdue' | 'paid' | 'cancelled'
     tenant?: string | null;
+    tenant_email?: string | null;
     room_number?: string | null;
 };
 

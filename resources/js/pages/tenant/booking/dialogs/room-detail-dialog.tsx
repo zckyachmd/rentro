@@ -1,9 +1,16 @@
-import { Building2, Layers, Ruler, ShieldCheck, Tag, Users } from 'lucide-react';
+import {
+    Building2,
+    Layers,
+    Ruler,
+    ShieldCheck,
+    Tag,
+    Users,
+} from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import LazyIcon from '@/components/lazy-icon';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -112,7 +119,6 @@ export default function RoomDetailDialog({
         typeof a === 'string' ? { name: a } : { name: a.name, icon: a.icon },
     );
     const amenities = amenExpanded ? amenAll : amenAll.slice(0, 8);
-    const moreAmen = Math.max(0, amenAll.length - amenities.length);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -236,7 +242,8 @@ export default function RoomDetailDialog({
                                         variant="outline"
                                         className="inline-flex items-center gap-1"
                                     >
-                                        <Layers className="h-3.5 w-3.5" /> {data.floor}
+                                        <Layers className="h-3.5 w-3.5" />{' '}
+                                        {data.floor}
                                     </Badge>
                                 ) : null}
                                 {data?.size_m2 ? (
@@ -261,12 +268,21 @@ export default function RoomDetailDialog({
 
                             {amenities.length > 0 ? (
                                 <div>
-                                    <div className="text-sm font-medium">{t('common.amenities')}</div>
+                                    <div className="text-sm font-medium">
+                                        {t('common.amenities')}
+                                    </div>
                                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
                                         {amenities.map((a, idx) => (
-                                            <Badge key={`${a.name}-${idx}`} variant="outline" className="inline-flex items-center gap-1 text-xs">
+                                            <Badge
+                                                key={`${a.name}-${idx}`}
+                                                variant="outline"
+                                                className="inline-flex items-center gap-1 text-xs"
+                                            >
                                                 {a.icon ? (
-                                                    <LazyIcon name={a.icon} className="h-3.5 w-3.5" />
+                                                    <LazyIcon
+                                                        name={a.icon}
+                                                        className="h-3.5 w-3.5"
+                                                    />
                                                 ) : null}
                                                 {a.name}
                                             </Badge>
@@ -275,9 +291,13 @@ export default function RoomDetailDialog({
                                             <button
                                                 type="button"
                                                 className="text-primary ml-1 text-xs hover:underline"
-                                                onClick={() => setAmenExpanded((v) => !v)}
+                                                onClick={() =>
+                                                    setAmenExpanded((v) => !v)
+                                                }
                                             >
-                                                {amenExpanded ? t('datatable.hide_all') : t('datatable.show_all')}
+                                                {amenExpanded
+                                                    ? t('datatable.hide_all')
+                                                    : t('datatable.show_all')}
                                             </button>
                                         ) : null}
                                     </div>
