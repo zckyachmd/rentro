@@ -24,13 +24,21 @@
         "summary": "Ringkasan",
         "approve": "Setujui",
         "reject": "Tolak",
-        "reason_placeholder": "Alasan penolakan (opsional)",
+        "reason_placeholder": "Alasan penolakan",
         "open_room": "Lihat Detail Kamar",
         "location": "Lokasi",
         "size": "Luas",
         "max_occupancy": "Kapasitas",
         "prices": "Harga",
         "deposits": "Deposit",
-        "photos": "Foto"
+        "photos": "Foto",
+        "room_title_format": "Kamar {{number}}",
+        "room_title_with_name": "Kamar {{number}} • {{name}}",
+        "room_dialog_desc": "Lihat informasi kamar secara ringkas sebelum booking.",
+        "price_month": "Harga/bulan",
+        "price_note": "Belum termasuk listrik/air (jika berlaku). Promo akan diterapkan saat booking jika valid.",
+        "open_contract": "Lihat Kontrak",
+        "create_contract": "Buat Kontrak",
+        "summary_caption": "Sudah termasuk sewa + deposit"
     }
 }

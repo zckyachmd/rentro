@@ -24,13 +24,21 @@
         "summary": "Summary",
         "approve": "Approve",
         "reject": "Reject",
-        "reason_placeholder": "Rejection reason (optional)",
+        "reason_placeholder": "Rejection reason",
         "open_room": "Open Room Page",
         "location": "Location",
         "size": "Size",
         "max_occupancy": "Max Occupancy",
         "prices": "Prices",
         "deposits": "Deposits",
-        "photos": "Photos"
+        "photos": "Photos",
+        "room_title_format": "Room {{number}}",
+        "room_title_with_name": "Room {{number}} • {{name}}",
+        "room_dialog_desc": "View room info briefly before booking.",
+        "price_month": "Price/month",
+        "price_note": "Excl. electricity/water (if applicable). Eligible promo applies during booking.",
+        "open_contract": "Open Contract",
+        "create_contract": "Create Contract",
+        "summary_caption": "Includes rent + deposit"
     }
 }

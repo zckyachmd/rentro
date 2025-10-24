@@ -227,15 +227,16 @@ class BookingManagementController extends Controller
 
         return Inertia::render('management/booking/detail', [
             'booking' => [
-                'id'         => (string) $booking->id,
-                'number'     => (string) ($booking->number ?? ''),
-                'status'     => (string) $booking->status->value,
-                'start_date' => optional($booking->start_date)->toDateString(),
-                'duration'   => (int) $booking->duration_count,
-                'period'     => (string) $booking->billing_period->value,
-                'promo_code' => (string) ($booking->promo_code ?? ''),
-                'notes'      => (string) ($booking->notes ?? ''),
-                'tenant'     => $booking->tenant ? [
+                'id'                => (string) $booking->id,
+                'number'            => (string) ($booking->number ?? ''),
+                'status'            => (string) $booking->status->value,
+                'status_changed_at' => optional($booking->approved_at ?? $booking->rejected_at ?? $booking->updated_at ?? $booking->created_at)->toDateTimeString(),
+                'start_date'        => optional($booking->start_date)->toDateString(),
+                'duration'          => (int) $booking->duration_count,
+                'period'            => (string) $booking->billing_period->value,
+                'promo_code'        => (string) ($booking->promo_code ?? ''),
+                'notes'             => (string) ($booking->notes ?? ''),
+                'tenant'            => $booking->tenant ? [
                     'name'  => $booking->tenant->name,
                     'email' => $booking->tenant->email,
                     'phone' => method_exists($booking->tenant, 'getAttribute') ? ($booking->tenant->getAttribute('phone') ?? null) : null,

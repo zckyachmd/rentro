@@ -103,7 +103,7 @@ class RoomBrowseController extends Controller
 
     public function show(Room $room)
     {
-        $room->loadMissing(['building:id,name', 'type:id,name', 'photos:id,room_id,path,is_cover,ordering', 'amenities:id,name']);
+        $room->loadMissing(['building:id,name', 'type:id,name', 'floor:id,name', 'photos:id,room_id,path,is_cover,ordering', 'amenities:id,name,icon']);
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk('public');
@@ -125,6 +125,7 @@ class RoomBrowseController extends Controller
             'name'          => $room->name,
             'building'      => $room->building?->name,
             'type'          => $room->type?->name,
+            'floor'         => $room->floor?->name,
             'status'        => (string) $room->status->value,
             'price_month'   => (int) ($room->effectivePriceCents('monthly') ?? 0),
             'deposit'       => (int) ($room->effectiveDepositCents('monthly') ?? 0),
@@ -132,7 +133,14 @@ class RoomBrowseController extends Controller
             'max_occupancy' => $room->max_occupancy !== null ? (int) $room->max_occupancy : null,
             'photo_urls'    => $photos,
             'amenities'     => $room->relationLoaded('amenities')
-                ? $room->amenities->pluck('name')->filter()->values()->all()
+                ? $room->amenities
+                    ->map(fn ($a) => [
+                        'name' => (string) $a->name,
+                        'icon' => (string) ($a->icon ?? ''),
+                    ])
+                    ->filter(fn ($a) => !empty($a['name']))
+                    ->values()
+                    ->all()
                 : [],
         ];
 

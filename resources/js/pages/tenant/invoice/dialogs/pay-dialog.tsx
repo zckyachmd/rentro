@@ -266,7 +266,7 @@ export default function TenantInvoicePayDialog({
         inFlightRef.current = true;
         try {
             lastCheckRef.current = Date.now();
-            await postJson(route('tenant.invoices.pay.check', target.id), {});
+            await getJson(route('tenant.invoices.pay.status', target.id));
             await reload();
         } finally {
             inFlightRef.current = false;

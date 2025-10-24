@@ -113,7 +113,12 @@
         "deposit": "Deposit",
         "auto_renew": "Auto‑Renew",
         "days_left": "Days Left",
-        "expired": "Expired"
+        "expired": "Expired",
+        "promo_code": "Promo Code",
+        "promotions_applied": "Promotions Applied",
+        "discount_rent": "Rent Discount",
+        "discount_deposit": "Deposit Discount",
+        "none": "None"
     },
     "dashboard": {
         "desc": "Daily summary, occupancy status, and key metrics.",

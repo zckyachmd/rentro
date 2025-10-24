@@ -1,5 +1,19 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, CalendarCheck, Check, Hash, User, X } from 'lucide-react';
+import {
+    ArrowLeft,
+    CalendarCheck,
+    Check,
+    Hash,
+    User,
+    X,
+    Building2,
+    Layers,
+    FileText,
+    Ruler,
+    ShieldCheck,
+    Tag,
+    Users as UsersIcon,
+} from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CopyInline } from '@/components/ui/copy-inline';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import LazyIcon from '@/components/lazy-icon';
 import {
     Dialog,
     DialogContent,
@@ -24,6 +40,7 @@ type BookingDetail = {
     id: string;
     number: string;
     status: string;
+    status_changed_at?: string | null;
     start_date: string;
     duration: number;
     period: string;
@@ -81,16 +98,69 @@ export default function ManagementBookingDetail() {
     const [confirmReject, setConfirmReject] = React.useState(false);
     const [roomDialog, setRoomDialog] = React.useState(false);
 
+    // Room photos gallery state (align with tenant UI)
+    const photoUrls = React.useMemo(() => {
+        const ps = (booking.room?.photos || []).slice();
+        ps.sort((a, b) => {
+            const ac = a.is_cover ? 1 : 0;
+            const bc = b.is_cover ? 1 : 0;
+            if (ac !== bc) return bc - ac; // cover first
+            const ao = a.ordering ?? 0;
+            const bo = b.ordering ?? 0;
+            return ao - bo;
+        });
+        return ps.map((p) => p.url);
+    }, [booking.room?.photos]);
+    const [activePhotoIdx, setActivePhotoIdx] = React.useState(0);
+    React.useEffect(() => {
+        setActivePhotoIdx(0);
+    }, [roomDialog, photoUrls.length]);
+
+    const roomTitle = React.useMemo(() => {
+        const num = booking.room?.number || '—';
+        const nm = (booking.room?.name || '').trim();
+        return nm
+            ? tBooking('detail.room_title_with_name', { number: num, name: nm })
+            : tBooking('detail.room_title_format', { number: num });
+    }, [booking.room?.number, booking.room?.name, tBooking]);
+
+    // Compute end date for better context
+    const endDateStr = React.useMemo(() => {
+        try {
+            const start = booking.start_date ? new Date(`${booking.start_date}T00:00:00`) : null;
+            const count = Number(booking.duration || 0);
+            const period = String(booking.period || '').toLowerCase();
+            if (!start || !count || !period) return null;
+            const d = new Date(start);
+            if (period === 'daily') d.setDate(d.getDate() + count);
+            else if (period === 'weekly') d.setDate(d.getDate() + count * 7);
+            else if (period === 'monthly') d.setMonth(d.getMonth() + count);
+            else return null;
+            return formatDate(d);
+        } catch {
+            return null;
+        }
+    }, [booking.start_date, booking.duration, booking.period]);
+
     const decide = (mode: 'approve' | 'reject') => {
         const url =
             mode === 'approve'
                 ? route('management.bookings.approve', { booking: booking.id })
                 : route('management.bookings.reject', { booking: booking.id });
-        const data =
-            mode === 'approve'
-                ? {}
-                : { reason: reason.trim() === '' ? '-' : reason };
-        router.post(url, data, { preserveScroll: true });
+
+        if (mode === 'approve') {
+            router.post(url, {}, { preserveScroll: true });
+            return;
+        }
+
+        const r = reason.trim();
+        if (!r) {
+            // Keep the dialog open and require input
+            setConfirmReject(true);
+            return;
+        }
+
+        router.post(url, { reason: r }, { preserveScroll: true });
     };
 
     const statusKey = (booking.status || '')
@@ -160,19 +230,15 @@ export default function ManagementBookingDetail() {
                                     defaultValue: booking.status,
                                 })}
                             </Badge>
-                            {hasContract ? (
-                                <Link
-                                    href={route('management.contracts.show', {
-                                        contract: booking.contract_id,
-                                    })}
-                                    className="text-primary text-xs hover:underline"
-                                >
-                                    {t('common.contract')}
-                                </Link>
-                            ) : null}
                         </div>
                     </CardHeader>
                     <CardContent>
+                        {booking.status_changed_at ? (
+                            <div className="text-muted-foreground mb-2 text-xs">
+                                {t('common.last_updated')}{' '}
+                                {formatDate(booking.status_changed_at, true)}
+                            </div>
+                        ) : null}
                         <div className="grid gap-4 md:grid-cols-12">
                             {/* Left: Booking details */}
                             <div className="md:col-span-7">
@@ -239,6 +305,14 @@ export default function ManagementBookingDetail() {
                                                     )}
                                                 </div>
                                             </div>
+                                            {endDateStr ? (
+                                                <div>
+                                                    <div className="text-muted-foreground text-[11px]">
+                                                        {t('common.end')}
+                                                    </div>
+                                                    <div className="font-medium">{endDateStr}</div>
+                                                </div>
+                                            ) : null}
                                             <div>
                                                 <div className="text-muted-foreground text-[11px]">
                                                     {t('common.duration', {
@@ -256,7 +330,7 @@ export default function ManagementBookingDetail() {
                                             {booking.promo_code ? (
                                                 <div>
                                                     <div className="text-muted-foreground text-[11px]">
-                                                        Promo
+                                                        {t('common.promo_code')}
                                                     </div>
                                                     <div className="font-medium">
                                                         {booking.promo_code}
@@ -284,36 +358,9 @@ export default function ManagementBookingDetail() {
                                                 >
                                                     {t('common.view_detail')}
                                                 </Button>
-                                                {booking.room?.id ? (
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            const url = route(
-                                                                'management.rooms.show',
-                                                                {
-                                                                    room: booking
-                                                                        .room!
-                                                                        .id!,
-                                                                },
-                                                            );
-                                                            if (
-                                                                typeof window !==
-                                                                'undefined'
-                                                            )
-                                                                window.open(
-                                                                    url,
-                                                                    '_blank',
-                                                                );
-                                                        }}
-                                                    >
-                                                        {tBooking(
-                                                            'detail.open_room',
-                                                        )}
-                                                    </Button>
-                                                ) : null}
                                             </div>
                                         </div>
+                                        
                                         {booking.room?.name ? (
                                             <div className="text-muted-foreground">
                                                 {booking.room.name}
@@ -362,9 +409,21 @@ export default function ManagementBookingDetail() {
                                             )}
                                         </span>
                                     </div>
+                                    <div className="text-muted-foreground mt-1 text-[11px]">
+                                        {tBooking('detail.summary_caption')}
+                                        {booking.estimate?.promo ? (
+                                            <>
+                                                {' '}
+                                                · {t('common.promotions_applied')}
+                                            </>
+                                        ) : null}
+                                    </div>
                                     <div className="mt-2 space-y-1 text-xs">
                                         <div className="bg-muted/30 flex items-center justify-between rounded px-2 py-1">
-                                            <span>{t('common.rent')}</span>
+                                            <span className="inline-flex items-center gap-1">
+                                                <Tag className="text-muted-foreground h-3.5 w-3.5" />
+                                                {t('common.rent')}
+                                            </span>
                                             <span className="font-medium">
                                                 {formatIDR(
                                                     booking.estimate
@@ -373,7 +432,10 @@ export default function ManagementBookingDetail() {
                                             </span>
                                         </div>
                                         <div className="bg-muted/30 flex items-center justify-between rounded px-2 py-1">
-                                            <span>{t('common.deposit')}</span>
+                                            <span className="inline-flex items-center gap-1">
+                                                <ShieldCheck className="text-muted-foreground h-3.5 w-3.5" />
+                                                {t('common.deposit')}
+                                            </span>
                                             <span className="font-medium">
                                                 {formatIDR(
                                                     booking.estimate
@@ -382,7 +444,8 @@ export default function ManagementBookingDetail() {
                                             </span>
                                         </div>
                                         <div className="bg-muted/30 flex items-center justify-between rounded px-2 py-1">
-                                            <span>
+                                            <span className="inline-flex items-center gap-1">
+                                                <CalendarCheck className="text-muted-foreground h-3.5 w-3.5" />
                                                 {t('common.duration', {
                                                     defaultValue: 'Duration',
                                                 })}
@@ -512,18 +575,39 @@ export default function ManagementBookingDetail() {
                                 ) : null}
                             </div>
                         ) : null}
+
+                        {/* Card bottom actions */}
+                        <div className="mt-4 flex items-center justify-between">
+                            <Link
+                                href={route('management.bookings.index')}
+                                className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
+                            >
+                                <ArrowLeft className="h-4 w-4" /> {t('common.back')}
+                            </Link>
+                            <div className="ml-auto">
+                                {hasContract ? (
+                                    <Link
+                                        href={route('management.contracts.show', {
+                                            contract: booking.contract_id,
+                                        })}
+                                        className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
+                                    >
+                                        {tBooking('detail.open_contract')} <FileText className="h-4 w-4" />
+                                    </Link>
+                                ) : statusKey === 'approved' ? (
+                                    <Link
+                                        href={route('management.contracts.create')}
+                                        className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
+                                    >
+                                        {tBooking('detail.create_contract')} <FileText className="h-4 w-4" />
+                                    </Link>
+                                ) : null}
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                {/* Back button */}
-                <div>
-                    <Link
-                        href={route('management.bookings.index')}
-                        className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
-                    >
-                        <ArrowLeft className="h-4 w-4" /> {t('common.back')}
-                    </Link>
-                </div>
+                {/* Footer back link removed (moved into card) */}
 
                 {/* Confirm Dialogs */}
                 {canDecide && (
@@ -559,6 +643,16 @@ export default function ManagementBookingDetail() {
                                     {formatDate(booking.start_date)}
                                 </div>
                             </div>
+                            {reason.trim() ? (
+                                <div className="mt-2 space-y-1">
+                                    <div className="text-muted-foreground text-xs">
+                                        {t('common.reason')}
+                                    </div>
+                                    <div className="bg-muted/30 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                        {reason.trim()}
+                                    </div>
+                                </div>
+                            ) : null}
                             <DialogFooter>
                                 <Button
                                     variant="outline"
@@ -619,6 +713,16 @@ export default function ManagementBookingDetail() {
                                             '(required when rejecting)',
                                     })}
                                 </div>
+                                {reason.trim() ? (
+                                    <div className="mt-1 space-y-1">
+                                        <div className="text-muted-foreground text-xs">
+                                            {t('common.reason')}
+                                        </div>
+                                        <div className="bg-muted/30 rounded-md p-2 text-xs whitespace-pre-wrap">
+                                            {reason.trim()}
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
                             <DialogFooter>
                                 <Button
@@ -629,7 +733,10 @@ export default function ManagementBookingDetail() {
                                 </Button>
                                 <Button
                                     variant="destructive"
+                                    disabled={reason.trim() === ''}
+                                    aria-disabled={reason.trim() === ''}
                                     onClick={() => {
+                                        if (reason.trim() === '') return;
                                         setConfirmReject(false);
                                         decide('reject');
                                     }}
@@ -641,222 +748,136 @@ export default function ManagementBookingDetail() {
                     </Dialog>
                 )}
 
-                {/* Room Detail Dialog */}
+                {/* Room Detail Dialog (aligned with tenant UI) */}
                 <Dialog open={roomDialog} onOpenChange={setRoomDialog}>
-                    <DialogContent>
+                    <DialogContent className="max-w-4xl">
                         <DialogHeader>
-                            <DialogTitle>{t('common.room')}</DialogTitle>
+                            <DialogTitle>{roomTitle}</DialogTitle>
                             <DialogDescription>
-                                {t('common.view_detail')}
+                                {tBooking('detail.room_dialog_desc')}
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-3 text-sm">
-                            <div>
-                                <span className="text-muted-foreground text-xs">
-                                    {t('common.number')}
-                                </span>
-                                <div className="font-medium">
-                                    {booking.room?.number || '—'}
+
+                        {photoUrls.length > 0 ? (
+                            <div className="space-y-2">
+                                <div className="overflow-hidden rounded-md">
+                                    <AspectRatio ratio={16 / 9}>
+                                        <img
+                                            src={photoUrls[Math.min(activePhotoIdx, photoUrls.length - 1)]}
+                                            alt={roomTitle}
+                                            className="h-full w-full object-cover"
+                                            loading="lazy"
+                                        />
+                                        {photoUrls.length > 1 ? (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    className="bg-background/70 absolute top-1/2 left-2 -translate-y-1/2 rounded-full px-2 py-1 text-sm shadow"
+                                                    onClick={() =>
+                                                        setActivePhotoIdx((i) => (i - 1 + photoUrls.length) % photoUrls.length)
+                                                    }
+                                                    aria-label={t('datatable.prev')}
+                                                >
+                                                    ‹
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="bg-background/70 absolute top-1/2 right-2 -translate-y-1/2 rounded-full px-2 py-1 text-sm shadow"
+                                                    onClick={() =>
+                                                        setActivePhotoIdx((i) => (i + 1) % photoUrls.length)
+                                                    }
+                                                    aria-label={t('datatable.next')}
+                                                >
+                                                    ›
+                                                </button>
+                                            </>
+                                        ) : null}
+                                    </AspectRatio>
                                 </div>
-                            </div>
-                            {booking.room?.name ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        Name
-                                    </span>
-                                    <div className="font-medium">
-                                        {booking.room.name}
-                                    </div>
-                                </div>
-                            ) : null}
-                            {(booking.room?.building ||
-                                booking.room?.floor ||
-                                booking.room?.type) && (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        {tBooking('detail.location')}
-                                    </span>
-                                    <div className="font-medium">
-                                        {[
-                                            booking.room?.building,
-                                            booking.room?.floor,
-                                            booking.room?.type,
-                                        ]
-                                            .filter(Boolean)
-                                            .join(' · ')}
-                                    </div>
-                                </div>
-                            )}
-                            {booking.room?.size_m2 ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        {tBooking('detail.size')}
-                                    </span>
-                                    <div className="font-medium">
-                                        {booking.room.size_m2} m²
-                                    </div>
-                                </div>
-                            ) : null}
-                            {booking.room?.max_occupancy ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        {tBooking('detail.max_occupancy')}
-                                    </span>
-                                    <div className="font-medium">
-                                        {booking.room.max_occupancy}
-                                    </div>
-                                </div>
-                            ) : null}
-                            {booking.room?.status ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        Status
-                                    </span>
-                                    <div className="font-medium">
-                                        {tEnum(
-                                            `room.status.${String(booking.room.status).toLowerCase()}`,
-                                        )}
-                                    </div>
-                                </div>
-                            ) : null}
-                            {booking.room?.gender_policy ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        {t('management/room:gender_policy', {
-                                            defaultValue: 'Gender Policy',
-                                        })}
-                                    </span>
-                                    <div className="font-medium">
-                                        {tEnum(
-                                            `gender_policy.${String(booking.room.gender_policy).toLowerCase()}`,
-                                        )}
-                                    </div>
-                                </div>
-                            ) : null}
-                            {Array.isArray(booking.room?.amenities) &&
-                            booking.room!.amenities!.length > 0 ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        {t('common.amenities')}
-                                    </span>
-                                    <div className="mt-1 flex flex-wrap gap-1.5">
-                                        {booking.room!.amenities!.map((a) => (
-                                            <Badge
-                                                key={a.id}
-                                                variant="secondary"
-                                                className="text-[10px]"
+                                {photoUrls.length > 1 ? (
+                                    <div className="flex gap-2 overflow-x-auto">
+                                        {photoUrls.map((p, idx) => (
+                                            <button
+                                                key={`${p}-${idx}`}
+                                                type="button"
+                                                onClick={() => setActivePhotoIdx(idx)}
+                                                className={[
+                                                    'relative h-16 w-24 shrink-0 overflow-hidden rounded-md border',
+                                                    activePhotoIdx === idx ? 'ring-primary ring-2' : 'hover:opacity-90',
+                                                ].join(' ')}
+                                                aria-label={`${t('common.photo')} ${idx + 1}`}
                                             >
-                                                {a.name}
-                                            </Badge>
+                                                <img
+                                                    src={p}
+                                                    alt={`${t('common.photo')} ${idx + 1}`}
+                                                    className="h-full w-full object-cover"
+                                                    loading="lazy"
+                                                />
+                                            </button>
                                         ))}
                                     </div>
+                                ) : null}
+                            </div>
+                        ) : null}
+
+                        <div className="grid gap-4 md:grid-cols-[1fr_320px]">
+                            <div className="space-y-3">
+                                <div className="flex flex-wrap gap-2">
+                                    {booking.room?.building ? (
+                                        <Badge variant="secondary" className="inline-flex items-center gap-1">
+                                            <Building2 className="h-3.5 w-3.5" /> {booking.room.building}
+                                        </Badge>
+                                    ) : null}
+                                    {booking.room?.floor ? (
+                                        <Badge variant="outline" className="inline-flex items-center gap-1">
+                                            <Layers className="h-3.5 w-3.5" /> {booking.room.floor}
+                                        </Badge>
+                                    ) : null}
+                                    {booking.room?.type ? (
+                                        <Badge variant="outline" className="inline-flex items-center gap-1">
+                                            <Tag className="h-3.5 w-3.5" /> {booking.room.type}
+                                        </Badge>
+                                    ) : null}
+                                    {booking.room?.size_m2 ? (
+                                        <Badge variant="outline" className="inline-flex items-center gap-1">
+                                            <Ruler className="h-3.5 w-3.5" /> {booking.room.size_m2} m²
+                                        </Badge>
+                                    ) : null}
+                                    {booking.room?.max_occupancy ? (
+                                        <Badge variant="outline" className="inline-flex items-center gap-1">
+                                            <UsersIcon className="h-3.5 w-3.5" /> {t('common.max')} {booking.room.max_occupancy}
+                                        </Badge>
+                                    ) : null}
                                 </div>
-                            ) : null}
-                            {Array.isArray(booking.room?.photos) &&
-                            booking.room!.photos!.length > 0 ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        {tBooking('detail.photos')}
-                                    </span>
-                                    <div className="mt-2 grid grid-cols-3 gap-2">
-                                        {booking
-                                            .room!.photos!.slice(0, 6)
-                                            .map((p) => (
-                                                <img
-                                                    key={p.id}
-                                                    src={p.url}
-                                                    alt="Room photo"
-                                                    className="h-20 w-full rounded object-cover"
-                                                />
-                                            ))}
-                                    </div>
-                                </div>
-                            ) : null}
-                            {booking.room?.prices || booking.room?.deposits ? (
-                                <div className="grid grid-cols-2 gap-3">
+
+                                {Array.isArray(booking.room?.amenities) && booking.room!.amenities!.length > 0 ? (
                                     <div>
-                                        <div className="text-muted-foreground text-xs">
-                                            {tBooking('detail.prices')}
-                                        </div>
-                                        <div className="mt-1 space-y-0.5 text-xs">
-                                            {(
-                                                [
-                                                    'daily',
-                                                    'weekly',
-                                                    'monthly',
-                                                ] as const
-                                            ).map((k) => (
-                                                <div
-                                                    key={k}
-                                                    className="flex items-center justify-between"
-                                                >
-                                                    <span className="capitalize">
-                                                        {tEnum(
-                                                            `billing_period.${k}`,
-                                                        )}
-                                                    </span>
-                                                    <span className="font-medium">
-                                                        {formatIDR(
-                                                            (booking.room
-                                                                ?.prices?.[k] ??
-                                                                0) as number,
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <div className="text-sm font-medium">{t('common.amenities')}</div>
+                                        <AmenitiesList items={booking.room!.amenities!} />
                                     </div>
-                                    <div>
-                                        <div className="text-muted-foreground text-xs">
-                                            {tBooking('detail.deposits')}
-                                        </div>
-                                        <div className="mt-1 space-y-0.5 text-xs">
-                                            {(
-                                                [
-                                                    'daily',
-                                                    'weekly',
-                                                    'monthly',
-                                                ] as const
-                                            ).map((k) => (
-                                                <div
-                                                    key={k}
-                                                    className="flex items-center justify-between"
-                                                >
-                                                    <span className="capitalize">
-                                                        {tEnum(
-                                                            `billing_period.${k}`,
-                                                        )}
-                                                    </span>
-                                                    <span className="font-medium">
-                                                        {formatIDR(
-                                                            (booking.room
-                                                                ?.deposits?.[
-                                                                k
-                                                            ] ?? 0) as number,
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                ) : null}
+                            </div>
+
+                            <div className="space-y-2 rounded-md border p-3">
+                                <div className="text-sm">{tBooking('detail.price_month')}</div>
+                                <div className="text-2xl leading-6 font-semibold">
+                                    {formatIDR((booking.room?.prices?.monthly ?? 0) as number)}
+                                </div>
+                                <div className="text-muted-foreground text-xs">{tBooking('detail.price_note')}</div>
+                                <div className="mt-2 flex items-center gap-2 rounded-md border p-2">
+                                    <ShieldCheck className="text-muted-foreground h-4 w-4" />
+                                    <div className="text-sm">
+                                        {t('common.deposit')}: 
+                                        <span className="font-medium">
+                                            {formatIDR((booking.room?.deposits?.monthly ?? 0) as number)}
+                                        </span>
                                     </div>
                                 </div>
-                            ) : null}
-                            {booking.room?.notes ? (
-                                <div>
-                                    <span className="text-muted-foreground text-xs">
-                                        {t('common.notes')}
-                                    </span>
-                                    <div className="bg-muted/30 rounded-md p-2 text-xs whitespace-pre-wrap">
-                                        {booking.room.notes}
-                                    </div>
-                                </div>
-                            ) : null}
+                            </div>
                         </div>
+
                         <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => setRoomDialog(false)}
-                            >
+                            <Button variant="outline" onClick={() => setRoomDialog(false)}>
                                 {t('common.close')}
                             </Button>
                         </DialogFooter>
@@ -864,5 +885,37 @@ export default function ManagementBookingDetail() {
                 </Dialog>
             </div>
         </AppLayout>
+    );
+}
+
+type AmenityItem = { name: string; icon?: string | null };
+function AmenitiesList({ items }: { items: AmenityItem[] }) {
+    const { t } = useTranslation();
+    const [expanded, setExpanded] = React.useState(false);
+    const all: AmenityItem[] = (items || []).map((it) => ({
+        name: (it as any).name ?? String(it ?? ''),
+        icon: (it as any).icon ?? null,
+    }));
+    const shown = expanded ? all : all.slice(0, 8);
+    return (
+        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {shown.map((a, idx) => (
+                <Badge key={`${a.name}-${idx}`} variant="outline" className="inline-flex items-center gap-1 text-xs">
+                    {a.icon ? (
+                        <LazyIcon name={a.icon} className="h-3.5 w-3.5" />
+                    ) : null}
+                    {a.name}
+                </Badge>
+            ))}
+            {all.length > 8 ? (
+                <button
+                    type="button"
+                    className="text-primary ml-1 text-xs hover:underline"
+                    onClick={() => setExpanded((v) => !v)}
+                >
+                    {expanded ? t('datatable.hide_all') : t('datatable.show_all')}
+                </button>
+            ) : null}
+        </div>
     );
 }

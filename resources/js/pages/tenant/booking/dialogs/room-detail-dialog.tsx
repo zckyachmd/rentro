@@ -1,7 +1,9 @@
-import { Building2, Ruler, ShieldCheck, Tag, Users } from 'lucide-react';
+import { Building2, Layers, Ruler, ShieldCheck, Tag, Users } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import LazyIcon from '@/components/lazy-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,13 +21,14 @@ export type RoomDetail = {
     name?: string | null;
     building?: string | null;
     type?: string | null;
+    floor?: string | null;
     price_month: number;
     deposit: number;
     photo_url?: string | null;
     photo_urls?: string[];
     size_m2?: number | null;
     max_occupancy?: number | null;
-    amenities?: string[];
+    amenities?: Array<string | { name: string; icon?: string | null }>;
 };
 
 function formatIDR(n?: number | null) {
@@ -47,6 +50,7 @@ export default function RoomDetailDialog({
     onBook?: (roomId: string) => void;
     bookDisabled?: boolean;
 }) {
+    const { t } = useTranslation();
     const [data, setData] = React.useState<RoomDetail | null>(null);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
@@ -103,15 +107,16 @@ export default function RoomDetailDialog({
         };
     }, [open, room, room?.id]);
 
-    const amenities = (data?.amenities ?? []).slice(0, 8);
-    const moreAmen = Math.max(
-        0,
-        (data?.amenities?.length || 0) - amenities.length,
+    const [amenExpanded, setAmenExpanded] = React.useState(false);
+    const amenAll = (data?.amenities ?? []).map((a) =>
+        typeof a === 'string' ? { name: a } : { name: a.name, icon: a.icon },
     );
+    const amenities = amenExpanded ? amenAll : amenAll.slice(0, 8);
+    const moreAmen = Math.max(0, amenAll.length - amenities.length);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl">
+            <DialogContent className="max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
@@ -226,6 +231,14 @@ export default function RoomDetailDialog({
                                         {data.type}
                                     </Badge>
                                 ) : null}
+                                {data?.floor ? (
+                                    <Badge
+                                        variant="outline"
+                                        className="inline-flex items-center gap-1"
+                                    >
+                                        <Layers className="h-3.5 w-3.5" /> {data.floor}
+                                    </Badge>
+                                ) : null}
                                 {data?.size_m2 ? (
                                     <Badge
                                         variant="outline"
@@ -248,26 +261,24 @@ export default function RoomDetailDialog({
 
                             {amenities.length > 0 ? (
                                 <div>
-                                    <div className="text-sm font-medium">
-                                        Fasilitas
-                                    </div>
-                                    <div className="mt-1 flex flex-wrap gap-1.5">
-                                        {amenities.map((a) => (
-                                            <Badge
-                                                key={a}
-                                                variant="outline"
-                                                className="text-xs"
-                                            >
-                                                {a}
+                                    <div className="text-sm font-medium">{t('common.amenities')}</div>
+                                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                        {amenities.map((a, idx) => (
+                                            <Badge key={`${a.name}-${idx}`} variant="outline" className="inline-flex items-center gap-1 text-xs">
+                                                {a.icon ? (
+                                                    <LazyIcon name={a.icon} className="h-3.5 w-3.5" />
+                                                ) : null}
+                                                {a.name}
                                             </Badge>
                                         ))}
-                                        {moreAmen > 0 ? (
-                                            <Badge
-                                                variant="secondary"
-                                                className="text-xs"
+                                        {amenAll.length > 8 ? (
+                                            <button
+                                                type="button"
+                                                className="text-primary ml-1 text-xs hover:underline"
+                                                onClick={() => setAmenExpanded((v) => !v)}
                                             >
-                                                +{moreAmen}
-                                            </Badge>
+                                                {amenExpanded ? t('datatable.hide_all') : t('datatable.show_all')}
+                                            </button>
                                         ) : null}
                                     </div>
                                 </div>

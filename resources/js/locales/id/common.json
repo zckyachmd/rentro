@@ -37,6 +37,8 @@
         "issue_date": "Rilis Tagihan",
         "last_updated": "Terakhir diperbarui:",
         "link_copied": "Tautan disalin",
+        "copy_success": "Disalin ke papan klip",
+        "copy_error": "Gagal menyalin",
         "loading": "Memuat…",
         "manage": "Kelola",
         "monthly": "Bulanan",
@@ -114,13 +116,14 @@
         "expired": "Habis",
         "inactive": "Tidak aktif",
         "valid": "Berlaku",
-        "expiry": "Kedaluwarsa"
+        "expiry": "Kedaluwarsa",
+        "promo_code": "Kode Promo",
+        "promotions_applied": "Promo Diterapkan",
+        "discount_rent": "Diskon Sewa",
+        "discount_deposit": "Diskon Deposit",
+        "none": "Tidak ada"
     },
-    "promo_code": "Kode Promo",
-    "promotions_applied": "Promo Diterapkan",
-    "discount_rent": "Diskon Sewa",
-    "discount_deposit": "Diskon Deposit",
-    "none": "Tidak ada",
+    
 
     "dashboard": {
         "desc": "Ringkasan aktivitas harian, status hunian, dan metrik penting di kost Anda.",
