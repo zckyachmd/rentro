@@ -79,7 +79,7 @@ class RealtimeAppNotification extends Notification implements ShouldQueue
         return [new PrivateChannel("user.$id")];
     }
 
-    public function broadcastAs(): string
+    public function broadcastType(): string
     {
         return 'user.notification';
     }

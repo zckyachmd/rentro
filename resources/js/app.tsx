@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createInertiaApp } from '@inertiajs/react';
-import { configureEcho } from '@laravel/echo-react';
+import { configureEcho, echo as getEcho } from '@laravel/echo-react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
@@ -21,7 +21,7 @@ import '../css/app.css';
     const port =
         portStr && !Number.isNaN(Number(portStr)) ? Number(portStr) : 8080;
     const scheme =
-        (dequote(env.VITE_REVERB_SCHEME) as string | undefined) || 'https';
+        (dequote(env.VITE_REVERB_SCHEME) as string | undefined) || 'http';
     const wsPath = dequote(env.VITE_REVERB_WS_PATH) as string | undefined;
     // Extract CSRF token for private channel auth
     let csrf: string | undefined;
@@ -50,31 +50,13 @@ import '../css/app.css';
             headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {},
         },
     });
-})();
-
-try {
-    const Echo: any = (globalThis as any).Echo;
-    if (Echo?.connector?.pusher?.connection) {
-        Echo.connector.pusher.connection.bind('connected', () => {
-            try {
-                const opts = Echo?.connector?.pusher?.config || {};
-                console.info('[Echo] Connected to Reverb', {
-                    host: opts.wsHost,
-                    port: opts.wsPort,
-                    forceTLS: opts.forceTLS,
-                    path: opts.wsPath,
-                });
-            } catch {
-                console.info('[Echo] Connected to Reverb');
-            }
-        });
-        Echo.connector.pusher.connection.bind('error', (e: any) => {
-            console.warn('[Echo] Connection error', e);
-        });
+    try {
+        const inst = getEcho();
+        (globalThis as any).Echo = inst;
+    } catch {
+        /* ignore */
     }
-} catch {
-    /* ignore */
-}
+})();
 
 const appName =
     import.meta.env?.VITE_APP_NAME ??

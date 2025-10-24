@@ -4,14 +4,18 @@ import { toast } from 'sonner';
 import { getJson } from '@/lib/api';
 import { playNotificationSound } from '@/lib/notify-sound';
 import { showWebNotification } from '@/lib/web-notify';
-import { useNotificationsStore, type NotificationItem } from '@/stores/notifications';
+import {
+    useNotificationsStore,
+    type NotificationItem,
+} from '@/stores/notifications';
 
 type Params = {
     userId?: number | string | null;
     roleIds?: Array<number | string> | null;
     globalChannel?: string; // default: 'global'
     globalPrivate?: boolean; // default: false
-    includeAnnouncementsInBell?: boolean; // default: from VITE_BELL_INCLUDE_ANNOUNCEMENTS or false
+    systemChannel?: string; // default: 'system'
+    includeAnnouncementsInBell?: boolean; // default: true
     enableSound?: boolean; // default: true
     minToastPriority?: 'low' | 'normal' | 'high'; // default: 'low'
     resyncIntervalMs?: number; // default: 120_000
@@ -51,21 +55,14 @@ export function useRealtimeNotifications(params: Params) {
         const userId = params.userId ? String(params.userId) : undefined;
         const roleIds = (params.roleIds || []).map((r) => String(r));
         const globalChannel = params.globalChannel || 'global';
-        // We no longer use globalPrivate at runtime (we subscribe to both)
+        const systemChannel = params.systemChannel || 'system';
 
         const subs: Array<{ leave: () => void }> = [];
-        // Always include announcements in bell unless explicitly disabled by param
         const includeAnnouncements = params.includeAnnouncementsInBell ?? true;
         const enableSound = params.enableSound ?? true;
         const minToastPriority = params.minToastPriority ?? 'low';
         const resyncIntervalMs = params.resyncIntervalMs ?? 120_000;
-        const DEBUG_TOKEN = String((import.meta.env as Record<string, string | undefined>).VITE_NOTIFICATIONS_DEBUG || '').trim().toLowerCase();
-        const DEBUG = ['true', '1', 'yes', 'on'].includes(DEBUG_TOKEN);
-        const debug = (...args: unknown[]) => { if (DEBUG) console.log('[Notifications]', ...args); };
 
-        // Simple in-memory dedupe to avoid double-adding when a persistent
-        // announcement is broadcast immediately to role/global AND later
-        // delivered as a per-user notification via queue.
         const recent = new Map<string, number>();
         const seenIds = new Set<string>();
         const nowMs = () => Date.now();
@@ -91,54 +88,99 @@ export function useRealtimeNotifications(params: Params) {
                 lastWindowStart = t;
                 toastBudget = 3;
             }
-            if (toastBudget > 0) { toastBudget -= 1; return true; }
+            if (toastBudget > 0) {
+                toastBudget -= 1;
+                return true;
+            }
             return false;
         };
 
-        // Resync helpers
-        type Summary = { unread: number; latest: Array<{ id: string; data: { title?: unknown; message?: unknown; action_url?: string | null; meta?: unknown; created_at?: string | null; }; read_at?: string | null; created_at?: string | null; }>; };
+        type Summary = {
+            unread: number;
+            latest: Array<{
+                id: string;
+                data: {
+                    title?: unknown;
+                    message?: unknown;
+                    action_url?: string | null;
+                    meta?: unknown;
+                    created_at?: string | null;
+                };
+                read_at?: string | null;
+                created_at?: string | null;
+            }>;
+        };
         const resyncOnce = async () => {
             try {
                 const url = route('notifications.summary');
                 const json = await getJson<Summary>(url);
-                const mapped: NotificationItem[] = (json.latest || []).map((n) => {
-                    const d = n.data as Record<string, unknown>;
-                    return {
-                        id: n.id,
-                        title: (typeof d.title === 'string' && d.title) || 'Notification',
-                        message: (typeof d.message === 'string' && d.message) || '',
-                        action_url: (typeof d.action_url === 'string' && d.action_url) || (typeof (d as { url?: unknown }).url === 'string' && (d as { url?: string }).url) || undefined,
-                        meta: (d.meta as Record<string, unknown>) || undefined,
-                        created_at: (typeof d.created_at === 'string' && d.created_at) || n.created_at || undefined,
-                        read_at: n.read_at || null,
-                    };
-                });
+                const mapped: NotificationItem[] = (json.latest || []).map(
+                    (n) => {
+                        const d = n.data as Record<string, unknown>;
+                        return {
+                            id: n.id,
+                            title:
+                                (typeof d.title === 'string' && d.title) ||
+                                'Notification',
+                            message:
+                                (typeof d.message === 'string' && d.message) ||
+                                '',
+                            action_url:
+                                (typeof d.action_url === 'string' &&
+                                    d.action_url) ||
+                                (typeof (d as { url?: unknown }).url ===
+                                    'string' &&
+                                    (d as { url?: string }).url) ||
+                                undefined,
+                            meta:
+                                (d.meta as Record<string, unknown>) ||
+                                undefined,
+                            created_at:
+                                (typeof d.created_at === 'string' &&
+                                    d.created_at) ||
+                                n.created_at ||
+                                undefined,
+                            read_at: n.read_at || null,
+                        };
+                    },
+                );
                 syncFromServer(mapped, Number(json.unread || 0));
-                debug('Resync summary', { items: mapped.length, unread: json.unread });
-            } catch (e) {
-                debug('Resync failed', e);
+            } catch {
+                // ignore
             }
         };
         let resyncTimer: number | undefined;
         const scheduleResync = (delay = 1200) => {
-            try { if (resyncTimer) clearTimeout(resyncTimer); } catch { void 0; }
+            try {
+                if (resyncTimer) clearTimeout(resyncTimer);
+            } catch {
+                void 0;
+            }
             // @ts-expect-error browser setTimeout returns number
             resyncTimer = setTimeout(resyncOnce, delay);
         };
 
-        // Initial resync on mount
         void resyncOnce();
 
-        // Personal notifications (Laravel Notification broadcast)
         if (userId) {
             try {
                 const name = `user.${userId}`;
                 const ch = Echo.private(name);
-                // Echo.leave expects the logical channel name; it handles prefixes
                 subs.push({ leave: () => Echo.leave(name) });
 
                 const handlePersonal = (e: unknown) => {
                     const data = (e || {}) as Record<string, unknown>;
+                    const hasTitle =
+                        typeof (data as { title?: unknown }).title ===
+                            'string' &&
+                        String((data as { title?: unknown }).title).trim()
+                            .length > 0;
+                    const hasMsg =
+                        typeof (data as { message?: unknown }).message ===
+                            'string' &&
+                        String((data as { message?: unknown }).message).trim()
+                            .length > 0;
+                    if (!hasTitle && !hasMsg) return;
                     const title =
                         (typeof data.title === 'string' && data.title) ||
                         (typeof (
@@ -201,18 +243,14 @@ export function useRealtimeNotifications(params: Params) {
                         id = (data as { id: string }).id;
                     } else if (
                         typeof (
-                            (data.notification as Record<string, unknown> | undefined)
-                                ?.id
-                        ) === 'string'
+                            data.notification as
+                                | Record<string, unknown>
+                                | undefined
+                        )?.id === 'string'
                     ) {
-                        id = (
-                            data.notification as { id: string }
-                        ).id;
+                        id = (data.notification as { id: string }).id;
                     }
-                    if (id && seenIds.has(id)) {
-                        debug('skip duplicate by id', id);
-                        return;
-                    }
+                    if (id && seenIds.has(id)) return;
                     if (id) seenIds.add(id);
                     // Skip if we recently added the same content from an announcement broadcast
                     try {
@@ -302,18 +340,29 @@ export function useRealtimeNotifications(params: Params) {
                     }
                 };
 
-                // Custom name from broadcastAs on Notification
-                ch.listen?.('.user.notification', handlePersonal);
-                // Fallback: default notification broadcast event name
+                // Laravel Notification sugar: deliver via `notification()`
+                try {
+                    (
+                        ch as unknown as {
+                            notification?: (
+                                cb: (payload: unknown) => void,
+                            ) => void;
+                        }
+                    ).notification?.(handlePersonal);
+                } catch {
+                    /* noop */
+                }
+                ch.listen?.('.user.notification', (p: unknown) =>
+                    handlePersonal(p),
+                );
                 ch.listen?.(
                     '.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated',
-                    handlePersonal,
+                    (p: unknown) => handlePersonal(p),
                 );
                 try {
-                    (ch as { subscribed?: (cb: () => void) => void }).subscribed?.(
-                        () => console.log('[Echo] Subscribed user channel', name),
-                    );
-                    scheduleResync(1000);
+                    (
+                        ch as { subscribed?: (cb: () => void) => void }
+                    ).subscribed?.(() => scheduleResync(1000));
                 } catch {
                     /* noop */
                 }
@@ -330,6 +379,17 @@ export function useRealtimeNotifications(params: Params) {
                 subs.push({ leave: () => Echo.leave(name) });
                 ch.listen('.role.announcement', (e: unknown) => {
                     const data = (e || {}) as Record<string, unknown>;
+                    const hasTitle =
+                        typeof (data as { title?: unknown }).title ===
+                            'string' &&
+                        String((data as { title?: unknown }).title).trim()
+                            .length > 0;
+                    const hasMsg =
+                        typeof (data as { message?: unknown }).message ===
+                            'string' &&
+                        String((data as { message?: unknown }).message).trim()
+                            .length > 0;
+                    if (!hasTitle && !hasMsg) return;
                     const persist = Boolean(
                         (data as Record<string, unknown>)?.persist,
                     );
@@ -377,36 +437,38 @@ export function useRealtimeNotifications(params: Params) {
                             minToastPriority === 'low' ||
                             (minToastPriority === 'normal' && pr !== 'low') ||
                             (minToastPriority === 'high' && pr === 'high');
-                        if (allowToast && canToast()) toast(
-                            String(
-                                (data as { title?: unknown }).title ||
-                                    'Announcement',
-                            ),
-                            {
-                                description: String(
-                                    (data as { message?: unknown }).message ||
-                                        '',
+                        if (allowToast && canToast())
+                            toast(
+                                String(
+                                    (data as { title?: unknown }).title ||
+                                        'Announcement',
                                 ),
-                                action: (data as { action_url?: string | null })
-                                    .action_url
-                                    ? {
-                                          label: 'Open',
-                                          onClick: () =>
-                                              window.location.assign(
-                                                  String(
-                                                      (
-                                                          data as {
-                                                              action_url?:
-                                                                  | string
-                                                                  | null;
-                                                          }
-                                                      ).action_url,
+                                {
+                                    description: String(
+                                        (data as { message?: unknown })
+                                            .message || '',
+                                    ),
+                                    action: (
+                                        data as { action_url?: string | null }
+                                    ).action_url
+                                        ? {
+                                              label: 'Open',
+                                              onClick: () =>
+                                                  window.location.assign(
+                                                      String(
+                                                          (
+                                                              data as {
+                                                                  action_url?:
+                                                                      | string
+                                                                      | null;
+                                                              }
+                                                          ).action_url,
+                                                      ),
                                                   ),
-                                              ),
-                                      }
-                                    : undefined,
-                            },
-                        );
+                                          }
+                                        : undefined,
+                                },
+                            );
                         if (allowToast && canToast())
                             showWebNotification(
                                 String(
@@ -425,8 +487,7 @@ export function useRealtimeNotifications(params: Params) {
                     }
                 });
                 try {
-                    ch.subscribed?.(() => console.log('[Echo] Subscribed role channel', name));
-                    scheduleResync(1000);
+                    ch.subscribed?.(() => scheduleResync(1000));
                 } catch {
                     /* noop */
                 }
@@ -438,12 +499,21 @@ export function useRealtimeNotifications(params: Params) {
         // Global announcements
         try {
             const name = String(globalChannel || 'global');
-            // Subscribe to both public and private to avoid server/client config mismatch
-            const chPub = Echo.channel(name);
-            const chPriv = Echo.private(name);
+            const isPrivate = Boolean(params.globalPrivate);
+            const ch = isPrivate ? Echo.private(name) : Echo.channel(name);
             subs.push({ leave: () => Echo.leave(name) });
             const onGlobal = (e: unknown) => {
                 const data = (e || {}) as Record<string, unknown>;
+                const hasTitle =
+                    typeof (data as { title?: unknown }).title === 'string' &&
+                    String((data as { title?: unknown }).title).trim().length >
+                        0;
+                const hasMsg =
+                    typeof (data as { message?: unknown }).message ===
+                        'string' &&
+                    String((data as { message?: unknown }).message).trim()
+                        .length > 0;
+                if (!hasTitle && !hasMsg) return;
                 const persist = Boolean(
                     (data as Record<string, unknown>)?.persist,
                 );
@@ -489,35 +559,37 @@ export function useRealtimeNotifications(params: Params) {
                         minToastPriority === 'low' ||
                         (minToastPriority === 'normal' && pr !== 'low') ||
                         (minToastPriority === 'high' && pr === 'high');
-                    if (allowToast && canToast()) toast(
-                        String(
-                            (data as { title?: unknown }).title ||
-                                'Announcement',
-                        ),
-                        {
-                            description: String(
-                                (data as { message?: unknown }).message || '',
+                    if (allowToast && canToast())
+                        toast(
+                            String(
+                                (data as { title?: unknown }).title ||
+                                    'Announcement',
                             ),
-                            action: (data as { action_url?: string | null })
-                                .action_url
-                                ? {
-                                      label: 'Open',
-                                      onClick: () =>
-                                          window.location.assign(
-                                              String(
-                                                  (
-                                                      data as {
-                                                          action_url?:
-                                                              | string
-                                                              | null;
-                                                      }
-                                                  ).action_url,
+                            {
+                                description: String(
+                                    (data as { message?: unknown }).message ||
+                                        '',
+                                ),
+                                action: (data as { action_url?: string | null })
+                                    .action_url
+                                    ? {
+                                          label: 'Open',
+                                          onClick: () =>
+                                              window.location.assign(
+                                                  String(
+                                                      (
+                                                          data as {
+                                                              action_url?:
+                                                                  | string
+                                                                  | null;
+                                                          }
+                                                      ).action_url,
+                                                  ),
                                               ),
-                                          ),
-                                  }
-                                : undefined,
-                        },
-                    );
+                                      }
+                                    : undefined,
+                            },
+                        );
                     if (allowToast && canToast())
                         showWebNotification(
                             String(
@@ -533,16 +605,50 @@ export function useRealtimeNotifications(params: Params) {
                     /* noop */
                 }
             };
-            chPub.listen?.('.global.announcement', onGlobal);
-            chPriv.listen?.('.global.announcement', onGlobal);
+            ch.listen?.('.global.announcement', onGlobal);
             try {
-                chPub.subscribed?.(() =>
-                    console.log('[Echo] Subscribed global channel (public)', name),
-                );
-                chPriv.subscribed?.(() =>
-                    console.log('[Echo] Subscribed global channel (private)', name),
-                );
-                scheduleResync(1200);
+                ch.subscribed?.(() => scheduleResync(1200));
+            } catch {
+                /* noop */
+            }
+        } catch {
+            /* noop */
+        }
+
+        // System notifications: private channel for authenticated users
+        try {
+            const name = String(systemChannel || 'system');
+            const chSys = Echo.private(name);
+            subs.push({ leave: () => Echo.leave(name) });
+            const onSystem = (e: unknown) => {
+                const data = (e || {}) as Record<string, unknown>;
+                const titleStr = String(
+                    (data as { title?: unknown }).title ?? '',
+                ).trim();
+                const msgStr = String(
+                    (data as { message?: unknown }).message ?? '',
+                ).trim();
+                if (!titleStr && !msgStr) return;
+                upsert({
+                    title: titleStr || 'System',
+                    message: msgStr,
+                    action_url: (data as { action_url?: string | null })
+                        .action_url,
+                    meta: {
+                        ...(((data as { meta?: unknown }).meta as Record<
+                            string,
+                            unknown
+                        >) || {}),
+                        scope: 'system',
+                    },
+                    created_at: new Date().toISOString(),
+                });
+                if (enableSound) playNotificationSound();
+                scheduleResync(600);
+            };
+            chSys.listen?.('.system.notification', onSystem);
+            try {
+                chSys.subscribed?.(() => scheduleResync(800));
             } catch {
                 /* noop */
             }
@@ -556,14 +662,22 @@ export function useRealtimeNotifications(params: Params) {
                 if (typeof document === 'undefined') return;
                 if (document.visibilityState !== 'visible') return;
                 void resyncOnce();
-            } catch { void 0; }
+            } catch {
+                void 0;
+            }
         }, resyncIntervalMs);
 
         return () => {
             try {
                 subs.forEach((s) => s.leave());
-            } catch { void 0; }
-            try { clearInterval(intervalId); } catch { void 0; }
+            } catch {
+                void 0;
+            }
+            try {
+                clearInterval(intervalId);
+            } catch {
+                void 0;
+            }
         };
         // We intentionally only bind once per mount; pass stable params to re-init if needed
         // eslint-disable-next-line react-hooks/exhaustive-deps

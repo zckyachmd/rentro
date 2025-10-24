@@ -77,13 +77,15 @@ return [
                 'secret'  => env('REVERB_APP_SECRET'),
                 'app_id'  => env('REVERB_APP_ID'),
                 'options' => [
-                    'host'   => env('REVERB_HOST'),
-                    'port'   => env('REVERB_PORT', 443),
-                    'scheme' => env('REVERB_SCHEME', 'https'),
-                    'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                    'host'   => env('REVERB_HOST', '127.0.0.1'),
+                    'port'   => env('REVERB_PORT', env('REVERB_SERVER_PORT', 8080)),
+                    'scheme' => env('REVERB_SCHEME', 'http'),
+                    'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
                 ],
                 // CORS: restrict to app origin(s) by default. Accept comma-separated list.
-                'allowed_origins'  => array_values(array_filter(array_map('trim', explode(',', (string) env('REVERB_ALLOWED_ORIGINS', (string) env('APP_URL', 'http://localhost')))))) ,
+                // Allow all origins in dev by setting REVERB_ALLOWED_ORIGINS="*".
+                // Otherwise, provide a comma-separated list (scheme+host+port).
+                'allowed_origins'  => ['*'],
                 'ping_interval'    => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_connections'  => env('REVERB_APP_MAX_CONNECTIONS'),

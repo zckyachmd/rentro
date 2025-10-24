@@ -56,6 +56,12 @@ if (config('notifications.global_private', false)) {
     Broadcast::channel('global', fn () => true);
 }
 
+// System notifications channel (private to any authenticated user)
+// Channel: system
+Broadcast::channel('system', function (User $user) {
+    return ['id' => $user->id, 'name' => $user->name];
+});
+
 // Private channel for management announcements (admin view realtime updates)
 Broadcast::channel('management.announcements', function (User $user) {
     try {

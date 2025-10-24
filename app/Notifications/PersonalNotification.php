@@ -83,7 +83,7 @@ class PersonalNotification extends Notification implements ShouldQueue
     /**
      * Set a consistent event name for Echo listeners.
      */
-    public function broadcastAs(): string
+    public function broadcastType(): string
     {
         return 'user.notification';
     }
