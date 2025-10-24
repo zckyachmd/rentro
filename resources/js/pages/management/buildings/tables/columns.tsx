@@ -1,10 +1,18 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 
 import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { makeColumn } from '@/components/ui/data-table-column-header';
 import i18n from '@/lib/i18n';
 import type { BuildingItem } from '@/types/management';
@@ -63,31 +71,43 @@ export const createColumns = (opts?: {
     makeColumn<BuildingItem>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: COL.actions + ' flex justify-end items-center',
+        className: `${COL.actions} pr-2 md:pr-3 flex justify-end items-center`,
         cell: ({ row }) => {
             const b = row.original;
             return (
-                <div className={COL.actions + ' flex justify-end gap-2'}>
-                    <Can all={['building.update']}>
-                        <Button
-                            variant="secondary"
-                            size="icon"
-                            onClick={() => opts?.onEdit?.(b)}
-                            aria-label={i18n.t('common.edit')}
-                        >
-                            <Pencil className="h-4 w-4" />
-                        </Button>
-                    </Can>
-                    <Can all={['building.delete']}>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => opts?.onDelete?.(b)}
-                            aria-label={i18n.t('common.delete')}
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </Can>
+                <div className={`${COL.actions} pr-2 md:pr-3 flex items-center justify-end`}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={i18n.t('common.actions')}
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel>
+                                {i18n.t('common.actions')}
+                            </DropdownMenuLabel>
+                            <Can all={['building.update']}>
+                                <DropdownMenuItem onClick={() => opts?.onEdit?.(b)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    {i18n.t('common.edit')}
+                                </DropdownMenuItem>
+                            </Can>
+                            <DropdownMenuSeparator />
+                            <Can all={['building.delete']}>
+                                <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={() => opts?.onDelete?.(b)}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {i18n.t('common.delete')}
+                                </DropdownMenuItem>
+                            </Can>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             );
         },

@@ -236,7 +236,7 @@ export const createColumns = (
     makeColumn<ContractItem>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: COL.actions + ' flex justify-end items-center',
+        className: `${COL.actions} pr-2 md:pr-3 flex justify-end items-center`,
         cell: ({ row }) => {
             const sRaw = row.original.status || '';
             const s = norm(sRaw);

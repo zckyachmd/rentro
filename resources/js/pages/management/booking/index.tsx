@@ -260,6 +260,7 @@ export default function ManagementBookingsIndex() {
                             <div className="flex w-full items-center justify-end gap-2 md:w-auto">
                                 <Button
                                     type="button"
+                                    variant="outline"
                                     size="sm"
                                     onClick={() => {
                                         const qs = new URLSearchParams();

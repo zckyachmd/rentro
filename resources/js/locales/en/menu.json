@@ -37,6 +37,8 @@
         "complaints": "Complaints",
         "packages": "Packages",
         "testimonies": "Testimonies",
+        "content": "Content",
+        "cms": "CMS",
         "audit_log": "Audit Log",
         "profile": "Profile",
         "settings": "Settings",

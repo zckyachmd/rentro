@@ -155,11 +155,11 @@ export const createColumns = (opts?: {
     makeColumn<PaymentRow>({
         id: 'actions',
         title: i18n.t('common.actions'),
-        className: COL.actions + ' flex justify-end items-center',
+        className: `${COL.actions} pr-2 md:pr-3 flex justify-end items-center`,
         cell: ({ row }) => {
             const p = row.original;
             return (
-                <div className={`${COL.actions} flex items-center justify-end`}>
+                <div className={`${COL.actions} pr-2 md:pr-3 flex items-center justify-end`}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button

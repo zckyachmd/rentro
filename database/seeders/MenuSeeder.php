@@ -69,6 +69,67 @@ class MenuSeeder extends Seeder
             ],
 
             [
+                'id' => 'operasional',
+                'label' => 'menu.operations',
+                'items' => [
+                    [
+                        'label' => 'menu.tasks_maintenance',
+                        'icon' => 'Wrench',
+                        'children' => [
+                            ['label' => 'menu.tasks', 'href' => '#', 'icon' => 'ClipboardCheck'],
+                            ['label' => 'menu.maintenance', 'href' => '#', 'icon' => 'Wrench'],
+                            ['label' => 'menu.task_templates', 'href' => '#', 'icon' => 'ClipboardCheck'],
+                            ['label' => 'menu.sla', 'href' => '#', 'icon' => 'Timer'],
+                        ],
+                    ],
+                    [
+                        'label' => 'menu.inventory',
+                        'icon' => 'Package',
+                        'children' => [
+                            ['label' => 'menu.items', 'href' => '#', 'icon' => 'Package'],
+                            ['label' => 'menu.transfers', 'href' => '#', 'icon' => 'MoveHorizontal'],
+                            ['label' => 'menu.history', 'href' => '#', 'icon' => 'Archive'],
+                            ['label' => 'menu.disposal', 'href' => '#', 'icon' => 'Archive'],
+                        ],
+                    ],
+                    ['label' => 'menu.complaints', 'href' => '#', 'icon' => 'MessageSquareWarning'],
+                    ['label' => 'menu.packages', 'href' => '#', 'icon' => 'Package'],
+                    // Promotions stays as a direct operational item
+                    [
+                        'label' => 'menu.promotions',
+                        'href' => route('management.promotions.index', [], false),
+                        'icon' => 'BadgePercent',
+                        'permission' => PermissionName::PROMOTION_VIEW,
+                    ],
+                ],
+            ],
+
+
+            [
+                'id' => 'cms',
+                'label' => 'menu.cms',
+                'icon' => 'FolderCog',
+                'items' => [
+                    [
+                        'label' => 'menu.pages',
+                        'href' => route('management.pages.index', [], false),
+                        'icon' => 'FileText',
+                        'roles' => [
+                            RoleName::SUPER_ADMIN->value,
+                            RoleName::OWNER->value,
+                            RoleName::MANAGER->value,
+                        ],
+                    ],
+                    [
+                        'label' => 'menu.testimonies',
+                        'href' => route('management.testimonies.index', [], false),
+                        'icon' => 'MessageSquareText',
+                        'permission' => PermissionName::TESTIMONY_VIEW,
+                    ],
+                ],
+            ],
+
+            [
                 'id' => 'properti',
                 'label' => 'menu.property',
                 'items' => [
@@ -97,52 +158,6 @@ class MenuSeeder extends Seeder
                                 'icon' => 'Layers',
                                 'permission' => PermissionName::FLOOR_VIEW,
                             ],
-                        ],
-                    ],
-                ],
-            ],
-
-            [
-                'id' => 'operasional',
-                'label' => 'menu.operations',
-                'items' => [
-                    [
-                        'label' => 'menu.tasks_maintenance',
-                        'icon' => 'Wrench',
-                        'children' => [
-                            ['label' => 'menu.tasks', 'href' => '#', 'icon' => 'ClipboardCheck'],
-                            ['label' => 'menu.maintenance', 'href' => '#', 'icon' => 'Wrench'],
-                            ['label' => 'menu.task_templates', 'href' => '#', 'icon' => 'ClipboardCheck'],
-                            ['label' => 'menu.sla', 'href' => '#', 'icon' => 'Timer'],
-                        ],
-                    ],
-                    [
-                        'label' => 'menu.inventory',
-                        'icon' => 'Package',
-                        'children' => [
-                            ['label' => 'menu.items', 'href' => '#', 'icon' => 'Package'],
-                            ['label' => 'menu.transfers', 'href' => '#', 'icon' => 'MoveHorizontal'],
-                            ['label' => 'menu.history', 'href' => '#', 'icon' => 'Archive'],
-                            ['label' => 'menu.disposal', 'href' => '#', 'icon' => 'Archive'],
-                        ],
-                    ],
-                    ['label' => 'menu.complaints', 'href' => '#', 'icon' => 'MessageSquareWarning'],
-                    ['label' => 'menu.packages', 'href' => '#', 'icon' => 'Package'],
-                    ['label' => 'menu.promotions', 'href' => route('management.promotions.index', [], false), 'icon' => 'BadgePercent', 'permission' => PermissionName::PROMOTION_VIEW],
-                    [
-                        'label' => 'menu.testimonies',
-                        'href' => route('management.testimonies.index', [], false),
-                        'icon' => 'MessageSquareText',
-                        'permission' => PermissionName::TESTIMONY_VIEW,
-                    ],
-                    [
-                        'label' => 'menu.pages',
-                        'href' => route('management.pages.index', [], false),
-                        'icon' => 'FileText',
-                        'roles' => [
-                            RoleName::SUPER_ADMIN->value,
-                            RoleName::OWNER->value,
-                            RoleName::MANAGER->value,
                         ],
                     ],
                 ],
