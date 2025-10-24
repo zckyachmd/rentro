@@ -1,10 +1,12 @@
 import { Link } from '@inertiajs/react';
 import { LogOut, PanelLeft, PanelRight, Search, User } from 'lucide-react';
 import * as React from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import LocaleToggle from '@/components/locale-toggle';
 import { ModeToggle } from '@/components/mode-toggle';
+import { NotificationBell } from '@/components/notification-bell';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -25,7 +27,6 @@ import {
 } from '@/components/ui/sheet';
 import { MenuGroups } from '@/layouts/app/menu';
 import type { MenuGroup } from '@/types/navigation';
-import { NotificationBell } from '@/components/notification-bell';
 
 type NavbarProps = {
     collapsed: boolean;
@@ -70,6 +71,28 @@ export default function Navbar({
         if (!mobileOpen) return;
         if (activeParentId) setMobileSection(activeParentId);
     }, [mobileOpen, activeParentId]);
+
+    const [unread, setUnread] = useState<number>(0);
+
+    React.useEffect(() => {
+        const inc = (e: Event) => {
+            const by = Number((e as CustomEvent)?.detail?.by ?? 1);
+            setUnread((v) => Math.max(0, v + (Number.isFinite(by) ? by : 1)));
+        };
+        const sync = (e: Event) => {
+            const count = Number((e as CustomEvent)?.detail?.count ?? 0);
+            if (Number.isFinite(count)) setUnread(Math.max(0, count));
+        };
+        const reset = () => setUnread(0);
+        window.addEventListener('notifications:inc-unread', inc);
+        window.addEventListener('notifications:sync-unread', sync);
+        window.addEventListener('notifications:reset-unread', reset);
+        return () => {
+            window.removeEventListener('notifications:inc-unread', inc);
+            window.removeEventListener('notifications:sync-unread', sync);
+            window.removeEventListener('notifications:reset-unread', reset);
+        };
+    }, []);
 
     return (
         <header className="bg-background/80 sticky top-0 z-50 h-14 w-full border-b backdrop-blur-md">
@@ -199,7 +222,20 @@ export default function Navbar({
                 {/* Right: Actions */}
                 <div className="flex items-center gap-1 md:gap-2">
                     <ModeToggle />
-                    <NotificationBell />
+                    <div className="relative">
+                        <NotificationBell />
+                        {unread > 0 && (
+                            <span
+                                aria-label={tNav(
+                                    'nav.unread_notifications',
+                                    'Unread notifications',
+                                )}
+                                className="bg-destructive text-destructive-foreground ring-background absolute -top-1 -right-1 inline-flex min-w-4 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] leading-none font-semibold shadow ring-1"
+                            >
+                                {unread > 99 ? '99+' : unread}
+                            </span>
+                        )}
+                    </div>
 
                     {/* Language toggle */}
                     <LocaleToggle />

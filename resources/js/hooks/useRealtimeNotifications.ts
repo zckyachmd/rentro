@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { useNotificationsStore } from '@/stores/notifications';
-import { toast } from 'sonner';
 import { playNotificationSound } from '@/lib/notify-sound';
 import { showWebNotification } from '@/lib/web-notify';
+import { useNotificationsStore } from '@/stores/notifications';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 type Params = {
     userId?: number | string | null;
@@ -31,8 +31,7 @@ export function useRealtimeNotifications(params: Params) {
 
         const subs: Array<{ leave: () => void }> = [];
         // Always include announcements in bell unless explicitly disabled by param
-        const includeAnnouncements =
-            params.includeAnnouncementsInBell ?? true;
+        const includeAnnouncements = params.includeAnnouncementsInBell ?? true;
 
         // Simple in-memory dedupe to avoid double-adding when a persistent
         // announcement is broadcast immediately to role/global AND later
@@ -45,7 +44,11 @@ export function useRealtimeNotifications(params: Params) {
             for (const [k, ts] of recent) if (t - ts > ttlMs) recent.delete(k);
         };
         const keyOf = (title?: any, message?: any, url?: any) =>
-            [String(title ?? ''), String(message ?? ''), String(url ?? '')].join('|');
+            [
+                String(title ?? ''),
+                String(message ?? ''),
+                String(url ?? ''),
+            ].join('|');
 
         // Personal notifications (Laravel Notification broadcast)
         if (userId) {
@@ -57,10 +60,23 @@ export function useRealtimeNotifications(params: Params) {
 
                 const handlePersonal = (e: any) => {
                     const data = e || {};
-                    const title = data.title ?? data?.notification?.title ?? data?.data?.title;
-                    const message = data.message ?? data?.notification?.message ?? data?.data?.message;
-                    const actionUrl = data.action_url ?? data?.notification?.action_url ?? data?.data?.action_url ?? data?.url;
-                    const createdAt = data.created_at ?? data?.notification?.created_at ?? data?.data?.created_at;
+                    const title =
+                        data.title ??
+                        data?.notification?.title ??
+                        data?.data?.title;
+                    const message =
+                        data.message ??
+                        data?.notification?.message ??
+                        data?.data?.message;
+                    const actionUrl =
+                        data.action_url ??
+                        data?.notification?.action_url ??
+                        data?.data?.action_url ??
+                        data?.url;
+                    const createdAt =
+                        data.created_at ??
+                        data?.notification?.created_at ??
+                        data?.data?.created_at;
                     // Skip if we recently added the same content from an announcement broadcast
                     try {
                         const k = keyOf(title, message, actionUrl);
@@ -73,7 +89,10 @@ export function useRealtimeNotifications(params: Params) {
                         title: title,
                         message: message,
                         action_url: actionUrl,
-                        meta: data.meta || data?.notification?.meta || data?.data?.meta,
+                        meta:
+                            data.meta ||
+                            data?.notification?.meta ||
+                            data?.data?.meta,
                         created_at: createdAt,
                     });
                     playNotificationSound();
@@ -84,20 +103,33 @@ export function useRealtimeNotifications(params: Params) {
                                 ? {
                                       label: 'View',
                                       onClick: () => {
-                                          window.location.assign(String(actionUrl));
+                                          window.location.assign(
+                                              String(actionUrl),
+                                          );
                                       },
                                   }
                                 : undefined,
                         });
-                        showWebNotification(String(title || 'Notification'), String(message || ''), actionUrl);
+                        showWebNotification(
+                            String(title || 'Notification'),
+                            String(message || ''),
+                            actionUrl,
+                        );
                     } catch {}
                 };
 
                 // Custom name from broadcastAs on Notification
                 ch.listen('.user.notification', handlePersonal);
                 // Fallback: default notification broadcast event name
-                ch.listen('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', handlePersonal);
-                try { ch.subscribed?.(() => console.info('[Echo] Subscribed user channel', name)); } catch {}
+                ch.listen(
+                    '.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated',
+                    handlePersonal,
+                );
+                try {
+                    ch.subscribed?.(() =>
+                        console.info('[Echo] Subscribed user channel', name),
+                    );
+                } catch {}
             } catch {}
         }
 
@@ -113,7 +145,11 @@ export function useRealtimeNotifications(params: Params) {
                     const shouldAdd = persist || includeAnnouncements;
                     if (shouldAdd) {
                         if (persist) {
-                            const k = keyOf(data.title, data.message, data.action_url);
+                            const k = keyOf(
+                                data.title,
+                                data.message,
+                                data.action_url,
+                            );
                             recent.set(k, nowMs());
                             cleanup();
                         }
@@ -121,7 +157,12 @@ export function useRealtimeNotifications(params: Params) {
                             title: data.title,
                             message: data.message,
                             action_url: data.action_url,
-                            meta: { ...(data.meta || {}), scope: 'role', role_id: rid, persist },
+                            meta: {
+                                ...(data.meta || {}),
+                                scope: 'role',
+                                role_id: rid,
+                                persist,
+                            },
                             created_at: new Date().toISOString(),
                         });
                         playNotificationSound();
@@ -132,14 +173,25 @@ export function useRealtimeNotifications(params: Params) {
                             action: data.action_url
                                 ? {
                                       label: 'Open',
-                                      onClick: () => window.location.assign(String(data.action_url)),
+                                      onClick: () =>
+                                          window.location.assign(
+                                              String(data.action_url),
+                                          ),
                                   }
                                 : undefined,
                         });
-                        showWebNotification(String(data.title || 'Announcement'), String(data.message || ''), data.action_url);
+                        showWebNotification(
+                            String(data.title || 'Announcement'),
+                            String(data.message || ''),
+                            data.action_url,
+                        );
                     } catch {}
                 });
-                try { ch.subscribed?.(() => console.info('[Echo] Subscribed role channel', name)); } catch {}
+                try {
+                    ch.subscribed?.(() =>
+                        console.info('[Echo] Subscribed role channel', name),
+                    );
+                } catch {}
             } catch {}
         }
 
@@ -154,7 +206,11 @@ export function useRealtimeNotifications(params: Params) {
                 const shouldAdd = persist || includeAnnouncements;
                 if (shouldAdd) {
                     if (persist) {
-                        const k = keyOf(data.title, data.message, data.action_url);
+                        const k = keyOf(
+                            data.title,
+                            data.message,
+                            data.action_url,
+                        );
                         recent.set(k, nowMs());
                         cleanup();
                     }
@@ -162,7 +218,11 @@ export function useRealtimeNotifications(params: Params) {
                         title: data.title,
                         message: data.message,
                         action_url: data.action_url,
-                        meta: { ...(data.meta || {}), scope: 'global', persist },
+                        meta: {
+                            ...(data.meta || {}),
+                            scope: 'global',
+                            persist,
+                        },
                         created_at: new Date().toISOString(),
                     });
                     playNotificationSound();
@@ -173,14 +233,25 @@ export function useRealtimeNotifications(params: Params) {
                         action: data.action_url
                             ? {
                                   label: 'Open',
-                                  onClick: () => window.location.assign(String(data.action_url)),
+                                  onClick: () =>
+                                      window.location.assign(
+                                          String(data.action_url),
+                                      ),
                               }
                             : undefined,
                     });
-                    showWebNotification(String(data.title || 'Announcement'), String(data.message || ''), data.action_url);
+                    showWebNotification(
+                        String(data.title || 'Announcement'),
+                        String(data.message || ''),
+                        data.action_url,
+                    );
                 } catch {}
             });
-            try { ch.subscribed?.(() => console.info('[Echo] Subscribed global channel', name)); } catch {}
+            try {
+                ch.subscribed?.(() =>
+                    console.info('[Echo] Subscribed global channel', name),
+                );
+            } catch {}
         } catch {}
 
         return () => {

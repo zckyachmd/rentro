@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { Bell } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -9,9 +8,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { useNotificationsStore } from '@/stores/notifications';
 import { router } from '@inertiajs/react';
+import { Bell } from 'lucide-react';
 
 /**
  * NotificationBell: Bell icon with unread badge and recent items dropdown.
@@ -32,7 +31,7 @@ export function NotificationBell() {
                     {unreadCount > 0 && (
                         <Badge
                             variant="destructive"
-                            className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full text-[10px] justify-center"
+                            className="absolute -top-1 -right-1 h-5 min-w-5 justify-center rounded-full px-1 text-[10px]"
                         >
                             {unreadCount}
                         </Badge>
@@ -49,23 +48,30 @@ export function NotificationBell() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {recent.length === 0 ? (
-                    <div className="p-3 text-sm text-muted-foreground">No notifications</div>
+                    <div className="text-muted-foreground p-3 text-sm">
+                        No notifications
+                    </div>
                 ) : (
                     recent.map((n, idx) => (
                         <DropdownMenuItem
                             key={(n.id || 'idx') + ':' + idx}
-                            className="whitespace-normal break-words"
+                            className="break-words whitespace-normal"
                             onClick={() => {
-                                if (n.action_url) window.location.assign(n.action_url);
+                                if (n.action_url)
+                                    window.location.assign(n.action_url);
                                 else goToIndex();
                             }}
                         >
                             <div className="flex flex-col gap-1">
                                 <div className="text-sm font-medium">
-                                    {typeof n.title === 'string' ? n.title : 'Notification'}
+                                    {typeof n.title === 'string'
+                                        ? n.title
+                                        : 'Notification'}
                                 </div>
-                                <div className="text-xs text-muted-foreground line-clamp-2">
-                                    {typeof n.message === 'string' ? n.message : ''}
+                                <div className="text-muted-foreground line-clamp-2 text-xs">
+                                    {typeof n.message === 'string'
+                                        ? n.message
+                                        : ''}
                                 </div>
                             </div>
                         </DropdownMenuItem>
@@ -75,4 +81,3 @@ export function NotificationBell() {
         </DropdownMenu>
     );
 }
-

@@ -5,8 +5,8 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 
 import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import { prefetchIcons } from '@/lib/lucide';
-import '../css/app.css';
 import { configureEcho } from '@laravel/echo-react';
+import '../css/app.css';
 
 // Make Echo config explicit to avoid env mismatch during dev
 (() => {
@@ -18,16 +18,23 @@ import { configureEcho } from '@laravel/echo-react';
         (dequote(env.VITE_REVERB_HOST) as string | undefined) ||
         (typeof window !== 'undefined' ? window.location.hostname : undefined);
     const portStr = dequote(env.VITE_REVERB_PORT) as string | undefined;
-    const port = portStr && !Number.isNaN(Number(portStr)) ? Number(portStr) : 8080;
-    const scheme = (dequote(env.VITE_REVERB_SCHEME) as string | undefined) || 'https';
+    const port =
+        portStr && !Number.isNaN(Number(portStr)) ? Number(portStr) : 8080;
+    const scheme =
+        (dequote(env.VITE_REVERB_SCHEME) as string | undefined) || 'https';
     const wsPath = dequote(env.VITE_REVERB_WS_PATH) as string | undefined;
     // Extract CSRF token for private channel auth
     let csrf: string | undefined;
     try {
-        csrf = (typeof document !== 'undefined'
-            ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-            : undefined) || undefined;
-    } catch { /* ignore */ }
+        csrf =
+            (typeof document !== 'undefined'
+                ? document
+                      .querySelector('meta[name="csrf-token"]')
+                      ?.getAttribute('content')
+                : undefined) || undefined;
+    } catch {
+        /* ignore */
+    }
 
     configureEcho({
         broadcaster: 'reverb',
@@ -66,7 +73,9 @@ try {
             console.warn('[Echo] Connection error', e);
         });
     }
-} catch {/* ignore */}
+} catch {
+    /* ignore */
+}
 
 const appName =
     import.meta.env?.VITE_APP_NAME ??
@@ -89,7 +98,7 @@ createInertiaApp({
             import.meta.glob('./pages/**/*.{tsx,ts,jsx,js}'),
         ),
     setup({ el, App, props }) {
-        const render = () => {
+        let render = () => {
             if (el.hasChildNodes()) {
                 hydrateRoot(
                     el,
@@ -105,6 +114,51 @@ createInertiaApp({
                 );
             }
         };
+
+        // ---- Realtime notifications bridge ----
+        function RealtimeNotificationsBridge({ userId }: { userId?: number }) {
+            React.useEffect(() => {
+                if (!userId) return;
+                const Echo: any = (globalThis as any).Echo;
+                if (!Echo) return;
+
+                const channel = Echo.private(
+                    `App.Models.User.${userId}`,
+                ).notification((payload: any) => {
+                    try {
+                        // 1) Fire a global event for UI components to react to
+                        const detail = {
+                            id: payload?.id ?? crypto.randomUUID(),
+                            title: payload?.title ?? 'Notification',
+                            message: payload?.message ?? '',
+                            url: payload?.url ?? null,
+                            created_at: new Date().toISOString(),
+                        };
+                        window.dispatchEvent(
+                            new CustomEvent('notifications:incoming', {
+                                detail,
+                            }),
+                        );
+                        // 2) Increment a lightweight global unread counter
+                        window.dispatchEvent(
+                            new CustomEvent('notifications:inc-unread', {
+                                detail: { by: 1 },
+                            }),
+                        );
+                    } catch {
+                        /* ignore */
+                    }
+                });
+
+                return () => {
+                    try {
+                        channel?.unsubscribe?.();
+                    } catch {}
+                };
+            }, [userId]);
+
+            return null;
+        }
 
         try {
             type PrefProps = {
@@ -203,6 +257,48 @@ createInertiaApp({
                     } catch {
                         void 0;
                     }
+
+                    // Try to infer authenticated user id from Inertia shared props
+                    let userId: number | undefined;
+                    try {
+                        const anyProps: any = (p?.initialPage?.props ??
+                            p?.page?.props ??
+                            {}) as any;
+                        userId =
+                            anyProps?.auth?.user?.id ??
+                            anyProps?.user?.id ??
+                            undefined;
+                    } catch {
+                        /* ignore */
+                    }
+
+                    // Patch the render function to include realtime bridge with userId
+                    render = () => {
+                        if (el.hasChildNodes()) {
+                            hydrateRoot(
+                                el,
+                                <React.Suspense fallback={null}>
+                                    <>
+                                        <RealtimeNotificationsBridge
+                                            userId={userId}
+                                        />
+                                        <App {...props} />
+                                    </>
+                                </React.Suspense>,
+                            );
+                        } else {
+                            createRoot(el).render(
+                                <React.Suspense fallback={null}>
+                                    <>
+                                        <RealtimeNotificationsBridge
+                                            userId={userId}
+                                        />
+                                        <App {...props} />
+                                    </>
+                                </React.Suspense>,
+                            );
+                        }
+                    };
                 } catch {
                     void 0;
                 }

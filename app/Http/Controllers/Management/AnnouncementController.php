@@ -189,8 +189,8 @@ class AnnouncementController extends Controller
         $a->scheduled_at = isset($data['scheduled_at'])
             ? \Carbon\Carbon::parse((string) $data['scheduled_at'])
             : null;
-        $a->status       = $a->scheduled_at && now()->lt($a->scheduled_at) ? 'scheduled' : 'queued';
-        $a->created_by   = (int) $request->user()->id;
+        $a->status     = $a->scheduled_at && now()->lt($a->scheduled_at) ? 'scheduled' : 'queued';
+        $a->created_by = (int) $request->user()->id;
         $a->save();
 
         // Broadcast creation to management channel for realtime tables
