@@ -87,17 +87,17 @@ export default function AppLayout({
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
     // Subscribe to realtime notifications when a user is available
     useRealtimeNotifications({
-        userId: (user as any)?.id,
-        roleIds: (auth as any)?.user?.role_ids ?? [],
+        userId: auth?.user?.id ?? undefined,
+        roleIds: [],
         globalPrivate:
             String(
-                (import.meta as any)?.env?.VITE_NOTIFICATIONS_GLOBAL_PRIVATE ||
-                    '',
+                (import.meta.env as Record<string, string | undefined>)
+                    .VITE_NOTIFICATIONS_GLOBAL_PRIVATE || '',
             ) === 'true',
         includeAnnouncementsInBell:
             String(
-                (import.meta as any)?.env?.VITE_BELL_INCLUDE_ANNOUNCEMENTS ||
-                    '',
+                (import.meta.env as Record<string, string | undefined>)
+                    .VITE_BELL_INCLUDE_ANNOUNCEMENTS || '',
             ) === 'true',
     });
 
@@ -109,21 +109,28 @@ export default function AppLayout({
             // Only hydrate if store is empty to avoid clobbering live updates
             if (notifItems && notifItems.length > 0) return;
             const mapped: NotificationItem[] = (notifSummary.latest || []).map(
-                (n) => ({
-                    id: n.id,
-                    title: (n.data as any)?.title ?? 'Notification',
-                    message: (n.data as any)?.message ?? '',
-                    action_url:
-                        (n.data as any)?.action_url ??
-                        (n.data as any)?.url ??
-                        undefined,
-                    meta: (n.data as any)?.meta || undefined,
-                    created_at:
-                        (n.data as any)?.created_at ||
-                        n.created_at ||
-                        undefined,
-                    read_at: n.read_at || null,
-                }),
+                (n) => {
+                    const d = n.data as Record<string, unknown>;
+                    return {
+                        id: n.id,
+                        title:
+                            (typeof d.title === 'string' && d.title) ||
+                            'Notification',
+                        message:
+                            (typeof d.message === 'string' && d.message) || '',
+                        action_url:
+                            (typeof d.action_url === 'string' && d.action_url) ||
+                            (typeof (d as { url?: unknown }).url === 'string' &&
+                                (d as { url?: string }).url) ||
+                            undefined,
+                        meta: (d.meta as Record<string, unknown>) || undefined,
+                        created_at:
+                            (typeof d.created_at === 'string' && d.created_at) ||
+                            n.created_at ||
+                            undefined,
+                        read_at: n.read_at || null,
+                    };
+                },
             );
             setInitial(mapped, Number(notifSummary.unread || 0));
         } catch {

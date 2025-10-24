@@ -1,8 +1,14 @@
 let askedOnce = false;
 
-export function showWebNotification(title: string, body?: string, actionUrl?: string | null): void {
+export function showWebNotification(
+    title: string,
+    body?: string,
+    actionUrl?: string | null,
+): void {
     try {
-        const N: any = (globalThis as any).Notification;
+        type NotificationCtor = typeof Notification;
+        const N = (globalThis as { Notification?: NotificationCtor })
+            .Notification;
         if (!N) return;
 
         const spawn = () => {
@@ -15,13 +21,31 @@ export function showWebNotification(title: string, body?: string, actionUrl?: st
             });
             if (actionUrl) {
                 n.onclick = () => {
-                    try { window.focus(); } catch {}
-                    try { window.location.assign(String(actionUrl)); } catch {}
-                    try { n.close(); } catch {}
+                    try {
+                        window.focus();
+                    } catch {
+                        /* noop */
+                    }
+                    try {
+                        window.location.assign(String(actionUrl));
+                    } catch {
+                        /* noop */
+                    }
+                    try {
+                        n.close();
+                    } catch {
+                        /* noop */
+                    }
                 };
             }
             // Auto-close after a few seconds
-            setTimeout(() => { try { n.close(); } catch {} }, 5000);
+            setTimeout(() => {
+                try {
+                    n.close();
+                } catch {
+                    /* noop */
+                }
+            }, 5000);
         };
 
         if (N.permission === 'granted') {
@@ -31,12 +55,13 @@ export function showWebNotification(title: string, body?: string, actionUrl?: st
 
         if (N.permission === 'default' && !askedOnce) {
             askedOnce = true;
-            N.requestPermission?.().then((perm: string) => {
-                if (perm === 'granted') spawn();
-            }).catch(() => void 0);
+            N.requestPermission?.()
+                .then((perm: string) => {
+                    if (perm === 'granted') spawn();
+                })
+                .catch(() => void 0);
         }
     } catch {
-        // ignore web notification failures
+        /* noop - ignore web notification failures */
     }
 }
-

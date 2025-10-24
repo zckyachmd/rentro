@@ -1,3 +1,6 @@
+import { router } from '@inertiajs/react';
+import { Bell } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,8 +12,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNotificationsStore } from '@/stores/notifications';
-import { router } from '@inertiajs/react';
-import { Bell } from 'lucide-react';
 
 /**
  * NotificationBell: Bell icon with unread badge and recent items dropdown.

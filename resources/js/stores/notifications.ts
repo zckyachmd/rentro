@@ -24,7 +24,7 @@ type Actions = {
     syncFromServer: (items: NotificationItem[], unread: number) => void;
 };
 
-export const useNotificationsStore = create<State & Actions>((set, get) => ({
+export const useNotificationsStore = create<State & Actions>((set) => ({
     items: [],
     unreadCount: 0,
 
@@ -36,31 +36,41 @@ export const useNotificationsStore = create<State & Actions>((set, get) => ({
             created_at: now,
             ...item,
         };
-        set((s) => ({ items: [obj, ...s.items], unreadCount: s.unreadCount + 1 }));
+        set((s) => ({
+            items: [obj, ...s.items],
+            unreadCount: s.unreadCount + 1,
+        }));
     },
 
     update: (id, patch) =>
         set((s) => ({
-            items: s.items.map((it) => (it.id === id ? { ...it, ...patch } : it)),
+            items: s.items.map((it) =>
+                it.id === id ? { ...it, ...patch } : it,
+            ),
         })),
 
     markRead: (id) =>
         set((s) => ({
             items: s.items.map((it) =>
-                it.id === id ? { ...it, read_at: new Date().toISOString() } : it,
+                it.id === id
+                    ? { ...it, read_at: new Date().toISOString() }
+                    : it,
             ),
             unreadCount: Math.max(
                 0,
-                s.unreadCount - (s.items.find((it) => it.id === id && !it.read_at) ? 1 : 0),
+                s.unreadCount -
+                    (s.items.find((it) => it.id === id && !it.read_at) ? 1 : 0),
             ),
         })),
 
     markAllRead: () =>
         set((s) => ({
-            items: s.items.map((it) => ({ ...it, read_at: it.read_at ?? new Date().toISOString() })),
+            items: s.items.map((it) => ({
+                ...it,
+                read_at: it.read_at ?? new Date().toISOString(),
+            })),
             unreadCount: 0,
         })),
 
     syncFromServer: (items, unread) => set({ items, unreadCount: unread }),
 }));
-

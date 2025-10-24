@@ -5,6 +5,7 @@ import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 
 import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
+import { makeColumn } from '@/components/ui/data-table-column-header';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,7 +14,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { makeColumn } from '@/components/ui/data-table-column-header';
 import i18n from '@/lib/i18n';
 import type { BuildingItem } from '@/types/management';
 
@@ -75,7 +75,9 @@ export const createColumns = (opts?: {
         cell: ({ row }) => {
             const b = row.original;
             return (
-                <div className={`${COL.actions} pr-2 md:pr-3 flex items-center justify-end`}>
+                <div
+                    className={`${COL.actions} flex items-center justify-end pr-2 md:pr-3`}
+                >
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -91,7 +93,9 @@ export const createColumns = (opts?: {
                                 {i18n.t('common.actions')}
                             </DropdownMenuLabel>
                             <Can all={['building.update']}>
-                                <DropdownMenuItem onClick={() => opts?.onEdit?.(b)}>
+                                <DropdownMenuItem
+                                    onClick={() => opts?.onEdit?.(b)}
+                                >
                                     <Pencil className="mr-2 h-4 w-4" />
                                     {i18n.t('common.edit')}
                                 </DropdownMenuItem>

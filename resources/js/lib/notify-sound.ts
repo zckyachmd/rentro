@@ -5,19 +5,23 @@ let audioCtx: AudioContext | null = null;
 
 export function playNotificationSound(volume = 0.2): void {
     try {
-        const AC: any =
-            (globalThis as any).AudioContext ||
-            (globalThis as any).webkitAudioContext;
+        type AudioContextCtor = typeof AudioContext;
+        const AC =
+            (globalThis as { AudioContext?: AudioContextCtor }).AudioContext ||
+            (globalThis as { webkitAudioContext?: AudioContextCtor })
+                .webkitAudioContext;
         if (!AC) return;
         if (!audioCtx) audioCtx = new AC();
-        const ctx = audioCtx as any;
+        const ctx = audioCtx as AudioContext;
 
         // Some browsers suspend the context until user gesture; try resume
         try {
             if (ctx.state === 'suspended') {
-                void ctx.resume?.();
+                void ctx.resume();
             }
-        } catch {}
+        } catch {
+            /* noop */
+        }
 
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -35,6 +39,6 @@ export function playNotificationSound(volume = 0.2): void {
         osc.start();
         osc.stop(ctx.currentTime + 0.2);
     } catch {
-        // ignore sound failures
+        /* noop - ignore sound failures */
     }
 }

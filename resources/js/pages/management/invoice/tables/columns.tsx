@@ -163,7 +163,9 @@ export const createColumns = <T extends BaseInvoiceRow>(
             const inv = row.original;
             const t = i18n.t.bind(i18n);
             return (
-                <div className={`${COL.actions} pr-2 md:pr-3 flex items-center justify-end`}>
+                <div
+                    className={`${COL.actions} flex items-center justify-end pr-2 md:pr-3`}
+                >
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button

@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createInertiaApp } from '@inertiajs/react';
+import { configureEcho } from '@laravel/echo-react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
 import i18n, { preloadLocaleNamespaces } from '@/lib/i18n';
 import { prefetchIcons } from '@/lib/lucide';
-import { configureEcho } from '@laravel/echo-react';
 import '../css/app.css';
 
 // Make Echo config explicit to avoid env mismatch during dev
@@ -153,7 +154,9 @@ createInertiaApp({
                 return () => {
                     try {
                         channel?.unsubscribe?.();
-                    } catch {}
+                    } catch {
+                        /* noop */
+                    }
                 };
             }, [userId]);
 

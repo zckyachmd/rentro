@@ -159,7 +159,9 @@ export const createColumns = (opts?: {
         cell: ({ row }) => {
             const p = row.original;
             return (
-                <div className={`${COL.actions} pr-2 md:pr-3 flex items-center justify-end`}>
+                <div
+                    className={`${COL.actions} flex items-center justify-end pr-2 md:pr-3`}
+                >
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button

@@ -1,3 +1,8 @@
+import { Head, router } from '@inertiajs/react';
+import { Loader2 } from 'lucide-react';
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,10 +11,6 @@ import {
     NotificationItem,
     useNotificationsStore,
 } from '@/stores/notifications';
-import { Head, router } from '@inertiajs/react';
-import { Loader2 } from 'lucide-react';
-import * as React from 'react';
-import { useTranslation } from 'react-i18next';
 
 type Paginator<T> = {
     data: T[];
@@ -62,16 +63,27 @@ export default function NotificationsIndex({
 
     // Hydrate store from server response
     React.useEffect(() => {
-        const mapped: NotificationItem[] = (page?.data || []).map((n) => ({
-            id: n.id,
-            title: (n.data as any)?.title ?? 'Notification',
-            message: (n.data as any)?.message ?? '',
-            action_url:
-                (n.data as any)?.action_url ?? (n.data as any)?.url ?? undefined,
-            meta: (n.data as any)?.meta || undefined,
-            created_at: (n.data as any)?.created_at || n.created_at,
-            read_at: n.read_at || null,
-        }));
+        const mapped: NotificationItem[] = (page?.data || []).map((n) => {
+            const d = n.data as Record<string, unknown>;
+            return {
+                id: n.id,
+                title:
+                    (typeof d.title === 'string' && d.title) ||
+                    'Notification',
+                message:
+                    (typeof d.message === 'string' && d.message) || '',
+                action_url:
+                    (typeof d.action_url === 'string' && d.action_url) ||
+                    (typeof (d as { url?: unknown }).url === 'string' &&
+                        (d as { url?: string }).url) ||
+                    undefined,
+                meta: (d.meta as Record<string, unknown>) || undefined,
+                created_at:
+                    (typeof d.created_at === 'string' && d.created_at) ||
+                    n.created_at,
+                read_at: n.read_at || null,
+            };
+        });
         syncFromServer(mapped, unreadCount);
     }, [page, unreadCount, syncFromServer]);
 
