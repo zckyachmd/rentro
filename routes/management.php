@@ -41,6 +41,10 @@ Route::prefix('management')->name('management.')->group(function (): void {
                 ->middleware('throttle:secure-sensitive')
                 ->whereNumber('announcement')
                 ->name('resend');
+            Route::post('/{announcement}/cancel', [AnnouncementController::class, 'cancelSchedule'])
+                ->middleware('throttle:secure-sensitive')
+                ->whereNumber('announcement')
+                ->name('cancel_schedule');
             Route::post('/role', [AnnouncementController::class, 'role'])
                 ->middleware('throttle:secure-sensitive')
                 ->name('role');

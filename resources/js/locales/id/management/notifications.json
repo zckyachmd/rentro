@@ -30,5 +30,22 @@
     "th_status": "Status",
     "sent_at": "terkirim pada",
     "search_title": "Cari judul...",
-    "send_now": "Kirim sekarang"
+    "send_now": "Kirim sekarang",
+    "resend": "Kirim ulang",
+    "resend_now": "Kirim ulang sekarang",
+    "confirm_resend_title": "Kirim Ulang Pengumuman",
+    "confirm_resend_desc": "Tindakan ini akan mengirim ulang pengumuman ke target yang dipilih.",
+    "confirm_persist_info": "Persisten: membuat notifikasi tersimpan untuk setiap pengguna (antri).",
+    "confirm_non_persist_info": "Hanya siaran (tidak membuat notifikasi tersimpan).",
+    "cancel_schedule": "Batalkan jadwal",
+    "cancel_schedule_now": "Batalkan jadwal",
+    "confirm_cancel_title": "Batalkan Jadwal",
+    "confirm_cancel_desc": "Tindakan ini membatalkan pengiriman terjadwal namun data tetap ada. Pengumuman tidak akan dikirim pada waktu yang dijadwalkan.",
+    "status": {
+        "pending": "Menunggu",
+        "scheduled": "Dijadwalkan",
+        "queued": "Antri",
+        "sent": "Terkirim",
+        "failed": "Gagal"
+    }
 }

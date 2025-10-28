@@ -38,7 +38,8 @@ class SendAnnouncement implements ShouldQueue, ShouldBeUnique
         if (!$a) {
             return;
         }
-        if ($a->status === 'sent') {
+        // Only send when queued/scheduled. Allow safe no-op when cancelled/pending/etc.
+        if ($a->status === 'sent' || !in_array($a->status, ['queued', 'scheduled'], true)) {
             return;
         }
 

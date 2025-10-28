@@ -9,6 +9,7 @@ import {
     MoreHorizontal,
     Send,
     Tag,
+    XIcon,
 } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -51,6 +52,9 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { AppLayout } from '@/layouts';
+import AnnouncementViewDialog from '@/pages/management/announcements/dialogs/view-dialog';
+import ConfirmResendDialog from '@/pages/management/announcements/dialogs/confirm-resend-dialog';
+import ConfirmCancelDialog from '@/pages/management/announcements/dialogs/confirm-cancel-dialog';
 import { formatDate } from '@/lib/format';
 import type { PageProps as InertiaPageProps } from '@/types';
 
@@ -238,6 +242,8 @@ export default function ManagementNotificationsPage() {
     };
 
     const [view, setView] = React.useState<HistoryItem | null>(null);
+    const [confirmResend, setConfirmResend] = React.useState<HistoryItem | null>(null);
+    const [confirmCancel, setConfirmCancel] = React.useState<HistoryItem | null>(null);
 
     // Realtime updates via Reverb (Echo)
     React.useEffect(() => {
@@ -275,6 +281,16 @@ export default function ManagementNotificationsPage() {
         }
     }, []);
 
+    const isExternal = (url: string | null | undefined) => {
+        if (!url) return false;
+        try {
+            const u = new URL(url, window.location.origin);
+            return u.origin !== window.location.origin;
+        } catch {
+            return false;
+        }
+    };
+
     const columns = React.useMemo<ColumnDef<HistoryItem>[]>(
         () => [
             {
@@ -311,8 +327,14 @@ export default function ManagementNotificationsPage() {
                     return (
                         <div className="max-w-[220px] truncate pr-2">
                             {it.scope === 'global'
-                                ? t('management.notifications.global', 'Global')
-                                : `${t('management.notifications.role', 'Role')}${it.role_name ? ': ' + it.role_name : ''}`}
+                                ? t(
+                                      'management.notifications.target_global',
+                                      'Global',
+                                  )
+                                : `${t(
+                                      'management.notifications.target_role',
+                                      'Role',
+                                  )}${it.role_name ? ': ' + it.role_name : ''}`}
                         </div>
                     );
                 },
@@ -341,42 +363,52 @@ export default function ManagementNotificationsPage() {
                     const it = row.original;
                     return (
                         <div className="pr-2 text-xs font-medium uppercase">
-                            {String(it.status)}
+                            {t(
+                                `management.notifications.status.${it.status}`,
+                                String(it.status),
+                            )}
                         </div>
                     );
                 },
             },
             {
                 id: 'actions',
-                header: () => <div className="pr-1 text-right">&nbsp;</div>,
+                header: () => (
+                    <div className="pr-2 text-right">
+                        {t('common.actions', 'Actions')}
+                    </div>
+                ),
                 cell: ({ row }) => {
                     const it = row.original;
                     const canSendNow =
                         it.status === 'scheduled' || it.status === 'pending';
                     const canResend =
                         it.status === 'sent' || it.status === 'failed';
+                    const canCancelSchedule = it.status === 'scheduled';
                     return (
-                        <div className="flex justify-end pl-2">
+                        <div className="flex justify-end pl-2" data-row-action="true">
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
+                                <DropdownMenuTrigger asChild onClick={(e) => { e.stopPropagation(); }}>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        aria-label="Actions"
+                                        aria-label={t('common.actions', 'Actions')}
                                     >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem
-                                        onClick={() => setView(it)}
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setView(it); }}
                                     >
                                         <Eye className="mr-2 h-4 w-4" />
                                         {t('common.view', 'View details')}
                                     </DropdownMenuItem>
                                     {canSendNow && (
                                         <DropdownMenuItem
-                                            onClick={() =>
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
                                                 router.visit(
                                                     route(
                                                         'management.announcements.send_now',
@@ -386,8 +418,8 @@ export default function ManagementNotificationsPage() {
                                                         method: 'post',
                                                         preserveScroll: true,
                                                     },
-                                                )
-                                            }
+                                                );
+                                            }}
                                         >
                                             <Send className="mr-2 h-4 w-4" />
                                             {t(
@@ -398,23 +430,20 @@ export default function ManagementNotificationsPage() {
                                     )}
                                     {canResend && (
                                         <DropdownMenuItem
-                                            onClick={() =>
-                                                router.visit(
-                                                    route(
-                                                        'management.announcements.resend',
-                                                        { announcement: it.id },
-                                                    ),
-                                                    {
-                                                        method: 'post',
-                                                        preserveScroll: true,
-                                                    },
-                                                )
-                                            }
+                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmResend(it); }}
                                         >
                                             <Megaphone className="mr-2 h-4 w-4" />
+                                            {t('management.notifications.resend', 'Resend')}
+                                        </DropdownMenuItem>
+                                    )}
+                                    {canCancelSchedule && (
+                                        <DropdownMenuItem
+                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmCancel(it); }}
+                                        >
+                                            <XIcon className="mr-2 h-4 w-4" />
                                             {t(
-                                                'management.notifications.resend',
-                                                'Resend',
+                                                'management.notifications.cancel_schedule',
+                                                'Cancel schedule',
                                             )}
                                         </DropdownMenuItem>
                                     )}
@@ -427,8 +456,6 @@ export default function ManagementNotificationsPage() {
         ],
         [t],
     );
-
-    // filters rendered in the card above the table
 
     return (
         <AppLayout
@@ -498,18 +525,18 @@ export default function ManagementNotificationsPage() {
                                         <SelectItem value="all">
                                             {t('common.all', 'All')}
                                         </SelectItem>
-                                        <SelectItem value="global">
-                                            {t(
-                                                'management.notifications.global',
-                                                'Global',
-                                            )}
-                                        </SelectItem>
-                                        <SelectItem value="role">
-                                            {t(
-                                                'management.notifications.role',
-                                                'Role',
-                                            )}
-                                        </SelectItem>
+                                    <SelectItem value="global">
+                                        {t(
+                                            'management.notifications.target_global',
+                                            'Global',
+                                        )}
+                                    </SelectItem>
+                                    <SelectItem value="role">
+                                        {t(
+                                            'management.notifications.target_role',
+                                            'Role',
+                                        )}
+                                    </SelectItem>
                                     </SelectContent>
                                 </Select>
 
@@ -553,19 +580,34 @@ export default function ManagementNotificationsPage() {
                                             {t('common.all', 'All')}
                                         </SelectItem>
                                         <SelectItem value="pending">
-                                            pending
+                                            {t(
+                                                'management.notifications.status.pending',
+                                                'Pending',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="scheduled">
-                                            scheduled
+                                            {t(
+                                                'management.notifications.status.scheduled',
+                                                'Scheduled',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="queued">
-                                            queued
+                                            {t(
+                                                'management.notifications.status.queued',
+                                                'Queued',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="sent">
-                                            sent
+                                            {t(
+                                                'management.notifications.status.sent',
+                                                'Sent',
+                                            )}
                                         </SelectItem>
                                         <SelectItem value="failed">
-                                            failed
+                                            {t(
+                                                'management.notifications.status.failed',
+                                                'Failed',
+                                            )}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -944,7 +986,7 @@ export default function ManagementNotificationsPage() {
                                                 htmlFor="scheduledTime"
                                                 className="text-xs sm:text-sm"
                                             >
-                                                Time
+                                                {t('common.time', 'Time')}
                                             </Label>
                                             <Input
                                                 id="scheduledTime"
@@ -1002,178 +1044,13 @@ export default function ManagementNotificationsPage() {
                     </DialogContent>
                 </Dialog>
 
-                {/* View Detail dialog */}
-                <Dialog
-                    open={!!view}
-                    onOpenChange={(o) => {
-                        if (!o) setView(null);
-                    }}
-                >
-                    <DialogContent className="sm:max-w-lg">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <Megaphone className="h-4 w-4" />
-                                {view?.title}
-                            </DialogTitle>
-                            <DialogDescription>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    {view?.scope === 'global' ? (
-                                        <Badge
-                                            variant="secondary"
-                                            className="inline-flex items-center gap-1"
-                                        >
-                                            <Globe className="h-3.5 w-3.5" />
-                                            {t(
-                                                'management.notifications.target_global',
-                                                'Global',
-                                            )}
-                                        </Badge>
-                                    ) : (
-                                        <Badge
-                                            variant="secondary"
-                                            className="inline-flex items-center gap-1"
-                                        >
-                                            <Tag className="h-3.5 w-3.5" />
-                                            {t(
-                                                'management.notifications.target_role',
-                                                'Role',
-                                            )}
-                                            {view?.role_name
-                                                ? `: ${view.role_name}`
-                                                : ''}
-                                        </Badge>
-                                    )}
-                                    {view?.persist && (
-                                        <Badge variant="outline">Persist</Badge>
-                                    )}
-                                </div>
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-3">
-                            {view?.message && (
-                                <div>
-                                    <Label className="text-muted-foreground text-xs uppercase">
-                                        {t(
-                                            'management.notifications.message_label',
-                                            'Message',
-                                        )}
-                                    </Label>
-                                    <div className="mt-1 text-sm whitespace-pre-wrap">
-                                        {view?.message}
-                                    </div>
-                                </div>
-                            )}
-                            {view?.action_url && (
-                                <div>
-                                    <Label className="text-muted-foreground text-xs uppercase">
-                                        {t(
-                                            'management.notifications.action_url_label',
-                                            'Action URL (optional)',
-                                        )}
-                                    </Label>
-                                    <div className="mt-1">
-                                        <a
-                                            href={view?.action_url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="inline-flex items-center gap-1 text-sm underline hover:no-underline"
-                                        >
-                                            <ExternalLink className="h-3.5 w-3.5" />
-                                            {view?.action_url}
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="grid gap-2 text-sm">
-                                <div>
-                                    <Label className="text-muted-foreground text-xs uppercase">
-                                        {t(
-                                            'management.notifications.th_status',
-                                            'Status',
-                                        )}
-                                    </Label>
-                                    <div className="mt-0.5 font-medium uppercase">
-                                        {String(view?.status || '')}
-                                    </div>
-                                </div>
-                                {view?.scheduled_at ? (
-                                    <div>
-                                        <Label className="text-muted-foreground text-xs uppercase">
-                                            {t(
-                                                'management.notifications.when',
-                                                'When',
-                                            )}
-                                        </Label>
-                                        <div className="mt-0.5">
-                                            {formatDate(
-                                                view?.scheduled_at,
-                                                true,
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : null}
-                                {view?.sent_at ? (
-                                    <div>
-                                        <Label className="text-muted-foreground text-xs uppercase">
-                                            {t(
-                                                'management.notifications.sent_at',
-                                                'sent at',
-                                            )}
-                                        </Label>
-                                        <div className="mt-0.5">
-                                            {formatDate(view?.sent_at, true)}
-                                        </div>
-                                    </div>
-                                ) : null}
-                                {view?.persist ? (
-                                    <div>
-                                        <Label className="text-muted-foreground text-xs uppercase">
-                                            Persist
-                                        </Label>
-                                        <div className="mt-0.5">Yes</div>
-                                    </div>
-                                ) : null}
-                            </div>
-                        </div>
-                        <DialogFooter className="gap-2 sm:gap-2">
-                            {view &&
-                                (view.status === 'scheduled' ||
-                                    view.status === 'pending') && (
-                                    <Button
-                                        variant="secondary"
-                                        onClick={() =>
-                                            router.visit(
-                                                route(
-                                                    'management.announcements.send_now',
-                                                    { announcement: view.id },
-                                                ),
-                                                {
-                                                    method: 'post',
-                                                    preserveScroll: true,
-                                                    onSuccess: () =>
-                                                        setView(null),
-                                                },
-                                            )
-                                        }
-                                    >
-                                        <Send className="mr-2 h-4 w-4" />
-                                        {t(
-                                            'management.notifications.send_now',
-                                            'Send now',
-                                        )}
-                                    </Button>
-                                )}
-                            <Button
-                                variant="outline"
-                                onClick={() => setView(null)}
-                            >
-                                {t('common.close', 'Close')}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                <AnnouncementViewDialog item={view} onClose={() => setView(null)} />
+
+                <ConfirmResendDialog item={confirmResend} onClose={() => setConfirmResend(null)} />
+
+                <ConfirmCancelDialog item={confirmCancel} onClose={() => setConfirmCancel(null)} />
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<HistoryItem, unknown>
                             columns={columns}
                             rows={props.rows || []}
@@ -1191,6 +1068,7 @@ export default function ManagementNotificationsPage() {
                                 'Search title...',
                             )}
                             showColumn={false}
+                            onRowClick={(row) => setView(row)}
                         />
                     </CardContent>
                 </Card>

@@ -94,7 +94,7 @@ class AnnouncementController extends Controller
             'per_page'     => $page->perPage(),
         ];
 
-        return Inertia::render('management/notifications/index', [
+        return Inertia::render('management/announcements/index', [
             'roles' => $roles->map(fn (Role $r) => ['id' => (int) $r->id, 'name' => $r->name])->values(),
             'users' => $users->map(fn (User $u) => [
                 'id'    => (int) $u->id,
@@ -298,5 +298,31 @@ class AnnouncementController extends Controller
         }
 
         return Redirect::back()->with('success', 'Announcement re-queued');
+    }
+
+    /**
+     * POST /management/announcements/{announcement}/cancel
+     * Cancel a scheduled announcement without deleting the record.
+     */
+    public function cancelSchedule(Request $request, Announcement $announcement)
+    {
+        // Only meaningful when currently scheduled; but allow from any non-sent state
+        if ($announcement->status === 'sent') {
+            return Redirect::back()->with('info', 'Already sent');
+        }
+
+        $announcement->forceFill([
+            'scheduled_at' => null,
+            'status'       => 'pending',
+        ])->save();
+
+        // Broadcast update so management table refreshes
+        event(new \App\Events\AnnouncementUpdatedBroadcast($announcement->id));
+
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'ok']);
+        }
+
+        return Redirect::back()->with('success', 'Schedule cancelled');
     }
 }

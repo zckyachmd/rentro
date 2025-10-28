@@ -86,7 +86,8 @@
         "billing_period": "Periode Tagihan",
         "billing_day": "Tanggal Penagihan",
         "open": "Buka",
-        "open": "Buka",
+        "open_new_tab": "Buka tab baru",
+        "view": "Lihat detail",
         "attachments": "Lampiran",
         "view_detail": "Lihat Detail",
         "preview_files": "Pratinjau lampiran",
@@ -121,7 +122,8 @@
         "promotions_applied": "Promo Diterapkan",
         "discount_rent": "Diskon Sewa",
         "discount_deposit": "Diskon Deposit",
-        "none": "Tidak ada"
+        "none": "Tidak ada",
+        "pick_date": "Pilih tanggal"
     },
 
     "dashboard": {

@@ -30,5 +30,22 @@
     "th_status": "Status",
     "sent_at": "sent at",
     "search_title": "Search title...",
-    "send_now": "Send now"
+    "send_now": "Send now",
+    "resend": "Resend",
+    "resend_now": "Resend now",
+    "confirm_resend_title": "Resend Announcement",
+    "confirm_resend_desc": "This will resend the announcement to the selected target.",
+    "confirm_persist_info": "Persistent: creates stored notifications for each user (queued).",
+    "confirm_non_persist_info": "Transient broadcast only (no stored notifications).",
+    "cancel_schedule": "Cancel schedule",
+    "cancel_schedule_now": "Cancel schedule",
+    "confirm_cancel_title": "Cancel Schedule",
+    "confirm_cancel_desc": "This will cancel the scheduled delivery but keep the record. The announcement will not be sent at the scheduled time.",
+    "status": {
+        "pending": "Pending",
+        "scheduled": "Scheduled",
+        "queued": "Queued",
+        "sent": "Sent",
+        "failed": "Failed"
+    }
 }

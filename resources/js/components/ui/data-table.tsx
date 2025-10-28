@@ -11,6 +11,7 @@ import {
   type SortingState,
   type OnChangeFn,
   type Table as TanTable,
+  type Row as TanRow,
 } from "@tanstack/react-table"
 import { Loader2 } from "lucide-react"
 import * as React from "react"
@@ -31,6 +32,7 @@ export interface DataTableProps<TData, TValue> {
   emptyText?: string
   enableRowSelection?: boolean
   showSelectedCount?: boolean
+  onRowClick?: (row: TanRow<TData>) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -45,6 +47,7 @@ export function DataTable<TData, TValue>({
   emptyText,
   enableRowSelection = false,
   showSelectedCount = true,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -142,7 +145,16 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : undefined}
+                  onClick={onRowClick ? (e) => {
+                    const el = e.target as HTMLElement
+                    if (el?.closest('button, a, [role="button"], [data-row-action="true"]')) return
+                    onRowClick(row)
+                  } : undefined}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

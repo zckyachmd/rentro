@@ -80,6 +80,8 @@
         "yes": "Yes",
         "max": "Maximum",
         "open": "Open",
+        "open_new_tab": "Open in new tab",
+        "view": "View details",
         "view_detail": "View Detail",
         "fetch_failed": "Failed to fetch data",
         "copy_success": "Copied to clipboard",
@@ -118,7 +120,8 @@
         "promotions_applied": "Promotions Applied",
         "discount_rent": "Rent Discount",
         "discount_deposit": "Deposit Discount",
-        "none": "None"
+        "none": "None",
+        "pick_date": "Pick date"
     },
     "dashboard": {
         "desc": "Daily summary, occupancy status, and key metrics.",

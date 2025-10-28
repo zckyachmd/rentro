@@ -53,6 +53,7 @@ type ServerDataTableProps<TData, TValue> = {
   showSubmitButton?: boolean
   showColumn?: boolean
   showRefresh?: boolean
+  onRowClick?: (row: TData) => void
 }
 
 export function DataTableServer<TData, TValue>({
@@ -76,6 +77,7 @@ export function DataTableServer<TData, TValue>({
   showColumn = true,
   autoRefreshDefault = 'off',
   showRefresh = false,
+  onRowClick,
 }: ServerDataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const meta: PaginatorMeta = React.useMemo(() => (
@@ -201,6 +203,7 @@ export function DataTableServer<TData, TValue>({
       columns={columns}
       data={rows}
       pageSize={meta.per_page}
+      onRowClick={onRowClick ? (row) => onRowClick(row.original as TData) : undefined}
       // manual sorting (server)
       sorting={sortingState}
       onSortingChange={handleSortingChange}
