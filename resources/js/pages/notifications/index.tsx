@@ -2,14 +2,16 @@ import { Head, router } from '@inertiajs/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AppLayout } from '@/layouts';
-import { formatDate } from '@/lib/format';
-import { NotificationItem, useNotificationsStore } from '@/stores/notifications';
 import { useNotificationsActions } from '@/hooks/use-notifications';
+import { AppLayout } from '@/layouts';
 import NotificationsActionsBar from '@/pages/notifications/components/actions-bar';
 import NotificationItemRow from '@/pages/notifications/components/notification-item-row';
 import NotificationsPagination from '@/pages/notifications/components/pagination';
 import NotificationDetailDialog from '@/pages/notifications/dialogs/detail-dialog';
+import {
+    NotificationItem,
+    useNotificationsStore,
+} from '@/stores/notifications';
 
 type Paginator<T> = {
     data: T[];
@@ -46,10 +48,17 @@ type Props = {
     unreadCount: number;
 };
 
-export default function NotificationsIndex({ page, filter, unreadCount }: Props) {
+export default function NotificationsIndex({
+    page,
+    filter,
+    unreadCount,
+}: Props) {
     const { t } = useTranslation(['notifications', 'common']);
-    const { items, unreadCount: unreadInStore, syncFromServer } =
-        useNotificationsStore();
+    const {
+        items,
+        unreadCount: unreadInStore,
+        syncFromServer,
+    } = useNotificationsStore();
     const { markRead, markAllRead } = useNotificationsActions();
 
     React.useEffect(() => {
@@ -75,10 +84,6 @@ export default function NotificationsIndex({ page, filter, unreadCount }: Props)
         syncFromServer(mapped, unreadCount);
     }, [page, unreadCount, syncFromServer]);
 
-    const onMarkRead = (id: string) => {
-        void markRead(id);
-    };
-
     const [markingAll, setMarkingAll] = React.useState(false);
     const onMarkAll = () => {
         if (!confirm(t('common.confirm', 'Are you sure?'))) return;
@@ -103,8 +108,7 @@ export default function NotificationsIndex({ page, filter, unreadCount }: Props)
         />
     );
 
-    const TITLE_MAX = 60;
-    const MESSAGE_MAX = 120;
+    // truncation handled in NotificationItemRow
 
     const [open, setOpen] = React.useState(false);
     const [selected, setSelected] = React.useState<NotificationItem | null>(
@@ -118,25 +122,30 @@ export default function NotificationsIndex({ page, filter, unreadCount }: Props)
     return (
         <AppLayout
             pageTitle={t('notifications.title', 'Notifications')}
-            pageDescription={t('notifications.desc', 'Your latest updates and alerts')}
+            pageDescription={t(
+                'notifications.desc',
+                'Your latest updates and alerts',
+            )}
             actions={actions}
         >
             <Head title={t('notifications.title', 'Notifications')} />
 
             <div className="space-y-4">
                 <div className="divide-y rounded-md border">
-                        {items.length === 0 && (
-                            <div className="text-muted-foreground p-6 text-center text-sm">
-                                {t('notifications.empty', 'No notifications')}
-                            </div>
-                        )}
-                        {items.map((n) => (
-                            <NotificationItemRow
-                                key={n.id || n.created_at || Math.random().toString()}
-                                item={n}
-                                onOpen={openDetail}
-                            />
-                        ))}
+                    {items.length === 0 && (
+                        <div className="text-muted-foreground p-6 text-center text-sm">
+                            {t('notifications.empty', 'No notifications')}
+                        </div>
+                    )}
+                    {items.map((n) => (
+                        <NotificationItemRow
+                            key={
+                                n.id || n.created_at || Math.random().toString()
+                            }
+                            item={n}
+                            onOpen={openDetail}
+                        />
+                    ))}
                 </div>
 
                 <NotificationsPagination

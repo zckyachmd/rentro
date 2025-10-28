@@ -1,20 +1,16 @@
 import { router, usePage } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
-    ExternalLink,
     Eye,
     Filter,
-    Globe,
     Megaphone,
     MoreHorizontal,
     Send,
-    Tag,
     XIcon,
 } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,10 +48,9 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { AppLayout } from '@/layouts';
-import AnnouncementViewDialog from '@/pages/management/announcements/dialogs/view-dialog';
-import ConfirmResendDialog from '@/pages/management/announcements/dialogs/confirm-resend-dialog';
 import ConfirmCancelDialog from '@/pages/management/announcements/dialogs/confirm-cancel-dialog';
-import { formatDate } from '@/lib/format';
+import ConfirmResendDialog from '@/pages/management/announcements/dialogs/confirm-resend-dialog';
+import AnnouncementViewDialog from '@/pages/management/announcements/dialogs/view-dialog';
 import type { PageProps as InertiaPageProps } from '@/types';
 
 type Role = { id: number; name: string };
@@ -242,8 +237,10 @@ export default function ManagementNotificationsPage() {
     };
 
     const [view, setView] = React.useState<HistoryItem | null>(null);
-    const [confirmResend, setConfirmResend] = React.useState<HistoryItem | null>(null);
-    const [confirmCancel, setConfirmCancel] = React.useState<HistoryItem | null>(null);
+    const [confirmResend, setConfirmResend] =
+        React.useState<HistoryItem | null>(null);
+    const [confirmCancel, setConfirmCancel] =
+        React.useState<HistoryItem | null>(null);
 
     // Realtime updates via Reverb (Echo)
     React.useEffect(() => {
@@ -281,15 +278,7 @@ export default function ManagementNotificationsPage() {
         }
     }, []);
 
-    const isExternal = (url: string | null | undefined) => {
-        if (!url) return false;
-        try {
-            const u = new URL(url, window.location.origin);
-            return u.origin !== window.location.origin;
-        } catch {
-            return false;
-        }
-    };
+    // moved to dialogs/view-dialog.tsx where needed
 
     const columns = React.useMemo<ColumnDef<HistoryItem>[]>(
         () => [
@@ -386,20 +375,35 @@ export default function ManagementNotificationsPage() {
                         it.status === 'sent' || it.status === 'failed';
                     const canCancelSchedule = it.status === 'scheduled';
                     return (
-                        <div className="flex justify-end pl-2" data-row-action="true">
+                        <div
+                            className="flex justify-end pl-2"
+                            data-row-action="true"
+                        >
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild onClick={(e) => { e.stopPropagation(); }}>
+                                <DropdownMenuTrigger
+                                    asChild
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                    }}
+                                >
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        aria-label={t('common.actions', 'Actions')}
+                                        aria-label={t(
+                                            'common.actions',
+                                            'Actions',
+                                        )}
                                     >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem
-                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setView(it); }}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setView(it);
+                                        }}
                                     >
                                         <Eye className="mr-2 h-4 w-4" />
                                         {t('common.view', 'View details')}
@@ -430,15 +434,26 @@ export default function ManagementNotificationsPage() {
                                     )}
                                     {canResend && (
                                         <DropdownMenuItem
-                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmResend(it); }}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setConfirmResend(it);
+                                            }}
                                         >
                                             <Megaphone className="mr-2 h-4 w-4" />
-                                            {t('management.notifications.resend', 'Resend')}
+                                            {t(
+                                                'management.notifications.resend',
+                                                'Resend',
+                                            )}
                                         </DropdownMenuItem>
                                     )}
                                     {canCancelSchedule && (
                                         <DropdownMenuItem
-                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmCancel(it); }}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setConfirmCancel(it);
+                                            }}
                                         >
                                             <XIcon className="mr-2 h-4 w-4" />
                                             {t(
@@ -525,18 +540,18 @@ export default function ManagementNotificationsPage() {
                                         <SelectItem value="all">
                                             {t('common.all', 'All')}
                                         </SelectItem>
-                                    <SelectItem value="global">
-                                        {t(
-                                            'management.notifications.target_global',
-                                            'Global',
-                                        )}
-                                    </SelectItem>
-                                    <SelectItem value="role">
-                                        {t(
-                                            'management.notifications.target_role',
-                                            'Role',
-                                        )}
-                                    </SelectItem>
+                                        <SelectItem value="global">
+                                            {t(
+                                                'management.notifications.target_global',
+                                                'Global',
+                                            )}
+                                        </SelectItem>
+                                        <SelectItem value="role">
+                                            {t(
+                                                'management.notifications.target_role',
+                                                'Role',
+                                            )}
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
 
@@ -1044,11 +1059,20 @@ export default function ManagementNotificationsPage() {
                     </DialogContent>
                 </Dialog>
 
-                <AnnouncementViewDialog item={view} onClose={() => setView(null)} />
+                <AnnouncementViewDialog
+                    item={view}
+                    onClose={() => setView(null)}
+                />
 
-                <ConfirmResendDialog item={confirmResend} onClose={() => setConfirmResend(null)} />
+                <ConfirmResendDialog
+                    item={confirmResend}
+                    onClose={() => setConfirmResend(null)}
+                />
 
-                <ConfirmCancelDialog item={confirmCancel} onClose={() => setConfirmCancel(null)} />
+                <ConfirmCancelDialog
+                    item={confirmCancel}
+                    onClose={() => setConfirmCancel(null)}
+                />
                 <Card>
                     <CardContent>
                         <DataTableServer<HistoryItem, unknown>

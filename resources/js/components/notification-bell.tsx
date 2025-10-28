@@ -1,6 +1,6 @@
-import * as React from 'react';
 import { router } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
@@ -14,9 +14,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useNotificationsActions } from '@/hooks/use-notifications';
 import { formatDate, formatTimeAgo } from '@/lib/format';
 import { useNotificationsStore } from '@/stores/notifications';
-import { useNotificationsActions } from '@/hooks/use-notifications';
 
 const TITLE_MAX_CHARS = 30;
 const MESSAGE_MAX_CHARS = 50;
@@ -43,7 +43,6 @@ export function NotificationBell() {
         } catch {
             /* ignore */
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     // Persist changes
     React.useEffect(() => {
@@ -74,9 +73,13 @@ export function NotificationBell() {
                     className="relative"
                     aria-label={
                         unreadCount > 0
-                            ? t('notifications.unread_count', '{{count}} belum dibaca', {
-                                  count: unreadCount,
-                              })
+                            ? t(
+                                  'notifications.unread_count',
+                                  '{{count}} belum dibaca',
+                                  {
+                                      count: unreadCount,
+                                  },
+                              )
                             : t('nav.notifications.label', 'Notifikasi')
                     }
                 >
@@ -89,47 +92,66 @@ export function NotificationBell() {
                             {unreadCount > 99 ? '99+' : unreadCount}
                         </Badge>
                     )}
-                    <span className="sr-only">{t('nav.notifications.label', 'Notifikasi')}</span>
+                    <span className="sr-only">
+                        {t('nav.notifications.label', 'Notifikasi')}
+                    </span>
                 </Button>
             </DropdownMenuTrigger>
 
             {/* Panel dropdown dengan header + konten scroll + footer yang selalu di bawah */}
             <DropdownMenuContent
                 align="end"
-                className="w-96 !overflow-hidden p-0 flex flex-col"
+                className="flex w-96 flex-col !overflow-hidden p-0"
                 style={{
                     // Give the content a definite height so ScrollArea can size correctly
                     height: `min(${PANEL_MAX_HEIGHT}, var(--radix-dropdown-menu-content-available-height))`,
                     minHeight: PANEL_MIN_HEIGHT,
                 }}
             >
-                <DropdownMenuLabel className="z-10 flex items-center justify-between gap-2 border-b bg-popover/80 px-4 py-3 backdrop-blur">
+                <DropdownMenuLabel className="bg-popover/80 z-10 flex items-center justify-between gap-2 border-b px-4 py-3 backdrop-blur">
                     <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold">{t('nav.notifications.label', 'Notifikasi')}</span>
+                        <span className="text-sm font-semibold">
+                            {t('nav.notifications.label', 'Notifikasi')}
+                        </span>
                         {unreadCount > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                                {t('notifications.unread_count', '{{count}} belum dibaca', { count: unreadCount })}
+                            <span className="text-muted-foreground text-xs">
+                                {t(
+                                    'notifications.unread_count',
+                                    '{{count}} belum dibaca',
+                                    { count: unreadCount },
+                                )}
                             </span>
                         )}
                     </div>
                     <ToggleGroup
                         type="single"
                         value={filter}
-                        onValueChange={(v) => v && setFilter(v as 'all' | 'unread')}
+                        onValueChange={(v) =>
+                            v && setFilter(v as 'all' | 'unread')
+                        }
                         size="sm"
                         variant="outline"
                         aria-label="Filter notifikasi"
                     >
-                        <ToggleGroupItem value="all" aria-label={t('common.all', 'Semua')}>
+                        <ToggleGroupItem
+                            value="all"
+                            aria-label={t('common.all', 'Semua')}
+                        >
                             {t('common.all', 'Semua')}
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="unread" aria-label={t('notifications.unread', 'Belum dibaca')}>
+                        <ToggleGroupItem
+                            value="unread"
+                            aria-label={t(
+                                'notifications.unread',
+                                'Belum dibaca',
+                            )}
+                        >
                             {t('notifications.unread', 'Belum dibaca')}
                         </ToggleGroupItem>
                     </ToggleGroup>
                 </DropdownMenuLabel>
 
-                <ScrollArea className="flex-1 min-h-0">
+                <ScrollArea className="min-h-0 flex-1">
                     {(() => {
                         const filtered =
                             filter === 'all'
@@ -138,11 +160,16 @@ export function NotificationBell() {
                         const visible = filtered.slice(0, MAX_VISIBLE_ITEMS);
                         if (visible.length === 0) {
                             return (
-                                <div className="flex min-h-full flex-col items-center justify-center gap-2 px-6 py-10 text-center text-sm text-muted-foreground">
+                                <div className="text-muted-foreground flex min-h-full flex-col items-center justify-center gap-2 px-6 py-10 text-center text-sm">
                                     <div className="rounded-full border p-2">
                                         <Bell className="h-6 w-6 opacity-70" />
                                     </div>
-                                    <p>{t('nav.notifications.empty', 'Belum ada notifikasi.')}</p>
+                                    <p>
+                                        {t(
+                                            'nav.notifications.empty',
+                                            'Belum ada notifikasi.',
+                                        )}
+                                    </p>
                                 </div>
                             );
                         }
@@ -150,102 +177,130 @@ export function NotificationBell() {
                             <ul className="py-0">
                                 {visible.map((n, idx) => {
                                     const key = `${n.id || 'idx'}:${idx}`;
-                                    const isUnread = !('read_at' in n) || !n.read_at;
+                                    const isUnread =
+                                        !('read_at' in n) || !n.read_at;
                                     const rawTitle =
                                         typeof n.title === 'string'
                                             ? n.title
-                                        : 'Notifikasi';
-                                const rawMessage =
-                                    typeof n.message === 'string'
-                                        ? n.message
-                                        : '';
-                                const title =
-                                    rawTitle.length > TITLE_MAX_CHARS
-                                        ? `${rawTitle
-                                              .slice(0, TITLE_MAX_CHARS)
-                                              .trimEnd()}...`
-                                        : rawTitle;
-                                const message =
-                                    rawMessage.length > MESSAGE_MAX_CHARS
-                                        ? `${rawMessage
-                                              .slice(0, MESSAGE_MAX_CHARS)
-                                              .trimEnd()}...`
-                                        : rawMessage;
+                                            : 'Notifikasi';
+                                    const rawMessage =
+                                        typeof n.message === 'string'
+                                            ? n.message
+                                            : '';
+                                    const title =
+                                        rawTitle.length > TITLE_MAX_CHARS
+                                            ? `${rawTitle
+                                                  .slice(0, TITLE_MAX_CHARS)
+                                                  .trimEnd()}...`
+                                            : rawTitle;
+                                    const message =
+                                        rawMessage.length > MESSAGE_MAX_CHARS
+                                            ? `${rawMessage
+                                                  .slice(0, MESSAGE_MAX_CHARS)
+                                                  .trimEnd()}...`
+                                            : rawMessage;
 
-                                const handleClick = () => {
-                                    const hasUrl = typeof n.action_url === 'string' && n.action_url.length > 0;
-                                    const isLong = rawMessage.length > 50; // heuristic utk konten panjang
+                                    const handleClick = () => {
+                                        const hasUrl =
+                                            typeof n.action_url === 'string' &&
+                                            n.action_url.length > 0;
+                                        const isLong = rawMessage.length > 50; // heuristic utk konten panjang
 
-                                    if (hasUrl) {
-                                        // External -> new tab, internal -> same tab. Keduanya: tandai baca segera
-                                        if (n.id) void markRead(n.id);
-                                        if (isExternal(n.action_url!)) {
-                                            window.open(n.action_url!, '_blank', 'noopener,noreferrer');
-                                        } else {
-                                            window.location.assign(n.action_url!);
-                                        }
-                                        return;
-                                    }
-
-                                    if (isLong && n.id) {
-                                        // Konten panjang: buka halaman notif (dialog auto open by query), tandai baca di sana
-                                        router.visit(route('notifications.index', { open: n.id }));
-                                        return;
-                                    }
-
-                                    // Plain text & pendek: tandai baca langsung
-                                    if (n.id) void markRead(n.id);
-                                };
-
-                                return (
-                                    <li key={key} className="px-1">
-                                        <DropdownMenuItem
-                                            className={
-                                                'group relative flex gap-3 rounded-md px-4 py-3 data-[highlighted]:bg-accent/50'
+                                        if (hasUrl) {
+                                            // External -> new tab, internal -> same tab. Keduanya: tandai baca segera
+                                            if (n.id) void markRead(n.id);
+                                            if (isExternal(n.action_url!)) {
+                                                window.open(
+                                                    n.action_url!,
+                                                    '_blank',
+                                                    'noopener,noreferrer',
+                                                );
+                                            } else {
+                                                window.location.assign(
+                                                    n.action_url!,
+                                                );
                                             }
-                                            onClick={handleClick}
-                                        >
-                                            {/* Floating unread badge (kiri atas) */}
-                                            {isUnread && (
-                                                <span
-                                                    aria-hidden
-                                                    className="pointer-events-none absolute left-2.5 top-3 h-2 w-2 rounded-full bg-primary/90 shadow-[0_0_0_3px] shadow-primary/20"
-                                                />
-                                            )}
+                                            return;
+                                        }
 
-                                            {/* Konten utama */}
-                                            <div className="min-w-0 flex-1">
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div className="pl-2.5 truncate text-sm font-medium leading-5">
-                                                        {title}
+                                        if (isLong && n.id) {
+                                            // Konten panjang: buka halaman notif (dialog auto open by query), tandai baca di sana
+                                            router.visit(
+                                                route('notifications.index', {
+                                                    open: n.id,
+                                                }),
+                                            );
+                                            return;
+                                        }
+
+                                        // Plain text & pendek: tandai baca langsung
+                                        if (n.id) void markRead(n.id);
+                                    };
+
+                                    return (
+                                        <li key={key} className="px-1">
+                                            <DropdownMenuItem
+                                                className={
+                                                    'group data-[highlighted]:bg-accent/50 relative flex gap-3 rounded-md px-4 py-3'
+                                                }
+                                                onClick={handleClick}
+                                            >
+                                                {/* Floating unread badge (kiri atas) */}
+                                                {isUnread && (
+                                                    <span
+                                                        aria-hidden
+                                                        className="bg-primary/90 shadow-primary/20 pointer-events-none absolute top-3 left-2.5 h-2 w-2 rounded-full shadow-[0_0_0_3px]"
+                                                    />
+                                                )}
+
+                                                {/* Konten utama */}
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div className="truncate pl-2.5 text-sm leading-5 font-medium">
+                                                            {title}
+                                                        </div>
+                                                        <time
+                                                            dateTime={
+                                                                n.created_at ||
+                                                                undefined
+                                                            }
+                                                            title={formatDate(
+                                                                n.created_at,
+                                                                true,
+                                                            )}
+                                                            className="text-muted-foreground flex-shrink-0 pr-4 text-[10px]"
+                                                        >
+                                                            {formatTimeAgo(
+                                                                n.created_at,
+                                                            )}
+                                                        </time>
                                                     </div>
-                                                    <time
-                                                        dateTime={n.created_at || undefined}
-                                                        title={formatDate(n.created_at, true)}
-                                                        className="flex-shrink-0 pr-4 text-[10px] text-muted-foreground"
-                                                    >
-                                                        {formatTimeAgo(n.created_at)}
-                                                    </time>
+                                                    {message ? (
+                                                        <p className="text-muted-foreground truncate pl-2.5 text-xs">
+                                                            {message}
+                                                        </p>
+                                                    ) : null}
                                                 </div>
-                                                {message ? (
-                                                    <p className="pl-2.5 truncate text-xs text-muted-foreground">
-                                                        {message}
-                                                    </p>
-                                                ) : null}
-                                            </div>
-                                        </DropdownMenuItem>
-                                    </li>
-                                );
-                            })}
+                                            </DropdownMenuItem>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         );
                     })()}
                 </ScrollArea>
 
                 {/* Footer selalu di bawah */}
-                <div className="border-t bg-popover/80 px-4 py-2 backdrop-blur">
-                    <Button variant="secondary" className="w-full" onClick={goToIndex}>
-                        {t('nav.notifications.open_page', 'Buka halaman Notifikasi')}
+                <div className="bg-popover/80 border-t px-4 py-2 backdrop-blur">
+                    <Button
+                        variant="secondary"
+                        className="w-full"
+                        onClick={goToIndex}
+                    >
+                        {t(
+                            'nav.notifications.open_page',
+                            'Buka halaman Notifikasi',
+                        )}
                     </Button>
                 </div>
             </DropdownMenuContent>

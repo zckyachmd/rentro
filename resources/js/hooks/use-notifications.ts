@@ -59,4 +59,3 @@ export function useNotificationsActions() {
 
     return { markRead, markAllRead } as const;
 }
-
