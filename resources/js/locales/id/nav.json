@@ -12,7 +12,8 @@
         "nav_menu_desc": "Akses menu aplikasi",
         "notifications": {
             "label": "Notifikasi",
-            "empty": "Belum ada notifikasi."
+            "empty": "Belum ada notifikasi.",
+            "open_page": "Buka halaman Notifikasi"
         },
         "open_menu": "Buka menu",
         "overview": "Ikhtisar",

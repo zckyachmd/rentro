@@ -12,7 +12,8 @@
         "nav_menu_desc": "Access app menu",
         "notifications": {
             "label": "Notifications",
-            "empty": "No notifications."
+            "empty": "No notifications.",
+            "open_page": "Open Notifications Page"
         },
         "open_menu": "Open menu",
         "overview": "Overview",

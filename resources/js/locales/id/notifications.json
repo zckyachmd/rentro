@@ -1,0 +1,21 @@
+{
+  "notifications": {
+    "title": "Notifikasi",
+    "desc": "Update dan peringatan terbaru Anda",
+    "unread": "Belum dibaca",
+    "all": "Semua",
+    "mark_all": "Tandai semua telah dibaca",
+    "marking_all": "Menandai...",
+    "empty": "Tidak ada notifikasi",
+    "open": "Buka",
+    "mark_read": "Tandai telah dibaca",
+    "new": "Baru",
+    "unread_count": "{{count}} belum dibaca",
+    "page_info": "Halaman",
+    "of": "dari",
+    "total": "total",
+    "prev": "Sebelumnya",
+    "next": "Berikutnya"
+  }
+}
+

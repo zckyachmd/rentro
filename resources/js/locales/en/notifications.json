@@ -1,0 +1,21 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "desc": "Your latest updates and alerts",
+    "unread": "Unread",
+    "all": "All",
+    "mark_all": "Mark all as read",
+    "marking_all": "Marking...",
+    "empty": "No notifications",
+    "open": "Open",
+    "mark_read": "Mark as read",
+    "new": "New",
+    "unread_count": "{{count}} unread",
+    "page_info": "Page",
+    "of": "of",
+    "total": "total",
+    "prev": "Prev",
+    "next": "Next"
+  }
+}
+
