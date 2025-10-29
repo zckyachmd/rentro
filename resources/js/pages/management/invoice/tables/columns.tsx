@@ -116,6 +116,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
         id: 'status',
         title: i18n.t('common.status'),
         className: COL.status,
+        sortable: true,
         cell: ({ row }) => {
             const raw = row.original.status || '';
             const key = raw.trim().toLowerCase().replace(/\s+/g, '_');

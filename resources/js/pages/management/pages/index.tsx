@@ -1,16 +1,10 @@
 import { router, usePage } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import {
     Dialog,
@@ -20,6 +14,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -112,13 +107,17 @@ export default function PagesIndex() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>{tPages('list_title')}</CardTitle>
-                        <CardDescription>{tPages('desc')}</CardDescription>
+                        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                            <Filter className="h-4 w-4" /> {t('common.filter')}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="flex w-full flex-1 items-center gap-2">
                                 <div className="w-full max-w-[240px]">
+                                    <Label className="text-muted-foreground mb-1 block text-xs">
+                                        {tPages('filters.page')}
+                                    </Label>
                                     <Select
                                         value={
                                             q.fpage ? String(q.fpage) : 'all'
@@ -130,9 +129,7 @@ export default function PagesIndex() {
                                             })
                                         }
                                     >
-                                        <SelectTrigger
-                                            aria-label={tPages('filters.page')}
-                                        >
+                                        <SelectTrigger>
                                             <SelectValue
                                                 placeholder={tPages(
                                                     'filters.select_page',
@@ -241,7 +238,7 @@ export default function PagesIndex() {
                 </Card>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<PageSectionItem, unknown>
                             columns={columns}
                             rows={rows}

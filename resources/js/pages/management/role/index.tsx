@@ -15,13 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
@@ -98,56 +92,38 @@ export default function RolesIndex() {
         <AppLayout
             pageTitle={t('management.role.title')}
             pageDescription={t('management.role.desc')}
+            actions={
+                <Button
+                    type="button"
+                    size="sm"
+                    onClick={openCreate}
+                    className="gap-2"
+                >
+                    <Plus className="h-4 w-4" /> {t('management.role.add')}
+                </Button>
+            }
         >
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle>{t('management.role.list_title')}</CardTitle>
-                        <CardDescription>
-                            {t('management.role.desc')}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="flex w-full flex-1 items-center gap-2" />
-
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={openCreate}
-                                    className="gap-2"
-                                >
-                                    <Plus className="h-4 w-4" />{' '}
-                                    {t('management.role.add')}
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <DataTableServer<RoleItem, unknown>
-                            columns={tableColumns}
-                            rows={roles.data}
-                            paginator={roles}
-                            search={q.search}
-                            onSearchChange={(v) =>
-                                onQueryChange({ page: 1, search: v })
-                            }
-                            searchKey="name"
-                            searchPlaceholder={t('nav.search.placeholder')}
-                            sort={q.sort}
-                            dir={q.dir}
-                            onSortChange={handleSortChange}
-                            onQueryChange={onQueryChange}
-                            loading={processing}
-                            emptyText={t('management.role.empty')}
-                        />
-                    </CardContent>
-                </Card>
-            </div>
+            <Card>
+                <CardContent>
+                    <DataTableServer<RoleItem, unknown>
+                        columns={tableColumns}
+                        rows={roles.data}
+                        paginator={roles}
+                        search={q.search}
+                        onSearchChange={(v) =>
+                            onQueryChange({ page: 1, search: v })
+                        }
+                        searchKey="name"
+                        searchPlaceholder={t('nav.search.placeholder')}
+                        sort={q.sort}
+                        dir={q.dir}
+                        onSortChange={handleSortChange}
+                        onQueryChange={onQueryChange}
+                        loading={processing}
+                        emptyText={t('management.role.empty')}
+                    />
+                </CardContent>
+            </Card>
 
             <RoleUpsertDialog
                 open={dialog.edit.open}

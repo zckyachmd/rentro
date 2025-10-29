@@ -300,10 +300,10 @@ export const createColumns = (
                             <DropdownMenuSeparator />
                             <Can all={['user.force-logout']}>
                                 <DropdownMenuItem
-                                    className="text-red-600 focus:text-red-600"
+                                    className="text-destructive focus:text-destructive"
                                     onClick={() => opts?.onRevokeSession?.(u)}
                                 >
-                                    <LogOut className="mr-2 h-4 w-4" />{' '}
+                                    <LogOut className="text-destructive mr-2 h-4 w-4" />{' '}
                                     {i18n.t('user.actions.force_logout', {
                                         ns: 'management/user',
                                     })}

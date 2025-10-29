@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { Column, ColumnDef } from '@tanstack/react-table';
 import {
     Eye,
     Filter,
@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import {
     Dialog,
@@ -284,11 +285,20 @@ export default function ManagementNotificationsPage() {
         () => [
             {
                 accessorKey: 'created_at',
-                header: () => (
+                header: ({ column }) => (
                     <div className="pr-2">
-                        {t('management.notifications.th_time', 'Time')}
+                        <DataTableColumnHeader
+                            column={
+                                column as unknown as Column<unknown, unknown>
+                            }
+                            title={t(
+                                'management.notifications.th_time',
+                                'Time',
+                            )}
+                        />
                     </div>
                 ),
+                enableSorting: true,
                 cell: ({ row }) => {
                     const it = row.original;
                     return (
@@ -306,11 +316,20 @@ export default function ManagementNotificationsPage() {
             },
             {
                 accessorKey: 'scope',
-                header: () => (
+                header: ({ column }) => (
                     <div className="pr-2">
-                        {t('management.notifications.th_target', 'Target')}
+                        <DataTableColumnHeader
+                            column={
+                                column as unknown as Column<unknown, unknown>
+                            }
+                            title={t(
+                                'management.notifications.th_target',
+                                'Target',
+                            )}
+                        />
                     </div>
                 ),
+                enableSorting: true,
                 cell: ({ row }) => {
                     const it = row.original;
                     return (
@@ -330,11 +349,20 @@ export default function ManagementNotificationsPage() {
             },
             {
                 accessorKey: 'title',
-                header: () => (
+                header: ({ column }) => (
                     <div className="pr-2">
-                        {t('management.notifications.th_title', 'Title')}
+                        <DataTableColumnHeader
+                            column={
+                                column as unknown as Column<unknown, unknown>
+                            }
+                            title={t(
+                                'management.notifications.th_title',
+                                'Title',
+                            )}
+                        />
                     </div>
                 ),
+                enableSorting: true,
                 cell: ({ row }) => (
                     <div className="max-w-[260px] truncate pr-2">
                         {row.original.title}
@@ -343,11 +371,20 @@ export default function ManagementNotificationsPage() {
             },
             {
                 accessorKey: 'status',
-                header: () => (
+                header: ({ column }) => (
                     <div className="pr-2">
-                        {t('management.notifications.th_status', 'Status')}
+                        <DataTableColumnHeader
+                            column={
+                                column as unknown as Column<unknown, unknown>
+                            }
+                            title={t(
+                                'management.notifications.th_status',
+                                'Status',
+                            )}
+                        />
                     </div>
                 ),
+                enableSorting: true,
                 cell: ({ row }) => {
                     const it = row.original;
                     return (
@@ -479,171 +516,50 @@ export default function ManagementNotificationsPage() {
                 'management.notifications.desc',
                 'Send announcements in real time or schedule them',
             )}
+            actions={
+                <Button size="sm" onClick={() => setOpenCompose(true)}>
+                    <Megaphone className="mr-2 h-4 w-4" />
+                    {t(
+                        'management.notifications.compose',
+                        'Compose Announcement',
+                    )}
+                </Button>
+            }
         >
             <div className="space-y-6">
-                {/* Filter + Compose (like Users management) */}
+                {/* Filters + Compose */}
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="flex items-center gap-2">
-                            <Filter className="h-4 w-4" />
-                            {t(
-                                'management.notifications.title',
-                                'Announcements',
-                            )}
+                        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                            <Filter className="h-4 w-4" /> {t('common.filter')}
                         </CardTitle>
-                        <p className="text-muted-foreground text-sm">
-                            {t(
-                                'management.notifications.desc',
-                                'Send announcements in real time or schedule them',
-                            )}
-                        </p>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="flex w-full flex-1 items-center gap-2">
+                            <div className="flex w-full flex-1 flex-wrap items-end gap-3">
                                 {/* Target filter */}
-                                <Select
-                                    value={String(filters.scope || 'all')}
-                                    onValueChange={(v) => {
-                                        const nextScope =
-                                            v === 'all' ? undefined : v;
-                                        router.visit(
-                                            route(
-                                                'management.announcements.index',
-                                                {
-                                                    scope: nextScope,
-                                                    status:
-                                                        filters.status ||
-                                                        undefined,
-                                                    role_id:
-                                                        filters.role_id ||
-                                                        undefined,
-                                                    q: search || undefined,
-                                                },
-                                            ),
-                                            {
-                                                preserveScroll: true,
-                                                preserveState: true,
-                                            },
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full md:w-[140px]">
-                                        <SelectValue
-                                            placeholder={t(
-                                                'management.notifications.target',
-                                                'Target',
-                                            )}
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t('common.all', 'All')}
-                                        </SelectItem>
-                                        <SelectItem value="global">
-                                            {t(
-                                                'management.notifications.target_global',
-                                                'Global',
-                                            )}
-                                        </SelectItem>
-                                        <SelectItem value="role">
-                                            {t(
-                                                'management.notifications.target_role',
-                                                'Role',
-                                            )}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                {/* Status filter */}
-                                <Select
-                                    value={String(filters.status || 'all')}
-                                    onValueChange={(v) => {
-                                        const next =
-                                            v === 'all' ? undefined : v;
-                                        router.visit(
-                                            route(
-                                                'management.announcements.index',
-                                                {
-                                                    status: next,
-                                                    scope:
-                                                        filters.scope ||
-                                                        undefined,
-                                                    role_id:
-                                                        filters.role_id ||
-                                                        undefined,
-                                                    q: search || undefined,
-                                                },
-                                            ),
-                                            {
-                                                preserveScroll: true,
-                                                preserveState: true,
-                                            },
-                                        );
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full md:w-[150px]">
-                                        <SelectValue
-                                            placeholder={t(
-                                                'management.notifications.th_status',
-                                                'Status',
-                                            )}
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t('common.all', 'All')}
-                                        </SelectItem>
-                                        <SelectItem value="pending">
-                                            {t(
-                                                'management.notifications.status.pending',
-                                                'Pending',
-                                            )}
-                                        </SelectItem>
-                                        <SelectItem value="scheduled">
-                                            {t(
-                                                'management.notifications.status.scheduled',
-                                                'Scheduled',
-                                            )}
-                                        </SelectItem>
-                                        <SelectItem value="queued">
-                                            {t(
-                                                'management.notifications.status.queued',
-                                                'Queued',
-                                            )}
-                                        </SelectItem>
-                                        <SelectItem value="sent">
-                                            {t(
-                                                'management.notifications.status.sent',
-                                                'Sent',
-                                            )}
-                                        </SelectItem>
-                                        <SelectItem value="failed">
-                                            {t(
-                                                'management.notifications.status.failed',
-                                                'Failed',
-                                            )}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                {/* Role filter (when scope=role) */}
-                                {String(filters.scope || '') === 'role' && (
+                                <div className="w-full max-w-[160px]">
+                                    <Label className="text-muted-foreground mb-1 block text-xs">
+                                        {t(
+                                            'management.notifications.target',
+                                            'Target',
+                                        )}
+                                    </Label>
                                     <Select
-                                        value={String(filters.role_id || 'all')}
+                                        value={String(filters.scope || 'all')}
                                         onValueChange={(v) => {
-                                            const next =
+                                            const nextScope =
                                                 v === 'all' ? undefined : v;
                                             router.visit(
                                                 route(
                                                     'management.announcements.index',
                                                     {
-                                                        role_id: next,
-                                                        scope:
-                                                            filters.scope ||
-                                                            undefined,
+                                                        scope: nextScope,
                                                         status:
                                                             filters.status ||
+                                                            undefined,
+                                                        role_id:
+                                                            filters.role_id ||
                                                             undefined,
                                                         q: search || undefined,
                                                     },
@@ -655,43 +571,165 @@ export default function ManagementNotificationsPage() {
                                             );
                                         }}
                                     >
-                                        <SelectTrigger className="w-full md:w-[180px]">
-                                            <SelectValue
-                                                placeholder={t(
-                                                    'management.notifications.role_select',
-                                                    'Role',
-                                                )}
-                                            />
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="all">
                                                 {t('common.all', 'All')}
                                             </SelectItem>
-                                            {roles.map((r) => (
-                                                <SelectItem
-                                                    key={r.id}
-                                                    value={String(r.id)}
-                                                >
-                                                    {r.name}
-                                                </SelectItem>
-                                            ))}
+                                            <SelectItem value="global">
+                                                {t(
+                                                    'management.notifications.target_global',
+                                                    'Global',
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="role">
+                                                {t(
+                                                    'management.notifications.target_role',
+                                                    'Role',
+                                                )}
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+
+                                {/* Status filter */}
+                                <div className="w-full max-w-[180px]">
+                                    <Label className="text-muted-foreground mb-1 block text-xs">
+                                        {t(
+                                            'management.notifications.th_status',
+                                            'Status',
+                                        )}
+                                    </Label>
+                                    <Select
+                                        value={String(filters.status || 'all')}
+                                        onValueChange={(v) => {
+                                            const next =
+                                                v === 'all' ? undefined : v;
+                                            router.visit(
+                                                route(
+                                                    'management.announcements.index',
+                                                    {
+                                                        status: next,
+                                                        scope:
+                                                            filters.scope ||
+                                                            undefined,
+                                                        role_id:
+                                                            filters.role_id ||
+                                                            undefined,
+                                                        q: search || undefined,
+                                                    },
+                                                ),
+                                                {
+                                                    preserveScroll: true,
+                                                    preserveState: true,
+                                                },
+                                            );
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">
+                                                {t('common.all', 'All')}
+                                            </SelectItem>
+                                            <SelectItem value="pending">
+                                                {t(
+                                                    'management.notifications.status.pending',
+                                                    'Pending',
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="scheduled">
+                                                {t(
+                                                    'management.notifications.status.scheduled',
+                                                    'Scheduled',
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="queued">
+                                                {t(
+                                                    'management.notifications.status.queued',
+                                                    'Queued',
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="sent">
+                                                {t(
+                                                    'management.notifications.status.sent',
+                                                    'Sent',
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="failed">
+                                                {t(
+                                                    'management.notifications.status.failed',
+                                                    'Failed',
+                                                )}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Role filter (when scope=role) */}
+                                {String(filters.scope || '') === 'role' && (
+                                    <div className="w-full max-w-[200px]">
+                                        <Label className="text-muted-foreground mb-1 block text-xs">
+                                            {t(
+                                                'management.notifications.role_select',
+                                                'Role',
+                                            )}
+                                        </Label>
+                                        <Select
+                                            value={String(
+                                                filters.role_id || 'all',
+                                            )}
+                                            onValueChange={(v) => {
+                                                const next =
+                                                    v === 'all' ? undefined : v;
+                                                router.visit(
+                                                    route(
+                                                        'management.announcements.index',
+                                                        {
+                                                            role_id: next,
+                                                            scope:
+                                                                filters.scope ||
+                                                                undefined,
+                                                            status:
+                                                                filters.status ||
+                                                                undefined,
+                                                            q:
+                                                                search ||
+                                                                undefined,
+                                                        },
+                                                    ),
+                                                    {
+                                                        preserveScroll: true,
+                                                        preserveState: true,
+                                                    },
+                                                );
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">
+                                                    {t('common.all', 'All')}
+                                                </SelectItem>
+                                                {roles.map((r) => (
+                                                    <SelectItem
+                                                        key={r.id}
+                                                        value={String(r.id)}
+                                                    >
+                                                        {r.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    size="sm"
-                                    onClick={() => setOpenCompose(true)}
-                                >
-                                    <Megaphone className="mr-2 h-4 w-4" />
-                                    {t(
-                                        'management.notifications.compose',
-                                        'Compose Announcement',
-                                    )}
-                                </Button>
-                            </div>
+                            <div className="flex items-center gap-2" />
                         </div>
                     </CardContent>
                 </Card>
@@ -734,7 +772,10 @@ export default function ManagementNotificationsPage() {
                                         )
                                     }
                                 >
-                                    <SelectTrigger id="target">
+                                    <SelectTrigger
+                                        id="target"
+                                        className="h-9 w-full"
+                                    >
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -773,6 +814,7 @@ export default function ManagementNotificationsPage() {
                                     >
                                         <SelectTrigger
                                             id="role"
+                                            className="h-9 w-full"
                                             aria-invalid={Boolean(
                                                 errors.role_id,
                                             )}

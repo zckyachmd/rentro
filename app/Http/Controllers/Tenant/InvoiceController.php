@@ -40,6 +40,7 @@ class InvoiceController extends Controller
                 },
             ],
             'sortable' => [
+                'number'          => 'number',
                 'due_date'        => 'due_date',
                 'amount_idr'      => 'amount_idr',
                 'outstanding_idr' => 'outstanding_idr',

@@ -55,6 +55,7 @@ export const createColumns = (opts?: {
         accessorKey: 'name',
         title: i18n.t('common.name'),
         className: COL.name,
+        sortable: true,
         cell: ({ getValue }) => (
             <div className={COL.name}>{String(getValue() ?? '—')}</div>
         ),

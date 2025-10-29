@@ -3,13 +3,7 @@ import { usePage } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     DataTableServer,
     type QueryBag,
@@ -119,17 +113,7 @@ export default function AuditLogIndex() {
         <AppLayout pageTitle={tAudit('title')} pageDescription={tAudit('desc')}>
             <div className="space-y-6">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>{tAudit('list_title')}</CardTitle>
-                        <CardDescription>{tAudit('desc')}</CardDescription>
-                    </CardHeader>
                     <CardContent>
-                        <div className="flex items-center justify-end gap-2" />
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
                         <DataTableServer<ActivityItem, unknown>
                             columns={tableColumns}
                             rows={logs.data}

@@ -1,7 +1,7 @@
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { router, usePage } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Plus } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -17,14 +17,9 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -99,12 +94,16 @@ export default function AmenitiesIndex() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>{tAmen('title')}</CardTitle>
-                        <CardDescription>{tAmen('desc')}</CardDescription>
+                        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                            <Filter className="h-4 w-4" /> {t('common.filter')}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="flex w-full flex-1 items-center gap-2">
+                            <div className="flex w-full flex-1 flex-col gap-2 md:max-w-[220px]">
+                                <Label className="text-muted-foreground text-xs">
+                                    {tAmen('form.category')}
+                                </Label>
                                 <Select
                                     value={
                                         q.category ? String(q.category) : 'all'
@@ -116,7 +115,7 @@ export default function AmenitiesIndex() {
                                         })
                                     }
                                 >
-                                    <SelectTrigger className="w-[180px]">
+                                    <SelectTrigger className="w-full">
                                         <SelectValue
                                             placeholder={tAmen(
                                                 'all_categories',
@@ -147,7 +146,7 @@ export default function AmenitiesIndex() {
                 </Card>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<AmenityItem, unknown>
                             columns={columns}
                             rows={rows}

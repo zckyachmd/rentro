@@ -23,6 +23,7 @@ export function createColumns(opts: {
     return [
         {
             accessorKey: 'name',
+            enableSorting: true,
             header: ({ column }) => (
                 <DataTableColumnHeader column={column as any} title="Name" />
             ),
@@ -40,12 +41,14 @@ export function createColumns(opts: {
         },
         {
             accessorKey: 'slug',
+            enableSorting: false,
             header: ({ column }) => (
                 <DataTableColumnHeader column={column as any} title="Slug" />
             ),
         },
         {
             accessorKey: 'stack_mode',
+            enableSorting: false,
             header: ({ column }) => (
                 <DataTableColumnHeader
                     column={column as any}
@@ -68,6 +71,7 @@ export function createColumns(opts: {
         },
         {
             accessorKey: 'default_channel',
+            enableSorting: false,
             header: ({ column }) => (
                 <DataTableColumnHeader
                     column={column as any}
@@ -95,6 +99,7 @@ export function createColumns(opts: {
         },
         {
             accessorKey: 'priority',
+            enableSorting: true,
             header: ({ column }) => (
                 <DataTableColumnHeader
                     column={column as any}
@@ -104,6 +109,7 @@ export function createColumns(opts: {
         },
         {
             accessorKey: 'is_active',
+            enableSorting: false,
             header: ({ column }) => (
                 <DataTableColumnHeader
                     column={column as any}

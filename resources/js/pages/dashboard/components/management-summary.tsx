@@ -33,7 +33,6 @@ import {
     TooltipTrigger,
     Tooltip as UiTooltip,
 } from '@/components/ui/tooltip';
-import { toISO } from '@/lib/date';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
 import type {
@@ -195,22 +194,6 @@ export default function ManagementSummary({
                                     },
                                 );
                             }}
-                            disabledOptions={['qtd']}
-                            custom={[
-                                {
-                                    key: '14d',
-                                    label: '14D',
-                                    getRange: () => {
-                                        const endD = new Date();
-                                        const startD = new Date();
-                                        startD.setDate(endD.getDate() - 13);
-                                        return {
-                                            start: toISO(startD),
-                                            end: toISO(endD),
-                                        };
-                                    },
-                                },
-                            ]}
                             showReset
                             resetDisabled={!start && !end}
                             onReset={() => {

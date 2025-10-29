@@ -39,7 +39,7 @@ class AnnouncementController extends Controller
         $sort    = (string) $request->query('sort', 'created_at');
         $dir     = strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        $allowedSort = ['created_at', 'scheduled_at', 'status', 'title'];
+        $allowedSort = ['created_at', 'scheduled_at', 'status', 'title', 'scope'];
         if (!in_array($sort, $allowedSort, true)) {
             $sort = 'created_at';
         }

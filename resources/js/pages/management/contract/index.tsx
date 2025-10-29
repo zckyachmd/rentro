@@ -175,7 +175,6 @@ export default function ContractIndex(props: ContractsPageProps) {
         <AppLayout
             pageTitle={tContract('list.title')}
             pageDescription={tContract('list.desc')}
-            titleIcon="ScrollText"
         >
             <div className="space-y-6">
                 <ContractsActionGuideDialog
@@ -233,7 +232,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                             ) : null}
                         </div>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-[160px_1fr_1fr_auto] md:items-end">
                             <div>
                                 <Label
@@ -308,75 +307,72 @@ export default function ContractIndex(props: ContractsPageProps) {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-2 pt-2 md:col-span-12">
-                            <div className="flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-between">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <QuickRange
-                                        onSelect={(s, e) => {
-                                            setStart(s);
-                                            setEnd(e);
-                                            safeOnQueryChange({
-                                                page: 1,
-                                                start: s,
-                                                end: e,
-                                            } as SafePayload);
-                                        }}
-                                        showReset
-                                        onReset={resetFilter}
-                                    />
-                                </div>
-                                <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto md:shrink-0 md:flex-nowrap">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            const qs = new URLSearchParams();
-                                            if (status)
-                                                qs.set('status', status);
-                                            const currentSearch =
-                                                (q as QueryBag).search ?? '';
-                                            if (currentSearch)
-                                                qs.set('q', currentSearch);
-                                            if (start) qs.set('start', start);
-                                            if (end) qs.set('end', end);
-                                            const url = `${route('management.contracts.export')}${qs.toString() ? `?${qs.toString()}` : ''}`;
-                                            if (typeof window !== 'undefined')
-                                                window.open(url, '_blank');
-                                        }}
-                                    >
-                                        {t('common.export_csv')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setOpenGuide(true)}
-                                    >
-                                        {tContract('list.guide')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        onClick={() =>
-                                            router.visit(
-                                                route(
-                                                    'management.contracts.create',
-                                                ),
-                                            )
-                                        }
-                                    >
-                                        <Plus className="mr-2 h-4 w-4" />{' '}
-                                        {tContract('list.create')}
-                                    </Button>
-                                </div>
+                        <div className="mt-3 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-between">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <QuickRange
+                                    onSelect={(s, e) => {
+                                        setStart(s);
+                                        setEnd(e);
+                                        safeOnQueryChange({
+                                            page: 1,
+                                            start: s,
+                                            end: e,
+                                        } as SafePayload);
+                                    }}
+                                    showReset
+                                    onReset={resetFilter}
+                                />
+                            </div>
+                            <div className="flex w-full flex-wrap items-center justify-end gap-2 md:w-auto md:shrink-0 md:flex-nowrap">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        const qs = new URLSearchParams();
+                                        if (status) qs.set('status', status);
+                                        const currentSearch =
+                                            (q as QueryBag).search ?? '';
+                                        if (currentSearch)
+                                            qs.set('q', currentSearch);
+                                        if (start) qs.set('start', start);
+                                        if (end) qs.set('end', end);
+                                        const url = `${route('management.contracts.export')}${qs.toString() ? `?${qs.toString()}` : ''}`;
+                                        if (typeof window !== 'undefined')
+                                            window.open(url, '_blank');
+                                    }}
+                                >
+                                    {t('common.export_csv')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setOpenGuide(true)}
+                                >
+                                    {tContract('list.guide')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={() =>
+                                        router.visit(
+                                            route(
+                                                'management.contracts.create',
+                                            ),
+                                        )
+                                    }
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />{' '}
+                                    {tContract('list.create')}
+                                </Button>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<ContractItem, unknown>
                             columns={tableColumns}
                             rows={contracts}

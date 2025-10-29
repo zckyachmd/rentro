@@ -33,6 +33,7 @@ class ContractController extends Controller
             'sortable' => [
                 'start_date' => 'start_date',
                 'end_date'   => 'end_date',
+                'rent'       => 'rent_idr',
                 'rent_idr'   => 'rent_idr',
                 'status'     => 'status',
             ],

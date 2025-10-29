@@ -202,9 +202,9 @@ export default function PaymentIndex() {
                                 </Select>
                             </div>
                             <div>
-                                <label className="text-muted-foreground mb-1 block text-xs">
+                                <Label className="text-muted-foreground mb-1 block text-xs">
                                     {t('payment.form.method')}
-                                </label>
+                                </Label>
                                 <Select
                                     value={methodValue}
                                     onValueChange={(v) =>
@@ -237,18 +237,18 @@ export default function PaymentIndex() {
                                 </Select>
                             </div>
                             <div>
-                                <label className="text-muted-foreground mb-1 block text-xs">
+                                <Label className="text-muted-foreground mb-1 block text-xs">
                                     {t('dashboard.filters.start')}
-                                </label>
+                                </Label>
                                 <DatePickerInput
                                     value={start}
                                     onChange={setStart}
                                 />
                             </div>
                             <div>
-                                <label className="text-muted-foreground mb-1 block text-xs">
+                                <Label className="text-muted-foreground mb-1 block text-xs">
                                     {t('dashboard.filters.end')}
-                                </label>
+                                </Label>
                                 <DatePickerInput
                                     value={end}
                                     onChange={setEnd}
@@ -277,26 +277,6 @@ export default function PaymentIndex() {
                                             end: e,
                                         });
                                     }}
-                                    disabledOptions={['qtd']}
-                                    custom={[
-                                        {
-                                            key: '14d',
-                                            label: '14D',
-                                            getRange: () => {
-                                                const endD = new Date();
-                                                const startD = new Date();
-                                                startD.setDate(
-                                                    endD.getDate() - 13,
-                                                );
-                                                const toIso = (d: Date) =>
-                                                    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                                                return {
-                                                    start: toIso(startD),
-                                                    end: toIso(endD),
-                                                };
-                                            },
-                                        },
-                                    ]}
                                     showReset
                                     resetDisabled={!start && !end}
                                     onReset={() => {
@@ -350,7 +330,7 @@ export default function PaymentIndex() {
                 </Card>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<PaymentRow, unknown>
                             columns={createColumns({
                                 onPrint: (row) =>

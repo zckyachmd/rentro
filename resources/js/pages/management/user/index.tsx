@@ -1,19 +1,14 @@
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { usePage } from '@inertiajs/react';
-import { UserPlus } from 'lucide-react';
+import { Filter, UserPlus } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -41,7 +36,7 @@ const computeInitials = (name?: string | null) =>
     (name?.slice(0, 1) ?? '?').toUpperCase();
 
 export default function UsersIndex() {
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const { t: tUser } = useTranslation('management/user');
     const { props } = usePage<InertiaPageProps & PageProps>();
     const roles: Role[] = React.useMemo(() => props.roles ?? [], [props.roles]);
@@ -88,6 +83,15 @@ export default function UsersIndex() {
         onFinish: () => setProcessing(false),
     });
 
+    const emailVerifiedValue: string =
+        ((q as Record<string, unknown>).emailVerified as string | undefined) ||
+        'all';
+    const twofaValue: string =
+        ((q as Record<string, unknown>).twofa as string | undefined) || 'all';
+    const documentStatusValue: string =
+        ((q as Record<string, unknown>).documentStatus as string | undefined) ||
+        'all';
+
     const openDialog = React.useCallback(
         (kind: DialogKind, u?: UserItem | null) => {
             if (kind !== 'create') {
@@ -113,19 +117,34 @@ export default function UsersIndex() {
     }, [openDialog, lang]);
 
     return (
-        <AppLayout pageTitle={tUser('title')} pageDescription={tUser('desc')}>
+        <AppLayout
+            pageTitle={tUser('title')}
+            pageDescription={tUser('desc')}
+            actions={
+                <Can all={['user.create']}>
+                    <Button size="sm" onClick={() => openDialog('create')}>
+                        <UserPlus className="mr-2 h-4 w-4" /> {tUser('add')}
+                    </Button>
+                </Can>
+            }
+        >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle>{tUser('title')}</CardTitle>
-                        <CardDescription>{tUser('desc')}</CardDescription>
+                        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                            <Filter className="h-4 w-4" /> {t('common.filter')}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="flex w-full flex-1 items-center gap-2">
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+                            {/* Role filter */}
+                            <div>
+                                <Label className="text-muted-foreground mb-1 block text-xs">
+                                    {t('common.role', 'Role')}
+                                </Label>
                                 <Select
                                     value={
-                                        q.roleId !== null
+                                        q.roleId != null
                                             ? String(q.roleId)
                                             : 'all'
                                     }
@@ -134,10 +153,12 @@ export default function UsersIndex() {
                                             page: 1,
                                             role_id:
                                                 v === 'all' ? null : Number(v),
+                                            roleId:
+                                                v === 'all' ? null : Number(v),
                                         })
                                     }
                                 >
-                                    <SelectTrigger className="w-full md:w-[160px]">
+                                    <SelectTrigger className="w-full">
                                         <SelectValue
                                             placeholder={tUser('all_roles')}
                                         />
@@ -150,23 +171,132 @@ export default function UsersIndex() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Can all={['user.create']}>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => openDialog('create')}
-                                    >
-                                        <UserPlus className="mr-2 h-4 w-4" />{' '}
-                                        {tUser('add')}
-                                    </Button>
-                                </Can>
+
+                            {/* Email verified filter */}
+                            <div>
+                                <Label className="text-muted-foreground mb-1 block text-xs">
+                                    {tUser(
+                                        'filter.email_verified',
+                                        'Email Verified',
+                                    )}
+                                </Label>
+                                <Select
+                                    value={emailVerifiedValue}
+                                    onValueChange={(v) =>
+                                        onQueryChange({
+                                            page: 1,
+                                            email_verified:
+                                                v === 'all' ? null : v,
+                                            emailVerified:
+                                                v === 'all' ? null : v,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            {t('common.all', 'All')}
+                                        </SelectItem>
+                                        <SelectItem value="verified">
+                                            {t('common.verified', 'Verified')}
+                                        </SelectItem>
+                                        <SelectItem value="unverified">
+                                            {t(
+                                                'common.unverified',
+                                                'Unverified',
+                                            )}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Document status filter */}
+                            <div>
+                                <Label className="text-muted-foreground mb-1 block text-xs">
+                                    {tUser(
+                                        'filter.document_status',
+                                        'Document Status',
+                                    )}
+                                </Label>
+                                <Select
+                                    value={documentStatusValue}
+                                    onValueChange={(v) =>
+                                        onQueryChange({
+                                            page: 1,
+                                            document_status:
+                                                v === 'all' ? null : v,
+                                            documentStatus:
+                                                v === 'all' ? null : v,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            {t('common.all', 'All')}
+                                        </SelectItem>
+                                        <SelectItem value="pending">
+                                            {t('document.status.pending', {
+                                                ns: 'enum',
+                                                defaultValue: 'Pending',
+                                            })}
+                                        </SelectItem>
+                                        <SelectItem value="approved">
+                                            {t('document.status.approved', {
+                                                ns: 'enum',
+                                                defaultValue: 'Approved',
+                                            })}
+                                        </SelectItem>
+                                        <SelectItem value="rejected">
+                                            {t('document.status.rejected', {
+                                                ns: 'enum',
+                                                defaultValue: 'Rejected',
+                                            })}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* 2FA filter */}
+                            <div>
+                                <Label className="text-muted-foreground mb-1 block text-xs">
+                                    {tUser('filter.twofa', 'Two-Factor Auth')}
+                                </Label>
+                                <Select
+                                    value={twofaValue}
+                                    onValueChange={(v) =>
+                                        onQueryChange({
+                                            page: 1,
+                                            twofa: v === 'all' ? null : v,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            {t('common.all', 'All')}
+                                        </SelectItem>
+                                        <SelectItem value="enabled">
+                                            {t('security:enabled', 'Enabled')}
+                                        </SelectItem>
+                                        <SelectItem value="disabled">
+                                            {t('security:disabled', 'Disabled')}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<UserItem, unknown>
                             columns={tableColumns}
                             rows={rows}
@@ -200,7 +330,7 @@ export default function UsersIndex() {
                 <RoleDialog
                     open={dialog.open}
                     onOpenChange={(v) => setDialog((s) => ({ ...s, open: v }))}
-                    user={dialog.user}
+                    user={dialog.user as UserItem}
                     roles={roles}
                 />
             )}
@@ -209,7 +339,7 @@ export default function UsersIndex() {
                 <ResetPasswordDialog
                     open={dialog.open}
                     onOpenChange={(v) => setDialog((s) => ({ ...s, open: v }))}
-                    user={dialog.user}
+                    user={dialog.user as UserItem}
                 />
             )}
 
@@ -217,7 +347,7 @@ export default function UsersIndex() {
                 <TwoFADialog
                     open={dialog.open}
                     onOpenChange={(v) => setDialog((s) => ({ ...s, open: v }))}
-                    user={dialog.user}
+                    user={dialog.user as UserItem}
                 />
             )}
 
@@ -225,7 +355,7 @@ export default function UsersIndex() {
                 <ForceLogoutDialog
                     open={dialog.open}
                     onOpenChange={(v) => setDialog((s) => ({ ...s, open: v }))}
-                    user={dialog.user}
+                    user={dialog.user as UserItem}
                 />
             )}
         </AppLayout>

@@ -102,7 +102,6 @@ export default function ManagementBookingsIndex() {
         <AppLayout
             pageTitle={tBooking('title')}
             pageDescription={tBooking('desc')}
-            titleIcon="CalendarDays"
         >
             <div className="space-y-6">
                 <Card>
@@ -292,7 +291,7 @@ export default function ManagementBookingsIndex() {
                 </Card>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<BookingRow, unknown>
                             columns={columns}
                             rows={rows}

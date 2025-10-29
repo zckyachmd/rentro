@@ -69,6 +69,7 @@ export const createColumns = <T extends BookingRow>(
         id: 'number',
         title: i18n.t('common.number'),
         className: COL.number,
+        sortable: true,
         cell: ({ row }) => {
             const b = row.original;
             const t = i18n.t.bind(i18n);
@@ -98,6 +99,7 @@ export const createColumns = <T extends BookingRow>(
         id: 'tenant',
         title: i18n.t('common.tenant'),
         className: COL.tenant,
+        sortable: true,
         cell: ({ row }) => {
             const name = row.original.tenant ?? '—';
             const email = (row.original as { tenant_email?: string | null })
@@ -118,6 +120,7 @@ export const createColumns = <T extends BookingRow>(
         id: 'room',
         title: i18n.t('common.room'),
         className: COL.room,
+        sortable: true,
         cell: ({ row }) => (
             <div className={`${COL.room} truncate`}>
                 {row.original.room ?? '—'}
@@ -128,6 +131,7 @@ export const createColumns = <T extends BookingRow>(
         id: 'start_date',
         title: i18n.t('common.start'),
         className: COL.start,
+        sortable: true,
         cell: ({ row }) => (
             <div className={COL.start}>
                 {formatDate(row.original.start_date)}
@@ -138,6 +142,7 @@ export const createColumns = <T extends BookingRow>(
         id: 'duration',
         title: i18n.t('common.duration', { defaultValue: 'Duration' }),
         className: COL.duration,
+        sortable: true,
         cell: ({ row }) => {
             const b = row.original;
             const label = i18n.t(`billing_period.${b.period}`, {
@@ -158,6 +163,7 @@ export const createColumns = <T extends BookingRow>(
             defaultValue: 'Estimate',
         }),
         className: COL.estimate,
+        sortable: true,
         cell: ({ row }) => (
             <div className={COL.estimate}>
                 {formatIDR(row.original.estimate?.total ?? 0)}
@@ -168,6 +174,7 @@ export const createColumns = <T extends BookingRow>(
         id: 'status',
         title: i18n.t('common.status'),
         className: COL.status,
+        sortable: true,
         cell: ({ row }) => {
             const raw = row.original.status || '';
             const key = raw.trim().toLowerCase().replace(/\s+/g, '_');

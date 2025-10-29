@@ -17,13 +17,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
@@ -84,28 +78,20 @@ export default function RoomTypesIndex() {
     );
 
     return (
-        <AppLayout pageTitle={tType('title')} pageDescription={tType('desc')}>
+        <AppLayout
+            pageTitle={tType('title')}
+            pageDescription={tType('desc')}
+            actions={
+                <Can all={['room-type.create']}>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> {tType('add')}
+                    </Button>
+                </Can>
+            }
+        >
             <div className="space-y-6">
                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle>{tType('title')}</CardTitle>
-                        <CardDescription>{tType('desc')}</CardDescription>
-                    </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="flex w-full flex-1 items-center gap-2" />
-                            <Can all={['room-type.create']}>
-                                <Button size="sm" onClick={openCreate}>
-                                    <Plus className="mr-2 h-4 w-4" />{' '}
-                                    {tType('add')}
-                                </Button>
-                            </Can>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
                         <DataTableServer<ManagementRoomTypeItem, unknown>
                             columns={columns}
                             rows={rows}

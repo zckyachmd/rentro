@@ -58,11 +58,11 @@ class RoomManagementController extends Controller
             'searchable'   => ['number', 'name'],
             'sortable'     => [
                 'number'        => 'number',
+                'floor'         => 'floor_id',
                 'floor_id'      => 'floor_id',
                 'status'        => 'status',
                 'max_occupancy' => 'max_occupancy',
-                // Sort by effective price per selected period (room override > type default)
-                'price' => function ($q, string $dir) use ($pricePeriod, $isPg) {
+                'price'         => function ($q, string $dir) use ($pricePeriod, $isPg) {
                     $direction = strtolower($dir) === 'desc' ? 'DESC' : 'ASC';
                     if ($isPg) {
                         $key       = $pricePeriod;

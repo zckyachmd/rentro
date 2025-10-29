@@ -17,13 +17,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
@@ -82,28 +76,20 @@ export default function BuildingsIndex() {
     );
 
     return (
-        <AppLayout pageTitle={tB('title')} pageDescription={tB('desc')}>
+        <AppLayout
+            pageTitle={tB('title')}
+            pageDescription={tB('desc')}
+            actions={
+                <Can all={['building.create']}>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> {tB('add')}
+                    </Button>
+                </Can>
+            }
+        >
             <div className="space-y-6">
                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle>{tB('title')}</CardTitle>
-                        <CardDescription>{tB('desc')}</CardDescription>
-                    </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div className="flex w-full flex-1 items-center gap-2" />
-                            <Can all={['building.create']}>
-                                <Button size="sm" onClick={openCreate}>
-                                    <Plus className="mr-2 h-4 w-4" />{' '}
-                                    {tB('add')}
-                                </Button>
-                            </Can>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
                         <DataTableServer<BuildingItem, unknown>
                             columns={columns}
                             rows={rows}

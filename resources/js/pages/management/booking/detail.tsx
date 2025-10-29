@@ -204,7 +204,6 @@ export default function ManagementBookingDetail() {
                 defaultValue: 'Booking',
             })}
             pageDescription={tBooking('desc')}
-            titleIcon="CalendarDays"
         >
             <div className="space-y-6">
                 {/* Header summary */}

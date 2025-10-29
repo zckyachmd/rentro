@@ -46,9 +46,8 @@ class UserManagementController extends Controller
             'search_param' => 'search',
             'searchable'   => ['name', 'email', 'phone'],
             'sortable'     => [
-                'name'  => 'name',
-                'email' => 'email',
-                // Sort by latest session activity timestamp
+                'name'           => 'name',
+                'email'          => 'email',
                 'last_active_at' => function ($q, $dir) {
                     $q->orderBy(
                         \App\Models\Session::query()
@@ -63,7 +62,6 @@ class UserManagementController extends Controller
                 'role_id' => function ($q, $roleId) {
                     $q->whereHas('roles', fn ($r) => $r->where('id', $roleId));
                 },
-                // Optional filter to quickly find users by document verification status
                 'document_status' => function ($q, $status) {
                     $status = is_string($status) ? trim(strtolower($status)) : null;
                     if (!$status) {
@@ -72,6 +70,24 @@ class UserManagementController extends Controller
                     $q->whereHas('document', function ($d) use ($status) {
                         $d->where('status', $status);
                     });
+                },
+                'email_verified' => function ($q, $v) {
+                    $val = is_string($v) ? trim(strtolower($v)) : null;
+                    if ($val === 'verified' || $val === 'yes' || $val === '1' || $val === 'true') {
+                        $q->whereNotNull('email_verified_at');
+                    } elseif ($val === 'unverified' || $val === 'no' || $val === '0' || $val === 'false') {
+                        $q->whereNull('email_verified_at');
+                    }
+                },
+                'twofa' => function ($q, $v) {
+                    $val = is_string($v) ? trim(strtolower($v)) : null;
+                    if ($val === 'enabled') {
+                        $q->whereNotNull('two_factor_secret')->whereNotNull('two_factor_confirmed_at');
+                    } elseif ($val === 'disabled') {
+                        $q->where(function ($qq) {
+                            $qq->whereNull('two_factor_secret')->orWhereNull('two_factor_confirmed_at');
+                        });
+                    }
                 },
             ],
         ];
@@ -140,6 +156,8 @@ class UserManagementController extends Controller
                 'search'         => $request->query('search'),
                 'roleId'         => $request->query('role_id'),
                 'documentStatus' => $request->query('document_status'),
+                'emailVerified'  => $request->query('email_verified'),
+                'twofa'          => $request->query('twofa'),
             ],
         ]);
     }

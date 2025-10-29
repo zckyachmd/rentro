@@ -225,18 +225,18 @@ export default function InvoiceIndex() {
                                 </Select>
                             </div>
                             <div>
-                                <label className="text-muted-foreground mb-1 block text-xs">
+                                <Label className="text-muted-foreground mb-1 block text-xs">
                                     {t('dashboard.filters.start')}
-                                </label>
+                                </Label>
                                 <DatePickerInput
                                     value={start}
                                     onChange={setStart}
                                 />
                             </div>
                             <div>
-                                <label className="text-muted-foreground mb-1 block text-xs">
+                                <Label className="text-muted-foreground mb-1 block text-xs">
                                     {t('dashboard.filters.end')}
-                                </label>
+                                </Label>
                                 <DatePickerInput
                                     value={end}
                                     onChange={setEnd}
@@ -265,24 +265,6 @@ export default function InvoiceIndex() {
                                             end: e,
                                         });
                                     }}
-                                    disabledOptions={['qtd']}
-                                    custom={[
-                                        {
-                                            key: '14d',
-                                            label: '14D',
-                                            getRange: () => {
-                                                const e = new Date();
-                                                const s = new Date();
-                                                s.setDate(e.getDate() - 13);
-                                                const toIso = (d: Date) =>
-                                                    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                                                return {
-                                                    start: toIso(s),
-                                                    end: toIso(e),
-                                                };
-                                            },
-                                        },
-                                    ]}
                                     showReset
                                     resetDisabled={!start && !end}
                                     onReset={() => {
@@ -331,7 +313,7 @@ export default function InvoiceIndex() {
                 </Card>
 
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <DataTableServer<InvoiceRow, unknown>
                             columns={tableColumns}
                             rows={rows}

@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Management;
 use App\Enum\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Room;
+use App\Models\User;
 use App\Services\Contracts\ContractServiceInterface;
+use App\Traits\DataTable;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +17,8 @@ use Inertia\Inertia;
 
 class BookingManagementController extends Controller
 {
+    use DataTable;
+
     public function __construct(private ContractServiceInterface $contracts)
     {
     }
@@ -24,44 +29,98 @@ class BookingManagementController extends Controller
         $start  = $request->query('start');
         $end    = $request->query('end');
 
-        $q = Booking::query()
-            ->with(['tenant:id,name,email', 'room:id,number,building_id,room_type_id', 'room.building:id,name', 'room.type:id,name'])
-            ->orderByDesc('created_at');
-        if ($status !== '') {
-            $q->where('status', $status);
-        }
-        if ($start) {
-            try {
-                $d = Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
-                $q->whereDate('start_date', '>=', $d);
-            } catch (\Throwable) {
-                // ignore invalid date
-            }
-        }
-        if ($end) {
-            try {
-                $d = Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
-                $q->whereDate('start_date', '<=', $d);
-            } catch (\Throwable) {
-                // ignore invalid date
-            }
-        }
-        $search = (string) $request->query('q', '');
-        if ($search !== '') {
-            $like = config('database.default') === 'pgsql' ? 'ILIKE' : 'LIKE';
-            $q->where(function ($qq) use ($search, $like) {
-                $qq->orWhere('number', $like, "%{$search}%")
-                    ->orWhereHas('tenant', function ($t) use ($search, $like) {
-                        $t->where('name', $like, "%{$search}%")
-                            ->orWhere('email', $like, "%{$search}%");
-                    })
-                    ->orWhereHas('room', function ($r) use ($search, $like) {
-                        $r->where('number', $like, "%{$search}%");
-                    });
-            });
-        }
+        $driver = DB::connection()->getDriverName();
+        $isPg   = $driver === 'pgsql';
 
-        $page = $q->paginate(15)->through(function (Booking $b) {
+        $query = Booking::query()
+            ->with([
+                'tenant:id,name,email',
+                'room:id,number,building_id,room_type_id',
+                'room.building:id,name',
+                'room.type:id,name',
+            ]);
+
+        $options = [
+            'search_param' => 'q',
+            'searchable'   => [
+                'number',
+                ['relation' => 'tenant', 'column' => 'name'],
+                ['relation' => 'tenant', 'column' => 'email'],
+                ['relation' => 'room', 'column' => 'number'],
+            ],
+            'sortable' => [
+                'number'     => 'number',
+                'start_date' => 'start_date',
+                'duration'   => 'duration_count',
+                'status'     => 'status',
+                // Sort by related tenant name via subquery
+                'tenant' => function ($q, string $dir) {
+                    $q->orderBy(
+                        User::query()
+                            ->select('name')
+                            ->whereColumn('users.id', 'bookings.user_id')
+                            ->limit(1),
+                        $dir,
+                    );
+                },
+                // Sort by related room number via subquery
+                'room' => function ($q, string $dir) {
+                    $q->orderBy(
+                        Room::query()
+                            ->select('number')
+                            ->whereColumn('rooms.id', 'bookings.room_id')
+                            ->limit(1),
+                        $dir,
+                    );
+                },
+                // Sort by estimate.total (JSON) if present
+                'estimate' => function ($q, string $dir) use ($isPg) {
+                    $direction = strtolower($dir) === 'desc' ? 'DESC' : 'ASC';
+                    if ($isPg) {
+                        $expr = "COALESCE((bookings.estimate->>'total')::bigint, 0)";
+                    } else {
+                        $expr = "COALESCE(CAST(JSON_UNQUOTE(JSON_EXTRACT(bookings.estimate, '$.total')) AS UNSIGNED), 0)";
+                    }
+                    $q->orderByRaw("{$expr} {$direction}");
+                },
+            ],
+            'default_sort'      => ['created_at', 'desc'],
+            'page_size_default' => 15,
+            'filters'           => [
+                'status' => function ($q, $status) {
+                    if ($status !== '') {
+                        $q->where('status', $status);
+                    }
+                },
+                'start' => function ($q, $start) {
+                    if (!$start) {
+                        return;
+                    }
+                    try {
+                        $d = Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
+                        $q->whereDate('start_date', '>=', $d);
+                    } catch (\Throwable) {
+                        // ignore invalid date
+                    }
+                },
+                'end' => function ($q, $end) {
+                    if (!$end) {
+                        return;
+                    }
+                    try {
+                        $d = Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
+                        $q->whereDate('start_date', '<=', $d);
+                    } catch (\Throwable) {
+                        // ignore invalid date
+                    }
+                },
+            ],
+        ];
+
+        /** @var \Illuminate\Pagination\LengthAwarePaginator<Booking> $page */
+        $page = $this->applyTable($query, $request, $options);
+
+        $mapped = $page->getCollection()->map(function (Booking $b) {
             return [
                 'id'           => (string) $b->id,
                 'number'       => (string) ($b->number ?? ''),
@@ -78,6 +137,9 @@ class BookingManagementController extends Controller
                 'estimate'     => $b->estimate,
             ];
         });
+
+        $page->setCollection($mapped);
+        $payload = $this->tablePaginate($page);
 
         // Summary (respect simple filters)
         $sumBase = Booking::query();
@@ -104,12 +166,16 @@ class BookingManagementController extends Controller
         $countRejected  = (int) (clone $sumBase)->where('status', BookingStatus::REJECTED->value)->count('id');
 
         return Inertia::render('management/booking/index', [
-            'bookings' => $page,
+            'bookings' => $payload,
             'query'    => [
-                'status' => $status,
-                'q'      => $search,
-                'start'  => $start,
-                'end'    => $end,
+                'page'    => $payload['current_page'],
+                'perPage' => $payload['per_page'],
+                'sort'    => $request->query('sort'),
+                'dir'     => $request->query('dir'),
+                'status'  => $status,
+                'q'       => (string) $request->query('q', ''),
+                'start'   => $start,
+                'end'     => $end,
             ],
             'options' => [
                 'statuses' => BookingStatus::options(),

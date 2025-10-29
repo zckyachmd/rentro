@@ -70,6 +70,7 @@ export function createColumns(
             accessorKey: 'user',
             title: i18n.t('common.user'),
             className: COL.user,
+            sortable: true,
             cell: ({ row }) => {
                 const u = row.original.causer;
                 return (

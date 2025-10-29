@@ -200,6 +200,53 @@ export default function AppLayout({
         }));
     }, [serverMenus]);
 
+    const derivedTitleIcon: ReactNode | string | undefined =
+        React.useMemo(() => {
+            if (titleIcon) return titleIcon;
+            try {
+                const currentPath = window.location?.pathname || '';
+                const normalize = (p: string) =>
+                    p.endsWith('/') && p.length > 1 ? p.slice(0, -1) : p;
+                const matchHref = (href?: string) => {
+                    if (!href) return false;
+                    try {
+                        const u = new URL(href, window.location.origin);
+                        const menuPath = normalize(u.pathname);
+                        const curr = normalize(currentPath);
+                        return (
+                            curr === menuPath || curr.startsWith(menuPath + '/')
+                        );
+                    } catch {
+                        const menuPath = normalize(href);
+                        const curr = normalize(currentPath);
+                        return (
+                            curr === menuPath || curr.startsWith(menuPath + '/')
+                        );
+                    }
+                };
+                for (const group of menuGroups) {
+                    for (const item of group.items || []) {
+                        if (
+                            Array.isArray(item.children) &&
+                            item.children.length
+                        ) {
+                            for (const child of item.children) {
+                                if (matchHref(child.href) && child.icon) {
+                                    return child.icon as string;
+                                }
+                            }
+                        }
+                        if (matchHref(item.href) && item.icon) {
+                            return item.icon as string;
+                        }
+                    }
+                }
+            } catch {
+                /* noop */
+            }
+            return undefined;
+        }, [titleIcon, menuGroups]);
+
     const effectiveBreadcrumbs: Crumb[] = React.useMemo(() => {
         if (breadcrumbs && breadcrumbs.length) return breadcrumbs;
         return [];
@@ -262,7 +309,7 @@ export default function AppLayout({
 
                             {(header ||
                                 actions ||
-                                titleIcon ||
+                                derivedTitleIcon ||
                                 effectiveBreadcrumbs.length > 0 ||
                                 pageTitle ||
                                 pageDescription) && (
@@ -272,25 +319,25 @@ export default function AppLayout({
                                             pageDescription ||
                                             header ||
                                             actions ||
-                                            titleIcon) && (
+                                            derivedTitleIcon) && (
                                             <div className="grid grid-cols-[1fr_auto] items-center gap-3">
                                                 <div className="min-w-0">
                                                     <div
                                                         className={
-                                                            titleIcon
+                                                            derivedTitleIcon
                                                                 ? 'grid grid-cols-[auto_1fr] items-center gap-3'
                                                                 : ''
                                                         }
                                                     >
-                                                        {titleIcon && (
+                                                        {derivedTitleIcon && (
                                                             <div className="h-6 w-6 place-self-center">
-                                                                {typeof titleIcon !==
+                                                                {typeof derivedTitleIcon !==
                                                                 'string' ? (
-                                                                    titleIcon
+                                                                    derivedTitleIcon
                                                                 ) : (
                                                                     <LazyIcon
                                                                         name={
-                                                                            titleIcon
+                                                                            derivedTitleIcon
                                                                         }
                                                                         className="h-6 w-6"
                                                                     />

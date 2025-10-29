@@ -115,26 +115,49 @@ export default function RoomIndex(props: RoomsPageProps) {
     });
 
     const [pricePeriod, setPricePeriod] = React.useState<
-        'daily' | 'weekly' | 'monthly'
-    >((qinit.price_period ?? 'monthly') as 'daily' | 'weekly' | 'monthly');
+        'daily' | 'weekly' | 'monthly' | 'all'
+    >(
+        ((qinit.price_period as string | undefined) ?? 'all') as
+            | 'daily'
+            | 'weekly'
+            | 'monthly'
+            | 'all',
+    );
 
     React.useEffect(() => {
         try {
             const saved = localStorage.getItem('rentro:rooms:price_period');
             if (
                 saved &&
-                (saved === 'daily' || saved === 'weekly' || saved === 'monthly')
+                (saved === 'daily' ||
+                    saved === 'weekly' ||
+                    saved === 'monthly' ||
+                    saved === 'all')
             ) {
                 if (saved !== pricePeriod) {
-                    setPricePeriod(saved as 'daily' | 'weekly' | 'monthly');
-                    const dir: 'asc' | 'desc' =
-                        q.dir === 'desc' ? 'desc' : 'asc';
-                    safeOnQueryChange({
-                        price_period: saved as 'daily' | 'weekly' | 'monthly',
-                        sort: 'price',
-                        dir,
-                        page: 1,
-                    });
+                    setPricePeriod(
+                        saved as 'daily' | 'weekly' | 'monthly' | 'all',
+                    );
+                    if (saved === 'all') {
+                        safeOnQueryChange({
+                            price_period: null,
+                            sort: 'number',
+                            dir: 'asc',
+                            page: 1,
+                        });
+                    } else {
+                        const dir: 'asc' | 'desc' =
+                            q.dir === 'desc' ? 'desc' : 'asc';
+                        safeOnQueryChange({
+                            price_period: saved as
+                                | 'daily'
+                                | 'weekly'
+                                | 'monthly',
+                            sort: 'price',
+                            dir,
+                            page: 1,
+                        });
+                    }
                 }
             }
         } catch {
@@ -255,29 +278,15 @@ export default function RoomIndex(props: RoomsPageProps) {
         [onQueryChange, filters, pricePeriod],
     );
 
-    const resetFilter = React.useCallback(() => {
-        setFilters({
-            building_id: '',
-            floor_id: '',
-            type_id: '',
-            status: '',
-            gender_policy: '',
-            q: '',
-        });
-        safeOnQueryChange({
-            page: 1,
-            q: null,
-            building_id: null,
-            floor_id: null,
-            type_id: null,
-            status: null,
-            gender_policy: null,
-        });
-    }, [safeOnQueryChange]);
+    // resetFilter removed; selects auto-apply changes immediately
 
     const lang = i18n.language;
     const tableColumns = React.useMemo(() => {
         void lang;
+        const periodForColumns =
+            pricePeriod === 'all'
+                ? undefined
+                : (pricePeriod as 'daily' | 'weekly' | 'monthly');
         return createColumns({
             onDetail: (room) => {
                 setDetailItem(room);
@@ -289,45 +298,9 @@ export default function RoomIndex(props: RoomsPageProps) {
             onDelete: (room) => {
                 setDeletingRoom(room);
             },
-            displayPeriod: pricePeriod,
+            displayPeriod: periodForColumns,
         });
     }, [pricePeriod, lang]);
-
-    const applyFilters = () => {
-        const trimmedQ = (filters.q || '').trim();
-        const hasAnyFilter = Boolean(
-            filters.building_id ||
-                filters.floor_id ||
-                filters.type_id ||
-                filters.status ||
-                filters.gender_policy ||
-                trimmedQ,
-        );
-        const hadQ =
-            'q' in (q as Record<string, unknown>) &&
-            Boolean((q as Record<string, unknown>).q);
-
-        if (!hasAnyFilter && !hadQ) return;
-
-        const payload: Record<string, unknown> = {
-            page: 1,
-            building_id: filters.building_id || undefined,
-            floor_id: filters.floor_id || undefined,
-            type_id: filters.type_id || undefined,
-            status: filters.status || undefined,
-            gender_policy: filters.gender_policy || undefined,
-            price_period: pricePeriod,
-            sort: q.sort ?? undefined,
-            dir: q.dir ?? undefined,
-        };
-        if (trimmedQ) {
-            payload.q = trimmedQ;
-        } else if (hadQ) {
-            payload.q = null;
-        }
-
-        safeOnQueryChange(payload);
-    };
 
     const headerActions = (
         <div className="flex items-center gap-2">
@@ -345,7 +318,6 @@ export default function RoomIndex(props: RoomsPageProps) {
             <AppLayout
                 pageTitle={tRoom('title')}
                 pageDescription={tRoom('desc')}
-                titleIcon="BedDouble"
                 actions={headerActions}
             >
                 <div className="space-y-6">
@@ -353,40 +325,70 @@ export default function RoomIndex(props: RoomsPageProps) {
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                                <Filter className="h-4 w-4" /> {tRoom('filter')}
+                                <Filter className="h-4 w-4" />{' '}
+                                {t('common.filter')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-3 md:grid-cols-12">
                             <div className="md:col-span-4">
-                                <Label>{tRoom('period_label')}</Label>
+                                <Label className="text-muted-foreground mb-2 block text-xs">
+                                    {tRoom('period_label')}
+                                </Label>
                                 <Select
                                     value={pricePeriod}
                                     onValueChange={(v) => {
-                                        const period = v as
-                                            | 'daily'
-                                            | 'weekly'
-                                            | 'monthly';
-                                        setPricePeriod(period);
-                                        safeOnQueryChange({
-                                            page: 1,
-                                            price_period: period,
-                                            sort: 'price',
-                                            dir:
-                                                q.dir === 'desc'
-                                                    ? 'desc'
-                                                    : 'asc',
-                                        });
+                                        if (v === 'all') {
+                                            setPricePeriod('all');
+                                            try {
+                                                localStorage.setItem(
+                                                    'rentro:rooms:price_period',
+                                                    'all',
+                                                );
+                                            } catch {
+                                                /* ignore */
+                                            }
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                price_period: null,
+                                                sort: 'number',
+                                                dir: 'asc',
+                                            });
+                                        } else {
+                                            const period = v as
+                                                | 'daily'
+                                                | 'weekly'
+                                                | 'monthly';
+                                            setPricePeriod(period);
+                                            try {
+                                                localStorage.setItem(
+                                                    'rentro:rooms:price_period',
+                                                    period,
+                                                );
+                                            } catch {
+                                                /* ignore */
+                                            }
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                price_period: period,
+                                                sort: 'price',
+                                                dir:
+                                                    q.dir === 'desc'
+                                                        ? 'desc'
+                                                        : 'asc',
+                                            });
+                                        }
                                     }}
                                 >
-                                    <SelectTrigger className="h-9">
+                                    <SelectTrigger className="h-9 w-full">
                                         <SelectValue
-                                            placeholder={tRoom(
-                                                'period.monthly',
-                                            )}
+                                            placeholder={t('common.all')}
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="all">
+                                                {t('common.all')}
+                                            </SelectItem>
                                             <SelectItem value="daily">
                                                 {tRoom('period.daily')}
                                             </SelectItem>
@@ -401,29 +403,47 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{tRoom('building')}</Label>
+                                <Label className="text-muted-foreground mb-2 block text-xs">
+                                    {tRoom('building')}
+                                </Label>
                                 <Select
-                                    value={filters.building_id}
+                                    value={filters.building_id || 'all'}
                                     onValueChange={(v) => {
-                                        setFilters((f) => ({
-                                            ...f,
-                                            building_id: v,
-                                            floor_id: '',
-                                        }));
-                                        safeOnQueryChange({
-                                            page: 1,
-                                            building_id: v,
-                                            floor_id: null,
-                                        });
+                                        if (v === 'all') {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                building_id: '',
+                                                floor_id: '',
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                building_id: null,
+                                                floor_id: null,
+                                            });
+                                        } else {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                building_id: v,
+                                                floor_id: '',
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                building_id: v,
+                                                floor_id: null,
+                                            });
+                                        }
                                     }}
                                 >
-                                    <SelectTrigger className="h-9">
+                                    <SelectTrigger className="h-9 w-full">
                                         <SelectValue
                                             placeholder={t('common.all')}
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="all">
+                                                {t('common.all')}
+                                            </SelectItem>
                                             {buildings.map((b) => (
                                                 <SelectItem
                                                     key={b.id}
@@ -437,27 +457,43 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{tRoom('floor')}</Label>
+                                <Label className="text-muted-foreground mb-2 block text-xs">
+                                    {tRoom('floor')}
+                                </Label>
                                 <Select
-                                    value={filters.floor_id}
+                                    value={filters.floor_id || 'all'}
                                     onValueChange={(v) => {
-                                        setFilters((f) => ({
-                                            ...f,
-                                            floor_id: v,
-                                        }));
-                                        safeOnQueryChange({
-                                            page: 1,
-                                            floor_id: v,
-                                        });
+                                        if (v === 'all') {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                floor_id: '',
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                floor_id: null,
+                                            });
+                                        } else {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                floor_id: v,
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                floor_id: v,
+                                            });
+                                        }
                                     }}
                                 >
-                                    <SelectTrigger className="h-9">
+                                    <SelectTrigger className="h-9 w-full">
                                         <SelectValue
                                             placeholder={t('common.all')}
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="all">
+                                                {t('common.all')}
+                                            </SelectItem>
                                             {filteredFloors.map((f) => (
                                                 <SelectItem
                                                     key={f.id}
@@ -474,27 +510,43 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{tRoom('type')}</Label>
+                                <Label className="text-muted-foreground mb-2 block text-xs">
+                                    {tRoom('type')}
+                                </Label>
                                 <Select
-                                    value={filters.type_id}
+                                    value={filters.type_id || 'all'}
                                     onValueChange={(v) => {
-                                        setFilters((f) => ({
-                                            ...f,
-                                            type_id: v,
-                                        }));
-                                        safeOnQueryChange({
-                                            page: 1,
-                                            type_id: v,
-                                        });
+                                        if (v === 'all') {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                type_id: '',
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                type_id: null,
+                                            });
+                                        } else {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                type_id: v,
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                type_id: v,
+                                            });
+                                        }
                                     }}
                                 >
-                                    <SelectTrigger className="h-9">
+                                    <SelectTrigger className="h-9 w-full">
                                         <SelectValue
                                             placeholder={t('common.all')}
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="all">
+                                                {t('common.all')}
+                                            </SelectItem>
                                             {types.map((t) => (
                                                 <SelectItem
                                                     key={t.id}
@@ -508,27 +560,43 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{tRoom('status')}</Label>
+                                <Label className="text-muted-foreground mb-2 block text-xs">
+                                    {tRoom('status')}
+                                </Label>
                                 <Select
-                                    value={filters.status}
+                                    value={filters.status || 'all'}
                                     onValueChange={(v) => {
-                                        setFilters((f) => ({
-                                            ...f,
-                                            status: v,
-                                        }));
-                                        safeOnQueryChange({
-                                            page: 1,
-                                            status: v,
-                                        });
+                                        if (v === 'all') {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                status: '',
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                status: null,
+                                            });
+                                        } else {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                status: v,
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                status: v,
+                                            });
+                                        }
                                     }}
                                 >
-                                    <SelectTrigger className="h-9">
+                                    <SelectTrigger className="h-9 w-full">
                                         <SelectValue
                                             placeholder={t('common.all')}
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="all">
+                                                {t('common.all')}
+                                            </SelectItem>
                                             {statuses.map((s) => (
                                                 <SelectItem
                                                     key={s.value}
@@ -549,27 +617,43 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 </Select>
                             </div>
                             <div className="md:col-span-4">
-                                <Label>{tRoom('form.gender_policy')}</Label>
+                                <Label className="text-muted-foreground mb-2 block text-xs">
+                                    {tRoom('form.gender_policy')}
+                                </Label>
                                 <Select
-                                    value={filters.gender_policy}
+                                    value={filters.gender_policy || 'all'}
                                     onValueChange={(v) => {
-                                        setFilters((f) => ({
-                                            ...f,
-                                            gender_policy: v,
-                                        }));
-                                        safeOnQueryChange({
-                                            page: 1,
-                                            gender_policy: v,
-                                        });
+                                        if (v === 'all') {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                gender_policy: '',
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                gender_policy: null,
+                                            });
+                                        } else {
+                                            setFilters((f) => ({
+                                                ...f,
+                                                gender_policy: v,
+                                            }));
+                                            safeOnQueryChange({
+                                                page: 1,
+                                                gender_policy: v,
+                                            });
+                                        }
                                     }}
                                 >
-                                    <SelectTrigger className="h-9">
+                                    <SelectTrigger className="h-9 w-full">
                                         <SelectValue
                                             placeholder={t('common.all')}
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="all">
+                                                {t('common.all')}
+                                            </SelectItem>
                                             {(
                                                 [
                                                     'any',
@@ -587,24 +671,13 @@ export default function RoomIndex(props: RoomsPageProps) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="flex gap-2 pt-2 md:col-span-12">
-                                <Button type="button" onClick={applyFilters}>
-                                    {t('common.apply')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={resetFilter}
-                                >
-                                    {t('common.reset')}
-                                </Button>
-                            </div>
+                            {/* Apply/Reset removed — selects auto-apply on change */}
                         </CardContent>
                     </Card>
 
                     {/* Table */}
                     <Card>
-                        <CardContent className="pt-6">
+                        <CardContent>
                             <DataTableServer<RoomItem, unknown>
                                 columns={tableColumns}
                                 rows={rooms}
