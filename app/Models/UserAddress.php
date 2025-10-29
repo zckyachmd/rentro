@@ -26,6 +26,10 @@ class UserAddress extends Model
         'postal_code',
     ];
 
+    protected $casts = [
+        'address_line' => 'encrypted',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

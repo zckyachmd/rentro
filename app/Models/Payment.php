@@ -49,6 +49,8 @@ class Payment extends Model
         'status'              => PaymentStatus::class,
         'meta'                => 'array',
         'attachments'         => 'array',
+        'va_number'           => 'encrypted',
+        'note'                => 'encrypted',
     ];
 
     public function invoice(): BelongsTo

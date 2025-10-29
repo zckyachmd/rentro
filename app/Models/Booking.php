@@ -50,6 +50,7 @@ class Booking extends Model
         'approved_at'    => 'datetime',
         'rejected_at'    => 'datetime',
         'estimate'       => 'array',
+        'notes'          => 'encrypted',
     ];
 
     public function tenant(): BelongsTo

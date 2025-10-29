@@ -38,6 +38,8 @@ class UserDocument extends Model
         'expires_at'  => 'date',
         'verified_at' => 'datetime',
         'attachments' => 'array',
+        'number'      => 'encrypted',
+        'notes'       => 'encrypted',
     ];
 
     public function user(): BelongsTo

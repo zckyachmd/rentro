@@ -20,7 +20,8 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->string('reference', 100)->nullable();
             $table->string('provider', 50)->nullable();
-            $table->string('va_number', 50)->nullable();
+            // Use text to accommodate encrypted payloads
+            $table->text('va_number')->nullable();
             $table->timestamp('va_expired_at')->nullable();
             $table->json('meta')->nullable();
             $table->json('attachments')->nullable();
@@ -31,7 +32,7 @@ return new class extends Migration
             $table->unique(['reference']);
             $table->index(['invoice_id', 'status']);
             $table->index(['provider', 'status']);
-            $table->index(['va_number']);
+            // No index for text va_number
         });
     }
 

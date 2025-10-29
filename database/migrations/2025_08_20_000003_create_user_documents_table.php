@@ -13,7 +13,8 @@ return new class () extends Migration {
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
             $table->string('type', 50);
-            $table->string('number', 50);
+            // Use text to accommodate encrypted payloads
+            $table->text('number');
             $table->json('attachments');
 
             $table->date('issued_at');

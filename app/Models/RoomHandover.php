@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enum\RoomHandoverStatus;
+use App\Enum\RoomHandoverType;
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasAudit;
 use App\Models\Concerns\HasSnowflakeId;
@@ -32,10 +34,11 @@ class RoomHandover extends Model
     ];
 
     protected $casts = [
-        'type'        => \App\Enum\RoomHandoverType::class,
-        'status'      => \App\Enum\RoomHandoverStatus::class,
+        'type'        => RoomHandoverType::class,
+        'status'      => RoomHandoverStatus::class,
         'meta'        => 'array',
         'attachments' => 'array',
+        'notes'       => 'encrypted',
     ];
 
     public function contract(): BelongsTo

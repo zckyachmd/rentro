@@ -57,6 +57,7 @@ class Room extends Model
         'max_occupancy'     => 'integer',
         'status'            => RoomStatus::class,
         'gender_policy'     => GenderPolicy::class,
+        'notes'             => 'encrypted',
     ];
 
     public function getPriceRupiahAttribute(): ?string

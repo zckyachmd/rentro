@@ -24,6 +24,10 @@ class EmergencyContact extends Model
         'address_line',
     ];
 
+    protected $casts = [
+        'address_line' => 'encrypted',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
