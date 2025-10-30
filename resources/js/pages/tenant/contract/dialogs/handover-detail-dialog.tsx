@@ -5,6 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -489,26 +490,30 @@ export default function TenantHandoverDetailDialog({
                                         </div>
                                     ) : (
                                         <>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-destructive/30"
-                                                onClick={() =>
-                                                    setDisputeMode(true)
-                                                }
-                                            >
-                                                {tTenant('dispute')}
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                className="shadow-sm"
-                                                disabled={ackSaving}
-                                                onClick={doAcknowledge}
-                                            >
-                                                {ackSaving
-                                                    ? t('common.saving')
-                                                    : tTenant('confirm')}
-                                            </Button>
+                                            <Can all={["tenant.handover.dispute"]}>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-destructive/30"
+                                                    onClick={() =>
+                                                        setDisputeMode(true)
+                                                    }
+                                                >
+                                                    {tTenant('dispute')}
+                                                </Button>
+                                            </Can>
+                                            <Can all={["tenant.handover.ack"]}>
+                                                <Button
+                                                    type="button"
+                                                    className="shadow-sm"
+                                                    disabled={ackSaving}
+                                                    onClick={doAcknowledge}
+                                                >
+                                                    {ackSaving
+                                                        ? t('common.saving')
+                                                        : tTenant('confirm')}
+                                                </Button>
+                                            </Can>
                                         </>
                                     )}
                                 </div>

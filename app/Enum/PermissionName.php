@@ -4,15 +4,26 @@ namespace App\Enum;
 
 enum PermissionName: string
 {
+    // Tenant (self-service)
+    case TENANT_ROOMS_VIEW       = 'tenant.rooms.view';
+    case TENANT_BOOKING_VIEW     = 'tenant.booking.view';
+    case TENANT_BOOKING_CREATE   = 'tenant.booking.create';
+    case TENANT_CONTRACT_VIEW    = 'tenant.contract.view';
+    case TENANT_CONTRACT_STOP_RENEW = 'tenant.contract.stop-auto-renew';
+    case TENANT_HANDOVER_VIEW    = 'tenant.handover.view';
+    case TENANT_HANDOVER_ACK     = 'tenant.handover.ack';
+    case TENANT_HANDOVER_DISPUTE = 'tenant.handover.dispute';
+    case TENANT_INVOICE_VIEW     = 'tenant.invoice.view';
+    case TENANT_INVOICE_PAY      = 'tenant.invoice.pay';
+    case TENANT_PAYMENT_VIEW     = 'tenant.payment.view';
+
     // Akun
-    case USER_VIEW           = 'user.view';
-    case USER_CREATE         = 'user.create';
-    case USER_ROLE_MANAGE    = 'user.role.manage';
-    case USER_PASSWORD_RESET = 'user.password.reset';
-    case USER_TWO_FACTOR     = 'user.two-factor';
-    case USER_FORCE_LOGOUT   = 'user.force-logout';
-    case USER_DISABLE        = 'user.disable';
-    // User Document Verification
+    case USER_VIEW            = 'user.view';
+    case USER_CREATE          = 'user.create';
+    case USER_ROLE_MANAGE     = 'user.role.manage';
+    case USER_PASSWORD_RESET  = 'user.password.reset';
+    case USER_TWO_FACTOR      = 'user.two-factor';
+    case USER_FORCE_LOGOUT    = 'user.force-logout';
     case USER_DOCUMENT_VERIFY = 'user.document.verify';
 
     // Role
@@ -21,6 +32,16 @@ enum PermissionName: string
     case ROLE_UPDATE            = 'role.update';
     case ROLE_DELETE            = 'role.delete';
     case ROLE_PERMISSION_MANAGE = 'role.permission.manage';
+
+    // Announcements
+    case ANNOUNCEMENT_VIEW   = 'announcement.view';
+    case ANNOUNCEMENT_CREATE = 'announcement.create';
+    case ANNOUNCEMENT_SEND   = 'announcement.send';
+    case ANNOUNCEMENT_CANCEL = 'announcement.cancel';
+
+    // Pages (CMS)
+    case PAGE_VIEW   = 'page.view';
+    case PAGE_UPDATE = 'page.update';
 
     // Audit Log
     case AUDIT_LOG_VIEW = 'audit-log.view';
@@ -63,15 +84,11 @@ enum PermissionName: string
     // Contracts
     case CONTRACT_VIEW   = 'contract.view';
     case CONTRACT_CREATE = 'contract.create';
-    case CONTRACT_EXTEND = 'contract.extend';
     case CONTRACT_CANCEL = 'contract.cancel';
     case CONTRACT_RENEW  = 'contract.renew';
 
     // Bookings (management)
     case BOOKING_VIEW    = 'booking.view';
-    case BOOKING_CREATE  = 'booking.create';
-    case BOOKING_UPDATE  = 'booking.update';
-    case BOOKING_DELETE  = 'booking.delete';
     case BOOKING_APPROVE = 'booking.approve';
     case BOOKING_REJECT  = 'booking.reject';
 
@@ -79,19 +96,15 @@ enum PermissionName: string
     case INVOICE_VIEW   = 'invoice.view';
     case INVOICE_CREATE = 'invoice.create';
     case INVOICE_UPDATE = 'invoice.update';
-    case INVOICE_DELETE = 'invoice.delete';
 
     // Payments
     case PAYMENT_VIEW   = 'payment.view';
     case PAYMENT_CREATE = 'payment.create';
     case PAYMENT_UPDATE = 'payment.update';
-    case PAYMENT_DELETE = 'payment.delete';
 
     // Handover (Check-in/Check-out)
     case HANDOVER_VIEW   = 'handover.view';
     case HANDOVER_CREATE = 'handover.create';
-    case HANDOVER_UPDATE = 'handover.update';
-    case HANDOVER_DELETE = 'handover.delete';
 
     // Promotions
     case PROMOTION_VIEW   = 'promotion.view';
@@ -101,7 +114,6 @@ enum PermissionName: string
 
     // Testimonies
     case TESTIMONY_VIEW   = 'testimony.view';
-    case TESTIMONY_CREATE = 'testimony.create';
     case TESTIMONY_UPDATE = 'testimony.update';
     case TESTIMONY_DELETE = 'testimony.delete';
 }

@@ -3,6 +3,7 @@ import { UserPlus, X } from 'lucide-react';
 import React, { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -202,13 +203,15 @@ export default function CreateUserDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Button
-                        type="button"
-                        disabled={processing}
-                        onClick={submit}
-                    >
-                        {tUser('user.create.submit')}
-                    </Button>
+                    <Can all={["user.create"]}>
+                        <Button
+                            type="button"
+                            disabled={processing}
+                            onClick={submit}
+                        >
+                            {tUser('user.create.submit')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

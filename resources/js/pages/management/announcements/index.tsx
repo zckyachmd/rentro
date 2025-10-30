@@ -11,6 +11,7 @@ import {
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -446,58 +447,64 @@ export default function ManagementNotificationsPage() {
                                         {t('common.view', 'View details')}
                                     </DropdownMenuItem>
                                     {canSendNow && (
-                                        <DropdownMenuItem
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                router.visit(
-                                                    route(
-                                                        'management.announcements.send_now',
-                                                        { announcement: it.id },
-                                                    ),
-                                                    {
-                                                        method: 'post',
-                                                        preserveScroll: true,
-                                                    },
-                                                );
-                                            }}
-                                        >
-                                            <Send className="mr-2 h-4 w-4" />
-                                            {t(
-                                                'management.notifications.send_now',
-                                                'Send now',
-                                            )}
-                                        </DropdownMenuItem>
+                                        <Can all={["announcement.send"]}>
+                                            <DropdownMenuItem
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    router.visit(
+                                                        route(
+                                                            'management.announcements.send_now',
+                                                            { announcement: it.id },
+                                                        ),
+                                                        {
+                                                            method: 'post',
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
+                                                }}
+                                            >
+                                                <Send className="mr-2 h-4 w-4" />
+                                                {t(
+                                                    'management.notifications.send_now',
+                                                    'Send now',
+                                                )}
+                                            </DropdownMenuItem>
+                                        </Can>
                                     )}
                                     {canResend && (
-                                        <DropdownMenuItem
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setConfirmResend(it);
-                                            }}
-                                        >
-                                            <Megaphone className="mr-2 h-4 w-4" />
-                                            {t(
-                                                'management.notifications.resend',
-                                                'Resend',
-                                            )}
-                                        </DropdownMenuItem>
+                                        <Can all={["announcement.send"]}>
+                                            <DropdownMenuItem
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setConfirmResend(it);
+                                                }}
+                                            >
+                                                <Megaphone className="mr-2 h-4 w-4" />
+                                                {t(
+                                                    'management.notifications.resend',
+                                                    'Resend',
+                                                )}
+                                            </DropdownMenuItem>
+                                        </Can>
                                     )}
                                     {canCancelSchedule && (
-                                        <DropdownMenuItem
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setConfirmCancel(it);
-                                            }}
-                                        >
-                                            <XIcon className="mr-2 h-4 w-4" />
-                                            {t(
-                                                'management.notifications.cancel_schedule',
-                                                'Cancel schedule',
-                                            )}
-                                        </DropdownMenuItem>
+                                        <Can all={["announcement.cancel"]}>
+                                            <DropdownMenuItem
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setConfirmCancel(it);
+                                                }}
+                                            >
+                                                <XIcon className="mr-2 h-4 w-4" />
+                                                {t(
+                                                    'management.notifications.cancel_schedule',
+                                                    'Cancel schedule',
+                                                )}
+                                            </DropdownMenuItem>
+                                        </Can>
                                     )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -517,13 +524,15 @@ export default function ManagementNotificationsPage() {
                 'Send announcements in real time or schedule them',
             )}
             actions={
-                <Button size="sm" onClick={() => setOpenCompose(true)}>
-                    <Megaphone className="mr-2 h-4 w-4" />
-                    {t(
-                        'management.notifications.compose',
-                        'Compose Announcement',
-                    )}
-                </Button>
+                <Can all={["announcement.create"]}>
+                    <Button size="sm" onClick={() => setOpenCompose(true)}>
+                        <Megaphone className="mr-2 h-4 w-4" />
+                        {t(
+                            'management.notifications.compose',
+                            'Compose Announcement',
+                        )}
+                    </Button>
+                </Can>
             }
         >
             <div className="space-y-6">
@@ -1077,25 +1086,27 @@ export default function ManagementNotificationsPage() {
                                 >
                                     {t('common.cancel', 'Cancel')}
                                 </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={
-                                        submitting ||
-                                        !title ||
-                                        !message ||
-                                        (target === 'role' && !roleId)
-                                    }
-                                >
-                                    {submitting
-                                        ? t(
-                                              'common.processing',
-                                              'Processing...',
-                                          )
-                                        : t(
-                                              'management.notifications.send',
-                                              'Send',
-                                          )}
-                                </Button>
+                                <Can all={["announcement.create"]}>
+                                    <Button
+                                        type="submit"
+                                        disabled={
+                                            submitting ||
+                                            !title ||
+                                            !message ||
+                                            (target === 'role' && !roleId)
+                                        }
+                                    >
+                                        {submitting
+                                            ? t(
+                                                  'common.processing',
+                                                  'Processing...',
+                                              )
+                                            : t(
+                                                  'management.notifications.send',
+                                                  'Send',
+                                              )}
+                                    </Button>
+                                </Can>
                             </DialogFooter>
                         </form>
                     </DialogContent>

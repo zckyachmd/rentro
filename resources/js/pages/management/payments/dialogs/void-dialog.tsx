@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -351,19 +352,21 @@ export default function PaymentReviewDialog({
                     <Button variant="outline" onClick={onClose}>
                         {t('common.close')}
                     </Button>
-                    <Button
-                        onClick={submit}
-                        disabled={
-                            !decision ||
-                            (decision === 'reject' && !noteRule.meetsMin) ||
-                            (decision === 'approve' &&
-                                (!ack ||
-                                    (noteRule.length > 0 &&
-                                        !noteRule.meetsMin)))
-                        }
-                    >
-                        {t('common.submit')}
-                    </Button>
+                    <Can all={["payment.update"]}>
+                        <Button
+                            onClick={submit}
+                            disabled={
+                                !decision ||
+                                (decision === 'reject' && !noteRule.meetsMin) ||
+                                (decision === 'approve' &&
+                                    (!ack ||
+                                        (noteRule.length > 0 &&
+                                            !noteRule.meetsMin)))
+                            }
+                        >
+                            {t('common.submit')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

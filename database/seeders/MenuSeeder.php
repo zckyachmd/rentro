@@ -26,19 +26,19 @@ class MenuSeeder extends Seeder
                         'label' => 'menu.booking',
                         'href'  => route('tenant.bookings.index', [], false),
                         'icon'  => 'CalendarDays',
-                        'roles' => [RoleName::TENANT->value],
+                        'permission' => PermissionName::TENANT_BOOKING_VIEW,
                     ],
                     [
                         'label' => 'menu.contracts',
                         'href'  => route('tenant.contracts.index', [], false),
                         'icon'  => 'ScrollText',
-                        'roles' => [RoleName::TENANT->value],
+                        'permission' => PermissionName::TENANT_CONTRACT_VIEW,
                     ],
                     [
                         'label' => 'menu.invoices',
                         'href'  => route('tenant.invoices.index', [], false),
                         'icon'  => 'ReceiptText',
-                        'roles' => [RoleName::TENANT->value],
+                        'permission' => PermissionName::TENANT_INVOICE_VIEW,
                     ],
                 ],
             ],
@@ -98,11 +98,7 @@ class MenuSeeder extends Seeder
                         'label' => 'menu.announcements',
                         'href' => route('management.announcements.index', [], false),
                         'icon' => 'Megaphone',
-                        'roles' => [
-                            RoleName::SUPER_ADMIN->value,
-                            RoleName::OWNER->value,
-                            RoleName::MANAGER->value,
-                        ],
+                        'permission' => PermissionName::ANNOUNCEMENT_VIEW,
                     ],
                     // Promotions stays as a direct operational item
                     [
@@ -124,11 +120,7 @@ class MenuSeeder extends Seeder
                         'label' => 'menu.pages',
                         'href' => route('management.pages.index', [], false),
                         'icon' => 'FileText',
-                        'roles' => [
-                            RoleName::SUPER_ADMIN->value,
-                            RoleName::OWNER->value,
-                            RoleName::MANAGER->value,
-                        ],
+                        'permission' => PermissionName::PAGE_VIEW,
                     ],
                     [
                         'label' => 'menu.testimonies',

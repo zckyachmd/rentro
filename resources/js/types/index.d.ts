@@ -5,6 +5,10 @@ export interface User {
     name: string;
     email: string;
     email_verified_at?: string;
+    roles?: string[];
+    role_ids?: Array<number | string>;
+    permissions?: string[];
+    avatar_url?: string | null;
 }
 
 export type PageProps<

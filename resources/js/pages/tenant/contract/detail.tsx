@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AttachmentPreviewDialog from '@/components/attachment-preview';
+import { Can } from '@/components/acl';
 import { Crumb } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -452,20 +453,22 @@ export default function TenantContractDetail(props: PageProps) {
                                                                 'pending' &&
                                                                 !h.acknowledged &&
                                                                 !h.disputed && (
-                                                                    <DropdownMenuItem
-                                                                        onClick={() =>
-                                                                            setConfirmAck(
-                                                                                {
-                                                                                    open: true,
-                                                                                    id: h.id,
-                                                                                    saving: false,
-                                                                                },
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                                                                        Konfirmasi
-                                                                    </DropdownMenuItem>
+                                                                    <Can all={["tenant.handover.ack"]}>
+                                                                        <DropdownMenuItem
+                                                                            onClick={() =>
+                                                                                setConfirmAck(
+                                                                                    {
+                                                                                        open: true,
+                                                                                        id: h.id,
+                                                                                        saving: false,
+                                                                                    },
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                                            Konfirmasi
+                                                                        </DropdownMenuItem>
+                                                                    </Can>
                                                                 )}
                                                             {String(
                                                                 h.status || '',
@@ -473,21 +476,23 @@ export default function TenantContractDetail(props: PageProps) {
                                                                 'pending' &&
                                                                 !h.acknowledged &&
                                                                 !h.disputed && (
-                                                                    <DropdownMenuItem
-                                                                        onClick={() =>
-                                                                            setDispute(
-                                                                                {
-                                                                                    open: true,
-                                                                                    id: h.id,
-                                                                                    note: '',
-                                                                                    saving: false,
-                                                                                },
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <XCircle className="mr-2 h-4 w-4" />
-                                                                        Sanggah
-                                                                    </DropdownMenuItem>
+                                                                    <Can all={["tenant.handover.dispute"]}>
+                                                                        <DropdownMenuItem
+                                                                            onClick={() =>
+                                                                                setDispute(
+                                                                                    {
+                                                                                        open: true,
+                                                                                        id: h.id,
+                                                                                        note: '',
+                                                                                        saving: false,
+                                                                                    },
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <XCircle className="mr-2 h-4 w-4" />
+                                                                            Sanggah
+                                                                        </DropdownMenuItem>
+                                                                    </Can>
                                                                 )}
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
@@ -546,18 +551,18 @@ export default function TenantContractDetail(props: PageProps) {
                         >
                             {t('common.cancel')}
                         </Button>
-                        <Button
-                            type="button"
-                            disabled={confirmAck.saving || !confirmAck.id}
-                            onClick={async () => {
-                                if (!confirmAck.id) return;
-                                setConfirmAck((p) => ({
-                                    ...p,
-                                    saving: true,
-                                }));
-                                try {
-                                    await new Promise<void>(
-                                        (resolve, reject) => {
+                        <Can all={["tenant.handover.ack"]}>
+                            <Button
+                                type="button"
+                                disabled={confirmAck.saving || !confirmAck.id}
+                                onClick={async () => {
+                                    if (!confirmAck.id) return;
+                                    setConfirmAck((p) => ({
+                                        ...p,
+                                        saving: true,
+                                    }));
+                                    try {
+                                        await new Promise<void>((resolve, reject) => {
                                             router.post(
                                                 route('tenant.handovers.ack', {
                                                     handover: confirmAck.id,
@@ -586,29 +591,27 @@ export default function TenantContractDetail(props: PageProps) {
                                                             ...p,
                                                             saving: false,
                                                         }));
-                                                        reject(
-                                                            new Error('Failed'),
-                                                        );
+                                                        reject(new Error('Failed'));
                                                     },
                                                     onFinish: () => {
                                                         // no-op; handled above
                                                     },
                                                 },
                                             );
-                                        },
-                                    );
-                                } catch {
-                                    setConfirmAck((p) => ({
-                                        ...p,
-                                        saving: false,
-                                    }));
-                                }
-                            }}
-                        >
-                            {confirmAck.saving
-                                ? t('common.saving')
-                                : t('contract.handover.confirm_button')}
-                        </Button>
+                                        });
+                                    } catch {
+                                        setConfirmAck((p) => ({
+                                            ...p,
+                                            saving: false,
+                                        }));
+                                    }
+                                }}
+                            >
+                                {confirmAck.saving
+                                    ? t('common.saving')
+                                    : t('contract.handover.confirm_button')}
+                            </Button>
+                        </Can>
                     </div>
                 </DialogContent>
             </Dialog>

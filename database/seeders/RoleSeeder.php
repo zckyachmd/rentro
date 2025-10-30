@@ -15,12 +15,22 @@ class RoleSeeder extends Seeder
     {
         // 1) Ensure permissions exist (idempotent)
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $enumPermissions = array_map(fn ($p) => $p->value, PermissionName::cases());
 
-        foreach (PermissionName::cases() as $perm) {
+        foreach ($enumPermissions as $permName) {
             Permission::firstOrCreate([
-                'name'       => $perm->value,
+                'name'       => $permName,
                 'guard_name' => 'web',
             ]);
+        }
+
+        // 1b) Cleanup: remove permissions not defined in enum
+        $existing = Permission::query()
+            ->where('guard_name', 'web')
+            ->pluck('name', 'id');
+        $toDelete = $existing->filter(fn ($name) => !in_array($name, $enumPermissions, true))->keys()->all();
+        if (!empty($toDelete)) {
+            Permission::query()->whereIn('id', $toDelete)->delete();
         }
 
         // 2) Ensure roles exist (idempotent)
@@ -36,8 +46,29 @@ class RoleSeeder extends Seeder
             ->where('guard_name', 'web')
             ->first();
         if ($super) {
-            $all = Permission::query()->pluck('name')->all();
-            $super->givePermissionTo($all);
+            $super->givePermissionTo($enumPermissions);
+        }
+
+        // 4) Assign baseline permissions to other roles
+        // Tenant: granular default permissions for portal
+        $tenant = Role::where('name', RoleName::TENANT->value)
+            ->where('guard_name', 'web')
+            ->first();
+        if ($tenant) {
+            $tenantPerms = [
+                PermissionName::TENANT_ROOMS_VIEW->value,
+                PermissionName::TENANT_BOOKING_VIEW->value,
+                PermissionName::TENANT_BOOKING_CREATE->value,
+                PermissionName::TENANT_CONTRACT_VIEW->value,
+                PermissionName::TENANT_CONTRACT_STOP_RENEW->value,
+                PermissionName::TENANT_HANDOVER_VIEW->value,
+                PermissionName::TENANT_HANDOVER_ACK->value,
+                PermissionName::TENANT_HANDOVER_DISPUTE->value,
+                PermissionName::TENANT_INVOICE_VIEW->value,
+                PermissionName::TENANT_INVOICE_PAY->value,
+                PermissionName::TENANT_PAYMENT_VIEW->value,
+            ];
+            $tenant->givePermissionTo($tenantPerms);
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -243,11 +244,12 @@ export default function HandoverCreate({
                         >
                             {t('common.cancel')}
                         </Button>
-                        <Button
-                            type="button"
-                            disabled={!canSubmit}
-                            onClick={() => {
-                                if (!contractId) return;
+                        <Can all={["handover.create"]}>
+                            <Button
+                                type="button"
+                                disabled={!canSubmit}
+                                onClick={() => {
+                                    if (!contractId) return;
 
                                 // Build FormData explicitly so Laravel receives nested array: files[general][]
                                 const fd = new FormData();
@@ -307,11 +309,12 @@ export default function HandoverCreate({
                                         },
                                     },
                                 );
-                            }}
-                            className="w-full sm:w-auto"
-                        >
-                            {submitText}
-                        </Button>
+                                }}
+                                className="w-full sm:w-auto"
+                            >
+                                {submitText}
+                            </Button>
+                        </Can>
                     </DialogFooter>
                 </div>
             </DialogContent>

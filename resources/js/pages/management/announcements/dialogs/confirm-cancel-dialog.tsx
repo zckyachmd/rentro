@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -82,29 +83,31 @@ export default function ConfirmCancelDialog({
                     <Button variant="outline" onClick={onClose}>
                         {t('common.cancel', 'Cancel')}
                     </Button>
-                    <Button
-                        onClick={() => {
-                            if (!item) return;
-                            router.visit(
-                                route(
-                                    'management.announcements.cancel_schedule',
-                                    { announcement: item.id },
-                                ),
-                                {
-                                    method: 'post',
-                                    preserveScroll: true,
-                                    onSuccess: onClose,
-                                    onFinish: onClose,
-                                },
-                            );
-                        }}
-                    >
-                        <XIcon className="mr-2 h-4 w-4" />
-                        {t(
-                            'management.notifications.cancel_schedule_now',
-                            'Cancel schedule',
-                        )}
-                    </Button>
+                    <Can all={["announcement.cancel"]}>
+                        <Button
+                            onClick={() => {
+                                if (!item) return;
+                                router.visit(
+                                    route(
+                                        'management.announcements.cancel_schedule',
+                                        { announcement: item.id },
+                                    ),
+                                    {
+                                        method: 'post',
+                                        preserveScroll: true,
+                                        onSuccess: onClose,
+                                        onFinish: onClose,
+                                    },
+                                );
+                            }}
+                        >
+                            <XIcon className="mr-2 h-4 w-4" />
+                            {t(
+                                'management.notifications.cancel_schedule_now',
+                                'Cancel schedule',
+                            )}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

@@ -135,7 +135,7 @@ export const createColumns = (opts?: {
                                 <Eye className="mr-2 h-4 w-4" />{' '}
                                 {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
-                            <Can all={['invoice.view']}>
+                            <Can all={['tenant.invoice.view']}>
                                 <DropdownMenuItem
                                     onClick={() =>
                                         window.open(
@@ -154,7 +154,7 @@ export const createColumns = (opts?: {
                             {canPay ? (
                                 <>
                                     <DropdownMenuSeparator />
-                                    <Can all={['payment.create']}>
+                                    <Can all={['tenant.invoice.pay']}>
                                         <DropdownMenuItem
                                             onClick={() => opts?.onPay?.(inv)}
                                         >

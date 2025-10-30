@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { DatePickerInput } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import {
@@ -98,12 +99,14 @@ export default function ExtendDueDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Button
-                        disabled={!canSubmit}
-                        onClick={() => onConfirm(dueDate, reason)}
-                    >
-                        {t('common.save')}
-                    </Button>
+                    <Can all={["invoice.update"]}>
+                        <Button
+                            disabled={!canSubmit}
+                            onClick={() => onConfirm(dueDate, reason)}
+                        >
+                            {t('common.save')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

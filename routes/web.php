@@ -1,6 +1,7 @@
 <?php
 
 use App\Enum\RoleName;
+use App\Enum\PermissionName;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\NotificationController as UserNotificationController;
@@ -121,47 +122,67 @@ Route::middleware('auth')->group(function (): void {
     });
 
     // Tenant
-    Route::prefix('tenant')->name('tenant.')->middleware(['role:' . RoleName::TENANT->value])->group(function (): void {
+    Route::prefix('tenant')->name('tenant.')->group(function (): void {
         // Default tenant home -> bookings list
         Route::get('/', function () {
             return redirect()->route('tenant.bookings.index');
         })->name('home');
         // Rooms browse (tenant scope)
         Route::prefix('rooms')->name('rooms.')->group(function (): void {
-            Route::get('/', [TenantRoomBrowseController::class, 'index'])->name('index');
-            Route::get('/{room}', [TenantRoomBrowseController::class, 'show'])->whereNumber('room')->name('show');
+            Route::get('/', [TenantRoomBrowseController::class, 'index'])
+                ->middleware('can:' . PermissionName::TENANT_ROOMS_VIEW->value)
+                ->name('index');
+            Route::get('/{room}', [TenantRoomBrowseController::class, 'show'])
+                ->middleware('can:' . PermissionName::TENANT_ROOMS_VIEW->value)
+                ->whereNumber('room')
+                ->name('show');
         });
         // Bookings
         Route::prefix('bookings')->name('bookings.')->group(function (): void {
-            Route::get('/', [TenantBookingController::class, 'index'])->name('index');
-            Route::get('/{booking}', [TenantBookingController::class, 'show'])->whereNumber('booking')->name('show');
-            Route::post('/', [TenantBookingController::class, 'store'])->name('store');
+            Route::get('/', [TenantBookingController::class, 'index'])
+                ->middleware('can:' . PermissionName::TENANT_BOOKING_VIEW->value)
+                ->name('index');
+            Route::get('/{booking}', [TenantBookingController::class, 'show'])
+                ->middleware('can:' . PermissionName::TENANT_BOOKING_VIEW->value)
+                ->whereNumber('booking')
+                ->name('show');
+            Route::post('/', [TenantBookingController::class, 'store'])
+                ->middleware('can:' . PermissionName::TENANT_BOOKING_CREATE->value)
+                ->name('store');
         });
 
         // Contracts
         Route::prefix('contracts')->name('contracts.')->group(function (): void {
             Route::get('/', [TenantContractController::class, 'index'])
+                ->middleware('can:' . PermissionName::TENANT_CONTRACT_VIEW->value)
                 ->name('index');
             Route::get('/{contract}', [TenantContractController::class, 'show'])
+                ->middleware('can:' . PermissionName::TENANT_CONTRACT_VIEW->value)
                 ->name('show');
             Route::get('/{contract}/print', [TenantContractController::class, 'print'])
+                ->middleware('can:' . PermissionName::TENANT_CONTRACT_VIEW->value)
                 ->name('print');
             Route::post('/{contract}/stop-auto-renew', [TenantContractController::class, 'stopAutoRenew'])
+                ->middleware('can:' . PermissionName::TENANT_CONTRACT_STOP_RENEW->value)
                 ->name('stopAutoRenew');
             Route::get('/{contract}/handovers', [TenantHandoverController::class, 'index'])
+                ->middleware('can:' . PermissionName::TENANT_HANDOVER_VIEW->value)
                 ->name('handovers.index');
         });
 
         // Tenant Handovers
         Route::prefix('handovers')->name('handovers.')->group(function (): void {
             Route::get('/{handover}/attachments/{path}', [TenantHandoverController::class, 'attachmentGeneral'])
+                ->middleware('can:' . PermissionName::TENANT_HANDOVER_VIEW->value)
                 ->where('path', '.*')
                 ->whereNumber('handover')
                 ->name('attachments.general');
             Route::post('/{handover}/ack', [TenantHandoverController::class, 'acknowledge'])
+                ->middleware('can:' . PermissionName::TENANT_HANDOVER_ACK->value)
                 ->whereNumber('handover')
                 ->name('ack');
             Route::post('/{handover}/dispute', [TenantHandoverController::class, 'dispute'])
+                ->middleware('can:' . PermissionName::TENANT_HANDOVER_DISPUTE->value)
                 ->whereNumber('handover')
                 ->name('dispute');
         });
@@ -169,33 +190,38 @@ Route::middleware('auth')->group(function (): void {
         // Invoices
         Route::prefix('invoices')->name('invoices.')->group(function (): void {
             Route::get('/', [TenantInvoiceController::class, 'index'])
+                ->middleware('can:' . PermissionName::TENANT_INVOICE_VIEW->value)
                 ->name('index');
             Route::get('/{invoice}', [TenantInvoiceController::class, 'show'])
+                ->middleware('can:' . PermissionName::TENANT_INVOICE_VIEW->value)
                 ->whereNumber('invoice')
                 ->name('show');
             Route::get('/{invoice}/print', [TenantInvoiceController::class, 'print'])
+                ->middleware('can:' . PermissionName::TENANT_INVOICE_VIEW->value)
                 ->whereNumber('invoice')
                 ->name('print');
             Route::get('/{invoice}/pay/status', [TenantMidtransController::class, 'status'])
-                ->middleware(['throttle:secure-tenant-status'])
+                ->middleware(['can:' . PermissionName::TENANT_INVOICE_VIEW->value, 'throttle:secure-tenant-status'])
                 ->whereNumber('invoice')
                 ->name('pay.status');
             Route::post('/{invoice}/pay/cancel', [TenantMidtransController::class, 'cancelPending'])
-                ->middleware(['throttle:secure-tenant-pay'])
+                ->middleware(['can:' . PermissionName::TENANT_INVOICE_PAY->value, 'throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
                 ->name('pay.cancel');
             Route::post('/{invoice}/pay/midtrans/va', [TenantMidtransController::class, 'payVa'])
-                ->middleware(['throttle:secure-tenant-pay'])
+                ->middleware(['can:' . PermissionName::TENANT_INVOICE_PAY->value, 'throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
                 ->name('pay.midtrans.va');
             Route::post('/{invoice}/pay/manual', [TenantPaymentController::class, 'payManual'])
-                ->middleware(['throttle:secure-tenant-pay'])
+                ->middleware(['can:' . PermissionName::TENANT_INVOICE_PAY->value, 'throttle:secure-tenant-pay'])
                 ->whereNumber('invoice')
                 ->name('pay.manual');
             Route::get('/payments/{payment}', [TenantPaymentController::class, 'show'])
+                ->middleware('can:' . PermissionName::TENANT_PAYMENT_VIEW->value)
                 ->whereNumber('payment')
                 ->name('payments.show');
             Route::get('/payments/{payment}/attachment', [TenantPaymentController::class, 'attachment'])
+                ->middleware('can:' . PermissionName::TENANT_PAYMENT_VIEW->value)
                 ->whereNumber('payment')
                 ->name('payments.attachment');
         });

@@ -5,6 +5,7 @@ import { AlertTriangle } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -131,14 +132,16 @@ export default function ForceLogoutDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        disabled={submitting}
-                        onClick={onSubmit}
-                    >
-                        {tUser('user.force_logout.submit')}
-                    </Button>
+                    <Can all={["user.force-logout"]}>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={submitting}
+                            onClick={onSubmit}
+                        >
+                            {tUser('user.force_logout.submit')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

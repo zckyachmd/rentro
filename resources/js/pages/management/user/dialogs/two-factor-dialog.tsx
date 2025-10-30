@@ -3,6 +3,7 @@ import { Eye, EyeOff, RefreshCcw, ScanFace } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -196,39 +197,43 @@ export function TwoFADialog({
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap justify-end gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="default"
-                                        size="sm"
-                                        onClick={handleView}
-                                        disabled={
-                                            loading === 'view' || !rule.valid
-                                        }
-                                        aria-label={t(
-                                            'user.twofa.view_codes_aria',
-                                        )}
-                                    >
-                                        {loading === 'view' ? (
-                                            <EyeOff className="mr-2 h-4 w-4" />
-                                        ) : (
-                                            <Eye className="mr-2 h-4 w-4" />
-                                        )}
-                                        {tUser('user.twofa.view_codes')}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => setConfirmOpen(true)}
-                                        disabled={
-                                            loading === 'disable' || !rule.valid
-                                        }
-                                        aria-label={t(
-                                            'user.twofa.disable_aria',
-                                        )}
-                                    >
-                                        {tSecurity('2fa.disable')}
-                                    </Button>
+                                    <Can all={["user.two-factor"]}>
+                                        <Button
+                                            type="button"
+                                            variant="default"
+                                            size="sm"
+                                            onClick={handleView}
+                                            disabled={
+                                                loading === 'view' || !rule.valid
+                                            }
+                                            aria-label={t(
+                                                'user.twofa.view_codes_aria',
+                                            )}
+                                        >
+                                            {loading === 'view' ? (
+                                                <EyeOff className="mr-2 h-4 w-4" />
+                                            ) : (
+                                                <Eye className="mr-2 h-4 w-4" />
+                                            )}
+                                            {tUser('user.twofa.view_codes')}
+                                        </Button>
+                                    </Can>
+                                    <Can all={["user.two-factor"]}>
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => setConfirmOpen(true)}
+                                            disabled={
+                                                loading === 'disable' || !rule.valid
+                                            }
+                                            aria-label={t(
+                                                'user.twofa.disable_aria',
+                                            )}
+                                        >
+                                            {tSecurity('2fa.disable')}
+                                        </Button>
+                                    </Can>
                                 </div>
                             </>
                         ) : null}
@@ -245,21 +250,23 @@ export function TwoFADialog({
                                     </span>
                                     <div className="flex items-center gap-2">
                                         {codes.length === 0 ? (
-                                            <Button
-                                                type="button"
-                                                variant="secondary"
-                                                size="sm"
-                                                onClick={handleRegenerate}
-                                                disabled={loading === 'regen'}
-                                                aria-label={tSecurity(
-                                                    '2fa.recovery.regen',
-                                                )}
-                                            >
-                                                <RefreshCcw className="mr-2 h-4 w-4" />{' '}
-                                                {tSecurity(
-                                                    '2fa.recovery.regen',
-                                                )}
-                                            </Button>
+                                            <Can all={["user.two-factor"]}>
+                                                <Button
+                                                    type="button"
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={handleRegenerate}
+                                                    disabled={loading === 'regen'}
+                                                    aria-label={tSecurity(
+                                                        '2fa.recovery.regen',
+                                                    )}
+                                                >
+                                                    <RefreshCcw className="mr-2 h-4 w-4" />{' '}
+                                                    {tSecurity(
+                                                        '2fa.recovery.regen',
+                                                    )}
+                                                </Button>
+                                            </Can>
                                         ) : null}
                                     </div>
                                 </div>
@@ -316,13 +323,15 @@ export function TwoFADialog({
                         <AlertDialogCancel>
                             {t('common.cancel')}
                         </AlertDialogCancel>
-                        <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={handleDisable}
-                            disabled={loading === 'disable'}
-                        >
-                            {tUser('user.twofa.disable_now')}
-                        </AlertDialogAction>
+                        <Can all={["user.two-factor"]}>
+                            <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={handleDisable}
+                                disabled={loading === 'disable'}
+                            >
+                                {tUser('user.twofa.disable_now')}
+                            </AlertDialogAction>
+                        </Can>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

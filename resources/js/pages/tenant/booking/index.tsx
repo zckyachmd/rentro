@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -307,19 +308,21 @@ export default function TenantBookingsIndex() {
                                     </div>
                                 </div>
                                 <div className="pt-1">
-                                    <Button asChild size="sm">
-                                        <Link
-                                            href={route(
-                                                'tenant.bookings.show',
-                                                {
-                                                    booking: b.id,
-                                                },
-                                            )}
-                                        >
-                                            <Eye className="mr-1 h-4 w-4" />{' '}
-                                            Detail
-                                        </Link>
-                                    </Button>
+                                    <Can all={["tenant.booking.view"]}>
+                                        <Button asChild size="sm">
+                                            <Link
+                                                href={route(
+                                                    'tenant.bookings.show',
+                                                    {
+                                                        booking: b.id,
+                                                    },
+                                                )}
+                                            >
+                                                <Eye className="mr-1 h-4 w-4" />{' '}
+                                                Detail
+                                            </Link>
+                                        </Button>
+                                    </Can>
                                 </div>
                             </CardContent>
                         </Card>
@@ -337,13 +340,15 @@ export default function TenantBookingsIndex() {
                                     ikuti panduan booking.
                                 </p>
                                 <div className="mt-4 flex items-center justify-center gap-2">
-                                    <Button asChild size="sm">
-                                        <Link
-                                            href={route('tenant.rooms.index')}
-                                        >
-                                            Browse Kamar
-                                        </Link>
-                                    </Button>
+                                    <Can all={["tenant.rooms.view"]}>
+                                        <Button asChild size="sm">
+                                            <Link
+                                                href={route('tenant.rooms.index')}
+                                            >
+                                                Browse Kamar
+                                            </Link>
+                                        </Button>
+                                    </Can>
                                     <Button
                                         type="button"
                                         size="sm"

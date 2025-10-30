@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -71,12 +72,14 @@ export default function CancelInvoiceDialog({
                 </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <AlertDialogAction
-                        disabled={!rule.valid}
-                        onClick={() => onConfirm(reason)}
-                    >
-                        {tInvoice('cancel.confirm')}
-                    </AlertDialogAction>
+                    <Can all={["invoice.update"]}>
+                        <AlertDialogAction
+                            disabled={!rule.valid}
+                            onClick={() => onConfirm(reason)}
+                        >
+                            {tInvoice('cancel.confirm')}
+                        </AlertDialogAction>
+                    </Can>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

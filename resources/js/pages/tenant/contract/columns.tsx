@@ -249,7 +249,7 @@ export const createColumns = (
                                     {i18n.t('contract.view_checkout')}
                                 </DropdownMenuItem>
                             ) : null}
-                            <Can all={['invoice.view']}>
+                            <Can all={['tenant.invoice.view']}>
                                 <DropdownMenuItem
                                     onClick={() => {
                                         const url = route(
@@ -276,7 +276,7 @@ export const createColumns = (
                                 <Printer className="mr-2 h-4 w-4" />{' '}
                                 {i18n.t('contract.actions.print')}
                             </DropdownMenuItem>
-                            <Can all={['contract.renew']}>
+                            <Can all={['tenant.contract.stop-auto-renew']}>
                                 <DropdownMenuItem
                                     disabled={!r.auto_renew || !isActive}
                                     onClick={() => opts?.onStopAutoRenew?.(r)}

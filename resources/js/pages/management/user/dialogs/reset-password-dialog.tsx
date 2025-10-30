@@ -5,6 +5,7 @@ import { Copy, KeyRound, Link2, Mail } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CopyInline } from '@/components/ui/copy-inline';
@@ -171,24 +172,28 @@ export function ResetPasswordDialog({
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Button
-                                    type="button"
-                                    onClick={handleSendEmail}
-                                    disabled={isBusy || !rule.valid}
-                                >
-                                    <Mail className="mr-2 h-4 w-4" />{' '}
-                                    {tUser('user.reset_password.send')}
-                                </Button>
+                                <Can all={["user.password.reset"]}>
+                                    <Button
+                                        type="button"
+                                        onClick={handleSendEmail}
+                                        disabled={isBusy || !rule.valid}
+                                    >
+                                        <Mail className="mr-2 h-4 w-4" />{' '}
+                                        {tUser('user.reset_password.send')}
+                                    </Button>
+                                </Can>
 
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleGenerate}
-                                    disabled={isBusy || !rule.valid}
-                                >
-                                    <Link2 className="mr-2 h-4 w-4" />{' '}
-                                    {tUser('user.reset_password.generate')}
-                                </Button>
+                                <Can all={["user.password.reset"]}>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleGenerate}
+                                        disabled={isBusy || !rule.valid}
+                                    >
+                                        <Link2 className="mr-2 h-4 w-4" />{' '}
+                                        {tUser('user.reset_password.generate')}
+                                    </Button>
+                                </Can>
                             </div>
                         </>
                     )}

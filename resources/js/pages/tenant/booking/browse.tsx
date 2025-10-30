@@ -12,6 +12,7 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { DatePickerInput } from '@/components/date-picker';
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -227,12 +228,14 @@ export default function TenantRoomBrowse() {
             pageDescription="Pilih kamar tersedia, atur rencana sewa, dan booking."
             actions={
                 <div className="flex items-center gap-2">
-                    <Button asChild size="sm">
-                        <Link href={route('tenant.bookings.index')}>
-                            <ArrowLeft className="mr-1 h-4 w-4" /> Kembali ke
-                            Booking
-                        </Link>
-                    </Button>
+                    <Can all={["tenant.booking.view"]}>
+                        <Button asChild size="sm">
+                            <Link href={route('tenant.bookings.index')}>
+                                <ArrowLeft className="mr-1 h-4 w-4" /> Kembali
+                                ke Booking
+                            </Link>
+                        </Button>
+                    </Can>
                     <Button
                         type="button"
                         variant="ghost"
@@ -544,22 +547,26 @@ export default function TenantRoomBrowse() {
                                             </div>
                                         )}
                                         <div className="mt-4">
-                                            <Button
-                                                type="button"
-                                                onClick={() => {
-                                                    if (!hasPlan) {
-                                                        toast.warning(
-                                                            'Lengkapi rencana sewa dulu (tanggal & durasi).',
-                                                        );
-                                                        return;
+                                            <Can all={["tenant.booking.create"]}>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (!hasPlan) {
+                                                            toast.warning(
+                                                                'Lengkapi rencana sewa dulu (tanggal & durasi).',
+                                                            );
+                                                            return;
+                                                        }
+                                                        setConfirmRoom(r);
+                                                        setConfirmOpen(true);
+                                                    }}
+                                                    disabled={
+                                                        submittingId === r.id
                                                     }
-                                                    setConfirmRoom(r);
-                                                    setConfirmOpen(true);
-                                                }}
-                                                disabled={submittingId === r.id}
-                                            >
-                                                Booking
-                                            </Button>
+                                                >
+                                                    Booking
+                                                </Button>
+                                            </Can>
                                             <Button
                                                 type="button"
                                                 variant="outline"

@@ -10,6 +10,7 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -310,9 +311,11 @@ export default function PermissionsDialog({
                     >
                         {t('common.close')}
                     </Button>
-                    <Button onClick={submit} disabled={saving}>
-                        {t('common.save')}
-                    </Button>
+                    <Can all={["role.permission.manage"]}>
+                        <Button onClick={submit} disabled={saving}>
+                            {t('common.save')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

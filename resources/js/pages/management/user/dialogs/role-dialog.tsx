@@ -5,6 +5,7 @@ import { Loader2, Search, ShieldCheck } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -191,20 +192,22 @@ export function RoleDialog({
                             >
                                 {t('common.cancel')}
                             </Button>
-                            <Button
-                                type="button"
-                                onClick={handleSubmit}
-                                disabled={saving}
-                            >
-                                {saving ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
-                                        {t('common.saving')}
-                                    </>
-                                ) : (
-                                    t('common.save')
-                                )}
-                            </Button>
+                            <Can all={["user.role.manage"]}>
+                                <Button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    disabled={saving}
+                                >
+                                    {saving ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
+                                            {t('common.saving')}
+                                        </>
+                                    ) : (
+                                        t('common.save')
+                                    )}
+                                </Button>
+                            </Can>
                         </div>
                     </div>
                     <InputError name="role_ids" reserveSpace={false} />

@@ -3,6 +3,7 @@ import { Info } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -166,9 +167,11 @@ export default function RoleUpsertDialog({
                     <Button variant="outline" onClick={close}>
                         {t('common.cancel')}
                     </Button>
-                    <Button disabled={!canSubmit} onClick={submit}>
-                        {saving ? t('common.processing') : t('common.save')}
-                    </Button>
+                    <Can any={["role.create", "role.update"]}>
+                        <Button disabled={!canSubmit} onClick={submit}>
+                            {saving ? t('common.processing') : t('common.save')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

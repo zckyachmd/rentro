@@ -3,6 +3,7 @@ import { ExternalLink, MoreVertical, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -54,14 +55,16 @@ function ActionsCell({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                    onClick={() => onEdit(row.original)}
-                    className="flex items-center gap-2"
-                >
-                    <span className="inline-flex items-center gap-2">
-                        <Pencil className="h-4 w-4" /> {t('common.edit')}
-                    </span>
-                </DropdownMenuItem>
+                <Can all={["page.update"]}>
+                    <DropdownMenuItem
+                        onClick={() => onEdit(row.original)}
+                        className="flex items-center gap-2"
+                    >
+                        <span className="inline-flex items-center gap-2">
+                            <Pencil className="h-4 w-4" /> {t('common.edit')}
+                        </span>
+                    </DropdownMenuItem>
+                </Can>
                 <DropdownMenuItem asChild>
                     <a
                         href={publicUrl}

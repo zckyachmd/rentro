@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -62,12 +63,14 @@ export default function CancelContractDialog({
                 </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <AlertDialogAction
-                        disabled={!rule.valid}
-                        onClick={() => onConfirm(reason)}
-                    >
-                        {t('cancel.confirm')}
-                    </AlertDialogAction>
+                    <Can all={["contract.cancel"]}>
+                        <AlertDialogAction
+                            disabled={!rule.valid}
+                            onClick={() => onConfirm(reason)}
+                        >
+                            {t('cancel.confirm')}
+                        </AlertDialogAction>
+                    </Can>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

@@ -3,6 +3,7 @@ import { GripVertical, Image as ImageIcon, Trash2 } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import ImageDropzone from '@/components/ui/image-dropzone';
@@ -1320,11 +1321,13 @@ export default function RoomUpsertForm({
                     >
                         {tRoom('form.reset')}
                     </Button>
-                    <Button type="submit" size="sm" disabled={processing}>
-                        {mode === 'create'
-                            ? tRoom('form.save')
-                            : tRoom('form.save_changes')}
-                    </Button>
+                    <Can any={["room.manage.create", "room.manage.update"]}>
+                        <Button type="submit" size="sm" disabled={processing}>
+                            {mode === 'create'
+                                ? tRoom('form.save')
+                                : tRoom('form.save_changes')}
+                        </Button>
+                    </Can>
                 </div>
             </form>
 

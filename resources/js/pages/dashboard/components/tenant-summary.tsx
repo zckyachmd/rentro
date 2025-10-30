@@ -2,6 +2,7 @@ import { FileWarning, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
+import { Can } from '@/components/acl';
 import {
     Card,
     CardContent,
@@ -45,12 +46,14 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             })}
                         </p>
                         <div className="mt-1 text-right">
-                            <a
-                                className="text-primary text-xs hover:underline"
-                                href={route('tenant.contracts.index')}
-                            >
-                                {t('dashboard.actions.view_all')}
-                            </a>
+                            <Can all={["tenant.contract.view"]}>
+                                <a
+                                    className="text-primary text-xs hover:underline"
+                                    href={route('tenant.contracts.index')}
+                                >
+                                    {t('dashboard.actions.view_all')}
+                                </a>
+                            </Can>
                         </div>
                     </CardContent>
                 </Card>
@@ -69,19 +72,23 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             <FileWarning className="text-muted-foreground h-6 w-6" />
                         </div>
                         <div className="mt-1 space-x-2 text-xs">
-                            <a
-                                className="text-primary hover:underline"
-                                href={`${route('tenant.invoices.index')}?status=pending`}
-                            >
-                                {t('dashboard.actions.view_pending')}
-                            </a>
+                            <Can all={["tenant.invoice.view"]}>
+                                <a
+                                    className="text-primary hover:underline"
+                                    href={`${route('tenant.invoices.index')}?status=pending`}
+                                >
+                                    {t('dashboard.actions.view_pending')}
+                                </a>
+                            </Can>
                             <span className="text-muted-foreground">•</span>
-                            <a
-                                className="text-primary hover:underline"
-                                href={`${route('tenant.invoices.index')}?status=overdue`}
-                            >
-                                {t('dashboard.actions.view_overdue')}
-                            </a>
+                            <Can all={["tenant.invoice.view"]}>
+                                <a
+                                    className="text-primary hover:underline"
+                                    href={`${route('tenant.invoices.index')}?status=overdue`}
+                                >
+                                    {t('dashboard.actions.view_overdue')}
+                                </a>
+                            </Can>
                         </div>
                     </CardContent>
                 </Card>
@@ -97,12 +104,14 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             {formatIDR(tenant.invoices?.total_outstanding ?? 0)}
                         </div>
                         <div className="mt-1 text-right">
-                            <a
-                                className="text-primary text-xs hover:underline"
-                                href={route('tenant.invoices.index')}
-                            >
-                                {t('dashboard.actions.view_all')}
-                            </a>
+                            <Can all={["tenant.invoice.view"]}>
+                                <a
+                                    className="text-primary text-xs hover:underline"
+                                    href={route('tenant.invoices.index')}
+                                >
+                                    {t('dashboard.actions.view_all')}
+                                </a>
+                            </Can>
                         </div>
                     </CardContent>
                 </Card>

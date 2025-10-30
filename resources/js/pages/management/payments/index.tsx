@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { DatePickerInput } from '@/components/date-picker';
 import { QuickRange } from '@/components/quick-range';
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { QueryBag } from '@/components/ui/data-table-server';
@@ -316,14 +317,16 @@ export default function PaymentIndex() {
                                 >
                                     {t('common.export_csv', 'Export CSV')}
                                 </Button>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={() => setOpen(true)}
-                                >
-                                    <FilePlus2 className="mr-2 h-4 w-4" />{' '}
-                                    {tPayment('add')}
-                                </Button>
+                                <Can all={["payment.create"]}>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={() => setOpen(true)}
+                                    >
+                                        <FilePlus2 className="mr-2 h-4 w-4" />{' '}
+                                        {tPayment('add')}
+                                    </Button>
+                                </Can>
                             </div>
                         </div>
                     </CardContent>

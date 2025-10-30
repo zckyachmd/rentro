@@ -90,7 +90,7 @@ class NotificationController extends Controller
      */
     public function summary(Request $request)
     {
-        $user = $request->user();
+        $user   = $request->user();
         $latest = $user->notifications()
             ->orderByDesc('created_at')
             ->limit(10)

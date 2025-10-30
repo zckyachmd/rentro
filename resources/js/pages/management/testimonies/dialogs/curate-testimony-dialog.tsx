@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -136,11 +137,13 @@ export default function CurateTestimonyDialog({
                             >
                                 {tMng('curate.cancel')}
                             </Button>
-                            <Button type="submit" disabled={processing}>
-                                {processing
-                                    ? tMng('curate.saving')
-                                    : tMng('curate.save')}
-                            </Button>
+                            <Can all={["testimony.update"]}>
+                                <Button type="submit" disabled={processing}>
+                                    {processing
+                                        ? tMng('curate.saving')
+                                        : tMng('curate.save')}
+                                </Button>
+                            </Can>
                         </div>
                     </form>
                 )}

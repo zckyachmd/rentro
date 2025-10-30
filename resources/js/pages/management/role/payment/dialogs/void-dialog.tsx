@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -76,12 +77,14 @@ export default function VoidPaymentDialog({
                     <AlertDialogCancel onClick={() => onOpenChange(false)}>
                         {t('common.cancel')}
                     </AlertDialogCancel>
-                    <AlertDialogAction
-                        disabled={!rule.valid || processing}
-                        onClick={() => onConfirm(reason)}
-                    >
-                        {t('payment.void_now')}
-                    </AlertDialogAction>
+                    <Can all={["payment.update"]}>
+                        <AlertDialogAction
+                            disabled={!rule.valid || processing}
+                            onClick={() => onConfirm(reason)}
+                        >
+                            {t('payment.void_now')}
+                        </AlertDialogAction>
+                    </Can>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

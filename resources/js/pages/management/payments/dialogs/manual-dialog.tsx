@@ -2,6 +2,7 @@ import { useForm } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -379,13 +380,15 @@ export function ManualPaymentDialog({
                         {t('common.cancel')}
                     </Button>
                     {resolvedInvoice?.eligible ? (
-                        <Button
-                            type="button"
-                            disabled={!canSubmit}
-                            onClick={submit}
-                        >
-                            {t('common.save')}
-                        </Button>
+                        <Can all={["payment.create"]}>
+                            <Button
+                                type="button"
+                                disabled={!canSubmit}
+                                onClick={submit}
+                            >
+                                {t('common.save')}
+                            </Button>
+                        </Can>
                     ) : null}
                 </DialogFooter>
             </DialogContent>

@@ -5,6 +5,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -204,24 +205,26 @@ export default function PageSectionEdit() {
                                                 <FormMessage />
                                             </FormItem>
                                         </div>
-                                        <Button
-                                            type="button"
-                                            variant="secondary"
-                                            onClick={() => {
-                                                const k = newKey.trim();
-                                                if (!k) return;
-                                                if (fields.includes(k)) return;
-                                                setFields((s) => [...s, k]);
-                                                // set default value for the current locale
-                                                form.setValue(
-                                                    `values.${k}` as const,
-                                                    '',
-                                                );
-                                                setNewKey('');
-                                            }}
-                                        >
-                                            {tPages('edit.actions.add_field')}
-                                        </Button>
+                                        <Can all={["page.update"]}>
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                onClick={() => {
+                                                    const k = newKey.trim();
+                                                    if (!k) return;
+                                                    if (fields.includes(k)) return;
+                                                    setFields((s) => [...s, k]);
+                                                    // set default value for the current locale
+                                                    form.setValue(
+                                                        `values.${k}` as const,
+                                                        '',
+                                                    );
+                                                    setNewKey('');
+                                                }}
+                                            >
+                                                {tPages('edit.actions.add_field')}
+                                            </Button>
+                                        </Can>
                                     </div>
 
                                     {fields.map((k, idx) => (
@@ -269,24 +272,28 @@ export default function PageSectionEdit() {
                                                 )}
                                             />
                                             <div className="flex items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    onClick={() => {
-                                                        setFields((s) =>
-                                                            s.filter(
-                                                                (x) => x !== k,
-                                                            ),
-                                                        );
-                                                        form.unregister(
-                                                            `values.${k}` as const,
-                                                        );
-                                                    }}
-                                                >
-                                                    {tPages(
-                                                        'edit.actions.remove_field',
-                                                    )}
-                                                </Button>
+                                                <Can all={["page.update"]}>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        onClick={() => {
+                                                            setFields((s) =>
+                                                                s.filter(
+                                                                    (x) =>
+                                                                        x !==
+                                                                        k,
+                                                                ),
+                                                            );
+                                                            form.unregister(
+                                                                `values.${k}` as const,
+                                                            );
+                                                        }}
+                                                    >
+                                                        {tPages(
+                                                            'edit.actions.remove_field',
+                                                        )}
+                                                    </Button>
+                                                </Can>
                                             </div>
                                             {idx < fields.length - 1 ? (
                                                 <Separator className="my-2" />
@@ -295,9 +302,11 @@ export default function PageSectionEdit() {
                                     ))}
 
                                     <div className="flex items-center gap-2 pt-2">
-                                        <Button type="submit">
-                                            {t('common.save')}
-                                        </Button>
+                                        <Can all={["page.update"]}>
+                                            <Button type="submit">
+                                                {t('common.save')}
+                                            </Button>
+                                        </Can>
                                     </div>
                                 </form>
                             </Form>

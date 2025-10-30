@@ -3,6 +3,7 @@ import { Filter, Plus } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableServer } from '@/components/ui/data-table-server';
@@ -153,16 +154,18 @@ export default function PagesIndex() {
                                 </div>
                             </div>
                             <Dialog open={open} onOpenChange={setOpen}>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        className="gap-2"
-                                    >
-                                        <Plus className="h-4 w-4" />{' '}
-                                        {tPages('actions.add_section')}
-                                    </Button>
-                                </DialogTrigger>
+                                <Can all={["page.update"]}>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            className="gap-2"
+                                        >
+                                            <Plus className="h-4 w-4" />{' '}
+                                            {tPages('actions.add_section')}
+                                        </Button>
+                                    </DialogTrigger>
+                                </Can>
                                 <DialogContent>
                                     <DialogHeader>
                                         <DialogTitle>
@@ -223,12 +226,14 @@ export default function PagesIndex() {
                                             >
                                                 {t('common.cancel')}
                                             </Button>
-                                            <Button
-                                                type="button"
-                                                onClick={createSection}
-                                            >
-                                                {t('common.submit')}
-                                            </Button>
+                                            <Can all={["page.update"]}>
+                                                <Button
+                                                    type="button"
+                                                    onClick={createSection}
+                                                >
+                                                    {t('common.submit')}
+                                                </Button>
+                                            </Can>
                                         </div>
                                     </div>
                                 </DialogContent>

@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -261,15 +262,17 @@ export default function GenerateInvoiceDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Button
-                        type="button"
-                        disabled={!canSubmit || saving}
-                        onClick={submit}
-                    >
-                        {saving
-                            ? t('common.processing')
-                            : tInvoice('generate.action')}
-                    </Button>
+                    <Can all={["invoice.create"]}>
+                        <Button
+                            type="button"
+                            disabled={!canSubmit || saving}
+                            onClick={submit}
+                        >
+                            {saving
+                                ? t('common.processing')
+                                : tInvoice('generate.action')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

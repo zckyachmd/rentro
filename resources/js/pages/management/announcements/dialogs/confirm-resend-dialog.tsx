@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { Megaphone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -105,25 +106,27 @@ export default function ConfirmResendDialog({
                     <Button variant="outline" onClick={onClose}>
                         {t('common.cancel', 'Cancel')}
                     </Button>
-                    <Button
-                        onClick={() => {
-                            if (!item) return;
-                            router.visit(
-                                route('management.announcements.resend', {
-                                    announcement: item.id,
-                                }),
-                                {
-                                    method: 'post',
-                                    preserveScroll: true,
-                                    onSuccess: onClose,
-                                    onFinish: onClose,
-                                },
-                            );
-                        }}
-                    >
-                        <Megaphone className="mr-2 h-4 w-4" />
-                        {t('management.notifications.resend_now', 'Resend now')}
-                    </Button>
+                    <Can all={["announcement.send"]}>
+                        <Button
+                            onClick={() => {
+                                if (!item) return;
+                                router.visit(
+                                    route('management.announcements.resend', {
+                                        announcement: item.id,
+                                    }),
+                                    {
+                                        method: 'post',
+                                        preserveScroll: true,
+                                        onSuccess: onClose,
+                                        onFinish: onClose,
+                                    },
+                                );
+                            }}
+                        >
+                            <Megaphone className="mr-2 h-4 w-4" />
+                            {t('management.notifications.resend_now', 'Resend now')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

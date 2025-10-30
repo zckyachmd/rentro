@@ -24,34 +24,35 @@ use Illuminate\Support\Facades\Route;
 
 // Management
 Route::prefix('management')->name('management.')->group(function (): void {
-    // Announcements (role/global)
+    // Announcements
     Route::prefix('announcements')->name('announcements.')
-        ->middleware('role:' . RoleName::SUPER_ADMIN->value . '|' . RoleName::OWNER->value . '|' . RoleName::MANAGER->value)
         ->group(function (): void {
             Route::get('/', [AnnouncementController::class, 'index'])
+                ->middleware('can:' . PermissionName::ANNOUNCEMENT_VIEW->value)
                 ->name('index');
             Route::post('/', [AnnouncementController::class, 'store'])
-                ->middleware('throttle:secure-sensitive')
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:secure-sensitive'])
                 ->name('store');
             Route::post('/{announcement}/send-now', [AnnouncementController::class, 'sendNow'])
-                ->middleware('throttle:secure-sensitive')
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_SEND->value, 'throttle:secure-sensitive'])
                 ->whereNumber('announcement')
                 ->name('send_now');
             Route::post('/{announcement}/resend', [AnnouncementController::class, 'resend'])
-                ->middleware('throttle:secure-sensitive')
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_SEND->value, 'throttle:secure-sensitive'])
                 ->whereNumber('announcement')
                 ->name('resend');
             Route::post('/{announcement}/cancel', [AnnouncementController::class, 'cancelSchedule'])
-                ->middleware('throttle:secure-sensitive')
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CANCEL->value, 'throttle:secure-sensitive'])
                 ->whereNumber('announcement')
                 ->name('cancel_schedule');
             Route::post('/role', [AnnouncementController::class, 'role'])
-                ->middleware('throttle:secure-sensitive')
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:secure-sensitive'])
                 ->name('role');
             Route::post('/global', [AnnouncementController::class, 'global'])
-                ->middleware('throttle:secure-sensitive')
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:secure-sensitive'])
                 ->name('global');
         });
+
     // Bookings
     Route::prefix('bookings')->name('bookings.')->group(function (): void {
         Route::get('/', [BookingManagementController::class, 'index'])
@@ -73,17 +74,21 @@ Route::prefix('management')->name('management.')->group(function (): void {
             ->whereNumber('booking')
             ->name('reject');
     });
+
     // Pages (mini CMS)
     Route::prefix('pages')->name('pages.')
-        ->middleware('role:' . \App\Enum\RoleName::SUPER_ADMIN->value . '|' . \App\Enum\RoleName::OWNER->value . '|' . \App\Enum\RoleName::MANAGER->value)
         ->group(function (): void {
             Route::get('/', [PageContentController::class, 'index'])
-            ->name('index');
+                ->middleware('can:' . PermissionName::PAGE_VIEW->value)
+                ->name('index');
             Route::get('/{page}/{section}', [PageContentController::class, 'edit'])
-            ->name('edit');
+                ->middleware('can:' . PermissionName::PAGE_VIEW->value)
+                ->name('edit');
             Route::post('/{page}/{section}', [PageContentController::class, 'update'])
-            ->name('update');
+                ->middleware('can:' . PermissionName::PAGE_UPDATE->value)
+                ->name('update');
         });
+
     // Users
     Route::prefix('users')->name('users.')->group(function (): void {
         Route::get('/', [UserManagementController::class, 'index'])
