@@ -70,6 +70,8 @@ class PersonalNotification extends Notification implements ShouldQueue
      */
     public function broadcastOn(): array
     {
+        // Return empty array to let Laravel fall back to
+        // notifiable->receivesBroadcastNotificationsOn($notification)
         return [];
     }
 

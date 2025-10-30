@@ -197,17 +197,13 @@ export function useRealtimeNotifications(params: Params) {
 
                 const handlePersonal = (e: unknown) => {
                     const data = (e || {}) as Record<string, unknown>;
-                    const hasTitle =
-                        typeof (data as { title?: unknown }).title ===
-                            'string' &&
-                        String((data as { title?: unknown }).title).trim()
-                            .length > 0;
-                    const hasMsg =
-                        typeof (data as { message?: unknown }).message ===
-                            'string' &&
-                        String((data as { message?: unknown }).message).trim()
-                            .length > 0;
-                    if (!hasTitle && !hasMsg) return;
+                    const hasAny = (v: unknown) =>
+                        (typeof v === 'string' && v.trim().length > 0) ||
+                        (v !== null && typeof v === 'object');
+                    if (!hasAny((data as { title?: unknown }).title) &&
+                        !hasAny((data as { message?: unknown }).message)) {
+                        return;
+                    }
                     const parseMaybeJson = (v: unknown) => {
                         if (typeof v === 'string') {
                             const s = v.trim();
@@ -463,17 +459,13 @@ export function useRealtimeNotifications(params: Params) {
                 subs.push({ leave: () => Echo.leave(name) });
                 ch.listen('.role.announcement', (e: unknown) => {
                     const data = (e || {}) as Record<string, unknown>;
-                    const hasTitle =
-                        typeof (data as { title?: unknown }).title ===
-                            'string' &&
-                        String((data as { title?: unknown }).title).trim()
-                            .length > 0;
-                    const hasMsg =
-                        typeof (data as { message?: unknown }).message ===
-                            'string' &&
-                        String((data as { message?: unknown }).message).trim()
-                            .length > 0;
-                    if (!hasTitle && !hasMsg) return;
+                    const hasAny = (v: unknown) =>
+                        (typeof v === 'string' && v.trim().length > 0) ||
+                        (v !== null && typeof v === 'object');
+                    if (!hasAny((data as { title?: unknown }).title) &&
+                        !hasAny((data as { message?: unknown }).message)) {
+                        return;
+                    }
                     const persist = Boolean(
                         (data as Record<string, unknown>)?.persist,
                     );
@@ -616,16 +608,13 @@ export function useRealtimeNotifications(params: Params) {
             subs.push({ leave: () => Echo.leave(name) });
             const onGlobal = (e: unknown) => {
                 const data = (e || {}) as Record<string, unknown>;
-                const hasTitle =
-                    typeof (data as { title?: unknown }).title === 'string' &&
-                    String((data as { title?: unknown }).title).trim().length >
-                        0;
-                const hasMsg =
-                    typeof (data as { message?: unknown }).message ===
-                        'string' &&
-                    String((data as { message?: unknown }).message).trim()
-                        .length > 0;
-                if (!hasTitle && !hasMsg) return;
+                const hasAny = (v: unknown) =>
+                    (typeof v === 'string' && v.trim().length > 0) ||
+                    (v !== null && typeof v === 'object');
+                if (!hasAny((data as { title?: unknown }).title) &&
+                    !hasAny((data as { message?: unknown }).message)) {
+                    return;
+                }
                 const persist = Boolean(
                     (data as Record<string, unknown>)?.persist,
                 );

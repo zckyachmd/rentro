@@ -240,6 +240,9 @@ Route::middleware('auth')->group(function (): void {
     require __DIR__ . '/management.php';
 });
 
+// Public
+require __DIR__ . '/public.php';
+
 // Auth
 require __DIR__ . '/auth.php';
 

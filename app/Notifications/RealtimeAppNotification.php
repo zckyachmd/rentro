@@ -58,9 +58,7 @@ class RealtimeAppNotification extends Notification implements ShouldQueue
     {
         $base         = $this->toArray($notifiable);
         $base['type'] = class_basename(static::class);
-        // Try to include notification UUID if set after DB channel persists
-        // Include notification UUID; available after DB channel persistence
-        $base['id'] = $this->id;
+        $base['id']   = $this->id;
 
         return new BroadcastMessage($base);
     }
@@ -70,6 +68,7 @@ class RealtimeAppNotification extends Notification implements ShouldQueue
      */
     public function broadcastOn(): array
     {
+        // Return empty array to let Laravel fall back to
         // Rely on notifiable->receivesBroadcastNotificationsOn() fallback
         return [];
     }

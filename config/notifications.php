@@ -16,6 +16,11 @@ return [
     // Prefix for per-user private broadcast channels, e.g. "user." -> "user.{id}"
     'user_channel_prefix' => env('NOTIFICATIONS_USER_CHANNEL_PREFIX', 'user.'),
 
+    // Diagnostic logging for realtime notification broadcasts
+    // When enabled, a log entry is written whenever a notification is broadcast
+    // Useful during development; keep disabled in production to avoid noise
+    'log_broadcasts' => filter_var(env('NOTIFICATIONS_LOG_BROADCASTS', false), FILTER_VALIDATE_BOOL),
+
     // Management roles to notify for tenant-originated events (by role name)
     // You can configure multiple role names per event
     'management_roles' => [

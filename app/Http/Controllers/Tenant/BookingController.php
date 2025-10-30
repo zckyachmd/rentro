@@ -7,6 +7,7 @@ use App\Enum\BookingStatus;
 use App\Enum\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Booking\StoreBookingRequest;
+use App\Models\AppSetting;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
@@ -96,7 +97,6 @@ class BookingController extends Controller
         $months = (int) $data['duration_count'];
         $coupon = (string) ($data['promo_code'] ?? '');
 
-        // Compute simple estimate using PromotionService
         $rentBase    = (int) ($room->effectivePriceCents($period) ?? 0);
         $depositBase = (int) ($room->effectiveDepositCents($period) ?? 0);
         $promoCtx    = [
@@ -183,6 +183,23 @@ class BookingController extends Controller
             // ignore;
         }
 
+        try {
+            $title   = ['key' => 'notifications.content.booking.requested.title'];
+            $message = [
+                'key'    => 'notifications.content.booking.requested.message',
+                'params' => ['number' => (string) ($booking->number ?? $booking->id)],
+            ];
+            $actionUrl = route('tenant.bookings.show', ['booking' => $booking->id]);
+            $this->notifications->notifyUser((int) $user->id, $title, $message, $actionUrl, [
+                'scope'      => 'user',
+                'type'       => 'booking',
+                'booking_id' => (string) $booking->id,
+                'status'     => 'requested',
+            ]);
+        } catch (\Throwable) {
+            // ignore;
+        }
+
         return redirect()->route('tenant.bookings.show', ['booking' => $booking->id])
             ->with('success', __('tenant/booking.created'));
     }
@@ -200,12 +217,12 @@ class BookingController extends Controller
     protected function nextGlobalBookingSequence(): int
     {
         return DB::transaction(function () {
-            $row = \App\Models\AppSetting::query()
+            $row = AppSetting::query()
                 ->where('key', 'booking.global_sequence')
                 ->lockForUpdate()
                 ->first();
             if (!$row) {
-                $row = new \App\Models\AppSetting([
+                $row = new AppSetting([
                     'key'   => 'booking.global_sequence',
                     'type'  => 'int',
                     'value' => 0,

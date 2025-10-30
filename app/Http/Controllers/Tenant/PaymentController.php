@@ -131,6 +131,27 @@ class PaymentController extends Controller
             // ignore;
         }
 
+        try {
+            $tenantId = (int) $request->user()->id;
+            if ($tenantId > 0) {
+                $title   = ['key' => 'notifications.content.payment.submitted.title'];
+                $message = [
+                    'key'    => 'notifications.content.payment.submitted.message',
+                    'params' => ['invoice' => (string) ($invoice->number ?? '')],
+                ];
+                $actionUrl = route('tenant.invoices.payments.show', ['payment' => $payment->id]);
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                    'scope'      => 'user',
+                    'type'       => 'payment',
+                    'event'      => 'submitted',
+                    'invoice_id' => (string) $invoice->id,
+                    'payment_id' => (string) $payment->id,
+                ]);
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
+
         return back()->with('success', __('tenant/payment.proof_submitted'));
     }
 

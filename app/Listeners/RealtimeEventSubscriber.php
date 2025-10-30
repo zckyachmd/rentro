@@ -31,6 +31,11 @@ class RealtimeEventSubscriber
             return;
         }
 
+        // Silence in production unless explicitly enabled
+        if (!config('notifications.log_broadcasts', false)) {
+            return;
+        }
+
         $userId = null;
         try {
             /** @var mixed $n */
@@ -39,7 +44,7 @@ class RealtimeEventSubscriber
         } catch (\Throwable) {
         }
 
-        Log::info('Notification broadcast sent', [
+        Log::debug('Notification broadcast sent', [
             'channel' => $event->channel,
             'type'    => class_basename($event->notification),
             'user_id' => $userId,
