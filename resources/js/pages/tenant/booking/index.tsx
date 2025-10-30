@@ -308,7 +308,7 @@ export default function TenantBookingsIndex() {
                                     </div>
                                 </div>
                                 <div className="pt-1">
-                                    <Can all={["tenant.booking.view"]}>
+                                    <Can all={['tenant.booking.view']}>
                                         <Button asChild size="sm">
                                             <Link
                                                 href={route(
@@ -340,10 +340,12 @@ export default function TenantBookingsIndex() {
                                     ikuti panduan booking.
                                 </p>
                                 <div className="mt-4 flex items-center justify-center gap-2">
-                                    <Can all={["tenant.rooms.view"]}>
+                                    <Can all={['tenant.rooms.view']}>
                                         <Button asChild size="sm">
                                             <Link
-                                                href={route('tenant.rooms.index')}
+                                                href={route(
+                                                    'tenant.rooms.index',
+                                                )}
                                             >
                                                 Browse Kamar
                                             </Link>

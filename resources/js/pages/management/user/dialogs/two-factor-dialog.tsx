@@ -197,14 +197,15 @@ export function TwoFADialog({
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap justify-end gap-2">
-                                    <Can all={["user.two-factor"]}>
+                                    <Can all={['user.two-factor']}>
                                         <Button
                                             type="button"
                                             variant="default"
                                             size="sm"
                                             onClick={handleView}
                                             disabled={
-                                                loading === 'view' || !rule.valid
+                                                loading === 'view' ||
+                                                !rule.valid
                                             }
                                             aria-label={t(
                                                 'user.twofa.view_codes_aria',
@@ -218,14 +219,15 @@ export function TwoFADialog({
                                             {tUser('user.twofa.view_codes')}
                                         </Button>
                                     </Can>
-                                    <Can all={["user.two-factor"]}>
+                                    <Can all={['user.two-factor']}>
                                         <Button
                                             type="button"
                                             variant="destructive"
                                             size="sm"
                                             onClick={() => setConfirmOpen(true)}
                                             disabled={
-                                                loading === 'disable' || !rule.valid
+                                                loading === 'disable' ||
+                                                !rule.valid
                                             }
                                             aria-label={t(
                                                 'user.twofa.disable_aria',
@@ -250,13 +252,15 @@ export function TwoFADialog({
                                     </span>
                                     <div className="flex items-center gap-2">
                                         {codes.length === 0 ? (
-                                            <Can all={["user.two-factor"]}>
+                                            <Can all={['user.two-factor']}>
                                                 <Button
                                                     type="button"
                                                     variant="secondary"
                                                     size="sm"
                                                     onClick={handleRegenerate}
-                                                    disabled={loading === 'regen'}
+                                                    disabled={
+                                                        loading === 'regen'
+                                                    }
                                                     aria-label={tSecurity(
                                                         '2fa.recovery.regen',
                                                     )}
@@ -323,7 +327,7 @@ export function TwoFADialog({
                         <AlertDialogCancel>
                             {t('common.cancel')}
                         </AlertDialogCancel>
-                        <Can all={["user.two-factor"]}>
+                        <Can all={['user.two-factor']}>
                             <AlertDialogAction
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 onClick={handleDisable}

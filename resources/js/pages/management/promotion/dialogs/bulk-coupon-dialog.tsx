@@ -3,6 +3,7 @@ import { Info } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -267,13 +268,15 @@ export default function BulkCouponDialog({
                     <Button type="button" variant="outline" onClick={close}>
                         {t('common.cancel', 'Cancel')}
                     </Button>
-                    <Button
-                        type="button"
-                        disabled={processing}
-                        onClick={submit}
-                    >
-                        {t('common.submit', 'Submit')}
-                    </Button>
+                    <Can all={['promotion.update']}>
+                        <Button
+                            type="button"
+                            disabled={processing}
+                            onClick={submit}
+                        >
+                            {t('common.submit', 'Submit')}
+                        </Button>
+                    </Can>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

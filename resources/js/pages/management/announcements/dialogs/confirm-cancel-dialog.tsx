@@ -83,7 +83,7 @@ export default function ConfirmCancelDialog({
                     <Button variant="outline" onClick={onClose}>
                         {t('common.cancel', 'Cancel')}
                     </Button>
-                    <Can all={["announcement.cancel"]}>
+                    <Can all={['announcement.cancel']}>
                         <Button
                             onClick={() => {
                                 if (!item) return;

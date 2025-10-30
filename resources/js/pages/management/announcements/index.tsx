@@ -447,7 +447,7 @@ export default function ManagementNotificationsPage() {
                                         {t('common.view', 'View details')}
                                     </DropdownMenuItem>
                                     {canSendNow && (
-                                        <Can all={["announcement.send"]}>
+                                        <Can all={['announcement.send']}>
                                             <DropdownMenuItem
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -455,7 +455,10 @@ export default function ManagementNotificationsPage() {
                                                     router.visit(
                                                         route(
                                                             'management.announcements.send_now',
-                                                            { announcement: it.id },
+                                                            {
+                                                                announcement:
+                                                                    it.id,
+                                                            },
                                                         ),
                                                         {
                                                             method: 'post',
@@ -473,7 +476,7 @@ export default function ManagementNotificationsPage() {
                                         </Can>
                                     )}
                                     {canResend && (
-                                        <Can all={["announcement.send"]}>
+                                        <Can all={['announcement.send']}>
                                             <DropdownMenuItem
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -490,7 +493,7 @@ export default function ManagementNotificationsPage() {
                                         </Can>
                                     )}
                                     {canCancelSchedule && (
-                                        <Can all={["announcement.cancel"]}>
+                                        <Can all={['announcement.cancel']}>
                                             <DropdownMenuItem
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -524,7 +527,7 @@ export default function ManagementNotificationsPage() {
                 'Send announcements in real time or schedule them',
             )}
             actions={
-                <Can all={["announcement.create"]}>
+                <Can all={['announcement.create']}>
                     <Button size="sm" onClick={() => setOpenCompose(true)}>
                         <Megaphone className="mr-2 h-4 w-4" />
                         {t(
@@ -1086,7 +1089,7 @@ export default function ManagementNotificationsPage() {
                                 >
                                     {t('common.cancel', 'Cancel')}
                                 </Button>
-                                <Can all={["announcement.create"]}>
+                                <Can all={['announcement.create']}>
                                     <Button
                                         type="submit"
                                         disabled={

@@ -7,7 +7,7 @@ import type { MenuItem } from '@/types/navigation';
 export type SidebarProps = {
     collapsed: boolean;
     brandLabel: string;
-    user: { name: string; email?: string; avatar_url?: string };
+    user: { name: string; email?: string; avatar_url?: string | null };
     menuGroups: { id: string; label: string; items: MenuItem[] }[];
     activeParentId?: string;
 };

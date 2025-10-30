@@ -138,29 +138,31 @@ export default function RoomTypesIndex() {
                         <AlertDialogCancel>
                             {t('common.cancel')}
                         </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const it = confirmDel.item;
-                                if (!it) return;
-                                router.delete(
-                                    route(
-                                        'management.room-types.destroy',
-                                        it.id,
-                                    ),
-                                    {
-                                        preserveScroll: true,
-                                        preserveState: true,
-                                        onFinish: () =>
-                                            setConfirmDel({
-                                                open: false,
-                                                item: null,
-                                            }),
-                                    },
-                                );
-                            }}
-                        >
-                            {t('common.delete')}
-                        </AlertDialogAction>
+                        <Can all={['room-type.delete']}>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    const it = confirmDel.item;
+                                    if (!it) return;
+                                    router.delete(
+                                        route(
+                                            'management.room-types.destroy',
+                                            it.id,
+                                        ),
+                                        {
+                                            preserveScroll: true,
+                                            preserveState: true,
+                                            onFinish: () =>
+                                                setConfirmDel({
+                                                    open: false,
+                                                    item: null,
+                                                }),
+                                        },
+                                    );
+                                }}
+                            >
+                                {t('common.delete')}
+                            </AlertDialogAction>
+                        </Can>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

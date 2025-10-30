@@ -380,7 +380,7 @@ export function ManualPaymentDialog({
                         {t('common.cancel')}
                     </Button>
                     {resolvedInvoice?.eligible ? (
-                        <Can all={["payment.create"]}>
+                        <Can all={['payment.create']}>
                             <Button
                                 type="button"
                                 disabled={!canSubmit}

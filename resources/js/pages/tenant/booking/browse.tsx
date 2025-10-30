@@ -11,8 +11,8 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
-import { DatePickerInput } from '@/components/date-picker';
 import { Can } from '@/components/acl';
+import { DatePickerInput } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -228,7 +228,7 @@ export default function TenantRoomBrowse() {
             pageDescription="Pilih kamar tersedia, atur rencana sewa, dan booking."
             actions={
                 <div className="flex items-center gap-2">
-                    <Can all={["tenant.booking.view"]}>
+                    <Can all={['tenant.booking.view']}>
                         <Button asChild size="sm">
                             <Link href={route('tenant.bookings.index')}>
                                 <ArrowLeft className="mr-1 h-4 w-4" /> Kembali
@@ -547,7 +547,9 @@ export default function TenantRoomBrowse() {
                                             </div>
                                         )}
                                         <div className="mt-4">
-                                            <Can all={["tenant.booking.create"]}>
+                                            <Can
+                                                all={['tenant.booking.create']}
+                                            >
                                                 <Button
                                                     type="button"
                                                     onClick={() => {

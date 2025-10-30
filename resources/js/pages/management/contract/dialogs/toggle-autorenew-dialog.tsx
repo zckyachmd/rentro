@@ -77,7 +77,7 @@ export default function ToggleAutoRenewDialog({
                 )}
                 <AlertDialogFooter>
                     <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <Can all={["contract.renew"]}>
+                    <Can all={['contract.renew']}>
                         <AlertDialogAction
                             disabled={turningOff && !rule.valid}
                             onClick={() => onConfirm(reason)}

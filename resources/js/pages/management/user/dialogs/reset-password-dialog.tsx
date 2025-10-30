@@ -172,7 +172,7 @@ export function ResetPasswordDialog({
                                 </div>
                             </div>
                             <div className="grid gap-2">
-                                <Can all={["user.password.reset"]}>
+                                <Can all={['user.password.reset']}>
                                     <Button
                                         type="button"
                                         onClick={handleSendEmail}
@@ -183,7 +183,7 @@ export function ResetPasswordDialog({
                                     </Button>
                                 </Can>
 
-                                <Can all={["user.password.reset"]}>
+                                <Can all={['user.password.reset']}>
                                     <Button
                                         type="button"
                                         variant="outline"

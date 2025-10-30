@@ -167,7 +167,7 @@ export default function RoleUpsertDialog({
                     <Button variant="outline" onClick={close}>
                         {t('common.cancel')}
                     </Button>
-                    <Can any={["role.create", "role.update"]}>
+                    <Can any={['role.create', 'role.update']}>
                         <Button disabled={!canSubmit} onClick={submit}>
                             {saving ? t('common.processing') : t('common.save')}
                         </Button>

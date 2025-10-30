@@ -1153,38 +1153,42 @@ export default function PromotionDetail() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const { kind, id } = confirmDel;
-                                const routes: Record<string, string> = {
-                                    scope: 'management.promotions.scopes.destroy',
-                                    rule: 'management.promotions.rules.destroy',
-                                    action: 'management.promotions.actions.destroy',
-                                    coupon: 'management.promotions.coupons.destroy',
-                                };
-                                const curPage =
-                                    couponQueryRef.current.page ?? 1;
-                                const targetPage =
-                                    kind === 'coupon' &&
-                                    (couponRows?.length ?? 0) <= 1 &&
-                                    curPage > 1
-                                        ? curPage - 1
-                                        : curPage;
-                                router.delete(route(routes[kind], id), {
-                                    preserveScroll: true,
-                                    preserveState: true,
-                                    onSuccess: () => {
-                                        setConfirmDel({
-                                            ...confirmDel,
-                                            open: false,
-                                        });
-                                        void fetchCoupons({ page: targetPage });
-                                    },
-                                });
-                            }}
-                        >
-                            Delete
-                        </AlertDialogAction>
+                        <Can all={['promotion.update']}>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    const { kind, id } = confirmDel;
+                                    const routes: Record<string, string> = {
+                                        scope: 'management.promotions.scopes.destroy',
+                                        rule: 'management.promotions.rules.destroy',
+                                        action: 'management.promotions.actions.destroy',
+                                        coupon: 'management.promotions.coupons.destroy',
+                                    };
+                                    const curPage =
+                                        couponQueryRef.current.page ?? 1;
+                                    const targetPage =
+                                        kind === 'coupon' &&
+                                        (couponRows?.length ?? 0) <= 1 &&
+                                        curPage > 1
+                                            ? curPage - 1
+                                            : curPage;
+                                    router.delete(route(routes[kind], id), {
+                                        preserveScroll: true,
+                                        preserveState: true,
+                                        onSuccess: () => {
+                                            setConfirmDel({
+                                                ...confirmDel,
+                                                open: false,
+                                            });
+                                            void fetchCoupons({
+                                                page: targetPage,
+                                            });
+                                        },
+                                    });
+                                }}
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </Can>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

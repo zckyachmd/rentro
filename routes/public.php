@@ -5,8 +5,7 @@ use App\Http\Controllers\Public\NewsletterController;
 use App\Http\Controllers\Public\PromotionsController;
 use Illuminate\Support\Facades\Route;
 
-// Root
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::redirect('/', '/dashboard')->name('home');
 
 // Public pages
 Route::prefix('')->name('public.')->group(function (): void {

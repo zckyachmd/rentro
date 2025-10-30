@@ -1,8 +1,8 @@
 import { FileWarning, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Badge } from '@/components/ui/badge';
 import { Can } from '@/components/acl';
+import { Badge } from '@/components/ui/badge';
 import {
     Card,
     CardContent,
@@ -46,7 +46,7 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             })}
                         </p>
                         <div className="mt-1 text-right">
-                            <Can all={["tenant.contract.view"]}>
+                            <Can all={['tenant.contract.view']}>
                                 <a
                                     className="text-primary text-xs hover:underline"
                                     href={route('tenant.contracts.index')}
@@ -72,7 +72,7 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             <FileWarning className="text-muted-foreground h-6 w-6" />
                         </div>
                         <div className="mt-1 space-x-2 text-xs">
-                            <Can all={["tenant.invoice.view"]}>
+                            <Can all={['tenant.invoice.view']}>
                                 <a
                                     className="text-primary hover:underline"
                                     href={`${route('tenant.invoices.index')}?status=pending`}
@@ -81,7 +81,7 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                 </a>
                             </Can>
                             <span className="text-muted-foreground">•</span>
-                            <Can all={["tenant.invoice.view"]}>
+                            <Can all={['tenant.invoice.view']}>
                                 <a
                                     className="text-primary hover:underline"
                                     href={`${route('tenant.invoices.index')}?status=overdue`}
@@ -104,7 +104,7 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             {formatIDR(tenant.invoices?.total_outstanding ?? 0)}
                         </div>
                         <div className="mt-1 text-right">
-                            <Can all={["tenant.invoice.view"]}>
+                            <Can all={['tenant.invoice.view']}>
                                 <a
                                     className="text-primary text-xs hover:underline"
                                     href={route('tenant.invoices.index')}

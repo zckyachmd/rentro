@@ -194,29 +194,31 @@ export default function AmenitiesIndex() {
                         <AlertDialogCancel>
                             {t('common.cancel')}
                         </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const it = confirmDel.item;
-                                if (!it) return;
-                                router.delete(
-                                    route(
-                                        'management.amenities.destroy',
-                                        it.id,
-                                    ),
-                                    {
-                                        preserveScroll: true,
-                                        preserveState: true,
-                                        onFinish: () =>
-                                            setConfirmDel({
-                                                open: false,
-                                                item: null,
-                                            }),
-                                    },
-                                );
-                            }}
-                        >
-                            {t('common.delete')}
-                        </AlertDialogAction>
+                        <Can all={['amenity.delete']}>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    const it = confirmDel.item;
+                                    if (!it) return;
+                                    router.delete(
+                                        route(
+                                            'management.amenities.destroy',
+                                            it.id,
+                                        ),
+                                        {
+                                            preserveScroll: true,
+                                            preserveState: true,
+                                            onFinish: () =>
+                                                setConfirmDel({
+                                                    open: false,
+                                                    item: null,
+                                                }),
+                                        },
+                                    );
+                                }}
+                            >
+                                {t('common.delete')}
+                            </AlertDialogAction>
+                        </Can>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

@@ -192,7 +192,7 @@ export function RoleDialog({
                             >
                                 {t('common.cancel')}
                             </Button>
-                            <Can all={["user.role.manage"]}>
+                            <Can all={['user.role.manage']}>
                                 <Button
                                     type="button"
                                     onClick={handleSubmit}

@@ -3,6 +3,7 @@ import { Info } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -642,13 +643,21 @@ export default function UpsertPromotionDialog({
                         <Button type="button" variant="outline" onClick={close}>
                             {t('common.cancel')}
                         </Button>
-                        <Button
-                            type="button"
-                            disabled={processing}
-                            onClick={submit}
+                        <Can
+                            all={[
+                                item?.id
+                                    ? 'promotion.update'
+                                    : 'promotion.create',
+                            ]}
                         >
-                            {tProm('form.save', 'Save')}
-                        </Button>
+                            <Button
+                                type="button"
+                                disabled={processing}
+                                onClick={submit}
+                            >
+                                {tProm('form.save', 'Save')}
+                            </Button>
+                        </Can>
                     </DialogFooter>
                 </div>
             </DialogContent>

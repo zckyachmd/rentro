@@ -72,7 +72,7 @@ export default function CancelInvoiceDialog({
                 </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <Can all={["invoice.update"]}>
+                    <Can all={['invoice.update']}>
                         <AlertDialogAction
                             disabled={!rule.valid}
                             onClick={() => onConfirm(reason)}

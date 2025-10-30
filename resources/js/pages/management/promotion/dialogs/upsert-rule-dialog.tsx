@@ -4,6 +4,7 @@ import { Info } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -390,13 +391,15 @@ export default function UpsertRuleDialog({
                         <Button type="button" variant="outline" onClick={close}>
                             {t('common.cancel', 'Cancel')}
                         </Button>
-                        <Button
-                            type="button"
-                            disabled={processing}
-                            onClick={submit}
-                        >
-                            {tProm('form.save', 'Save')}
-                        </Button>
+                        <Can all={['promotion.update']}>
+                            <Button
+                                type="button"
+                                disabled={processing}
+                                onClick={submit}
+                            >
+                                {tProm('form.save', 'Save')}
+                            </Button>
+                        </Can>
                     </DialogFooter>
                 </div>
             </DialogContent>

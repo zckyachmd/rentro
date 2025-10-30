@@ -4,8 +4,8 @@ import { router } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Badge } from '@/components/ui/badge';
 import { Can } from '@/components/acl';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -490,7 +490,11 @@ export default function TenantHandoverDetailDialog({
                                         </div>
                                     ) : (
                                         <>
-                                            <Can all={["tenant.handover.dispute"]}>
+                                            <Can
+                                                all={[
+                                                    'tenant.handover.dispute',
+                                                ]}
+                                            >
                                                 <Button
                                                     type="button"
                                                     variant="outline"
@@ -502,7 +506,7 @@ export default function TenantHandoverDetailDialog({
                                                     {tTenant('dispute')}
                                                 </Button>
                                             </Can>
-                                            <Can all={["tenant.handover.ack"]}>
+                                            <Can all={['tenant.handover.ack']}>
                                                 <Button
                                                     type="button"
                                                     className="shadow-sm"

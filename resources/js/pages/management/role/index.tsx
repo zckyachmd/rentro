@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -182,12 +183,14 @@ export default function RolesIndex() {
                         <AlertDialogCancel className="mt-2 sm:mt-0">
                             {t('common.cancel')}
                         </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleConfirmDelete}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            {t('common.delete')}
-                        </AlertDialogAction>
+                        <Can all={['role.delete']}>
+                            <AlertDialogAction
+                                onClick={handleConfirmDelete}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                                {t('common.delete')}
+                            </AlertDialogAction>
+                        </Can>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

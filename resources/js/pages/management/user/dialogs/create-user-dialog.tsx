@@ -203,7 +203,7 @@ export default function CreateUserDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Can all={["user.create"]}>
+                    <Can all={['user.create']}>
                         <Button
                             type="button"
                             disabled={processing}

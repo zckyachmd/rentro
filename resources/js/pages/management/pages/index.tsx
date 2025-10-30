@@ -154,7 +154,7 @@ export default function PagesIndex() {
                                 </div>
                             </div>
                             <Dialog open={open} onOpenChange={setOpen}>
-                                <Can all={["page.update"]}>
+                                <Can all={['page.update']}>
                                     <DialogTrigger asChild>
                                         <Button
                                             type="button"
@@ -226,7 +226,7 @@ export default function PagesIndex() {
                                             >
                                                 {t('common.cancel')}
                                             </Button>
-                                            <Can all={["page.update"]}>
+                                            <Can all={['page.update']}>
                                                 <Button
                                                     type="button"
                                                     onClick={createSection}

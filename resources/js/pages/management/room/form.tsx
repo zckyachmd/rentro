@@ -1321,7 +1321,7 @@ export default function RoomUpsertForm({
                     >
                         {tRoom('form.reset')}
                     </Button>
-                    <Can any={["room.manage.create", "room.manage.update"]}>
+                    <Can any={['room.manage.create', 'room.manage.update']}>
                         <Button type="submit" size="sm" disabled={processing}>
                             {mode === 'create'
                                 ? tRoom('form.save')

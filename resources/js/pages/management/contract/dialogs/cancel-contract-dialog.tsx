@@ -63,7 +63,7 @@ export default function CancelContractDialog({
                 </div>
                 <AlertDialogFooter>
                     <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <Can all={["contract.cancel"]}>
+                    <Can all={['contract.cancel']}>
                         <AlertDialogAction
                             disabled={!rule.valid}
                             onClick={() => onConfirm(reason)}

@@ -262,7 +262,7 @@ export default function GenerateInvoiceDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Can all={["invoice.create"]}>
+                    <Can all={['invoice.create']}>
                         <Button
                             type="button"
                             disabled={!canSubmit || saving}

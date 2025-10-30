@@ -4,9 +4,9 @@ import { FilePlus2, Filter } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { DatePickerInput } from '@/components/date-picker';
 import { QuickRange } from '@/components/quick-range';
-import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { QueryBag } from '@/components/ui/data-table-server';
@@ -300,7 +300,7 @@ export default function InvoiceIndex() {
                                 >
                                     {t('common.export_csv')}
                                 </Button>
-                                <Can all={["invoice.create"]}>
+                                <Can all={['invoice.create']}>
                                     <Button
                                         type="button"
                                         size="sm"

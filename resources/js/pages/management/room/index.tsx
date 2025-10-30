@@ -3,6 +3,7 @@ import { Filter, Plus } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -733,22 +734,24 @@ export default function RoomIndex(props: RoomsPageProps) {
                             <AlertDialogCancel>
                                 {t('common.cancel')}
                             </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={() => {
-                                    if (!deletingRoom) return;
-                                    router.delete(
-                                        route('management.rooms.destroy', {
-                                            room: deletingRoom.id,
-                                        }),
-                                        {
-                                            onFinish: () =>
-                                                setDeletingRoom(null),
-                                        },
-                                    );
-                                }}
-                            >
-                                {t('common.delete')}
-                            </AlertDialogAction>
+                            <Can all={['room.manage.delete']}>
+                                <AlertDialogAction
+                                    onClick={() => {
+                                        if (!deletingRoom) return;
+                                        router.delete(
+                                            route('management.rooms.destroy', {
+                                                room: deletingRoom.id,
+                                            }),
+                                            {
+                                                onFinish: () =>
+                                                    setDeletingRoom(null),
+                                            },
+                                        );
+                                    }}
+                                >
+                                    {t('common.delete')}
+                                </AlertDialogAction>
+                            </Can>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

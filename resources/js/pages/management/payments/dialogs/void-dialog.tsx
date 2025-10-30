@@ -352,7 +352,7 @@ export default function PaymentReviewDialog({
                     <Button variant="outline" onClick={onClose}>
                         {t('common.close')}
                     </Button>
-                    <Can all={["payment.update"]}>
+                    <Can all={['payment.update']}>
                         <Button
                             onClick={submit}
                             disabled={

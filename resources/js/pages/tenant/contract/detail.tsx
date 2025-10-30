@@ -3,8 +3,8 @@ import { CheckCircle2, Eye, MoreHorizontal, XCircle } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Can } from '@/components/acl';
+import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Crumb } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -453,7 +453,11 @@ export default function TenantContractDetail(props: PageProps) {
                                                                 'pending' &&
                                                                 !h.acknowledged &&
                                                                 !h.disputed && (
-                                                                    <Can all={["tenant.handover.ack"]}>
+                                                                    <Can
+                                                                        all={[
+                                                                            'tenant.handover.ack',
+                                                                        ]}
+                                                                    >
                                                                         <DropdownMenuItem
                                                                             onClick={() =>
                                                                                 setConfirmAck(
@@ -476,7 +480,11 @@ export default function TenantContractDetail(props: PageProps) {
                                                                 'pending' &&
                                                                 !h.acknowledged &&
                                                                 !h.disputed && (
-                                                                    <Can all={["tenant.handover.dispute"]}>
+                                                                    <Can
+                                                                        all={[
+                                                                            'tenant.handover.dispute',
+                                                                        ]}
+                                                                    >
                                                                         <DropdownMenuItem
                                                                             onClick={() =>
                                                                                 setDispute(
@@ -551,7 +559,7 @@ export default function TenantContractDetail(props: PageProps) {
                         >
                             {t('common.cancel')}
                         </Button>
-                        <Can all={["tenant.handover.ack"]}>
+                        <Can all={['tenant.handover.ack']}>
                             <Button
                                 type="button"
                                 disabled={confirmAck.saving || !confirmAck.id}
@@ -562,43 +570,57 @@ export default function TenantContractDetail(props: PageProps) {
                                         saving: true,
                                     }));
                                     try {
-                                        await new Promise<void>((resolve, reject) => {
-                                            router.post(
-                                                route('tenant.handovers.ack', {
-                                                    handover: confirmAck.id,
-                                                }),
-                                                {},
-                                                {
-                                                    preserveScroll: true,
-                                                    onSuccess: () => {
-                                                        setConfirmAck({
-                                                            open: false,
-                                                            id: undefined,
-                                                            saving: false,
-                                                        });
-                                                        setHandoverDialog({
-                                                            open: false,
-                                                            data: null,
-                                                        });
-                                                        router.reload({
-                                                            only: ['contract'],
-                                                        });
-                                                        void loadHandovers();
-                                                        resolve();
+                                        await new Promise<void>(
+                                            (resolve, reject) => {
+                                                router.post(
+                                                    route(
+                                                        'tenant.handovers.ack',
+                                                        {
+                                                            handover:
+                                                                confirmAck.id,
+                                                        },
+                                                    ),
+                                                    {},
+                                                    {
+                                                        preserveScroll: true,
+                                                        onSuccess: () => {
+                                                            setConfirmAck({
+                                                                open: false,
+                                                                id: undefined,
+                                                                saving: false,
+                                                            });
+                                                            setHandoverDialog({
+                                                                open: false,
+                                                                data: null,
+                                                            });
+                                                            router.reload({
+                                                                only: [
+                                                                    'contract',
+                                                                ],
+                                                            });
+                                                            void loadHandovers();
+                                                            resolve();
+                                                        },
+                                                        onError: () => {
+                                                            setConfirmAck(
+                                                                (p) => ({
+                                                                    ...p,
+                                                                    saving: false,
+                                                                }),
+                                                            );
+                                                            reject(
+                                                                new Error(
+                                                                    'Failed',
+                                                                ),
+                                                            );
+                                                        },
+                                                        onFinish: () => {
+                                                            // no-op; handled above
+                                                        },
                                                     },
-                                                    onError: () => {
-                                                        setConfirmAck((p) => ({
-                                                            ...p,
-                                                            saving: false,
-                                                        }));
-                                                        reject(new Error('Failed'));
-                                                    },
-                                                    onFinish: () => {
-                                                        // no-op; handled above
-                                                    },
-                                                },
-                                            );
-                                        });
+                                                );
+                                            },
+                                        );
                                     } catch {
                                         setConfirmAck((p) => ({
                                             ...p,

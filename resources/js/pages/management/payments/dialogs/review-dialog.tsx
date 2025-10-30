@@ -77,7 +77,7 @@ export default function VoidPaymentDialog({
                     <AlertDialogCancel onClick={() => onOpenChange(false)}>
                         {t('common.cancel')}
                     </AlertDialogCancel>
-                    <Can all={["payment.update"]}>
+                    <Can all={['payment.update']}>
                         <AlertDialogAction
                             disabled={!rule.valid || processing}
                             onClick={() => onConfirm(reason)}

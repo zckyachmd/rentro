@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -148,13 +149,15 @@ export default function UpsertFloorDialog({
                         <Button type="button" variant="outline" onClick={close}>
                             {t('common.cancel')}
                         </Button>
-                        <Button
-                            type="button"
-                            disabled={processing}
-                            onClick={submit}
-                        >
-                            {tF('form.save')}
-                        </Button>
+                        <Can all={[item?.id ? 'floor.update' : 'floor.create']}>
+                            <Button
+                                type="button"
+                                disabled={processing}
+                                onClick={submit}
+                            >
+                                {tF('form.save')}
+                            </Button>
+                        </Can>
                     </DialogFooter>
                 </div>
             </DialogContent>

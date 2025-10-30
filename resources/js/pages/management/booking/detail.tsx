@@ -17,9 +17,9 @@ import {
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import LazyIcon from '@/components/lazy-icon';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -484,7 +484,11 @@ export default function ManagementBookingDetail() {
                                                     )}
                                                 />
                                                 <div className="flex items-center gap-2">
-                                                    <Can all={["booking.approve"]}>
+                                                    <Can
+                                                        all={[
+                                                            'booking.approve',
+                                                        ]}
+                                                    >
                                                         <Button
                                                             onClick={() =>
                                                                 setConfirmApprove(
@@ -498,7 +502,9 @@ export default function ManagementBookingDetail() {
                                                             )}
                                                         </Button>
                                                     </Can>
-                                                    <Can all={["booking.reject"]}>
+                                                    <Can
+                                                        all={['booking.reject']}
+                                                    >
                                                         <Button
                                                             variant="outline"
                                                             onClick={() =>
@@ -609,7 +615,7 @@ export default function ManagementBookingDetail() {
                                         <FileText className="h-4 w-4" />
                                     </Link>
                                 ) : statusKey === 'approved' ? (
-                                    <Can all={["contract.create"]}>
+                                    <Can all={['contract.create']}>
                                         <Link
                                             href={route(
                                                 'management.contracts.create',
@@ -679,7 +685,7 @@ export default function ManagementBookingDetail() {
                                 >
                                     {t('common.cancel')}
                                 </Button>
-                                <Can all={["booking.approve"]}>
+                                <Can all={['booking.approve']}>
                                     <Button
                                         onClick={() => {
                                             setConfirmApprove(false);
@@ -752,7 +758,7 @@ export default function ManagementBookingDetail() {
                                 >
                                     {t('common.cancel')}
                                 </Button>
-                                <Can all={["booking.reject"]}>
+                                <Can all={['booking.reject']}>
                                     <Button
                                         variant="destructive"
                                         disabled={reason.trim() === ''}

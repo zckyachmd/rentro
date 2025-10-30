@@ -132,7 +132,7 @@ export default function ForceLogoutDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Can all={["user.force-logout"]}>
+                    <Can all={['user.force-logout']}>
                         <Button
                             type="button"
                             variant="destructive"

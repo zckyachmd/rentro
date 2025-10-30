@@ -4,6 +4,7 @@ import { CheckCircle2, CircleAlert, FileText, ShieldCheck } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import AttachmentPreviewDialog from '@/components/attachment-preview';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -404,16 +405,20 @@ export default function ManagementUserDetail() {
 
                             {canVerify ? (
                                 <div className="flex flex-wrap gap-2">
-                                    <Button size="sm" onClick={approve}>
-                                        {t('common.approve')}
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => setRejectOpen(true)}
-                                    >
-                                        {t('common.reject')}
-                                    </Button>
+                                    <Can all={['user.document.verify']}>
+                                        <Button size="sm" onClick={approve}>
+                                            {t('common.approve')}
+                                        </Button>
+                                    </Can>
+                                    <Can all={['user.document.verify']}>
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => setRejectOpen(true)}
+                                        >
+                                            {t('common.reject')}
+                                        </Button>
+                                    </Can>
                                 </div>
                             ) : null}
                         </div>
@@ -483,13 +488,15 @@ export default function ManagementUserDetail() {
                         >
                             {t('common.cancel')}
                         </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={reject}
-                            disabled={note.trim().length < 10}
-                        >
-                            {t('common.reject')}
-                        </Button>
+                        <Can all={['user.document.verify']}>
+                            <Button
+                                variant="destructive"
+                                onClick={reject}
+                                disabled={note.trim().length < 10}
+                            >
+                                {t('common.reject')}
+                            </Button>
+                        </Can>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

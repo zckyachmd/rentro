@@ -127,29 +127,31 @@ export default function PromotionsIndex() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const it = confirmDel.item;
-                                if (!it) return;
-                                router.delete(
-                                    route(
-                                        'management.promotions.destroy',
-                                        it.id,
-                                    ),
-                                    {
-                                        preserveScroll: true,
-                                        preserveState: true,
-                                        onFinish: () =>
-                                            setConfirmDel({
-                                                open: false,
-                                                item: null,
-                                            }),
-                                    },
-                                );
-                            }}
-                        >
-                            Delete
-                        </AlertDialogAction>
+                        <Can all={['promotion.delete']}>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    const it = confirmDel.item;
+                                    if (!it) return;
+                                    router.delete(
+                                        route(
+                                            'management.promotions.destroy',
+                                            it.id,
+                                        ),
+                                        {
+                                            preserveScroll: true,
+                                            preserveState: true,
+                                            onFinish: () =>
+                                                setConfirmDel({
+                                                    open: false,
+                                                    item: null,
+                                                }),
+                                        },
+                                    );
+                                }}
+                            >
+                                Delete
+                            </AlertDialogAction>
+                        </Can>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

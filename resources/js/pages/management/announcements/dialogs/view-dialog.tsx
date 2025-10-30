@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { ExternalLink, Globe, Send, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -202,28 +203,30 @@ export default function AnnouncementViewDialog({
                     {item &&
                         (item.status === 'scheduled' ||
                             item.status === 'pending') && (
-                            <Button
-                                variant="secondary"
-                                onClick={() =>
-                                    router.visit(
-                                        route(
-                                            'management.announcements.send_now',
-                                            { announcement: item.id },
-                                        ),
-                                        {
-                                            method: 'post',
-                                            preserveScroll: true,
-                                            onSuccess: () => onClose(),
-                                        },
-                                    )
-                                }
-                            >
-                                <Send className="mr-2 h-4 w-4" />
-                                {t(
-                                    'management.notifications.send_now',
-                                    'Send now',
-                                )}
-                            </Button>
+                            <Can all={['announcement.send']}>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() =>
+                                        router.visit(
+                                            route(
+                                                'management.announcements.send_now',
+                                                { announcement: item.id },
+                                            ),
+                                            {
+                                                method: 'post',
+                                                preserveScroll: true,
+                                                onSuccess: () => onClose(),
+                                            },
+                                        )
+                                    }
+                                >
+                                    <Send className="mr-2 h-4 w-4" />
+                                    {t(
+                                        'management.notifications.send_now',
+                                        'Send now',
+                                    )}
+                                </Button>
+                            </Can>
                         )}
                     <Button variant="outline" onClick={onClose}>
                         {t('common.close', 'Close')}

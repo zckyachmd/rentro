@@ -3,6 +3,7 @@ import { Info } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -383,31 +384,39 @@ export default function UpsertScopeDialog({
                     <DialogFooter className="flex items-center justify-between">
                         <div className="mr-auto flex flex-wrap gap-2">
                             {data.scope_type === 'room' && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={addAllFilteredRooms}
-                                >
-                                    {tProm('scope.bulk.add_filtered_rooms')}
-                                </Button>
+                                <Can all={['promotion.update']}>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={addAllFilteredRooms}
+                                    >
+                                        {tProm('scope.bulk.add_filtered_rooms')}
+                                    </Button>
+                                </Can>
                             )}
                             {data.scope_type === 'floor' && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={addAllFilteredFloors}
-                                >
-                                    {tProm('scope.bulk.add_filtered_floors')}
-                                </Button>
+                                <Can all={['promotion.update']}>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={addAllFilteredFloors}
+                                    >
+                                        {tProm(
+                                            'scope.bulk.add_filtered_floors',
+                                        )}
+                                    </Button>
+                                </Can>
                             )}
                             {data.scope_type === 'room_type' && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={addAllRoomTypes}
-                                >
-                                    {tProm('scope.bulk.add_all_room_types')}
-                                </Button>
+                                <Can all={['promotion.update']}>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={addAllRoomTypes}
+                                    >
+                                        {tProm('scope.bulk.add_all_room_types')}
+                                    </Button>
+                                </Can>
                             )}
                         </div>
                         <div className="flex gap-2">
@@ -418,13 +427,15 @@ export default function UpsertScopeDialog({
                             >
                                 {t('common.cancel', 'Cancel')}
                             </Button>
-                            <Button
-                                type="button"
-                                disabled={processing}
-                                onClick={submit}
-                            >
-                                {tProm('form.save', 'Save')}
-                            </Button>
+                            <Can all={['promotion.update']}>
+                                <Button
+                                    type="button"
+                                    disabled={processing}
+                                    onClick={submit}
+                                >
+                                    {tProm('form.save', 'Save')}
+                                </Button>
+                            </Can>
                         </div>
                     </DialogFooter>
                 </div>

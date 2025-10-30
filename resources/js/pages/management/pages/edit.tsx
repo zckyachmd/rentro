@@ -205,14 +205,15 @@ export default function PageSectionEdit() {
                                                 <FormMessage />
                                             </FormItem>
                                         </div>
-                                        <Can all={["page.update"]}>
+                                        <Can all={['page.update']}>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
                                                 onClick={() => {
                                                     const k = newKey.trim();
                                                     if (!k) return;
-                                                    if (fields.includes(k)) return;
+                                                    if (fields.includes(k))
+                                                        return;
                                                     setFields((s) => [...s, k]);
                                                     // set default value for the current locale
                                                     form.setValue(
@@ -222,7 +223,9 @@ export default function PageSectionEdit() {
                                                     setNewKey('');
                                                 }}
                                             >
-                                                {tPages('edit.actions.add_field')}
+                                                {tPages(
+                                                    'edit.actions.add_field',
+                                                )}
                                             </Button>
                                         </Can>
                                     </div>
@@ -272,7 +275,7 @@ export default function PageSectionEdit() {
                                                 )}
                                             />
                                             <div className="flex items-center gap-2">
-                                                <Can all={["page.update"]}>
+                                                <Can all={['page.update']}>
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
@@ -280,8 +283,7 @@ export default function PageSectionEdit() {
                                                             setFields((s) =>
                                                                 s.filter(
                                                                     (x) =>
-                                                                        x !==
-                                                                        k,
+                                                                        x !== k,
                                                                 ),
                                                             );
                                                             form.unregister(
@@ -302,7 +304,7 @@ export default function PageSectionEdit() {
                                     ))}
 
                                     <div className="flex items-center gap-2 pt-2">
-                                        <Can all={["page.update"]}>
+                                        <Can all={['page.update']}>
                                             <Button type="submit">
                                                 {t('common.save')}
                                             </Button>

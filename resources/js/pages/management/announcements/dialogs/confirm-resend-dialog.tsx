@@ -106,7 +106,7 @@ export default function ConfirmResendDialog({
                     <Button variant="outline" onClick={onClose}>
                         {t('common.cancel', 'Cancel')}
                     </Button>
-                    <Can all={["announcement.send"]}>
+                    <Can all={['announcement.send']}>
                         <Button
                             onClick={() => {
                                 if (!item) return;
@@ -124,7 +124,10 @@ export default function ConfirmResendDialog({
                             }}
                         >
                             <Megaphone className="mr-2 h-4 w-4" />
-                            {t('management.notifications.resend_now', 'Resend now')}
+                            {t(
+                                'management.notifications.resend_now',
+                                'Resend now',
+                            )}
                         </Button>
                     </Can>
                 </DialogFooter>

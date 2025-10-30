@@ -2,8 +2,8 @@ import type { ColumnDef, Row } from '@tanstack/react-table';
 import { ExternalLink, MoreVertical, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { Badge } from '@/components/ui/badge';
 import { Can } from '@/components/acl';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -55,7 +55,7 @@ function ActionsCell({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <Can all={["page.update"]}>
+                <Can all={['page.update']}>
                     <DropdownMenuItem
                         onClick={() => onEdit(row.original)}
                         className="flex items-center gap-2"

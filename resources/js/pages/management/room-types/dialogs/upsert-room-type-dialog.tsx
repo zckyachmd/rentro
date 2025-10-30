@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Can } from '@/components/acl';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -326,13 +327,21 @@ export default function UpsertRoomTypeDialog({
                         <Button type="button" variant="outline" onClick={close}>
                             {t('common.cancel')}
                         </Button>
-                        <Button
-                            type="button"
-                            disabled={processing}
-                            onClick={submit}
+                        <Can
+                            all={[
+                                item?.id
+                                    ? 'room-type.update'
+                                    : 'room-type.create',
+                            ]}
                         >
-                            {tType('form.save')}
-                        </Button>
+                            <Button
+                                type="button"
+                                disabled={processing}
+                                onClick={submit}
+                            >
+                                {tType('form.save')}
+                            </Button>
+                        </Can>
                     </DialogFooter>
                 </div>
             </DialogContent>

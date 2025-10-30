@@ -244,71 +244,80 @@ export default function HandoverCreate({
                         >
                             {t('common.cancel')}
                         </Button>
-                        <Can all={["handover.create"]}>
+                        <Can all={['handover.create']}>
                             <Button
                                 type="button"
                                 disabled={!canSubmit}
                                 onClick={() => {
                                     if (!contractId) return;
 
-                                // Build FormData explicitly so Laravel receives nested array: files[general][]
-                                const fd = new FormData();
-                                fd.append('notes', data.notes ?? '');
+                                    // Build FormData explicitly so Laravel receives nested array: files[general][]
+                                    const fd = new FormData();
+                                    fd.append('notes', data.notes ?? '');
 
-                                const files = Array.isArray(data.files?.general)
-                                    ? data.files.general.slice(0, 5)
-                                    : [];
-                                for (const f of files) {
-                                    fd.append('files[general][]', f);
-                                }
+                                    const files = Array.isArray(
+                                        data.files?.general,
+                                    )
+                                        ? data.files.general.slice(0, 5)
+                                        : [];
+                                    for (const f of files) {
+                                        fd.append('files[general][]', f);
+                                    }
 
-                                // Clear old field-level errors before submit to avoid stale UI
-                                if (Object.keys(errors).length) {
-                                    clearErrors();
-                                }
+                                    // Clear old field-level errors before submit to avoid stale UI
+                                    if (Object.keys(errors).length) {
+                                        clearErrors();
+                                    }
 
-                                router.post(
-                                    route(routeName, { contract: contractId }),
-                                    fd,
-                                    {
-                                        preserveScroll: true,
-                                        preserveState: true,
-                                        onError: (
-                                            errs: Record<
-                                                string,
-                                                string | string[]
-                                            >,
-                                        ) => {
-                                            for (const [
-                                                key,
-                                                val,
-                                            ] of Object.entries(errs)) {
-                                                const messageStr =
-                                                    Array.isArray(val)
-                                                        ? val.join(' ')
-                                                        : String(val);
-                                                if (isAllowedErrorKey(key)) {
-                                                    setError(key, messageStr);
-                                                } else {
-                                                    setError(
-                                                        'notes',
-                                                        messageStr,
-                                                    );
+                                    router.post(
+                                        route(routeName, {
+                                            contract: contractId,
+                                        }),
+                                        fd,
+                                        {
+                                            preserveScroll: true,
+                                            preserveState: true,
+                                            onError: (
+                                                errs: Record<
+                                                    string,
+                                                    string | string[]
+                                                >,
+                                            ) => {
+                                                for (const [
+                                                    key,
+                                                    val,
+                                                ] of Object.entries(errs)) {
+                                                    const messageStr =
+                                                        Array.isArray(val)
+                                                            ? val.join(' ')
+                                                            : String(val);
+                                                    if (
+                                                        isAllowedErrorKey(key)
+                                                    ) {
+                                                        setError(
+                                                            key,
+                                                            messageStr,
+                                                        );
+                                                    } else {
+                                                        setError(
+                                                            'notes',
+                                                            messageStr,
+                                                        );
+                                                    }
                                                 }
-                                            }
+                                            },
+                                            onSuccess: async () => {
+                                                try {
+                                                    await Promise.resolve(
+                                                        onSaved?.(),
+                                                    );
+                                                } catch {
+                                                    // ignore
+                                                }
+                                                close();
+                                            },
                                         },
-                                        onSuccess: async () => {
-                                            try {
-                                                await Promise.resolve(
-                                                    onSaved?.(),
-                                                );
-                                            } catch {
-                                                // ignore
-                                            }
-                                            close();
-                                        },
-                                    },
-                                );
+                                    );
                                 }}
                                 className="w-full sm:w-auto"
                             >

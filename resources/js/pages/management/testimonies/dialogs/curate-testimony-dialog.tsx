@@ -137,7 +137,7 @@ export default function CurateTestimonyDialog({
                             >
                                 {tMng('curate.cancel')}
                             </Button>
-                            <Can all={["testimony.update"]}>
+                            <Can all={['testimony.update']}>
                                 <Button type="submit" disabled={processing}>
                                     {processing
                                         ? tMng('curate.saving')

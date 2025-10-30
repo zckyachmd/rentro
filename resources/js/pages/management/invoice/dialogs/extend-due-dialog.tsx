@@ -99,7 +99,7 @@ export default function ExtendDueDialog({
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Can all={["invoice.update"]}>
+                    <Can all={['invoice.update']}>
                         <Button
                             disabled={!canSubmit}
                             onClick={() => onConfirm(dueDate, reason)}

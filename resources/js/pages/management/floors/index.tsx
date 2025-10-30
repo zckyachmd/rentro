@@ -145,26 +145,31 @@ export default function FloorsIndex() {
                         <AlertDialogCancel>
                             {t('common.cancel')}
                         </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                const it = confirmDel.item;
-                                if (!it) return;
-                                router.delete(
-                                    route('management.floors.destroy', it.id),
-                                    {
-                                        preserveScroll: true,
-                                        preserveState: true,
-                                        onFinish: () =>
-                                            setConfirmDel({
-                                                open: false,
-                                                item: null,
-                                            }),
-                                    },
-                                );
-                            }}
-                        >
-                            {t('common.delete')}
-                        </AlertDialogAction>
+                        <Can all={['floor.delete']}>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    const it = confirmDel.item;
+                                    if (!it) return;
+                                    router.delete(
+                                        route(
+                                            'management.floors.destroy',
+                                            it.id,
+                                        ),
+                                        {
+                                            preserveScroll: true,
+                                            preserveState: true,
+                                            onFinish: () =>
+                                                setConfirmDel({
+                                                    open: false,
+                                                    item: null,
+                                                }),
+                                        },
+                                    );
+                                }}
+                            >
+                                {t('common.delete')}
+                            </AlertDialogAction>
+                        </Can>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
