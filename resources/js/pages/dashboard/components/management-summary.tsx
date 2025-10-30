@@ -576,28 +576,29 @@ export default function ManagementSummary({
                                     | PaymentRecent[]
                                     | undefined) ?? []
                             ).map((p) => (
-                                <li
-                                    key={p.id}
-                                    className="flex items-center justify-between"
-                                >
-                                    <div className="min-w-0">
-                                        <div className="truncate font-medium">
-                                            {p.tenant || '-'}
+                                <li key={p.id}>
+                                    <a
+                                        href={route('management.payments.show', p.id)}
+                                        className="hover:bg-accent flex items-center justify-between rounded px-2 py-2"
+                                        title={(p.invoice_no || '') as string}
+                                    >
+                                        <div className="min-w-0">
+                                            <div className="truncate font-medium">
+                                                {p.tenant || '-'}
+                                            </div>
+                                            <div className="text-muted-foreground truncate">
+                                                {(p.room || '-') + ' • ' + (p.invoice_no || '-')}
+                                            </div>
                                         </div>
-                                        <div className="text-muted-foreground truncate">
-                                            {(p.room || '-') +
-                                                ' • ' +
-                                                (p.invoice_no || '-')}
+                                        <div className="text-right">
+                                            <div className="font-semibold">
+                                                {formatIDR(p.amount)}
+                                            </div>
+                                            <div className="text-muted-foreground text-xs">
+                                                {formatDate(p.paid_at, true)}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="font-semibold">
-                                            {formatIDR(p.amount)}
-                                        </div>
-                                        <div className="text-muted-foreground text-xs">
-                                            {formatDate(p.paid_at, true)}
-                                        </div>
-                                    </div>
+                                    </a>
                                 </li>
                             ))}
                             {(!management.payments?.recent ||
@@ -792,43 +793,37 @@ export default function ManagementSummary({
                                     | UpcomingItem[]
                                     | undefined) ?? []
                             ).map((c) => (
-                                <li
-                                    key={c.id}
-                                    className="flex items-center justify-between"
-                                >
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <CalendarClock className="text-muted-foreground h-4 w-4" />
-                                        <div className="min-w-0">
-                                            <div className="truncate font-medium">
-                                                {c.tenant || '-'}
-                                            </div>
-                                            <div className="text-muted-foreground truncate">
-                                                {(c.room || '-') +
-                                                    ' • ' +
-                                                    formatDate(c.date)}
+                                <li key={c.id}>
+                                    <a
+                                        href={route('management.contracts.show', { contract: c.id })}
+                                        className="hover:bg-accent flex items-center justify-between rounded px-2 py-2"
+                                    >
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <CalendarClock className="text-muted-foreground h-4 w-4" />
+                                            <div className="min-w-0">
+                                                <div className="truncate font-medium">
+                                                    {c.tenant || '-'}
+                                                </div>
+                                                <div className="text-muted-foreground truncate">
+                                                    {(c.room || '-') + ' • ' + formatDate(c.date)}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <Badge
-                                        variant={variantForContractStatus(
-                                            String(c.status || ''),
-                                        )}
-                                        className="capitalize"
-                                    >
-                                        {t(
-                                            `contract.status.${String(
-                                                c.status || '',
-                                            )
-                                                .toLowerCase()
-                                                .replace(/\s+/g, '_')}`,
-                                            {
-                                                ns: 'enum',
-                                                defaultValue: String(
-                                                    c.status || '-',
-                                                ),
-                                            },
-                                        )}
-                                    </Badge>
+                                        <Badge
+                                            variant={variantForContractStatus(String(c.status || ''))}
+                                            className="capitalize"
+                                        >
+                                            {t(
+                                                `contract.status.${String(c.status || '')
+                                                    .toLowerCase()
+                                                    .replace(/\s+/g, '_')}`,
+                                                {
+                                                    ns: 'enum',
+                                                    defaultValue: String(c.status || '-'),
+                                                },
+                                            )}
+                                        </Badge>
+                                    </a>
                                 </li>
                             ))}
                             {(!management.upcoming?.checkins ||
@@ -864,43 +859,37 @@ export default function ManagementSummary({
                                     | UpcomingItem[]
                                     | undefined) ?? []
                             ).map((c) => (
-                                <li
-                                    key={c.id}
-                                    className="flex items-center justify-between"
-                                >
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <LogOut className="text-muted-foreground h-4 w-4" />
-                                        <div className="min-w-0">
-                                            <div className="truncate font-medium">
-                                                {c.tenant || '-'}
-                                            </div>
-                                            <div className="text-muted-foreground truncate">
-                                                {(c.room || '-') +
-                                                    ' • ' +
-                                                    formatDate(c.date)}
+                                <li key={c.id}>
+                                    <a
+                                        href={route('management.contracts.show', { contract: c.id })}
+                                        className="hover:bg-accent flex items-center justify-between rounded px-2 py-2"
+                                    >
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <LogOut className="text-muted-foreground h-4 w-4" />
+                                            <div className="min-w-0">
+                                                <div className="truncate font-medium">
+                                                    {c.tenant || '-'}
+                                                </div>
+                                                <div className="text-muted-foreground truncate">
+                                                    {(c.room || '-') + ' • ' + formatDate(c.date)}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <Badge
-                                        variant={variantForContractStatus(
-                                            String(c.status || ''),
-                                        )}
-                                        className="capitalize"
-                                    >
-                                        {t(
-                                            `contract.status.${String(
-                                                c.status || '',
-                                            )
-                                                .toLowerCase()
-                                                .replace(/\s+/g, '_')}`,
-                                            {
-                                                ns: 'enum',
-                                                defaultValue: String(
-                                                    c.status || '-',
-                                                ),
-                                            },
-                                        )}
-                                    </Badge>
+                                        <Badge
+                                            variant={variantForContractStatus(String(c.status || ''))}
+                                            className="capitalize"
+                                        >
+                                            {t(
+                                                `contract.status.${String(c.status || '')
+                                                    .toLowerCase()
+                                                    .replace(/\s+/g, '_')}`,
+                                                {
+                                                    ns: 'enum',
+                                                    defaultValue: String(c.status || '-'),
+                                                },
+                                            )}
+                                        </Badge>
+                                    </a>
                                 </li>
                             ))}
                             {(!management.upcoming?.checkouts ||
