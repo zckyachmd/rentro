@@ -16,6 +16,7 @@ use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Contracts\InvoiceServiceInterface;
+use App\Services\NotificationService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -28,7 +29,7 @@ class InvoiceManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private InvoiceServiceInterface $invoices)
+    public function __construct(private InvoiceServiceInterface $invoices, private NotificationService $notifications)
     {
     }
 
@@ -471,6 +472,21 @@ class InvoiceManagementController extends Controller
             ],
         );
 
+        try {
+            $tenantId = (int) ($contract->user_id ?? 0);
+            if ($tenantId > 0 && isset($invoice)) {
+                $this->notifications->notifyUser($tenantId, __('notifications.invoice.created.title'), __('notifications.invoice.created.message', ['number' => (string) $invoice->number]), null, [
+                    'scope'       => 'user',
+                    'type'        => 'invoice',
+                    'event'       => 'created',
+                    'invoice_id'  => (string) $invoice->id,
+                    'contract_id' => (string) $contract->id,
+                ]);
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
+
         return redirect()->route('management.invoices.index')->with('success', __('management/invoices.created'));
     }
 
@@ -570,6 +586,21 @@ class InvoiceManagementController extends Controller
             ],
         );
 
+        try {
+            $tenantId = (int) ($contract?->user_id);
+            if ($tenantId > 0) {
+                $this->notifications->notifyUser($tenantId, __('notifications.invoice.due_extended.title'), __('notifications.invoice.due_extended.message', ['number' => (string) $invoice->number, 'due' => $invoice->due_date->toDateString()]), null, [
+                    'scope'      => 'user',
+                    'type'       => 'invoice',
+                    'event'      => 'due_extended',
+                    'invoice_id' => (string) $invoice->id,
+                    'from_due'   => $prevDue,
+                    'to_due'     => $invoice->due_date->toDateString(),
+                ]);
+            }
+        } catch (\Throwable) {
+        }
+
         return back()->with('success', __('management/invoices.extend.success'));
     }
 
@@ -615,6 +646,22 @@ class InvoiceManagementController extends Controller
         );
 
         if ($changed) {
+            try {
+                /** @var \App\Models\Contract|null $contract */
+                $contract = $invoice->relationLoaded('contract') ? $invoice->contract : $invoice->contract()->first();
+                $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
+                if ($tenantId > 0) {
+                    $this->notifications->notifyUser($tenantId, __('notifications.invoice.cancelled.title'), __('notifications.invoice.cancelled.message', ['number' => (string) $invoice->number]), null, [
+                        'scope'      => 'user',
+                        'type'       => 'invoice',
+                        'event'      => 'cancelled',
+                        'invoice_id' => (string) $invoice->id,
+                        'reason'     => $reason,
+                    ]);
+                }
+            } catch (\Throwable) {
+            }
+
             return back()->with('success', __('management/invoices.cancel.success'));
         }
 

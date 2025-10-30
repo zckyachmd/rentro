@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Management;
 
 use App\Events\AnnouncementCreatedBroadcast;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Management\Announcement\AnnouncementGlobalRequest;
+use App\Http\Requests\Management\Announcement\AnnouncementRoleRequest;
+use App\Http\Requests\Management\Announcement\AnnouncementStoreRequest;
 use App\Jobs\SendAnnouncement;
 use App\Models\Announcement;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Spatie\Permission\Models\Role;
@@ -52,7 +54,11 @@ class AnnouncementController extends Controller
             $query->where('scope', $scope);
         }
         if ($status !== '') {
-            $query->where('status', $status);
+            // Whitelist allowed statuses to avoid invalid filtering values
+            $allowedStatuses = ['pending', 'queued', 'scheduled', 'sent', 'failed'];
+            if (in_array($status, $allowedStatuses, true)) {
+                $query->where('status', $status);
+            }
         }
         if ($roleId > 0) {
             $query->where('role_id', $roleId)->where('scope', 'role');
@@ -117,15 +123,9 @@ class AnnouncementController extends Controller
     /**
      * POST /management/announcements/role.
      */
-    public function role(Request $request)
+    public function role(AnnouncementRoleRequest $request)
     {
-        $data = $request->validate([
-            'role_id'    => ['required', 'integer', Rule::exists(Role::class, 'id')],
-            'title'      => ['required'],
-            'message'    => ['required'],
-            'action_url' => ['nullable', 'url'],
-            'persist'    => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $persist = (bool) ($data['persist'] ?? false);
 
@@ -147,14 +147,9 @@ class AnnouncementController extends Controller
     /**
      * POST /management/announcements/global.
      */
-    public function global(Request $request)
+    public function global(AnnouncementGlobalRequest $request)
     {
-        $data = $request->validate([
-            'title'      => ['required'],
-            'message'    => ['required'],
-            'action_url' => ['nullable', 'url'],
-            'persist'    => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $persist = (bool) ($data['persist'] ?? false);
 
@@ -175,18 +170,9 @@ class AnnouncementController extends Controller
     /**
      * Unified store endpoint: POST /management/announcements.
      */
-    public function store(Request $request)
+    public function store(AnnouncementStoreRequest $request)
     {
-        $data = $request->validate([
-            'target'       => ['required', 'string', 'in:global,role,user'],
-            'role_id'      => ['nullable', 'integer', Rule::exists(Role::class, 'id')],
-            'user_id'      => ['nullable', 'integer', Rule::exists(User::class, 'id')],
-            'title'        => ['required', 'string'],
-            'message'      => ['required', 'string'],
-            'action_url'   => ['nullable', 'url'],
-            'persist'      => ['sometimes', 'boolean'],
-            'scheduled_at' => ['nullable', 'date'],
-        ]);
+        $data = $request->validated();
 
         // Special-case: send to specific user (do not create Announcement row)
         if ($data['target'] === 'user') {

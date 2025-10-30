@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
 use App\Services\Contracts\ContractServiceInterface;
+use App\Services\NotificationService;
 use App\Traits\DataTable;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class BookingManagementController extends Controller
 {
     use DataTable;
 
-    public function __construct(private ContractServiceInterface $contracts)
+    public function __construct(private ContractServiceInterface $contracts, private NotificationService $notifications)
     {
     }
 
@@ -390,6 +391,20 @@ class BookingManagementController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
+        try {
+            $title     = __('notifications.booking.approved.title');
+            $message   = __('notifications.booking.approved.message', ['number' => (string) ($booking->number ?? $booking->id)]);
+            $actionUrl = null;
+            $this->notifications->notifyUser((int) $booking->user_id, $title, $message, $actionUrl, [
+                'scope'      => 'user',
+                'type'       => 'booking',
+                'booking_id' => (string) $booking->id,
+                'status'     => 'approved',
+            ]);
+        } catch (\Throwable) {
+            // Swallow notification errors to not block UX
+        }
+
         return back()->with('success', __('management/bookings.approved'));
     }
 
@@ -406,6 +421,20 @@ class BookingManagementController extends Controller
             'rejected_at' => now(),
             'notes'       => $reason !== '' ? $reason : '-',
         ])->save();
+
+        try {
+            $title     = __('notifications.booking.rejected.title');
+            $message   = __('notifications.booking.rejected.message', ['number' => (string) ($booking->number ?? $booking->id)]);
+            $actionUrl = null;
+            $this->notifications->notifyUser((int) $booking->user_id, $title, $message, $actionUrl, [
+                'scope'      => 'user',
+                'type'       => 'booking',
+                'booking_id' => (string) $booking->id,
+                'status'     => 'rejected',
+                'reason'     => $reason,
+            ]);
+        } catch (\Throwable) {
+        }
 
         return back()->with('success', __('management/bookings.rejected'));
     }

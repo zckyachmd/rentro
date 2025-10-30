@@ -8,11 +8,12 @@ use App\Http\Requests\Management\Handover\CheckoutRequest;
 use App\Models\Contract;
 use App\Models\RoomHandover;
 use App\Services\HandoverService;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Storage;
 
 class HandoverManagementController extends Controller
 {
-    public function __construct(private readonly HandoverService $handover)
+    public function __construct(private readonly HandoverService $handover, private readonly NotificationService $notifications)
     {
     }
 
@@ -78,6 +79,21 @@ class HandoverManagementController extends Controller
             ])
             ->log('Handover check-in dibuat oleh admin');
 
+        try {
+            $tenantId = (int) ($contract->user_id ?? 0);
+            if ($tenantId > 0) {
+                $this->notifications->notifyUser($tenantId, __('notifications.handover.checkin.title'), __('notifications.handover.checkin.message'), null, [
+                    'scope'       => 'user',
+                    'type'        => 'handover',
+                    'event'       => 'checkin_created',
+                    'contract_id' => (string) $contract->id,
+                    'handover_id' => (string) $handover->id,
+                ]);
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
+
         return back()->with('success', __('management/handover.checkin_created'));
     }
 
@@ -105,6 +121,21 @@ class HandoverManagementController extends Controller
                 'room_id'     => $contract->room_id,
             ])
             ->log('Handover check-out dibuat oleh admin');
+
+        try {
+            $tenantId = (int) ($contract->user_id ?? 0);
+            if ($tenantId > 0) {
+                $this->notifications->notifyUser($tenantId, __('notifications.handover.checkout.title'), __('notifications.handover.checkout.message'), null, [
+                    'scope'       => 'user',
+                    'type'        => 'handover',
+                    'event'       => 'checkout_created',
+                    'contract_id' => (string) $contract->id,
+                    'handover_id' => (string) $handover->id,
+                ]);
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
 
         return back()->with('success', __('management/handover.checkout_created'));
     }

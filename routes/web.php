@@ -1,6 +1,5 @@
 <?php
 
-use App\Enum\RoleName;
 use App\Enum\PermissionName;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiagnosticsController;

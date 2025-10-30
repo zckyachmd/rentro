@@ -14,6 +14,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
+use App\Services\NotificationService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -28,7 +29,7 @@ class PaymentManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private readonly PaymentServiceInterface $payments, private readonly InvoiceServiceInterface $invoices)
+    public function __construct(private readonly PaymentServiceInterface $payments, private readonly InvoiceServiceInterface $invoices, private readonly NotificationService $notifications)
     {
     }
 
@@ -305,6 +306,27 @@ class PaymentManagementController extends Controller
             ],
         );
 
+        try {
+            /** @var \App\Models\Contract|null $contract */
+            $contract = $invoice->relationLoaded('contract') ? $invoice->contract : $invoice->contract()->first();
+            $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
+            if ($tenantId > 0) {
+                $title   = __('notifications.payment.submitted.title');
+                $message = __('notifications.payment.submitted.message', ['invoice' => (string) $invoice->number]);
+                $meta    = [
+                    'scope'      => 'user',
+                    'type'       => 'payment',
+                    'event'      => 'submitted',
+                    'invoice_id' => (string) $invoice->id,
+                    'payment_id' => (string) $payment->id,
+                    'status'     => (string) $payment->status->value,
+                ];
+                $this->notifications->notifyUser($tenantId, $title, $message, null, $meta);
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
+
         return back()->with('success', __('management/payments.created'));
     }
 
@@ -578,9 +600,28 @@ class PaymentManagementController extends Controller
             $payment->meta    = $meta;
             $payment->save();
 
+            /** @var \App\Models\Invoice|null $inv */
             $inv = $payment->relationLoaded('invoice') ? $payment->invoice : $payment->invoice()->first();
             if ($inv instanceof \App\Models\Invoice) {
                 $this->payments->recalculateInvoice($inv);
+            }
+
+            try {
+                /** @var \App\Models\Contract|null $contract */
+                $contract = $inv?->relationLoaded('contract') ? $inv->contract : $inv?->contract()->first();
+                $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
+                if ($tenantId > 0) {
+                    $title   = __('notifications.payment.confirmed.title');
+                    $message = __('notifications.payment.confirmed.message', ['invoice' => (string) ($inv?->number)]);
+                    $this->notifications->notifyUser($tenantId, $title, $message, null, [
+                        'scope'      => 'user',
+                        'type'       => 'payment',
+                        'event'      => 'confirmed',
+                        'invoice_id' => $inv ? (string) $inv->id : null,
+                        'payment_id' => (string) $payment->id,
+                    ]);
+                }
+            } catch (\Throwable) {
             }
 
             return back()->with('success', __('management/payments.ack.confirmed'));
@@ -597,6 +638,27 @@ class PaymentManagementController extends Controller
             'status' => PaymentStatus::REJECTED->value,
             'meta'   => $meta,
         ]);
+
+        try {
+            /** @var \App\Models\Invoice|null $inv */
+            $inv = $payment->relationLoaded('invoice') ? $payment->invoice : $payment->invoice()->first();
+            /** @var \App\Models\Contract|null $contract */
+            $contract = $inv?->relationLoaded('contract') ? $inv->contract : $inv?->contract()->first();
+            $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
+            if ($tenantId > 0) {
+                $title   = __('notifications.payment.rejected.title');
+                $message = __('notifications.payment.rejected.message', ['invoice' => (string) ($inv?->number)]);
+                $this->notifications->notifyUser($tenantId, $title, $message, null, [
+                    'scope'      => 'user',
+                    'type'       => 'payment',
+                    'event'      => 'rejected',
+                    'invoice_id' => $inv ? (string) $inv->id : null,
+                    'payment_id' => (string) $payment->id,
+                    'reason'     => $reason,
+                ]);
+            }
+        } catch (\Throwable) {
+        }
 
         return back()->with('success', __('management/payments.ack.rejected'));
     }

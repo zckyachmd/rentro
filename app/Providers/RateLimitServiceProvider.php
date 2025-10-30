@@ -192,5 +192,40 @@ class RateLimitServiceProvider extends ServiceProvider
                 Limit::perMinute(300)->by('ip:' . $request->ip()),
             ];
         });
+
+        // Management announcements throttling
+        RateLimiter::for('announcements.global', function (Request $request) {
+            $userKey = (string) optional($request->user())->id ?: 'guest';
+
+            return [
+                Limit::perMinute(10)->by('ann:global:user:' . $userKey),
+                Limit::perHour(100)->by('ann:global:user:' . $userKey . ':hour'),
+                Limit::perMinute(60)->by('ip:' . $request->ip()),
+            ];
+        });
+
+        RateLimiter::for('announcements.role', function (Request $request) {
+            $userKey = (string) optional($request->user())->id ?: 'guest';
+            $roleId  = (string) $request->input('role_id', 'none');
+
+            return [
+                Limit::perMinute(10)->by('ann:role:user:' . $userKey),
+                Limit::perHour(100)->by('ann:role:user:' . $userKey . ':hour'),
+                // Extra guard per-role to prevent hammering same role
+                Limit::perMinute(20)->by('ann:role:' . $roleId),
+                Limit::perMinute(60)->by('ip:' . $request->ip()),
+            ];
+        });
+
+        RateLimiter::for('announcements.store', function (Request $request) {
+            $userKey = (string) optional($request->user())->id ?: 'guest';
+            $target  = (string) $request->input('target', 'unknown');
+
+            return [
+                Limit::perMinute(10)->by('ann:store:' . $target . ':user:' . $userKey),
+                Limit::perHour(100)->by('ann:store:' . $target . ':user:' . $userKey . ':hour'),
+                Limit::perMinute(60)->by('ip:' . $request->ip()),
+            ];
+        });
     }
 }

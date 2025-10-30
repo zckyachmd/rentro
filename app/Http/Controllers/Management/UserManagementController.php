@@ -14,6 +14,7 @@ use App\Jobs\SendUserInvitationEmail;
 use App\Models\Session;
 use App\Models\User;
 use App\Models\UserDocument;
+use App\Services\NotificationService;
 use App\Services\TwoFactorService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
@@ -32,7 +33,7 @@ class UserManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private TwoFactorService $twofa)
+    public function __construct(private TwoFactorService $twofa, private NotificationService $notifications)
     {
     }
 
@@ -252,6 +253,17 @@ class UserManagementController extends Controller
             ])
             ->log('User document approved by admin');
 
+        try {
+            $this->notifications->notifyUser((int) $user->id, __('notifications.document.approved.title'), __('notifications.document.approved.message'), null, [
+                'scope'    => 'user',
+                'type'     => 'document',
+                'event'    => 'approved',
+                'document' => $doc->only(['id', 'type', 'number']),
+            ]);
+        } catch (\Throwable) {
+            // ignore;
+        }
+
         return back()->with('success', __('management/users.document.approved'));
     }
 
@@ -284,6 +296,18 @@ class UserManagementController extends Controller
                 'user_id' => $user->id,
             ])
             ->log('User document rejected by admin');
+
+        try {
+            $this->notifications->notifyUser((int) $user->id, __('notifications.document.rejected.title'), __('notifications.document.rejected.message'), null, [
+                'scope'    => 'user',
+                'type'     => 'document',
+                'event'    => 'rejected',
+                'document' => $doc->only(['id', 'type', 'number']),
+                'reason'   => $validated['reason'],
+            ]);
+        } catch (\Throwable) {
+            // ignore;
+        }
 
         return back()->with('success', __('management/users.document.rejected'));
     }

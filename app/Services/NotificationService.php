@@ -40,7 +40,6 @@ class NotificationService
      */
     public function announceRole(int $roleId, $title, $message, ?string $actionUrl = null, bool $persistPerUser = false): void
     {
-        // Always broadcast immediately to the role channel for realtime toast/sound
         Event::dispatch(new RoleAnnouncementBroadcast([
             'role_id'    => $roleId,
             'title'      => $title,
@@ -52,29 +51,28 @@ class NotificationService
         if ($persistPerUser) {
             $role    = Role::query()->findOrFail($roleId);
             $chunk   = (int) config('notifications.fanout_chunk', 1000);
-            $jobs    = [];
             $payload = [
                 'title'      => $title,
                 'message'    => $message,
                 'action_url' => $actionUrl,
                 'meta'       => ['scope' => 'role', 'role_id' => $roleId],
             ];
+            $defaultConnection = (string) config('queue.default');
+            $queueName         = (string) config("queue.connections.$defaultConnection.queue", 'default');
 
-            $role->users()->select('id')->orderBy('id')->chunkById($chunk, function ($users) use (&$jobs, $payload): void {
+            $role->users()->select('id')->orderBy('id')->chunkById($chunk, function ($users) use ($payload, $queueName, $roleId): void {
+                $jobs = [];
                 foreach ($users as $u) {
                     $jobs[] = new SendUserNotification((int) $u->id, $payload);
                 }
+                if ($jobs !== []) {
+                    Bus::batch($jobs)
+                        ->name('role-notifications-' . $roleId)
+                        ->allowFailures()
+                        ->onQueue($queueName)
+                        ->dispatch();
+                }
             });
-
-            if (count($jobs) > 0) {
-                $defaultConnection = (string) config('queue.default');
-                $queueName         = (string) config("queue.connections.$defaultConnection.queue", 'default');
-                Bus::batch($jobs)
-                    ->name('role-notifications-' . $roleId)
-                    ->allowFailures()
-                    ->onQueue($queueName)
-                    ->dispatch();
-            }
 
             return;
         }
@@ -89,7 +87,6 @@ class NotificationService
      */
     public function announceGlobal($title, $message, ?string $actionUrl = null, bool $persistPerUser = false): void
     {
-        // Always broadcast immediately to the global channel for realtime toast/sound
         Event::dispatch(new GlobalAnnouncementBroadcast([
             'title'      => $title,
             'message'    => $message,
@@ -105,23 +102,22 @@ class NotificationService
                 'action_url' => $actionUrl,
                 'meta'       => ['scope' => 'global'],
             ];
+            $defaultConnection = (string) config('queue.default');
+            $queueName         = (string) config("queue.connections.$defaultConnection.queue", 'default');
 
-            $jobs = [];
-            User::query()->select('id')->orderBy('id')->chunkById($chunk, function ($users) use (&$jobs, $payload): void {
+            User::query()->select('id')->orderBy('id')->chunkById($chunk, function ($users) use ($payload, $queueName): void {
+                $jobs = [];
                 foreach ($users as $u) {
                     $jobs[] = new SendUserNotification((int) $u->id, $payload);
                 }
+                if ($jobs !== []) {
+                    Bus::batch($jobs)
+                        ->name('global-notifications')
+                        ->allowFailures()
+                        ->onQueue($queueName)
+                        ->dispatch();
+                }
             });
-
-            if (count($jobs) > 0) {
-                $defaultConnection = (string) config('queue.default');
-                $queueName         = (string) config("queue.connections.$defaultConnection.queue", 'default');
-                Bus::batch($jobs)
-                    ->name('global-notifications')
-                    ->allowFailures()
-                    ->onQueue($queueName)
-                    ->dispatch();
-            }
 
             return;
         }

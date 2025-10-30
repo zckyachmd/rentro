@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Enum\ContractStatus;
+use App\Enum\RoleName;
 use App\Enum\RoomHandoverStatus;
 use App\Enum\RoomHandoverType;
 use App\Enum\RoomStatus;
@@ -12,13 +13,16 @@ use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\RoomHandover;
 use App\Services\Contracts\ContractServiceInterface;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 
 class HandoverController extends Controller
 {
     public function __construct(
         private readonly ContractServiceInterface $contractService,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -125,6 +129,22 @@ class HandoverController extends Controller
             // abaikan
         }
 
+        try {
+            $roleNames = array_filter(array_map('trim', (array) config('notifications.management_roles.handover_confirmed', [RoleName::MANAGER->value])));
+            if ($roleNames !== []) {
+                $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
+                if (!empty($roleIds)) {
+                    $title   = __('notifications.handover.confirmed.title');
+                    $message = __('notifications.handover.confirmed.message');
+                    foreach ($roleIds as $rid) {
+                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
+
         return back()->with('success', __('tenant/handover.confirmed_success'));
     }
 
@@ -186,6 +206,22 @@ class HandoverController extends Controller
                 'handover_type' => $handover->type,
             ])
             ->log('Tenant mengajukan sanggahan handover');
+
+        try {
+            $roleNames = array_filter(array_map('trim', (array) config('notifications.management_roles.handover_disputed', [RoleName::MANAGER->value])));
+            if ($roleNames !== []) {
+                $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
+                if (!empty($roleIds)) {
+                    $title   = __('notifications.handover.disputed.title');
+                    $message = __('notifications.handover.disputed.message');
+                    foreach ($roleIds as $rid) {
+                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
 
         return back()->with('success', __('tenant/handover.dispute_saved'));
     }

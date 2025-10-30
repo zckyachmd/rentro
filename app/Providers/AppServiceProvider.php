@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Events\InvoicePaid;
 use App\Events\InvoiceReopened;
-use App\Inertia\Ssr\LoggingHttpGateway;
 use App\Listeners\ClearMenuCacheOnAuth;
 use App\Listeners\QueueLocaleCookieOnLogin;
 use App\Listeners\QueueThemeCookieOnLogin;
@@ -29,13 +28,11 @@ use App\Services\PromotionService;
 use App\Services\TwoFactorService;
 use App\Services\WifiService;
 use App\Services\ZiggyService;
-use App\Support\AppFeatures;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
-use Inertia\Ssr\Gateway as InertiaSsrGateway;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -53,9 +50,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ZiggyServiceInterface::class, ZiggyService::class);
         $this->app->bind(PromotionServiceInterface::class, PromotionService::class);
         $this->app->bind(WifiServiceInterface::class, WifiService::class);
-
-        // Bind Inertia SSR gateway with logging + timeouts
-        $this->app->bind(InertiaSsrGateway::class, LoggingHttpGateway::class);
     }
 
     /**
@@ -78,7 +72,5 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, QueueLocaleCookieOnLogin::class);
         Event::subscribe(ClearMenuCacheOnAuth::class);
         Event::subscribe(RealtimeEventSubscriber::class);
-
-        config(['inertia.ssr.enabled' => AppFeatures::publicEnabled()]);
     }
 }

@@ -18,6 +18,7 @@ use App\Models\Room;
 use App\Models\RoomHandover;
 use App\Models\User;
 use App\Services\Contracts\ContractServiceInterface;
+use App\Services\NotificationService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -29,7 +30,7 @@ class ContractManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private ContractServiceInterface $contracts)
+    public function __construct(private ContractServiceInterface $contracts, private NotificationService $notifications)
     {
     }
 
@@ -368,6 +369,7 @@ class ContractManagementController extends Controller
                 $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $start)->toDateString();
                 $q->whereDate('start_date', '>=', $d);
             } catch (\Throwable) {
+                // ignore;
             }
         }
         if ($end) {
@@ -375,6 +377,7 @@ class ContractManagementController extends Controller
                 $d = \Carbon\Carbon::createFromFormat('Y-m-d', (string) $end)->toDateString();
                 $q->whereDate('start_date', '<=', $d);
             } catch (\Throwable) {
+                // ignore;
             }
         }
         $q->orderByDesc('created_at')->orderByDesc('id');
@@ -419,7 +422,7 @@ class ContractManagementController extends Controller
             ];
         }
         try {
-            $this->contracts->create($data);
+            $contract = $this->contracts->create($data);
         } catch (\RuntimeException $e) {
             return back()
                 ->withErrors(['room_id' => $e->getMessage()])
@@ -437,6 +440,23 @@ class ContractManagementController extends Controller
                 'billing_period' => $data['billing_period'] ?? null,
             ],
         );
+
+        try {
+            $tenantId = (int) ($data['user_id'] ?? 0);
+            if ($tenantId > 0) {
+                $title     = __('notifications.contract.created.title');
+                $message   = __('notifications.contract.created.message');
+                $actionUrl = null;
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                    'scope'       => 'user',
+                    'type'        => 'contract',
+                    'event'       => 'created',
+                    'contract_id' => (string) $contract->id,
+                ]);
+            }
+        } catch (\Throwable) {
+            // ignore;
+        }
 
         return redirect()->route('management.contracts.index')->with('success', __('management/contracts.created'));
     }
@@ -581,6 +601,24 @@ class ContractManagementController extends Controller
                 ],
             );
 
+            try {
+                $tenantId = (int) ($contract->user_id ?? 0);
+                if ($tenantId > 0) {
+                    $title     = __('notifications.contract.cancelled.title');
+                    $message   = __('notifications.contract.cancelled.message');
+                    $actionUrl = null;
+                    $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                        'scope'       => 'user',
+                        'type'        => 'contract',
+                        'event'       => 'cancelled',
+                        'contract_id' => (string) $contract->id,
+                        'reason'      => $reason,
+                    ]);
+                }
+            } catch (\Throwable) {
+                // ignore;
+            }
+
             return back()->with('success', __('management/contracts.cancelled'));
         }
 
@@ -606,6 +644,23 @@ class ContractManagementController extends Controller
                 'reason' => $enabled ? null : (string) ($data['reason'] ?? ''),
             ],
         );
+
+        try {
+            $tenantId = (int) ($contract->user_id ?? 0);
+            if ($tenantId > 0) {
+                $title     = $enabled ? __('notifications.contract.autorenew.enabled.title') : __('notifications.contract.autorenew.disabled.title');
+                $message   = $enabled ? __('notifications.contract.autorenew.enabled.message') : __('notifications.contract.autorenew.disabled.message');
+                $actionUrl = null;
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                    'scope'       => 'user',
+                    'type'        => 'contract',
+                    'event'       => $enabled ? 'autorenew_enabled' : 'autorenew_disabled',
+                    'contract_id' => (string) $contract->id,
+                    'reason'      => $enabled ? null : (string) ($data['reason'] ?? ''),
+                ]);
+            }
+        } catch (\Throwable) {
+        }
 
         return back()->with('success', $enabled ? __('management/contracts.autorenew.enabled') : __('management/contracts.autorenew.disabled'));
     }

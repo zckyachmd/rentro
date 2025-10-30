@@ -5,17 +5,17 @@ namespace App\Enum;
 enum PermissionName: string
 {
     // Tenant (self-service)
-    case TENANT_ROOMS_VIEW       = 'tenant.rooms.view';
-    case TENANT_BOOKING_VIEW     = 'tenant.booking.view';
-    case TENANT_BOOKING_CREATE   = 'tenant.booking.create';
-    case TENANT_CONTRACT_VIEW    = 'tenant.contract.view';
+    case TENANT_ROOMS_VIEW          = 'tenant.rooms.view';
+    case TENANT_BOOKING_VIEW        = 'tenant.booking.view';
+    case TENANT_BOOKING_CREATE      = 'tenant.booking.create';
+    case TENANT_CONTRACT_VIEW       = 'tenant.contract.view';
     case TENANT_CONTRACT_STOP_RENEW = 'tenant.contract.stop-auto-renew';
-    case TENANT_HANDOVER_VIEW    = 'tenant.handover.view';
-    case TENANT_HANDOVER_ACK     = 'tenant.handover.ack';
-    case TENANT_HANDOVER_DISPUTE = 'tenant.handover.dispute';
-    case TENANT_INVOICE_VIEW     = 'tenant.invoice.view';
-    case TENANT_INVOICE_PAY      = 'tenant.invoice.pay';
-    case TENANT_PAYMENT_VIEW     = 'tenant.payment.view';
+    case TENANT_HANDOVER_VIEW       = 'tenant.handover.view';
+    case TENANT_HANDOVER_ACK        = 'tenant.handover.ack';
+    case TENANT_HANDOVER_DISPUTE    = 'tenant.handover.dispute';
+    case TENANT_INVOICE_VIEW        = 'tenant.invoice.view';
+    case TENANT_INVOICE_PAY         = 'tenant.invoice.pay';
+    case TENANT_PAYMENT_VIEW        = 'tenant.payment.view';
 
     // Akun
     case USER_VIEW            = 'user.view';

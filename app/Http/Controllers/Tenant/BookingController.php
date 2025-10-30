@@ -4,19 +4,26 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Enum\BillingPeriod;
 use App\Enum\BookingStatus;
+use App\Enum\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class BookingController extends Controller
 {
+    public function __construct(private NotificationService $notifications)
+    {
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -153,6 +160,22 @@ class BookingController extends Controller
             ]);
 
             return back()->with('error', __('tenant/booking.create_failed'));
+        }
+
+        try {
+            $roleNames = array_filter(array_map('trim', (array) config('notifications.management_roles.booking_requested', [RoleName::MANAGER->value])));
+            if ($roleNames !== []) {
+                $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
+                if (!empty($roleIds)) {
+                    $title   = __('notifications.booking.requested.title');
+                    $message = __('notifications.booking.requested.message', ['number' => (string) ($booking->number ?? $booking->id)]);
+                    foreach ($roleIds as $rid) {
+                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // ignore;
         }
 
         return redirect()->route('tenant.bookings.show', ['booking' => $booking->id])

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Enum\InvoiceStatus;
 use App\Enum\PaymentMethod;
 use App\Enum\PaymentStatus;
+use App\Enum\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\PayManualRequest;
 use App\Models\Contract;
@@ -14,15 +15,18 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 
 class PaymentController extends Controller
 {
     public function __construct(
         private readonly PaymentServiceInterface $payments,
         private readonly InvoiceServiceInterface $invoices,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -103,6 +107,22 @@ class PaymentController extends Controller
                 $payment->storeAttachmentFiles([$file], 'private');
             }
         } catch (\Throwable $e) {
+            // ignore;
+        }
+
+        try {
+            $roleNames = array_filter(array_map('trim', (array) config('notifications.management_roles.payment_submitted', [RoleName::MANAGER->value])));
+            if ($roleNames !== []) {
+                $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
+                if (!empty($roleIds)) {
+                    $title   = __('notifications.payment.submitted.title');
+                    $message = __('notifications.payment.submitted.message', ['invoice' => (string) ($invoice->number ?? '')]);
+                    foreach ($roleIds as $rid) {
+                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                    }
+                }
+            }
+        } catch (\Throwable) {
             // ignore;
         }
 

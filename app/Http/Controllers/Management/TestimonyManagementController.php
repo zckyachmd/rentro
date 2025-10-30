@@ -6,6 +6,7 @@ use App\Enum\TestimonyStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\Testimony\UpdateTestimonyRequest;
 use App\Models\Testimony;
+use App\Services\NotificationService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,10 @@ class TestimonyManagementController extends Controller
 {
     use DataTable;
     use LogActivity;
+
+    public function __construct(private NotificationService $notifications)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -124,6 +129,24 @@ class TestimonyManagementController extends Controller
                     'after'  => $after,
                 ],
             );
+        }
+
+        try {
+            $targetUserId = (int) $testimony->user_id;
+            if ($targetUserId > 0 && $before['status'] !== $after['status']) {
+                $event   = strtolower((string) $testimony->status->value);
+                $title   = __('notifications.testimony.status.title');
+                $message = __('notifications.testimony.status.message', ['status' => $event]);
+                $this->notifications->notifyUser($targetUserId, $title, $message, null, [
+                    'scope'        => 'user',
+                    'type'         => 'testimony',
+                    'event'        => 'status_changed',
+                    'status'       => $event,
+                    'testimony_id' => (string) $testimony->id,
+                ]);
+            }
+        } catch (\Throwable) {
+            // ignore;
         }
 
         return back()->with('success', __('management/testimony.updated'));

@@ -72,7 +72,7 @@ class PersonalNotification extends Notification implements ShouldQueue
     public function broadcastOn(): array
     {
         // @phpstan-ignore-next-line notifiable is User
-        $id = (string) ($this->notifiable?->id ?? '');
+        $id = (string) ($this->notifiable?->id);
         if ($id === '') {
             return [];
         }

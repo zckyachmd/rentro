@@ -1,7 +1,6 @@
 <?php
 
 use App\Enum\PermissionName;
-use App\Enum\RoleName;
 use App\Http\Controllers\Management\AmenityManagementController;
 use App\Http\Controllers\Management\AnnouncementController;
 use App\Http\Controllers\Management\AuditLogController;
@@ -31,7 +30,7 @@ Route::prefix('management')->name('management.')->group(function (): void {
                 ->middleware('can:' . PermissionName::ANNOUNCEMENT_VIEW->value)
                 ->name('index');
             Route::post('/', [AnnouncementController::class, 'store'])
-                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:secure-sensitive'])
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:announcements.store'])
                 ->name('store');
             Route::post('/{announcement}/send-now', [AnnouncementController::class, 'sendNow'])
                 ->middleware(['can:' . PermissionName::ANNOUNCEMENT_SEND->value, 'throttle:secure-sensitive'])
@@ -46,10 +45,10 @@ Route::prefix('management')->name('management.')->group(function (): void {
                 ->whereNumber('announcement')
                 ->name('cancel_schedule');
             Route::post('/role', [AnnouncementController::class, 'role'])
-                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:secure-sensitive'])
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:announcements.role'])
                 ->name('role');
             Route::post('/global', [AnnouncementController::class, 'global'])
-                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:secure-sensitive'])
+                ->middleware(['can:' . PermissionName::ANNOUNCEMENT_CREATE->value, 'throttle:announcements.global'])
                 ->name('global');
         });
 
