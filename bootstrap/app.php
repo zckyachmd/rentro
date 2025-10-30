@@ -12,6 +12,7 @@ use App\Providers\BroadcastServiceProvider;
 use App\Providers\RateLimitServiceProvider;
 use Illuminate\Broadcasting\BroadcastManager;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Console\Commands\NormalizeNotifications;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         SeedCore::class,
         SeedDemo::class,
+        NormalizeNotifications::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->replace(\Illuminate\Http\Middleware\TrustProxies::class, \App\Http\Middleware\TrustProxies::class);

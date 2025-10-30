@@ -120,6 +120,10 @@ export default function ManagementNotificationsPage() {
     );
     const [title, setTitle] = React.useState('');
     const [message, setMessage] = React.useState('');
+    const [useKey, setUseKey] = React.useState(false);
+    const [titleKey, setTitleKey] = React.useState('');
+    const [messageKey, setMessageKey] = React.useState('');
+    const [messageParams, setMessageParams] = React.useState('');
     const [actionUrl, setActionUrl] = React.useState('');
     const [persist, setPersist] = React.useState(true);
     const [schedule, setSchedule] = React.useState(false);
@@ -139,6 +143,10 @@ export default function ManagementNotificationsPage() {
         setUserId(users[0]?.id ? String(users[0].id) : '');
         setTitle('');
         setMessage('');
+        setUseKey(false);
+        setTitleKey('');
+        setMessageKey('');
+        setMessageParams('');
         setActionUrl('');
         setPersist(true);
         setSchedule(false);
@@ -162,14 +170,49 @@ export default function ManagementNotificationsPage() {
         e?.preventDefault();
         setSubmitting(true);
         setErrors({});
+        let outTitle = title;
+        let outMessage = message;
+        if (useKey) {
+            if (!titleKey || !messageKey) {
+                setErrors((prev) => ({
+                    ...prev,
+                    title: !titleKey ? 'Title key is required' : prev.title,
+                    message: !messageKey
+                        ? 'Message key is required'
+                        : prev.message,
+                }));
+                setSubmitting(false);
+                return;
+            }
+            let params: Record<string, unknown> | undefined = undefined;
+            if (messageParams && messageParams.trim() !== '') {
+                try {
+                    const parsed = JSON.parse(messageParams);
+                    if (parsed && typeof parsed === 'object')
+                        params = parsed as Record<string, unknown>;
+                } catch {
+                    setErrors((prev) => ({
+                        ...prev,
+                        message: 'Invalid JSON in message params',
+                    }));
+                    setSubmitting(false);
+                    return;
+                }
+            }
+            outTitle = JSON.stringify({ key: titleKey });
+            outMessage = JSON.stringify({
+                key: messageKey,
+                ...(params ? { params } : {}),
+            });
+        }
         router.visit(route('management.announcements.store'), {
             method: 'post',
             data: {
                 target,
                 role_id: target === 'role' ? Number(roleId) : undefined,
                 user_id: target === 'user' ? Number(userId) : undefined,
-                title,
-                message,
+                title: outTitle,
+                message: outMessage,
                 action_url: actionUrl || undefined,
                 persist,
                 scheduled_at: schedule && scheduledAt ? scheduledAt : undefined,
@@ -885,6 +928,29 @@ export default function ManagementNotificationsPage() {
                                     />
                                 </div>
                             )}
+                            <div className="flex items-center justify-between gap-2">
+                                <div>
+                                    <Label htmlFor="useKey">
+                                        {t(
+                                            'management.notifications.use_key',
+                                            'Use translation key',
+                                        )}
+                                    </Label>
+                                    <p className="text-muted-foreground text-xs">
+                                        {t(
+                                            'management.notifications.use_key_hint',
+                                            'Send key + params to translate on receiver locale',
+                                        )}
+                                    </p>
+                                </div>
+                                <Switch
+                                    id="useKey"
+                                    checked={useKey}
+                                    onCheckedChange={(v) =>
+                                        setUseKey(Boolean(v))
+                                    }
+                                />
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="title">
                                     {t(
@@ -892,16 +958,33 @@ export default function ManagementNotificationsPage() {
                                         'Title',
                                     )}
                                 </Label>
-                                <Input
-                                    id="title"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    aria-invalid={Boolean(errors.title)}
-                                    placeholder={t(
-                                        'management.notifications.title_placeholder',
-                                        'Enter announcement title...',
-                                    )}
-                                />
+                                {!useKey ? (
+                                    <Input
+                                        id="title"
+                                        value={title}
+                                        onChange={(e) =>
+                                            setTitle(e.target.value)
+                                        }
+                                        aria-invalid={Boolean(errors.title)}
+                                        placeholder={t(
+                                            'management.notifications.title_placeholder',
+                                            'Enter announcement title...',
+                                        )}
+                                    />
+                                ) : (
+                                    <Input
+                                        id="titleKey"
+                                        value={titleKey}
+                                        onChange={(e) =>
+                                            setTitleKey(e.target.value)
+                                        }
+                                        aria-invalid={Boolean(errors.title)}
+                                        placeholder={t(
+                                            'management.notifications.title_key_placeholder',
+                                            'notifications.content.invoice.created.title',
+                                        )}
+                                    />
+                                )}
                                 <InputError
                                     name="title"
                                     message={errors.title}
@@ -914,16 +997,51 @@ export default function ManagementNotificationsPage() {
                                         'Message',
                                     )}
                                 </Label>
-                                <Textarea
-                                    id="message"
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    aria-invalid={Boolean(errors.message)}
-                                    placeholder={t(
-                                        'management.notifications.message_placeholder',
-                                        'Write the announcement message...',
-                                    )}
-                                />
+                                {!useKey ? (
+                                    <Textarea
+                                        id="message"
+                                        value={message}
+                                        onChange={(e) =>
+                                            setMessage(e.target.value)
+                                        }
+                                        aria-invalid={Boolean(errors.message)}
+                                        placeholder={t(
+                                            'management.notifications.message_placeholder',
+                                            'Write the announcement message...',
+                                        )}
+                                    />
+                                ) : (
+                                    <>
+                                        <Input
+                                            id="messageKey"
+                                            value={messageKey}
+                                            onChange={(e) =>
+                                                setMessageKey(e.target.value)
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.message,
+                                            )}
+                                            placeholder={t(
+                                                'management.notifications.message_key_placeholder',
+                                                'notifications.content.invoice.created.message',
+                                            )}
+                                        />
+                                        <Textarea
+                                            id="messageParams"
+                                            value={messageParams}
+                                            onChange={(e) =>
+                                                setMessageParams(e.target.value)
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.message,
+                                            )}
+                                            placeholder={t(
+                                                'management.notifications.message_params_placeholder',
+                                                '{"number":"INV-001"}',
+                                            )}
+                                        />
+                                    </>
+                                )}
                                 <InputError
                                     name="message"
                                     message={errors.message}
@@ -1094,8 +1212,9 @@ export default function ManagementNotificationsPage() {
                                         type="submit"
                                         disabled={
                                             submitting ||
-                                            !title ||
-                                            !message ||
+                                            (useKey
+                                                ? !titleKey || !messageKey
+                                                : !title || !message) ||
                                             (target === 'role' && !roleId)
                                         }
                                     >

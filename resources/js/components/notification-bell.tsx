@@ -33,6 +33,7 @@ export function NotificationBell() {
     const { items, unreadCount } = useNotificationsStore();
     const { markRead } = useNotificationsActions();
     const { t } = useTranslation(['notifications', 'common', 'nav']);
+    const { t: tEnum } = useTranslation('enum');
     const [filter, setFilter] = React.useState<'all' | 'unread'>('all');
     const LS_FILTER_KEY = 'rentro:notifications:bell:filter';
     // Hydrate filter from localStorage on mount (avoid SSR mismatch by doing it in effect)
@@ -173,20 +174,64 @@ export function NotificationBell() {
                                 </div>
                             );
                         }
+                        const renderText = (
+                            val: string | Record<string, unknown>,
+                            fallback = '',
+                        ): string => {
+                            if (typeof val === 'string') {
+                                if (val.startsWith('notifications.')) {
+                                    const tr = t(val);
+                                    return (
+                                        (tr && tr !== val ? tr : val) ||
+                                        fallback
+                                    );
+                                }
+                                return val || fallback;
+                            }
+                            const key =
+                                typeof (val as { key?: unknown }).key ===
+                                'string'
+                                    ? (val as { key: string }).key
+                                    : undefined;
+                            const params = (val as { params?: unknown }).params;
+                            const p = (
+                                params && typeof params === 'object'
+                                    ? (params as Record<string, unknown>)
+                                    : {}
+                            ) as Record<string, unknown>;
+                            if (
+                                typeof p.status === 'string' &&
+                                typeof (p as { status_label?: unknown })
+                                    .status_label !== 'string'
+                            ) {
+                                const lbl = tEnum(
+                                    `testimony_status.${p.status}`,
+                                );
+                                if (lbl) p.status_label = lbl;
+                            }
+                            return key
+                                ? t(key, p as Record<string, string>)
+                                : fallback;
+                        };
+
                         return (
                             <ul className="py-0">
                                 {visible.map((n, idx) => {
                                     const key = `${n.id || 'idx'}:${idx}`;
                                     const isUnread =
                                         !('read_at' in n) || !n.read_at;
-                                    const rawTitle =
-                                        typeof n.title === 'string'
-                                            ? n.title
-                                            : 'Notifikasi';
-                                    const rawMessage =
-                                        typeof n.message === 'string'
-                                            ? n.message
-                                            : '';
+                                    const rawTitle = renderText(
+                                        n.title as
+                                            | string
+                                            | Record<string, unknown>,
+                                        'Notifikasi',
+                                    );
+                                    const rawMessage = renderText(
+                                        n.message as
+                                            | string
+                                            | Record<string, unknown>,
+                                        '',
+                                    );
                                     const title =
                                         rawTitle.length > TITLE_MAX_CHARS
                                             ? `${rawTitle

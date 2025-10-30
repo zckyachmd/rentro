@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\GlobalAnnouncementBroadcast;
 use App\Events\RoleAnnouncementBroadcast;
+use App\Events\SystemNotificationBroadcast;
 use App\Jobs\SendUserNotification;
 use App\Models\User;
 use App\Services\Contracts\NotificationServiceInterface;
@@ -23,11 +24,16 @@ class NotificationService implements NotificationServiceInterface
      */
     public function notifyUser(int $userId, $title, $message, ?string $actionUrl = null, ?array $meta = null): void
     {
+        $mergedMeta = (array) ($meta ?? []);
+        if (!array_key_exists('scope', $mergedMeta)) {
+            $mergedMeta['scope'] = (string) config('notifications.controller.default_scope', 'system');
+        }
+
         $payload = [
             'title'      => $title,
             'message'    => $message,
             'action_url' => $actionUrl,
-            'meta'       => $meta,
+            'meta'       => $mergedMeta,
         ];
 
         SendUserNotification::dispatch($userId, $payload);
@@ -47,6 +53,7 @@ class NotificationService implements NotificationServiceInterface
             'message'    => $message,
             'action_url' => $actionUrl,
             'persist'    => $persistPerUser,
+            'meta'       => ['scope' => 'role', 'role_id' => $roleId],
         ]));
 
         if ($persistPerUser) {
@@ -93,6 +100,7 @@ class NotificationService implements NotificationServiceInterface
             'message'    => $message,
             'action_url' => $actionUrl,
             'persist'    => $persistPerUser,
+            'meta'       => ['scope' => 'global'],
         ]));
 
         if ($persistPerUser) {
@@ -121,6 +129,52 @@ class NotificationService implements NotificationServiceInterface
             });
 
             return;
+        }
+    }
+
+    /**
+     * Broadcast a system-wide notification over private 'system' channel and optionally persist per user.
+     *
+     * @param array<string, mixed>|string $title
+     * @param array<string, mixed>|string $message
+     */
+    public function system($title, $message, ?string $actionUrl = null, ?bool $persistPerUser = null, ?array $meta = null): void
+    {
+        $metaArr = (array) ($meta ?? []);
+        $metaArr = array_merge(['scope' => 'system'], $metaArr);
+        $persist = $persistPerUser ?? (bool) config('notifications.system.persist_default', true);
+
+        Event::dispatch(new SystemNotificationBroadcast([
+            'title'      => $title,
+            'message'    => $message,
+            'action_url' => $actionUrl,
+            'meta'       => $metaArr,
+        ]));
+
+        if ($persist) {
+            $chunk   = (int) config('notifications.fanout_chunk', 1000);
+            $payload = [
+                'title'      => $title,
+                'message'    => $message,
+                'action_url' => $actionUrl,
+                'meta'       => $metaArr,
+            ];
+            $defaultConnection = (string) config('queue.default');
+            $queueName         = (string) config("queue.connections.$defaultConnection.queue", 'default');
+
+            User::query()->select('id')->orderBy('id')->chunkById($chunk, function ($users) use ($payload, $queueName): void {
+                $jobs = [];
+                foreach ($users as $u) {
+                    $jobs[] = new SendUserNotification((int) $u->id, $payload);
+                }
+                if ($jobs !== []) {
+                    Bus::batch($jobs)
+                        ->name('system-notifications')
+                        ->allowFailures()
+                        ->onQueue($queueName)
+                        ->dispatch();
+                }
+            });
         }
     }
 }

@@ -15,7 +15,39 @@ export default function NotificationItemRow({
     onOpen: (n: NotificationItem) => void;
 }) {
     const { t } = useTranslation(['notifications']);
+    const { t: tEnum } = useTranslation('enum');
     const n = item;
+    const renderText = (
+        val: string | Record<string, unknown>,
+        fallback = '',
+    ): string => {
+        if (typeof val === 'string') {
+            if (val.startsWith('notifications.')) {
+                const tr = t(val);
+                return (tr && tr !== val ? tr : val) || fallback;
+            }
+            return val || fallback;
+        }
+        const key =
+            typeof (val as { key?: unknown }).key === 'string'
+                ? (val as { key: string }).key
+                : undefined;
+        const params = (val as { params?: unknown }).params;
+        const p = (
+            params && typeof params === 'object'
+                ? (params as Record<string, unknown>)
+                : {}
+        ) as Record<string, unknown>;
+        // Special: derive status_label if status token provided
+        if (
+            typeof p.status === 'string' &&
+            typeof (p as { status_label?: unknown }).status_label !== 'string'
+        ) {
+            const lbl = tEnum(`testimony_status.${p.status}`);
+            if (lbl) p.status_label = lbl;
+        }
+        return key ? t(key, p as Record<string, string>) : fallback;
+    };
     return (
         <div
             role="button"
@@ -32,10 +64,10 @@ export default function NotificationItemRow({
             <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium">
                     {(() => {
-                        const tstr =
-                            typeof n.title === 'string'
-                                ? n.title
-                                : t('notifications.title', 'Notifications');
+                        const tstr = renderText(
+                            n.title,
+                            t('notifications.title', 'Notifications'),
+                        );
                         return tstr.length > TITLE_MAX
                             ? `${tstr.slice(0, TITLE_MAX).trimEnd()}...`
                             : tstr;
@@ -48,8 +80,7 @@ export default function NotificationItemRow({
                 </div>
                 <div className="text-muted-foreground text-sm whitespace-pre-wrap">
                     {(() => {
-                        const mstr =
-                            typeof n.message === 'string' ? n.message : '';
+                        const mstr = renderText(n.message, '');
                         return mstr.length > MESSAGE_MAX
                             ? `${mstr.slice(0, MESSAGE_MAX).trimEnd()}...`
                             : mstr;

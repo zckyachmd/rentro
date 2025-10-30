@@ -134,10 +134,12 @@ class HandoverController extends Controller
             if ($roleNames !== []) {
                 $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
                 if (!empty($roleIds)) {
-                    $title   = __('notifications.handover.confirmed.title');
-                    $message = __('notifications.handover.confirmed.message');
+                    $title   = ['key' => 'notifications.content.handover.confirmed.title'];
+                    $message = ['key' => 'notifications.content.handover.confirmed.message'];
+                    $persist = (bool) (config('notifications.persist_roles.handover_confirmed') ?? false);
                     foreach ($roleIds as $rid) {
-                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                        $actionUrl = route('management.contracts.handovers.index', ['contract' => $handover->contract_id]);
+                        $this->notifications->announceRole($rid, $title, $message, $actionUrl, $persist);
                     }
                 }
             }
@@ -212,10 +214,12 @@ class HandoverController extends Controller
             if ($roleNames !== []) {
                 $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
                 if (!empty($roleIds)) {
-                    $title   = __('notifications.handover.disputed.title');
-                    $message = __('notifications.handover.disputed.message');
+                    $title   = ['key' => 'notifications.content.handover.disputed.title'];
+                    $message = ['key' => 'notifications.content.handover.disputed.message'];
+                    $persist = (bool) (config('notifications.persist_roles.handover_disputed') ?? false);
                     foreach ($roleIds as $rid) {
-                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                        $actionUrl = route('management.contracts.handovers.index', ['contract' => $handover->contract_id]);
+                        $this->notifications->announceRole($rid, $title, $message, $actionUrl, $persist);
                     }
                 }
             }

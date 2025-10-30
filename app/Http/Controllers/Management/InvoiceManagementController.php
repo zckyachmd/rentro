@@ -475,7 +475,13 @@ class InvoiceManagementController extends Controller
         try {
             $tenantId = (int) ($contract->user_id ?? 0);
             if ($tenantId > 0 && isset($invoice)) {
-                $this->notifications->notifyUser($tenantId, __('notifications.invoice.created.title'), __('notifications.invoice.created.message', ['number' => (string) $invoice->number]), null, [
+                $actionUrl = route('tenant.invoices.show', ['invoice' => $invoice->id]);
+                $title     = ['key' => 'notifications.content.invoice.created.title'];
+                $message   = [
+                    'key'    => 'notifications.content.invoice.created.message',
+                    'params' => ['number' => (string) $invoice->number],
+                ];
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                     'scope'       => 'user',
                     'type'        => 'invoice',
                     'event'       => 'created',
@@ -589,7 +595,16 @@ class InvoiceManagementController extends Controller
         try {
             $tenantId = (int) ($contract?->user_id);
             if ($tenantId > 0) {
-                $this->notifications->notifyUser($tenantId, __('notifications.invoice.due_extended.title'), __('notifications.invoice.due_extended.message', ['number' => (string) $invoice->number, 'due' => $invoice->due_date->toDateString()]), null, [
+                $actionUrl = route('tenant.invoices.show', ['invoice' => $invoice->id]);
+                $title     = ['key' => 'notifications.content.invoice.due_extended.title'];
+                $message   = [
+                    'key'    => 'notifications.content.invoice.due_extended.message',
+                    'params' => [
+                        'number' => (string) $invoice->number,
+                        'due'    => $invoice->due_date->toDateString(),
+                    ],
+                ];
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                     'scope'      => 'user',
                     'type'       => 'invoice',
                     'event'      => 'due_extended',
@@ -651,7 +666,13 @@ class InvoiceManagementController extends Controller
                 $contract = $invoice->relationLoaded('contract') ? $invoice->contract : $invoice->contract()->first();
                 $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
                 if ($tenantId > 0) {
-                    $this->notifications->notifyUser($tenantId, __('notifications.invoice.cancelled.title'), __('notifications.invoice.cancelled.message', ['number' => (string) $invoice->number]), null, [
+                    $actionUrl = route('tenant.invoices.show', ['invoice' => $invoice->id]);
+                    $title     = ['key' => 'notifications.content.invoice.cancelled.title'];
+                    $message   = [
+                        'key'    => 'notifications.content.invoice.cancelled.message',
+                        'params' => ['number' => (string) $invoice->number],
+                    ];
+                    $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                         'scope'      => 'user',
                         'type'       => 'invoice',
                         'event'      => 'cancelled',

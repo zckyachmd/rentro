@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { getJson } from '@/lib/api';
@@ -46,6 +47,7 @@ type EchoLike = {
 };
 
 export function useRealtimeNotifications(params: Params) {
+    const { t } = useTranslation(['notifications', 'enum']);
     const { upsert, syncFromServer } = useNotificationsStore();
     useEffect(() => {
         if (params.enabled === false) return;
@@ -114,17 +116,42 @@ export function useRealtimeNotifications(params: Params) {
             try {
                 const url = route('notifications.summary');
                 const json = await getJson<Summary>(url);
+                const parseMaybeJson = (v: unknown) => {
+                    if (typeof v === 'string') {
+                        const s = v.trim();
+                        if (s.startsWith('{') && s.endsWith('}')) {
+                            try {
+                                const obj = JSON.parse(s) as Record<
+                                    string,
+                                    unknown
+                                >;
+                                if (obj && typeof obj === 'object') return obj;
+                            } catch {
+                                /* noop */
+                            }
+                        }
+                    }
+                    return v;
+                };
                 const mapped: NotificationItem[] = (json.latest || []).map(
                     (n) => {
                         const d = n.data as Record<string, unknown>;
+                        const tRaw = parseMaybeJson(d.title);
+                        const mRaw = parseMaybeJson(d.message);
+                        const titleVal =
+                            (typeof tRaw === 'string' && tRaw) ||
+                            (tRaw && typeof tRaw === 'object'
+                                ? (tRaw as Record<string, unknown>)
+                                : 'Notification');
+                        const messageVal =
+                            (typeof mRaw === 'string' && mRaw) ||
+                            (mRaw && typeof mRaw === 'object'
+                                ? (mRaw as Record<string, unknown>)
+                                : '');
                         return {
                             id: n.id,
-                            title:
-                                (typeof d.title === 'string' && d.title) ||
-                                'Notification',
-                            message:
-                                (typeof d.message === 'string' && d.message) ||
-                                '',
+                            title: titleVal,
+                            message: messageVal,
                             action_url:
                                 (typeof d.action_url === 'string' &&
                                     d.action_url) ||
@@ -181,6 +208,24 @@ export function useRealtimeNotifications(params: Params) {
                         String((data as { message?: unknown }).message).trim()
                             .length > 0;
                     if (!hasTitle && !hasMsg) return;
+                    const parseMaybeJson = (v: unknown) => {
+                        if (typeof v === 'string') {
+                            const s = v.trim();
+                            if (s.startsWith('{') && s.endsWith('}')) {
+                                try {
+                                    const obj = JSON.parse(s) as Record<
+                                        string,
+                                        unknown
+                                    >;
+                                    if (obj && typeof obj === 'object')
+                                        return obj;
+                                } catch {
+                                    /* noop */
+                                }
+                            }
+                        }
+                        return v;
+                    };
                     const title =
                         (typeof data.title === 'string' && data.title) ||
                         (typeof (
@@ -207,6 +252,8 @@ export function useRealtimeNotifications(params: Params) {
                             data.data as Record<string, unknown> | undefined
                         )?.message === 'string' &&
                             (data.data as Record<string, unknown>).message);
+                    const titleParsed = parseMaybeJson(title);
+                    const messageParsed = parseMaybeJson(message);
                     const actionUrl =
                         (typeof data.action_url === 'string' &&
                             data.action_url) ||
@@ -263,17 +310,17 @@ export function useRealtimeNotifications(params: Params) {
                         /* noop */
                     }
                     const titleVal: string | Record<string, unknown> =
-                        typeof title === 'string'
-                            ? title
-                            : title && typeof title === 'object'
-                              ? (title as Record<string, unknown>)
-                              : String(title ?? '');
+                        typeof titleParsed === 'string'
+                            ? titleParsed
+                            : titleParsed && typeof titleParsed === 'object'
+                              ? (titleParsed as Record<string, unknown>)
+                              : String(titleParsed ?? '');
                     const messageVal: string | Record<string, unknown> =
-                        typeof message === 'string'
-                            ? message
-                            : message && typeof message === 'object'
-                              ? (message as Record<string, unknown>)
-                              : String(message ?? '');
+                        typeof messageParsed === 'string'
+                            ? messageParsed
+                            : messageParsed && typeof messageParsed === 'object'
+                              ? (messageParsed as Record<string, unknown>)
+                              : String(messageParsed ?? '');
                     const actionUrlStr: string | null | undefined =
                         typeof actionUrl === 'string' ? actionUrl : undefined;
                     const obj = data as Record<string, unknown>;
@@ -304,6 +351,37 @@ export function useRealtimeNotifications(params: Params) {
                     });
                     if (enableSound) playNotificationSound();
                     scheduleResync(800);
+                    const renderPersonal = (val: unknown): string => {
+                        if (typeof val === 'string') {
+                            if (val.startsWith('notifications.')) {
+                                const tr = t(val, { ns: 'notifications' });
+                                return tr && tr !== val ? tr : val;
+                            }
+                            return val;
+                        }
+                        if (val && typeof val === 'object') {
+                            const key = (val as { key?: unknown }).key;
+                            const params = (val as { params?: unknown }).params;
+                            const p: Record<string, unknown> =
+                                params && typeof params === 'object'
+                                    ? (params as Record<string, unknown>)
+                                    : {};
+                            if (
+                                typeof p.status === 'string' &&
+                                typeof (p as { status_label?: unknown })
+                                    .status_label !== 'string'
+                            ) {
+                                p.status_label = t(
+                                    `testimony_status.${String(p.status)}`,
+                                    { ns: 'enum' },
+                                );
+                            }
+                            return typeof key === 'string'
+                                ? t(String(key), p as Record<string, string>)
+                                : '';
+                        }
+                        return '';
+                    };
                     try {
                         const priority = String(
                             (metaVal as { priority?: unknown })?.priority ??
@@ -316,23 +394,29 @@ export function useRealtimeNotifications(params: Params) {
                             (minToastPriority === 'high' &&
                                 priority === 'high');
                         if (allowToast && canToast())
-                            toast(String(title || 'Notification'), {
-                                description: String(message || ''),
-                                action: actionUrlStr
-                                    ? {
-                                          label: 'View',
-                                          onClick: () => {
-                                              window.location.assign(
-                                                  String(actionUrlStr),
-                                              );
-                                          },
-                                      }
-                                    : undefined,
-                            });
+                            toast(
+                                renderPersonal(title || 'Notification') ||
+                                    'Notification',
+                                {
+                                    description:
+                                        renderPersonal(message || '') || '',
+                                    action: actionUrlStr
+                                        ? {
+                                              label: 'View',
+                                              onClick: () => {
+                                                  window.location.assign(
+                                                      String(actionUrlStr),
+                                                  );
+                                              },
+                                          }
+                                        : undefined,
+                                },
+                            );
                         if (allowToast)
                             showWebNotification(
-                                String(title || 'Notification'),
-                                String(message || ''),
+                                renderPersonal(title || 'Notification') ||
+                                    'Notification',
+                                renderPersonal(message || '') || '',
                                 actionUrlStr,
                             );
                     } catch {
@@ -405,12 +489,14 @@ export function useRealtimeNotifications(params: Params) {
                             cleanup();
                         }
                         upsert({
-                            title: String(
-                                (data as { title?: unknown }).title ?? '',
-                            ),
-                            message: String(
-                                (data as { message?: unknown }).message ?? '',
-                            ),
+                            title:
+                                ((data as { title?: unknown }).title as
+                                    | string
+                                    | Record<string, unknown>) ?? '',
+                            message:
+                                ((data as { message?: unknown }).message as
+                                    | string
+                                    | Record<string, unknown>) ?? '',
                             action_url: (
                                 data as {
                                     action_url?: string | null;
@@ -428,6 +514,31 @@ export function useRealtimeNotifications(params: Params) {
                         if (enableSound) playNotificationSound();
                         scheduleResync(800);
                     }
+                    const render = (val: unknown): string => {
+                        if (typeof val === 'string') return val;
+                        if (val && typeof val === 'object') {
+                            const key = (val as { key?: unknown }).key;
+                            const params = (val as { params?: unknown }).params;
+                            const p: Record<string, unknown> =
+                                params && typeof params === 'object'
+                                    ? (params as Record<string, unknown>)
+                                    : {};
+                            if (
+                                typeof p.status === 'string' &&
+                                typeof (p as { status_label?: unknown })
+                                    .status_label !== 'string'
+                            ) {
+                                p.status_label = t(
+                                    `testimony_status.${String(p.status)}`,
+                                    { ns: 'enum' },
+                                );
+                            }
+                            return typeof key === 'string'
+                                ? t(String(key), p as Record<string, string>)
+                                : '';
+                        }
+                        return '';
+                    };
                     try {
                         const pr = String(
                             (data as { meta?: { priority?: unknown } }).meta
@@ -439,15 +550,16 @@ export function useRealtimeNotifications(params: Params) {
                             (minToastPriority === 'high' && pr === 'high');
                         if (allowToast && canToast())
                             toast(
-                                String(
+                                render(
                                     (data as { title?: unknown }).title ||
                                         'Announcement',
-                                ),
+                                ) || 'Announcement',
                                 {
-                                    description: String(
-                                        (data as { message?: unknown })
-                                            .message || '',
-                                    ),
+                                    description:
+                                        render(
+                                            (data as { message?: unknown })
+                                                .message || '',
+                                        ) || '',
                                     action: (
                                         data as { action_url?: string | null }
                                     ).action_url
@@ -471,14 +583,14 @@ export function useRealtimeNotifications(params: Params) {
                             );
                         if (allowToast)
                             showWebNotification(
-                                String(
+                                render(
                                     (data as { title?: unknown }).title ||
                                         'Announcement',
-                                ),
-                                String(
+                                ) || 'Announcement',
+                                render(
                                     (data as { message?: unknown }).message ||
                                         '',
-                                ),
+                                ) || '',
                                 (data as { action_url?: string | null })
                                     .action_url,
                             );
@@ -517,6 +629,31 @@ export function useRealtimeNotifications(params: Params) {
                 const persist = Boolean(
                     (data as Record<string, unknown>)?.persist,
                 );
+                const render = (val: unknown): string => {
+                    if (typeof val === 'string') return val;
+                    if (val && typeof val === 'object') {
+                        const key = (val as { key?: unknown }).key;
+                        const params = (val as { params?: unknown }).params;
+                        const p: Record<string, unknown> =
+                            params && typeof params === 'object'
+                                ? (params as Record<string, unknown>)
+                                : {};
+                        if (
+                            typeof p.status === 'string' &&
+                            typeof (p as { status_label?: unknown })
+                                .status_label !== 'string'
+                        ) {
+                            p.status_label = t(
+                                `testimony_status.${String(p.status)}`,
+                                { ns: 'enum' },
+                            );
+                        }
+                        return typeof key === 'string'
+                            ? t(String(key), p as Record<string, string>)
+                            : '';
+                    }
+                    return '';
+                };
                 const shouldAdd = persist || includeAnnouncements;
                 if (shouldAdd) {
                     if (persist) {
@@ -529,12 +666,14 @@ export function useRealtimeNotifications(params: Params) {
                         cleanup();
                     }
                     upsert({
-                        title: String(
-                            (data as { title?: unknown }).title ?? '',
-                        ),
-                        message: String(
-                            (data as { message?: unknown }).message ?? '',
-                        ),
+                        title:
+                            ((data as { title?: unknown }).title as
+                                | string
+                                | Record<string, unknown>) ?? '',
+                        message:
+                            ((data as { message?: unknown }).message as
+                                | string
+                                | Record<string, unknown>) ?? '',
                         action_url: (data as { action_url?: string | null })
                             .action_url,
                         meta: {
@@ -561,15 +700,16 @@ export function useRealtimeNotifications(params: Params) {
                         (minToastPriority === 'high' && pr === 'high');
                     if (allowToast && canToast())
                         toast(
-                            String(
+                            render(
                                 (data as { title?: unknown }).title ||
                                     'Announcement',
-                            ),
+                            ) || 'Announcement',
                             {
-                                description: String(
-                                    (data as { message?: unknown }).message ||
-                                        '',
-                                ),
+                                description:
+                                    render(
+                                        (data as { message?: unknown })
+                                            .message || '',
+                                    ) || '',
                                 action: (data as { action_url?: string | null })
                                     .action_url
                                     ? {
@@ -592,13 +732,13 @@ export function useRealtimeNotifications(params: Params) {
                         );
                     if (allowToast)
                         showWebNotification(
-                            String(
+                            render(
                                 (data as { title?: unknown }).title ||
                                     'Announcement',
-                            ),
-                            String(
+                            ) || 'Announcement',
+                            render(
                                 (data as { message?: unknown }).message || '',
-                            ),
+                            ) || '',
                             (data as { action_url?: string | null }).action_url,
                         );
                 } catch {

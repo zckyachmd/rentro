@@ -44,18 +44,38 @@ class SendAnnouncement implements ShouldQueue, ShouldBeUnique
         }
 
         try {
+            $decode = function ($val) {
+                if (is_array($val)) {
+                    return $val;
+                }
+                if (is_string($val)) {
+                    $trim = trim($val);
+                    if (str_starts_with($trim, '{') && str_ends_with($trim, '}')) {
+                        try {
+                            $arr = json_decode($trim, true, 512, JSON_THROW_ON_ERROR);
+                            if (is_array($arr)) {
+                                return $arr;
+                            }
+                        } catch (\Throwable) {
+                            // stay string
+                        }
+                    }
+                }
+
+                return $val;
+            };
             if ($a->scope === 'role' && $a->role_id) {
                 $notifications->announceRole(
                     (int) $a->role_id,
-                    $a->title,
-                    $a->message,
+                    $decode($a->title),
+                    $decode($a->message),
                     $a->action_url,
                     (bool) $a->persist,
                 );
             } else {
                 $notifications->announceGlobal(
-                    $a->title,
-                    $a->message,
+                    $decode($a->title),
+                    $decode($a->message),
                     $a->action_url,
                     (bool) $a->persist,
                 );

@@ -254,7 +254,10 @@ class UserManagementController extends Controller
             ->log('User document approved by admin');
 
         try {
-            $this->notifications->notifyUser((int) $user->id, __('notifications.document.approved.title'), __('notifications.document.approved.message'), null, [
+            $actionUrl = route('profile.edit');
+            $title     = ['key' => 'notifications.content.document.approved.title'];
+            $message   = ['key' => 'notifications.content.document.approved.message'];
+            $this->notifications->notifyUser((int) $user->id, $title, $message, $actionUrl, [
                 'scope'    => 'user',
                 'type'     => 'document',
                 'event'    => 'approved',
@@ -298,7 +301,10 @@ class UserManagementController extends Controller
             ->log('User document rejected by admin');
 
         try {
-            $this->notifications->notifyUser((int) $user->id, __('notifications.document.rejected.title'), __('notifications.document.rejected.message'), null, [
+            $actionUrl = route('profile.edit');
+            $title     = ['key' => 'notifications.content.document.rejected.title'];
+            $message   = ['key' => 'notifications.content.document.rejected.message'];
+            $this->notifications->notifyUser((int) $user->id, $title, $message, $actionUrl, [
                 'scope'    => 'user',
                 'type'     => 'document',
                 'event'    => 'rejected',

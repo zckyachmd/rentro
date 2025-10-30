@@ -127,12 +127,17 @@ class AnnouncementController extends Controller
     {
         $data = $request->validated();
 
-        $persist = (bool) ($data['persist'] ?? false);
+        [$title, $message] = $this->normalizedTitleMessage(
+            $data['title'] ?? '',
+            $data['message'] ?? '',
+        );
+
+        $persist = (bool) ($data['persist'] ?? config('notifications.announcements_persist_default', true));
 
         $this->notifications->announceRole(
             (int) $data['role_id'],
-            $data['title'],
-            $data['message'],
+            $title,
+            $message,
             $data['action_url'] ?? null,
             $persist,
         );
@@ -151,11 +156,16 @@ class AnnouncementController extends Controller
     {
         $data = $request->validated();
 
-        $persist = (bool) ($data['persist'] ?? false);
+        $persist = (bool) ($data['persist'] ?? config('notifications.announcements_persist_default', true));
+
+        [$title, $message] = $this->normalizedTitleMessage(
+            $data['title'] ?? '',
+            $data['message'] ?? '',
+        );
 
         $this->notifications->announceGlobal(
-            $data['title'],
-            $data['message'],
+            $title,
+            $message,
             $data['action_url'] ?? null,
             $persist,
         );
@@ -180,9 +190,13 @@ class AnnouncementController extends Controller
             if ($userId <= 0) {
                 return back()->withErrors(['user_id' => 'User is required'])->withInput();
             }
+            [$title, $message] = $this->normalizedTitleMessage(
+                $data['title'] ?? '',
+                $data['message'] ?? '',
+            );
             $payload = [
-                'title'      => $data['title'],
-                'message'    => $data['message'],
+                'title'      => $title,
+                'message'    => $message,
                 'action_url' => $data['action_url'] ?? null,
                 'meta'       => ['scope' => 'user'],
             ];
@@ -208,7 +222,7 @@ class AnnouncementController extends Controller
         $a->title        = $data['title'];
         $a->message      = $data['message'];
         $a->action_url   = $data['action_url'] ?? null;
-        $a->persist      = (bool) ($data['persist'] ?? false);
+        $a->persist      = (bool) ($data['persist'] ?? config('notifications.announcements_persist_default', true));
         $a->scheduled_at = isset($data['scheduled_at']) && $data['scheduled_at']
             ? \Carbon\Carbon::parse((string) $data['scheduled_at'])
             : null;
@@ -310,5 +324,37 @@ class AnnouncementController extends Controller
         }
 
         return Redirect::back()->with('success', 'Schedule cancelled');
+    }
+
+    /**
+     * Normalize title/message incoming values so we can accept JSON strings
+     * like {"key":"...","params":{...}} or plain text.
+     *
+     * @return array{0: string|array<string,mixed>, 1: string|array<string,mixed>}
+     */
+    protected function normalizedTitleMessage($title, $message): array
+    {
+        $decode = function ($val) {
+            if (is_array($val)) {
+                return $val;
+            }
+            if (is_string($val)) {
+                $trim = trim($val);
+                if (str_starts_with($trim, '{') && str_ends_with($trim, '}')) {
+                    try {
+                        $arr = json_decode($trim, true, 512, JSON_THROW_ON_ERROR);
+                        if (is_array($arr)) {
+                            return $arr;
+                        }
+                    } catch (\Throwable) {
+                        // keep as string
+                    }
+                }
+            }
+
+            return $val;
+        };
+
+        return [$decode($title), $decode($message)];
     }
 }

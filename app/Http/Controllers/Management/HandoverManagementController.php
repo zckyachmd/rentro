@@ -82,7 +82,10 @@ class HandoverManagementController extends Controller
         try {
             $tenantId = (int) ($contract->user_id ?? 0);
             if ($tenantId > 0) {
-                $this->notifications->notifyUser($tenantId, __('notifications.handover.checkin.title'), __('notifications.handover.checkin.message'), null, [
+                $actionUrl = route('tenant.contracts.handovers.index', ['contract' => $contract->id]);
+                $title     = ['key' => 'notifications.content.handover.checkin.title'];
+                $message   = ['key' => 'notifications.content.handover.checkin.message'];
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                     'scope'       => 'user',
                     'type'        => 'handover',
                     'event'       => 'checkin_created',
@@ -125,7 +128,10 @@ class HandoverManagementController extends Controller
         try {
             $tenantId = (int) ($contract->user_id ?? 0);
             if ($tenantId > 0) {
-                $this->notifications->notifyUser($tenantId, __('notifications.handover.checkout.title'), __('notifications.handover.checkout.message'), null, [
+                $actionUrl = route('tenant.contracts.handovers.index', ['contract' => $contract->id]);
+                $title     = ['key' => 'notifications.content.handover.checkout.title'];
+                $message   = ['key' => 'notifications.content.handover.checkout.message'];
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                     'scope'       => 'user',
                     'type'        => 'handover',
                     'event'       => 'checkout_created',

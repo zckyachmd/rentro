@@ -64,11 +64,20 @@ export default function NotificationsIndex({
     React.useEffect(() => {
         const mapped: NotificationItem[] = (page?.data || []).map((n) => {
             const d = n.data as Record<string, unknown>;
+            const titleVal =
+                (typeof d.title === 'string' && d.title) ||
+                (d.title && typeof d.title === 'object'
+                    ? (d.title as Record<string, unknown>)
+                    : 'Notification');
+            const messageVal =
+                (typeof d.message === 'string' && d.message) ||
+                (d.message && typeof d.message === 'object'
+                    ? (d.message as Record<string, unknown>)
+                    : '');
             return {
                 id: n.id,
-                title:
-                    (typeof d.title === 'string' && d.title) || 'Notification',
-                message: (typeof d.message === 'string' && d.message) || '',
+                title: titleVal,
+                message: messageVal,
                 action_url:
                     (typeof d.action_url === 'string' && d.action_url) ||
                     (typeof (d as { url?: unknown }).url === 'string' &&

@@ -311,9 +311,13 @@ class PaymentManagementController extends Controller
             $contract = $invoice->relationLoaded('contract') ? $invoice->contract : $invoice->contract()->first();
             $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
             if ($tenantId > 0) {
-                $title   = __('notifications.payment.submitted.title');
-                $message = __('notifications.payment.submitted.message', ['invoice' => (string) $invoice->number]);
-                $meta    = [
+                $title   = ['key' => 'notifications.content.payment.submitted.title'];
+                $message = [
+                    'key'    => 'notifications.content.payment.submitted.message',
+                    'params' => ['invoice' => (string) $invoice->number],
+                ];
+                $actionUrl = route('tenant.invoices.payments.show', ['payment' => $payment->id]);
+                $meta      = [
                     'scope'      => 'user',
                     'type'       => 'payment',
                     'event'      => 'submitted',
@@ -321,7 +325,7 @@ class PaymentManagementController extends Controller
                     'payment_id' => (string) $payment->id,
                     'status'     => (string) $payment->status->value,
                 ];
-                $this->notifications->notifyUser($tenantId, $title, $message, null, $meta);
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, $meta);
             }
         } catch (\Throwable) {
             // ignore;
@@ -611,9 +615,13 @@ class PaymentManagementController extends Controller
                 $contract = $inv?->relationLoaded('contract') ? $inv->contract : $inv?->contract()->first();
                 $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
                 if ($tenantId > 0) {
-                    $title   = __('notifications.payment.confirmed.title');
-                    $message = __('notifications.payment.confirmed.message', ['invoice' => (string) ($inv?->number)]);
-                    $this->notifications->notifyUser($tenantId, $title, $message, null, [
+                    $title   = ['key' => 'notifications.content.payment.confirmed.title'];
+                    $message = [
+                        'key'    => 'notifications.content.payment.confirmed.message',
+                        'params' => ['invoice' => (string) ($inv?->number)],
+                    ];
+                    $actionUrl = route('tenant.invoices.payments.show', ['payment' => $payment->id]);
+                    $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                         'scope'      => 'user',
                         'type'       => 'payment',
                         'event'      => 'confirmed',
@@ -646,9 +654,13 @@ class PaymentManagementController extends Controller
             $contract = $inv?->relationLoaded('contract') ? $inv->contract : $inv?->contract()->first();
             $tenantId = $contract?->user_id ? (int) $contract->user_id : 0;
             if ($tenantId > 0) {
-                $title   = __('notifications.payment.rejected.title');
-                $message = __('notifications.payment.rejected.message', ['invoice' => (string) ($inv?->number)]);
-                $this->notifications->notifyUser($tenantId, $title, $message, null, [
+                $title   = ['key' => 'notifications.content.payment.rejected.title'];
+                $message = [
+                    'key'    => 'notifications.content.payment.rejected.message',
+                    'params' => ['invoice' => (string) ($inv?->number)],
+                ];
+                $actionUrl = route('tenant.invoices.payments.show', ['payment' => $payment->id]);
+                $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                     'scope'      => 'user',
                     'type'       => 'payment',
                     'event'      => 'rejected',

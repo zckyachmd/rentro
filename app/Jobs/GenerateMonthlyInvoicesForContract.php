@@ -8,6 +8,7 @@ use App\Enum\InvoiceStatus;
 use App\Models\Contract;
 use App\Services\Contracts\ContractServiceInterface;
 use App\Services\Contracts\InvoiceServiceInterface;
+use App\Services\Contracts\NotificationServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,7 +29,7 @@ class GenerateMonthlyInvoicesForContract implements ShouldQueue
         $this->onQueue('billing');
     }
 
-    public function handle(InvoiceServiceInterface $invoices, ContractServiceInterface $contractsSvc): void
+    public function handle(InvoiceServiceInterface $invoices, ContractServiceInterface $contractsSvc, NotificationServiceInterface $notifications): void
     {
         /** @var Contract|null $contract */
         $contract = Contract::query()->find($this->contractId);
@@ -77,7 +78,26 @@ class GenerateMonthlyInvoicesForContract implements ShouldQueue
                     continue;
                 }
 
-                $invoices->generate($contract, ['month' => $expectedStart->format('Y-m')]);
+                $invoice = $invoices->generate($contract, ['month' => $expectedStart->format('Y-m')]);
+                try {
+                    $tenantId = (int) ($contract->user_id ?? 0);
+                    if ($tenantId > 0 && $invoice) {
+                        $actionUrl = route('tenant.invoices.show', ['invoice' => $invoice->id]);
+                        $title     = ['key' => 'notifications.content.invoice.created.title'];
+                        $message   = [
+                            'key'    => 'notifications.content.invoice.created.message',
+                            'params' => ['number' => (string) $invoice->number],
+                        ];
+                        $notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                            'type'       => 'invoice',
+                            'event'      => 'created',
+                            'invoice_id' => (string) $invoice->id,
+                            'scope'      => config('notifications.controller.default_scope', 'system'),
+                        ]);
+                    }
+                } catch (\Throwable) {
+                    // swallow notification errors
+                }
 
                 $expectedStart = $expectedStart->copy()->addMonthNoOverflow()->startOfMonth();
             }

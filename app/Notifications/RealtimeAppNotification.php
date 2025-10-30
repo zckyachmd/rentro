@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -71,12 +70,8 @@ class RealtimeAppNotification extends Notification implements ShouldQueue
      */
     public function broadcastOn(): array
     {
-        $id = (string) ($this->notifiable->id ?? '');
-        if ($id === '') {
-            return [];
-        }
-
-        return [new PrivateChannel("user.$id")];
+        // Rely on notifiable->receivesBroadcastNotificationsOn() fallback
+        return [];
     }
 
     public function broadcastType(): string

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Payment;
 use App\Services\Contracts\MidtransGatewayInterface;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,12 +26,13 @@ class SyncMidtransPayment implements ShouldQueue
         $this->onQueue('payments');
     }
 
-    public function handle(MidtransGatewayInterface $midtrans, PaymentServiceInterface $payments): void
+    public function handle(MidtransGatewayInterface $midtrans, PaymentServiceInterface $payments, NotificationServiceInterface $notifications): void
     {
-        $payment = Payment::query()->find($this->paymentId);
+        $payment = Payment::query()->with(['invoice.contract:id,user_id'])->find($this->paymentId);
         if (!$payment) {
             return;
         }
+        $oldStatus = (string) $payment->status->value;
 
         // Global rate limiter key (shared across workers / processes)
         $key     = 'midtrans:poll:global';
@@ -90,6 +92,54 @@ class SyncMidtransPayment implements ShouldQueue
             $invModel = $payment->invoice;
             if ($invModel) {
                 $payments->recalculateInvoice($invModel);
+            }
+
+            // If status changed, notify tenant accordingly
+            try {
+                $newStatus = (string) $payment->status->value;
+                if ($newStatus !== $oldStatus) {
+                    $invoice   = $payment->invoice;
+                    $tenantId  = 0;
+                    $invNumber = '';
+                    if ($invoice) {
+                        $invNumber = (string) ($invoice->number ?? '');
+                        if ($invoice->contract) {
+                            $tenantId = (int) $invoice->contract->user_id;
+                        }
+                    }
+                    if ($tenantId > 0) {
+                        if ($newStatus === \App\Enum\PaymentStatus::COMPLETED->value) {
+                            $title   = ['key' => 'notifications.content.payment.confirmed.title'];
+                            $message = [
+                                'key'    => 'notifications.content.payment.confirmed.message',
+                                'params' => ['invoice' => $invNumber],
+                            ];
+                            $actionUrl = route('tenant.invoices.payments.show', ['payment' => $payment->id]);
+                            $notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                                'type'       => 'payment',
+                                'event'      => 'confirmed',
+                                'invoice_id' => $invoice ? (string) $invoice->id : null,
+                                'payment_id' => (string) $payment->id,
+                                'scope'      => config('notifications.controller.default_scope', 'system'),
+                            ]);
+                        } elseif (in_array($newStatus, [\App\Enum\PaymentStatus::FAILED->value, \App\Enum\PaymentStatus::REJECTED->value], true)) {
+                            $title   = ['key' => 'notifications.content.payment.rejected.title'];
+                            $message = [
+                                'key'    => 'notifications.content.payment.rejected.message',
+                                'params' => ['invoice' => $invNumber],
+                            ];
+                            $actionUrl = route('tenant.invoices.payments.show', ['payment' => $payment->id]);
+                            $notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                                'type'       => 'payment',
+                                'event'      => 'rejected',
+                                'invoice_id' => $invoice ? (string) $invoice->id : null,
+                                'payment_id' => (string) $payment->id,
+                                'scope'      => config('notifications.controller.default_scope', 'system'),
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Throwable) {
             }
         } catch (\Throwable $e) {
             Log::warning('SyncMidtransPayment failed', [

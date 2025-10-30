@@ -135,9 +135,13 @@ class TestimonyManagementController extends Controller
             $targetUserId = (int) $testimony->user_id;
             if ($targetUserId > 0 && $before['status'] !== $after['status']) {
                 $event   = strtolower((string) $testimony->status->value);
-                $title   = __('notifications.testimony.status.title');
-                $message = __('notifications.testimony.status.message', ['status' => $event]);
-                $this->notifications->notifyUser($targetUserId, $title, $message, null, [
+                $title   = ['key' => 'notifications.content.testimony.status.title'];
+                $message = [
+                    'key'    => 'notifications.content.testimony.status.message',
+                    'params' => ['status' => $event],
+                ];
+                $actionUrl = route('dashboard');
+                $this->notifications->notifyUser($targetUserId, $title, $message, $actionUrl, [
                     'scope'        => 'user',
                     'type'         => 'testimony',
                     'event'        => 'status_changed',

@@ -167,10 +167,15 @@ class BookingController extends Controller
             if ($roleNames !== []) {
                 $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
                 if (!empty($roleIds)) {
-                    $title   = __('notifications.booking.requested.title');
-                    $message = __('notifications.booking.requested.message', ['number' => (string) ($booking->number ?? $booking->id)]);
+                    $title   = ['key' => 'notifications.content.booking.requested.title'];
+                    $message = [
+                        'key'    => 'notifications.content.booking.requested.message',
+                        'params' => ['number' => (string) ($booking->number ?? $booking->id)],
+                    ];
+                    $persist = (bool) (config('notifications.persist_roles.booking_requested') ?? false);
                     foreach ($roleIds as $rid) {
-                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                        $actionUrl = route('management.bookings.show', ['booking' => $booking->id]);
+                        $this->notifications->announceRole($rid, $title, $message, $actionUrl, $persist);
                     }
                 }
             }

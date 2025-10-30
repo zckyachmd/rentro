@@ -392,9 +392,12 @@ class BookingManagementController extends Controller
         }
 
         try {
-            $title     = __('notifications.booking.approved.title');
-            $message   = __('notifications.booking.approved.message', ['number' => (string) ($booking->number ?? $booking->id)]);
-            $actionUrl = null;
+            $title   = ['key' => 'notifications.content.booking.approved.title'];
+            $message = [
+                'key'    => 'notifications.content.booking.approved.message',
+                'params' => ['number' => (string) ($booking->number ?? $booking->id)],
+            ];
+            $actionUrl = route('tenant.bookings.show', ['booking' => $booking->id]);
             $this->notifications->notifyUser((int) $booking->user_id, $title, $message, $actionUrl, [
                 'scope'      => 'user',
                 'type'       => 'booking',
@@ -423,9 +426,12 @@ class BookingManagementController extends Controller
         ])->save();
 
         try {
-            $title     = __('notifications.booking.rejected.title');
-            $message   = __('notifications.booking.rejected.message', ['number' => (string) ($booking->number ?? $booking->id)]);
-            $actionUrl = null;
+            $title   = ['key' => 'notifications.content.booking.rejected.title'];
+            $message = [
+                'key'    => 'notifications.content.booking.rejected.message',
+                'params' => ['number' => (string) ($booking->number ?? $booking->id)],
+            ];
+            $actionUrl = route('tenant.bookings.show', ['booking' => $booking->id]);
             $this->notifications->notifyUser((int) $booking->user_id, $title, $message, $actionUrl, [
                 'scope'      => 'user',
                 'type'       => 'booking',

@@ -115,10 +115,15 @@ class PaymentController extends Controller
             if ($roleNames !== []) {
                 $roleIds = Role::query()->whereIn('name', $roleNames)->pluck('id')->map(fn ($id) => (int) $id)->all();
                 if (!empty($roleIds)) {
-                    $title   = __('notifications.payment.submitted.title');
-                    $message = __('notifications.payment.submitted.message', ['invoice' => (string) ($invoice->number ?? '')]);
+                    $title   = ['key' => 'notifications.content.payment.submitted.title'];
+                    $message = [
+                        'key'    => 'notifications.content.payment.submitted.message',
+                        'params' => ['invoice' => (string) ($invoice->number ?? '')],
+                    ];
+                    $persist = (bool) (config('notifications.persist_roles.payment_submitted') ?? false);
                     foreach ($roleIds as $rid) {
-                        $this->notifications->announceRole($rid, $title, $message, null, false);
+                        $actionUrl = route('management.payments.show', ['payment' => $payment->id]);
+                        $this->notifications->announceRole($rid, $title, $message, $actionUrl, $persist);
                     }
                 }
             }

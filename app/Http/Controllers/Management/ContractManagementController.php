@@ -444,9 +444,9 @@ class ContractManagementController extends Controller
         try {
             $tenantId = (int) ($data['user_id'] ?? 0);
             if ($tenantId > 0) {
-                $title     = __('notifications.contract.created.title');
-                $message   = __('notifications.contract.created.message');
-                $actionUrl = null;
+                $title     = ['key' => 'notifications.content.contract.created.title'];
+                $message   = ['key' => 'notifications.content.contract.created.message'];
+                $actionUrl = route('tenant.contracts.show', ['contract' => $contract->id]);
                 $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                     'scope'       => 'user',
                     'type'        => 'contract',
@@ -604,9 +604,9 @@ class ContractManagementController extends Controller
             try {
                 $tenantId = (int) ($contract->user_id ?? 0);
                 if ($tenantId > 0) {
-                    $title     = __('notifications.contract.cancelled.title');
-                    $message   = __('notifications.contract.cancelled.message');
-                    $actionUrl = null;
+                    $title     = ['key' => 'notifications.content.contract.cancelled.title'];
+                    $message   = ['key' => 'notifications.content.contract.cancelled.message'];
+                    $actionUrl = route('tenant.contracts.show', ['contract' => $contract->id]);
                     $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                         'scope'       => 'user',
                         'type'        => 'contract',
@@ -648,9 +648,9 @@ class ContractManagementController extends Controller
         try {
             $tenantId = (int) ($contract->user_id ?? 0);
             if ($tenantId > 0) {
-                $title     = $enabled ? __('notifications.contract.autorenew.enabled.title') : __('notifications.contract.autorenew.disabled.title');
-                $message   = $enabled ? __('notifications.contract.autorenew.enabled.message') : __('notifications.contract.autorenew.disabled.message');
-                $actionUrl = null;
+                $title     = ['key' => $enabled ? 'notifications.content.contract.autorenew.enabled.title' : 'notifications.content.contract.autorenew.disabled.title'];
+                $message   = ['key' => $enabled ? 'notifications.content.contract.autorenew.enabled.message' : 'notifications.content.contract.autorenew.disabled.message'];
+                $actionUrl = route('tenant.contracts.show', ['contract' => $contract->id]);
                 $this->notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
                     'scope'       => 'user',
                     'type'        => 'contract',

@@ -123,16 +123,42 @@ export default function AppLayout({
             if (!notifSummary) return;
             // Only hydrate if store is empty to avoid clobbering live updates
             if (notifItems && notifItems.length > 0) return;
+            const parseMaybeJson = (v: unknown) => {
+                if (typeof v === 'string') {
+                    const s = v.trim();
+                    if (s.startsWith('{') && s.endsWith('}')) {
+                        try {
+                            const obj = JSON.parse(s) as Record<
+                                string,
+                                unknown
+                            >;
+                            if (obj && typeof obj === 'object') return obj;
+                        } catch {
+                            /* noop */
+                        }
+                    }
+                }
+                return v;
+            };
             const mapped: NotificationItem[] = (notifSummary.latest || []).map(
                 (n) => {
                     const d = n.data as Record<string, unknown>;
+                    const tRaw = parseMaybeJson(d.title);
+                    const mRaw = parseMaybeJson(d.message);
+                    const titleVal =
+                        (typeof tRaw === 'string' && tRaw) ||
+                        (tRaw && typeof tRaw === 'object'
+                            ? (tRaw as Record<string, unknown>)
+                            : 'Notification');
+                    const messageVal =
+                        (typeof mRaw === 'string' && mRaw) ||
+                        (mRaw && typeof mRaw === 'object'
+                            ? (mRaw as Record<string, unknown>)
+                            : '');
                     return {
                         id: n.id,
-                        title:
-                            (typeof d.title === 'string' && d.title) ||
-                            'Notification',
-                        message:
-                            (typeof d.message === 'string' && d.message) || '',
+                        title: titleVal,
+                        message: messageVal,
                         action_url:
                             (typeof d.action_url === 'string' &&
                                 d.action_url) ||

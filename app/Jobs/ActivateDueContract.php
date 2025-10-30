@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enum\ContractStatus;
 use App\Enum\RoomStatus;
 use App\Models\Contract;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Traits\LogActivity;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,7 +26,7 @@ class ActivateDueContract implements ShouldQueue
         $this->onQueue('contracts');
     }
 
-    public function handle(): void
+    public function handle(NotificationServiceInterface $notifications): void
     {
         /** @var Contract|null $contract */
         $contract = Contract::query()->with(['room:id,status'])->find($this->contractId);
@@ -56,6 +57,23 @@ class ActivateDueContract implements ShouldQueue
             ],
             description: 'Contract activated by job as start date has arrived.',
         );
+
+        // Notify tenant
+        try {
+            $tenantId = (int) ($contract->user_id ?? 0);
+            if ($tenantId > 0) {
+                $title     = ['key' => 'notifications.content.contract.activated.title'];
+                $message   = ['key' => 'notifications.content.contract.activated.message'];
+                $actionUrl = route('tenant.contracts.show', ['contract' => $contract->id]);
+                $notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                    'type'        => 'contract',
+                    'event'       => 'activated',
+                    'contract_id' => (string) $contract->id,
+                    'scope'       => config('notifications.controller.default_scope', 'system'),
+                ]);
+            }
+        } catch (\Throwable) {
+        }
     }
 
     public function tags(): array

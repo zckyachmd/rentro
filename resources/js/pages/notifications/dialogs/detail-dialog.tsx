@@ -36,15 +36,48 @@ export default function NotificationDetailDialog({
     onMarkRead: (id: string) => Promise<void> | void;
 }) {
     const { t } = useTranslation(['notifications', 'common']);
+    const { t: tEnum } = useTranslation('enum');
+
+    const renderText = (
+        val: string | Record<string, unknown>,
+        fallback = '',
+    ): string => {
+        if (typeof val === 'string') {
+            if (val.startsWith('notifications.')) {
+                const tr = t(val);
+                return (tr && tr !== val ? tr : val) || fallback;
+            }
+            return val || fallback;
+        }
+        const key =
+            typeof (val as { key?: unknown }).key === 'string'
+                ? (val as { key: string }).key
+                : undefined;
+        const params = (val as { params?: unknown }).params;
+        const p = (
+            params && typeof params === 'object'
+                ? (params as Record<string, unknown>)
+                : {}
+        ) as Record<string, unknown>;
+        if (
+            typeof p.status === 'string' &&
+            typeof (p as { status_label?: unknown }).status_label !== 'string'
+        ) {
+            const lbl = tEnum(`testimony_status.${p.status}`);
+            if (lbl) p.status_label = lbl;
+        }
+        return key ? t(key, p as Record<string, string>) : fallback;
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        {typeof item?.title === 'string'
-                            ? item?.title
-                            : t('notifications.title', 'Notifications')}
+                        {renderText(
+                            item?.title || '',
+                            t('notifications.title', 'Notifications'),
+                        )}
                     </DialogTitle>
                     <DialogDescription>
                         {item?.created_at ? (
@@ -59,7 +92,7 @@ export default function NotificationDetailDialog({
                     </DialogDescription>
                 </DialogHeader>
                 <div className="text-sm whitespace-pre-wrap">
-                    {typeof item?.message === 'string' ? item?.message : ''}
+                    {renderText(item?.message || '', '')}
                 </div>
                 <DialogFooter className="gap-2 sm:gap-2">
                     {item?.action_url && isExternal(item.action_url) && (

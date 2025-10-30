@@ -27,4 +27,13 @@ interface NotificationServiceInterface
      * @param array<string, mixed>|string $message
      */
     public function announceGlobal($title, $message, ?string $actionUrl = null, bool $persistPerUser = false): void;
+
+    /**
+     * Broadcast a system-wide notification over the private 'system' channel.
+     * Optionally persist per user via queued fan-out.
+     *
+     * @param array<string, mixed>|string $title
+     * @param array<string, mixed>|string $message
+     */
+    public function system($title, $message, ?string $actionUrl = null, ?bool $persistPerUser = null, ?array $meta = null): void;
 }

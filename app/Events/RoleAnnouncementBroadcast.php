@@ -42,6 +42,7 @@ class RoleAnnouncementBroadcast implements ShouldBroadcast
             'message'    => $this->payload['message'] ?? '',
             'action_url' => $this->payload['action_url'] ?? null,
             'persist'    => (bool) ($this->payload['persist'] ?? false),
+            'meta'       => $this->payload['meta'] ?? null,
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Enum\InvoiceStatus;
 use App\Models\Contract;
 use App\Models\Invoice;
 use App\Services\Contracts\ContractServiceInterface;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Traits\LogActivity;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,7 +27,7 @@ class MarkContractOverdue implements ShouldQueue
         $this->onQueue('contracts');
     }
 
-    public function handle(ContractServiceInterface $contracts): void
+    public function handle(ContractServiceInterface $contracts, NotificationServiceInterface $notifications): void
     {
         /** @var Contract|null $contract */
         $contract = Contract::query()->find($this->contractId);
@@ -61,6 +62,23 @@ class MarkContractOverdue implements ShouldQueue
             ],
             description: 'Contract marked OVERDUE by job (and past-due invoices flagged OVERDUE)',
         );
+
+        // Notify tenant that contract is overdue
+        try {
+            $tenantId = (int) ($contract->user_id ?? 0);
+            if ($tenantId > 0) {
+                $title     = ['key' => 'notifications.content.contract.overdue.title'];
+                $message   = ['key' => 'notifications.content.contract.overdue.message'];
+                $actionUrl = route('tenant.contracts.show', ['contract' => $contract->id]);
+                $notifications->notifyUser($tenantId, $title, $message, $actionUrl, [
+                    'type'        => 'contract',
+                    'event'       => 'overdue',
+                    'contract_id' => (string) $contract->id,
+                    'scope'       => config('notifications.controller.default_scope', 'system'),
+                ]);
+            }
+        } catch (\Throwable) {
+        }
     }
 
     public function tags(): array

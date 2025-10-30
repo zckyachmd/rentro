@@ -66,8 +66,7 @@ class PersonalNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Customize the broadcast channel. Return empty to use the model's
-     * receivesBroadcastNotificationsOn() fallback.
+     * Let Laravel use the notifiable's receivesBroadcastNotificationsOn fallback.
      */
     public function broadcastOn(): array
     {

@@ -28,4 +28,29 @@ return [
         // When tenant disputes a handover
         'handover_disputed' => array_filter(explode(',', (string) env('NOTIFY_ROLES_HANDOVER_DISPUTED', ''))) ?: [RoleName::SUPER_ADMIN->value, RoleName::MANAGER->value],
     ],
+
+    // Whether role announcements for tenant-originated events should also be persisted per user
+    // so they appear in the notifications page (fan-out queued per user)
+    'persist_roles' => [
+        'booking_requested'  => filter_var(env('NOTIFY_PERSIST_ROLES_BOOKING_REQUESTED', 'true'), FILTER_VALIDATE_BOOL),
+        'payment_submitted'  => filter_var(env('NOTIFY_PERSIST_ROLES_PAYMENT_SUBMITTED', 'true'), FILTER_VALIDATE_BOOL),
+        'handover_confirmed' => filter_var(env('NOTIFY_PERSIST_ROLES_HANDOVER_CONFIRMED', 'true'), FILTER_VALIDATE_BOOL),
+        'handover_disputed'  => filter_var(env('NOTIFY_PERSIST_ROLES_HANDOVER_DISPUTED', 'true'), FILTER_VALIDATE_BOOL),
+    ],
+
+    // Default behavior for controller-triggered notifications
+    'controller' => [
+        // Default scope metadata when not explicitly set in payload meta
+        // e.g. 'system' means meta.scope defaults to 'system'
+        'default_scope' => env('NOTIFICATIONS_CONTROLLER_DEFAULT_SCOPE', 'system'),
+    ],
+
+    // Default persist behavior for announcements triggered from management UI/controllers
+    'announcements_persist_default' => filter_var(env('NOTIFICATIONS_ANNOUNCEMENTS_PERSIST', 'true'), FILTER_VALIDATE_BOOL),
+
+    // System notification channel defaults
+    'system' => [
+        // Whether system notifications should be persisted per user by default
+        'persist_default' => filter_var(env('NOTIFICATIONS_SYSTEM_PERSIST', 'true'), FILTER_VALIDATE_BOOL),
+    ],
 ];
