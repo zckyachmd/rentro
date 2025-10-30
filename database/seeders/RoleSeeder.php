@@ -55,20 +55,18 @@ class RoleSeeder extends Seeder
             ->where('guard_name', 'web')
             ->first();
         if ($tenant) {
-            $tenantPerms = [
-                PermissionName::TENANT_ROOMS_VIEW->value,
-                PermissionName::TENANT_BOOKING_VIEW->value,
-                PermissionName::TENANT_BOOKING_CREATE->value,
-                PermissionName::TENANT_CONTRACT_VIEW->value,
-                PermissionName::TENANT_CONTRACT_STOP_RENEW->value,
-                PermissionName::TENANT_HANDOVER_VIEW->value,
-                PermissionName::TENANT_HANDOVER_ACK->value,
-                PermissionName::TENANT_HANDOVER_DISPUTE->value,
-                PermissionName::TENANT_INVOICE_VIEW->value,
-                PermissionName::TENANT_INVOICE_PAY->value,
-                PermissionName::TENANT_PAYMENT_VIEW->value,
-            ];
+            $tenantPerms = PermissionName::tenantPermissions();
             $tenant->givePermissionTo($tenantPerms);
+        }
+
+        // Management: assign all non-tenant (management-side) permissions to Manager and Owner
+        foreach ([RoleName::MANAGER, RoleName::OWNER] as $mgmtRole) {
+            $role = Role::where('name', $mgmtRole->value)
+                ->where('guard_name', 'web')
+                ->first();
+            if ($role) {
+                $role->givePermissionTo(PermissionName::managementPermissions());
+            }
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

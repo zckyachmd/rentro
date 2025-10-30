@@ -116,4 +116,30 @@ enum PermissionName: string
     case TESTIMONY_VIEW   = 'testimony.view';
     case TESTIMONY_UPDATE = 'testimony.update';
     case TESTIMONY_DELETE = 'testimony.delete';
+
+    /**
+     * Get all tenant-related permissions (those starting with 'tenant.').
+     *
+     * @return array<int, string>
+     */
+    public static function tenantPermissions(): array
+    {
+        return array_values(array_map(
+            fn ($p) => $p->value,
+            array_filter(self::cases(), fn ($p) => str_starts_with($p->value, 'tenant.')),
+        ));
+    }
+
+    /**
+     * Get all management-side permissions (exclude those starting with 'tenant.').
+     *
+     * @return array<int, string>
+     */
+    public static function managementPermissions(): array
+    {
+        return array_values(array_map(
+            fn ($p) => $p->value,
+            array_filter(self::cases(), fn ($p) => !str_starts_with($p->value, 'tenant.')),
+        ));
+    }
 }
