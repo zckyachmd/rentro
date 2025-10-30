@@ -18,7 +18,7 @@ use App\Models\Room;
 use App\Models\RoomHandover;
 use App\Models\User;
 use App\Services\Contracts\ContractServiceInterface;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -30,7 +30,7 @@ class ContractManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private ContractServiceInterface $contracts, private NotificationService $notifications)
+    public function __construct(private ContractServiceInterface $contracts, private NotificationServiceInterface $notifications)
     {
     }
 

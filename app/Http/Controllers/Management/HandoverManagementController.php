@@ -7,13 +7,13 @@ use App\Http\Requests\Management\Handover\CheckinRequest;
 use App\Http\Requests\Management\Handover\CheckoutRequest;
 use App\Models\Contract;
 use App\Models\RoomHandover;
-use App\Services\HandoverService;
-use App\Services\NotificationService;
+use App\Services\Contracts\HandoverServiceInterface;
+use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Support\Facades\Storage;
 
 class HandoverManagementController extends Controller
 {
-    public function __construct(private readonly HandoverService $handover, private readonly NotificationService $notifications)
+    public function __construct(private readonly HandoverServiceInterface $handover, private readonly NotificationServiceInterface $notifications)
     {
     }
 

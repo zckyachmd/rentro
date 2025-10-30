@@ -14,8 +14,8 @@ use App\Jobs\SendUserInvitationEmail;
 use App\Models\Session;
 use App\Models\User;
 use App\Models\UserDocument;
-use App\Services\NotificationService;
-use App\Services\TwoFactorService;
+use App\Services\Contracts\NotificationServiceInterface;
+use App\Services\Contracts\TwoFactorServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Carbon\Carbon;
@@ -33,7 +33,7 @@ class UserManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private TwoFactorService $twofa, private NotificationService $notifications)
+    public function __construct(private TwoFactorServiceInterface $twofa, private NotificationServiceInterface $notifications)
     {
     }
 

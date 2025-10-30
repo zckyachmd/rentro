@@ -13,7 +13,7 @@ use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\RoomHandover;
 use App\Services\Contracts\ContractServiceInterface;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
@@ -22,7 +22,7 @@ class HandoverController extends Controller
 {
     public function __construct(
         private readonly ContractServiceInterface $contractService,
-        private readonly NotificationService $notifications,
+        private readonly NotificationServiceInterface $notifications,
     ) {
     }
 

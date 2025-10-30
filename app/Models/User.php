@@ -104,25 +104,23 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public static function generateUniqueUsername(string $name = ''): string
     {
-        $base = Str::slug($name, '');
-        $base = substr($base, 0, 20);
-        if ($base === '') {
-            $base = strtolower(Str::random(6));
-        }
+        $base = substr(Str::slug($name, ''), 0, 20) ?: strtolower(Str::random(6));
 
-        for ($i = 0; $i < 10; $i++) {
+        // Try a handful of base+suffix candidates first
+        for ($i = 0; $i < 20; $i++) {
             $suffix    = strtolower(Str::random(4));
             $candidate = substr($base . $suffix, 0, 30);
-            if (!User::where('username', $candidate)->exists()) {
+            if (!static::where('username', $candidate)->exists()) {
                 return $candidate;
             }
         }
 
+        // Fallback to an 8-char random username
         do {
-            $username = strtolower(Str::random(8));
-        } while (User::where('username', $username)->exists());
+            $candidate = strtolower(Str::random(8));
+        } while (static::where('username', $candidate)->exists());
 
-        return $username;
+        return $candidate;
     }
 
     public function sessions(): HasMany
@@ -167,5 +165,17 @@ class User extends Authenticatable implements MustVerifyEmail
             'id',
             'id',
         );
+    }
+
+    /**
+     * Customize the private broadcast channel for notifications.
+     * Example channel: "user.{id}".
+     */
+    public function receivesBroadcastNotificationsOn($notification = null): string
+    {
+        $prefix = (string) config('notifications.user_channel_prefix', 'user.');
+        $prefix = rtrim($prefix, '.') . '.';
+
+        return $prefix . (string) $this->getKey();
     }
 }

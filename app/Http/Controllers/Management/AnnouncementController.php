@@ -10,7 +10,7 @@ use App\Http\Requests\Management\Announcement\AnnouncementStoreRequest;
 use App\Jobs\SendAnnouncement;
 use App\Models\Announcement;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -19,7 +19,7 @@ use Spatie\Permission\Models\Role;
 
 class AnnouncementController extends Controller
 {
-    public function __construct(private NotificationService $notifications)
+    public function __construct(private NotificationServiceInterface $notifications)
     {
     }
 

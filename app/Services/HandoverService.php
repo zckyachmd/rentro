@@ -10,10 +10,11 @@ use App\Models\AppSetting;
 use App\Models\Contract;
 use App\Models\RoomHandover;
 use App\Services\Contracts\ContractServiceInterface;
+use App\Services\Contracts\HandoverServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class HandoverService
+class HandoverService implements HandoverServiceInterface
 {
     public function __construct(private readonly ContractServiceInterface $contracts)
     {

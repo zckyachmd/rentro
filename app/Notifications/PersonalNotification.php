@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -67,17 +66,12 @@ class PersonalNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Customize the broadcast channel to match `private user.{id}`.
+     * Customize the broadcast channel. Return empty to use the model's
+     * receivesBroadcastNotificationsOn() fallback.
      */
     public function broadcastOn(): array
     {
-        // @phpstan-ignore-next-line notifiable is User
-        $id = (string) ($this->notifiable?->id);
-        if ($id === '') {
-            return [];
-        }
-
-        return [new PrivateChannel("user.$id")];
+        return [];
     }
 
     /**

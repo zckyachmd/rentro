@@ -8,7 +8,7 @@ use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
 use App\Services\Contracts\ContractServiceInterface;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Traits\DataTable;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ class BookingManagementController extends Controller
 {
     use DataTable;
 
-    public function __construct(private ContractServiceInterface $contracts, private NotificationService $notifications)
+    public function __construct(private ContractServiceInterface $contracts, private NotificationServiceInterface $notifications)
     {
     }
 

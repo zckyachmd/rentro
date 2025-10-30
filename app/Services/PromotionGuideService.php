@@ -3,8 +3,9 @@
 namespace App\Services;
 
 use App\Models\Promotion;
+use App\Services\Contracts\PromotionGuideServiceInterface;
 
-class PromotionGuideService
+class PromotionGuideService implements PromotionGuideServiceInterface
 {
     /**
      * Build Cara Penggunaan steps based on promotion scopes, rules, and channel/coupon.

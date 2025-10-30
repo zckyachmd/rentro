@@ -6,7 +6,7 @@ use App\Enum\TestimonyStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\Testimony\UpdateTestimonyRequest;
 use App\Models\Testimony;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +19,7 @@ class TestimonyManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private NotificationService $notifications)
+    public function __construct(private NotificationServiceInterface $notifications)
     {
     }
 

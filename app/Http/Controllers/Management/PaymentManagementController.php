@@ -13,8 +13,8 @@ use App\Models\AppSetting;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Contracts\InvoiceServiceInterface;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
-use App\Services\NotificationService;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -29,7 +29,7 @@ class PaymentManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private readonly PaymentServiceInterface $payments, private readonly InvoiceServiceInterface $invoices, private readonly NotificationService $notifications)
+    public function __construct(private readonly PaymentServiceInterface $payments, private readonly InvoiceServiceInterface $invoices, private readonly NotificationServiceInterface $notifications)
     {
     }
 

@@ -6,11 +6,12 @@ use App\Events\GlobalAnnouncementBroadcast;
 use App\Events\RoleAnnouncementBroadcast;
 use App\Jobs\SendUserNotification;
 use App\Models\User;
+use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\Permission\Models\Role;
 
-class NotificationService
+class NotificationService implements NotificationServiceInterface
 {
     /**
      * Send a personal notification to a user and broadcast it on their private channel.

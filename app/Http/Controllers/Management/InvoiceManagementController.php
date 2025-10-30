@@ -16,7 +16,7 @@ use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Contracts\InvoiceServiceInterface;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Traits\DataTable;
 use App\Traits\LogActivity;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -29,7 +29,7 @@ class InvoiceManagementController extends Controller
     use DataTable;
     use LogActivity;
 
-    public function __construct(private InvoiceServiceInterface $invoices, private NotificationService $notifications)
+    public function __construct(private InvoiceServiceInterface $invoices, private NotificationServiceInterface $notifications)
     {
     }
 

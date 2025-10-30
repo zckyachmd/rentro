@@ -10,7 +10,7 @@ use App\Http\Requests\Tenant\Booking\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ use Spatie\Permission\Models\Role;
 
 class BookingController extends Controller
 {
-    public function __construct(private NotificationService $notifications)
+    public function __construct(private NotificationServiceInterface $notifications)
     {
     }
 

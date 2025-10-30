@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Events\AnnouncementUpdatedBroadcast;
 use App\Models\Announcement;
-use App\Services\NotificationService;
+use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -31,7 +31,7 @@ class SendAnnouncement implements ShouldQueue, ShouldBeUnique
         return 'announcement:' . $this->announcementId;
     }
 
-    public function handle(NotificationService $notifications): void
+    public function handle(NotificationServiceInterface $notifications): void
     {
         /** @var Announcement|null $a */
         $a = Announcement::find($this->announcementId);

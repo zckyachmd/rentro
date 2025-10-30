@@ -11,19 +11,25 @@ use App\Listeners\RealtimeEventSubscriber;
 use App\Listeners\UpdateContractStatusOnInvoicePaid;
 use App\Listeners\UpdateContractStatusOnInvoiceReopened;
 use App\Services\Contracts\ContractServiceInterface;
+use App\Services\Contracts\HandoverServiceInterface;
 use App\Services\Contracts\InvoiceServiceInterface;
 use App\Services\Contracts\MenuServiceInterface;
 use App\Services\Contracts\MidtransGatewayInterface;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
+use App\Services\Contracts\PromotionGuideServiceInterface;
 use App\Services\Contracts\PromotionServiceInterface;
 use App\Services\Contracts\TwoFactorServiceInterface;
 use App\Services\Contracts\WifiServiceInterface;
 use App\Services\Contracts\ZiggyServiceInterface;
 use App\Services\ContractService;
+use App\Services\HandoverService;
 use App\Services\InvoiceService;
 use App\Services\MenuService;
 use App\Services\MidtransService;
+use App\Services\NotificationService;
 use App\Services\PaymentService;
+use App\Services\PromotionGuideService;
 use App\Services\PromotionService;
 use App\Services\TwoFactorService;
 use App\Services\WifiService;
@@ -50,6 +56,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ZiggyServiceInterface::class, ZiggyService::class);
         $this->app->bind(PromotionServiceInterface::class, PromotionService::class);
         $this->app->bind(WifiServiceInterface::class, WifiService::class);
+        $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
+        $this->app->bind(HandoverServiceInterface::class, HandoverService::class);
+        $this->app->bind(PromotionGuideServiceInterface::class, PromotionGuideService::class);
     }
 
     /**

@@ -14,8 +14,8 @@ use App\Models\Contract;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Contracts\InvoiceServiceInterface;
+use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
-use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +26,7 @@ class PaymentController extends Controller
     public function __construct(
         private readonly PaymentServiceInterface $payments,
         private readonly InvoiceServiceInterface $invoices,
-        private readonly NotificationService $notifications,
+        private readonly NotificationServiceInterface $notifications,
     ) {
     }
 
