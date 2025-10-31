@@ -101,6 +101,16 @@ export default function NotificationDetailDialog({
                                 href={item.action_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                onClick={async (e) => {
+                                    // ensure read before navigating
+                                    try {
+                                        if (item?.id && !item?.read_at) {
+                                            await onMarkRead(item!.id!);
+                                        }
+                                    } catch {
+                                        /* ignore */
+                                    }
+                                }}
                             >
                                 <ExternalLink className="mr-2 h-4 w-4" />
                                 {t('notifications.open', 'Open')}
@@ -112,8 +122,17 @@ export default function NotificationDetailDialog({
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                                onOpenChange(false);
-                                router.visit(item!.action_url!);
+                                (async () => {
+                                    try {
+                                        if (item?.id && !item?.read_at) {
+                                            await onMarkRead(item!.id!);
+                                        }
+                                    } catch {
+                                        /* ignore */
+                                    }
+                                    onOpenChange(false);
+                                    router.visit(item!.action_url!);
+                                })();
                             }}
                         >
                             <ExternalLink className="mr-2 h-4 w-4" />

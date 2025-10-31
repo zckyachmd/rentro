@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Bell } from 'lucide-react';
+import { Bell, InfoIcon, TriangleAlertIcon, CircleCheckIcon } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -33,7 +33,8 @@ const MAX_VISIBLE_ITEMS = 10;
  */
 export function NotificationBell() {
     const { items, unreadCount } = useNotificationsStore();
-    const { markRead } = useNotificationsActions();
+    const markReadLocal = useNotificationsStore((s) => s.markRead);
+    const { markRead: persistMarkRead } = useNotificationsActions();
     const { t } = useTranslation(['notifications', 'common', 'nav']);
     const { t: tEnum } = useTranslation('enum');
     const [filter, setFilter] = React.useState<'all' | 'unread'>('all');
@@ -65,16 +66,69 @@ export function NotificationBell() {
         }
     };
 
+    const navigateSpa = React.useCallback((url: string) => {
+        try {
+            const curr = new URL(window.location.href);
+            const target = new URL(url, window.location.origin);
+            const same =
+                curr.pathname === target.pathname && curr.search === target.search;
+            if (same) {
+                router.visit(target.toString(), {
+                    replace: true,
+                    preserveScroll: true,
+                    preserveState: true,
+                });
+            } else {
+                router.visit(target.toString());
+            }
+        } catch {
+            window.location.assign(url);
+        }
+    }, []);
+
     const goToIndex = () => router.visit(route('notifications.index'));
 
     const [menuOpen, setMenuOpen] = React.useState(false);
+    const markedThisOpenRef = React.useRef(false);
     const [detail, setDetail] = React.useState<{
         open: boolean;
         item: NotificationItem | null;
     }>({ open: false, item: null });
 
     return (
-        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+        <DropdownMenu
+            open={menuOpen}
+            onOpenChange={(o) => {
+                setMenuOpen(o);
+                if (o) {
+                    // Mark visible (on-screen) unread items as read after a tiny delay
+                    if (markedThisOpenRef.current) return;
+                    markedThisOpenRef.current = true;
+                    window.setTimeout(() => {
+                        try {
+                            const pool =
+                                filter === 'unread'
+                                    ? items.filter((n) => !n.read_at)
+                                    : items;
+                            const visible = pool.slice(0, MAX_VISIBLE_ITEMS);
+                            const ids = visible
+                                .filter((n) => n.id && !n.read_at)
+                                .map((n) => n.id!)
+                                .slice(0, MAX_VISIBLE_ITEMS);
+                            // Optimistic local mark, then persist to server
+                            for (const id of ids) {
+                                markReadLocal(id);
+                                void persistMarkRead(id);
+                            }
+                        } catch {
+                            // ignore
+                        }
+                    }, 450);
+                } else {
+                    markedThisOpenRef.current = false;
+                }
+            }}
+        >
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
@@ -109,7 +163,7 @@ export function NotificationBell() {
 
             <DropdownMenuContent
                 align="end"
-                className="flex w-96 flex-col !overflow-hidden p-0"
+                className="flex w-96 flex-col !overflow-hidden p-0 bg-popover/85 backdrop-blur supports-[backdrop-filter]:backdrop-blur-xl border border-border/50 ring-1 ring-black/5 dark:ring-white/5 shadow-md"
                 style={{
                     height: `min(${PANEL_MAX_HEIGHT}, var(--radix-dropdown-menu-content-available-height))`,
                     minHeight: PANEL_MIN_HEIGHT,
@@ -257,7 +311,10 @@ export function NotificationBell() {
                                             n.action_url.length > 0;
 
                                         if (hasUrl) {
-                                            if (n.id) void markRead(n.id);
+                                            if (n.id && !n.read_at) {
+                                                markReadLocal(n.id);
+                                                void persistMarkRead(n.id);
+                                            }
                                             if (isExternal(n.action_url!)) {
                                                 window.open(
                                                     n.action_url!,
@@ -265,13 +322,16 @@ export function NotificationBell() {
                                                     'noopener,noreferrer',
                                                 );
                                             } else {
-                                                window.location.assign(
-                                                    n.action_url!,
-                                                );
+                                                navigateSpa(n.action_url!);
                                             }
                                             return;
                                         }
 
+                                        // No link: open detail dialog and mark as read
+                                        if (n.id && !n.read_at) {
+                                            markReadLocal(n.id);
+                                            void persistMarkRead(n.id);
+                                        }
                                         setMenuOpen(false);
                                         setDetail({
                                             open: true,
@@ -279,48 +339,67 @@ export function NotificationBell() {
                                         });
                                     };
 
+                                    // Accent choice based on priority meta
+                                    const priority = String(
+                                        (n.meta as { priority?: unknown } | null)?.priority ?? 'normal'
+                                    ) as 'low' | 'normal' | 'high';
+                                    const icon = (
+                                        priority === 'high' ? (
+                                            <TriangleAlertIcon className="size-4" />
+                                        ) : priority === 'low' ? (
+                                            <CircleCheckIcon className="size-4" />
+                                        ) : (
+                                            <InfoIcon className="size-4" />
+                                        )
+                                    );
+
+                                    const iconClass = [
+                                        'relative flex size-8 items-center justify-center rounded-full ring-1 transition-all select-none',
+                                        isUnread
+                                            ? (
+                                                  priority === 'high'
+                                                      ? 'bg-gradient-to-br from-amber-500/25 to-amber-500/10 text-amber-600 dark:text-amber-400 ring-amber-500/30 shadow-[0_2px_10px_-2px] shadow-amber-500/25'
+                                                      : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary ring-primary/30 shadow-[0_2px_10px_-2px] shadow-primary/20'
+                                              )
+                                            : 'bg-gradient-to-br from-background/80 to-background/60 text-muted-foreground ring-border/50',
+                                    ].join(' ');
+
                                     return (
                                         <li key={key} className="px-1">
                                             <DropdownMenuItem
-                                                className={
-                                                    'group data-[highlighted]:bg-accent/50 relative flex gap-3 rounded-md px-4 py-3'
-                                                }
+                                                className="group relative grid grid-cols-[auto_1fr_auto] items-start gap-3 rounded-md px-3 py-2.5 transition-all data-[highlighted]:bg-accent/60 hover:-translate-y-0.5"
                                                 onClick={handleClick}
                                             >
-                                                {isUnread && (
-                                                    <span
-                                                        aria-hidden
-                                                        className="bg-primary/90 shadow-primary/20 pointer-events-none absolute top-3 left-2.5 h-2 w-2 rounded-full shadow-[0_0_0_3px]"
-                                                    />
-                                                )}
+                                                <div className="relative">
+                                                    <div className={iconClass}>{icon}</div>
+                                                    {isUnread && (
+                                                        <span
+                                                            aria-hidden
+                                                            className="bg-primary/90 shadow-primary/20 pointer-events-none absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full shadow-[0_0_0_3px]"
+                                                        />
+                                                    )}
+                                                </div>
 
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-start justify-between gap-3">
-                                                        <div className="truncate pl-2.5 text-sm leading-5 font-medium">
+                                                        <div className="truncate text-sm leading-5 font-medium">
                                                             {title}
                                                         </div>
-                                                        <time
-                                                            dateTime={
-                                                                n.created_at ||
-                                                                undefined
-                                                            }
-                                                            title={formatDate(
-                                                                n.created_at,
-                                                                true,
-                                                            )}
-                                                            className="text-muted-foreground flex-shrink-0 pr-4 text-[10px]"
-                                                        >
-                                                            {formatTimeAgo(
-                                                                n.created_at,
-                                                            )}
-                                                        </time>
                                                     </div>
                                                     {message ? (
-                                                        <p className="text-muted-foreground truncate pl-2.5 text-xs">
+                                                        <p className="text-muted-foreground truncate text-xs">
                                                             {message}
                                                         </p>
                                                     ) : null}
                                                 </div>
+
+                                                <time
+                                                    dateTime={n.created_at || undefined}
+                                                    title={formatDate(n.created_at, true)}
+                                                    className="text-muted-foreground flex-shrink-0 pt-0.5 text-[10px]"
+                                                >
+                                                    {formatTimeAgo(n.created_at)}
+                                                </time>
                                             </DropdownMenuItem>
                                         </li>
                                     );
@@ -348,7 +427,10 @@ export function NotificationBell() {
                 open={detail.open}
                 item={detail.item}
                 onOpenChange={(o) => setDetail((s) => ({ ...s, open: o }))}
-                onMarkRead={(id) => markRead(id)}
+                onMarkRead={(id) => {
+                    markReadLocal(id);
+                    void persistMarkRead(id);
+                }}
             />
         </DropdownMenu>
     );

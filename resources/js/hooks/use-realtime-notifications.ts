@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { router } from '@inertiajs/react';
+import { ArrowRightIcon } from 'lucide-react';
 
 import { getJson } from '@/lib/api';
 import { playNotificationSound } from '@/lib/notify-sound';
@@ -9,6 +11,7 @@ import {
     useNotificationsStore,
     type NotificationItem,
 } from '@/stores/notifications';
+import { useNotificationsActions } from '@/hooks/use-notifications';
 
 type Params = {
     userId?: number | string | null;
@@ -49,6 +52,28 @@ type EchoLike = {
 export function useRealtimeNotifications(params: Params) {
     const { t } = useTranslation(['notifications', 'enum']);
     const { upsert, syncFromServer } = useNotificationsStore();
+    const { markRead } = useNotificationsActions();
+
+    const navigateSpa = React.useCallback((url: string) => {
+        try {
+            const curr = new URL(window.location.href);
+            const target = new URL(url, window.location.origin);
+            const same =
+                curr.pathname === target.pathname && curr.search === target.search;
+            if (same) {
+                router.visit(target.toString(), {
+                    replace: true,
+                    preserveScroll: true,
+                    preserveState: true,
+                });
+            } else {
+                router.visit(target.toString());
+            }
+        } catch {
+            // Fallback to hard navigation
+            window.location.assign(url);
+        }
+    }, []);
     useEffect(() => {
         if (params.enabled === false) return;
         const Echo = (globalThis as { Echo?: EchoLike }).Echo;
@@ -391,25 +416,53 @@ export function useRealtimeNotifications(params: Params) {
                                 priority !== 'low') ||
                             (minToastPriority === 'high' &&
                                 priority === 'high');
-                        if (allowToast && canToast())
-                            toast(
+                        if (allowToast && canToast()) {
+                            const ttl =
                                 renderPersonal(title || 'Notification') ||
-                                    'Notification',
-                                {
-                                    description:
-                                        renderPersonal(message || '') || '',
-                                    action: actionUrlStr
-                                        ? {
-                                              label: 'View',
-                                              onClick: () => {
-                                                  window.location.assign(
-                                                      String(actionUrlStr),
-                                                  );
-                                              },
-                                          }
-                                        : undefined,
-                                },
-                            );
+                                'Notification';
+                            const desc =
+                                renderPersonal(message || '') || '';
+                            toast.custom(() => (
+                                React.createElement(
+                                    'button',
+                                    {
+                                        type: 'button',
+                                        className:
+                                            'text-left grid gap-1 cursor-pointer focus:outline-none',
+                                        onClick: () => {
+                                            try {
+                                                if (id) markRead(id);
+                                                if (actionUrlStr) {
+                                                    navigateSpa(String(actionUrlStr));
+                                                } else {
+                                                    const url = route('notifications.index', {
+                                                        filter: 'unread',
+                                                        ...(id ? { open: id } : {}),
+                                                    });
+                                                    router.visit(url, { preserveScroll: true });
+                                                }
+                                            } catch {
+                                                /* ignore */
+                                            }
+                                        },
+                                    },
+                                    [
+                                        React.createElement(
+                                            'div',
+                                            { key: 't', className: 'text-sm font-medium' },
+                                            ttl,
+                                        ),
+                                        desc
+                                            ? React.createElement(
+                                                  'div',
+                                                  { key: 'd', className: 'text-xs text-muted-foreground' },
+                                                  desc,
+                                              )
+                                            : null,
+                                    ],
+                                )
+                            ));
+                        }
                         if (allowToast)
                             showWebNotification(
                                 renderPersonal(title || 'Notification') ||
@@ -560,19 +613,19 @@ export function useRealtimeNotifications(params: Params) {
                                         data as { action_url?: string | null }
                                     ).action_url
                                         ? {
-                                              label: 'Open',
-                                              onClick: () =>
-                                                  window.location.assign(
-                                                      String(
-                                                          (
-                                                              data as {
-                                                                  action_url?:
-                                                                      | string
-                                                                      | null;
-                                                              }
-                                                          ).action_url,
-                                                      ),
-                                                  ),
+                                              label: React.createElement(ArrowRightIcon, {
+                                                  className: 'size-4',
+                                              }),
+                                              onClick: () => {
+                                                  const u = String(
+                                                      (
+                                                          data as {
+                                                              action_url?: string | null
+                                                          }
+                                                      ).action_url,
+                                                  );
+                                                  navigateSpa(u);
+                                              },
                                           }
                                         : undefined,
                                 },
@@ -708,19 +761,19 @@ export function useRealtimeNotifications(params: Params) {
                                 action: (data as { action_url?: string | null })
                                     .action_url
                                     ? {
-                                          label: 'Open',
-                                          onClick: () =>
-                                              window.location.assign(
-                                                  String(
-                                                      (
-                                                          data as {
-                                                              action_url?:
-                                                                  | string
-                                                                  | null;
-                                                          }
-                                                      ).action_url,
-                                                  ),
-                                              ),
+                                          label: React.createElement(ArrowRightIcon, {
+                                              className: 'size-4',
+                                          }),
+                                          onClick: () => {
+                                              const u = String(
+                                                  (
+                                                      data as {
+                                                          action_url?: string | null
+                                                      }
+                                                  ).action_url,
+                                              );
+                                              navigateSpa(u);
+                                          },
                                       }
                                     : undefined,
                             },
