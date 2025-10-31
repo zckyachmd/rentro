@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { MenuGroups } from '@/layouts/app/menu';
 import type { MenuItem } from '@/types/navigation';
 
@@ -86,17 +87,24 @@ function Sidebar({
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto py-2 pb-4">
-                    <MenuGroups
-                        variant="sidebar"
-                        menuGroups={menuGroups}
-                        collapsed={collapsed}
-                        openSection={openSection}
-                        onSectionChange={handleSectionChange}
-                        activeParentId={activeParentId}
-                        hydrated={hydrated}
-                    />
-                </div>
+                <ScrollArea
+                    className="flex-1"
+                    type="hover"
+                    // slightly longer hide delay feels smoother
+                    scrollHideDelay={500}
+                >
+                    <div className="py-2 pb-4">
+                        <MenuGroups
+                            variant="sidebar"
+                            menuGroups={menuGroups}
+                            collapsed={collapsed}
+                            openSection={openSection}
+                            onSectionChange={handleSectionChange}
+                            activeParentId={activeParentId}
+                            hydrated={hydrated}
+                        />
+                    </div>
+                </ScrollArea>
 
                 <div className="flex h-16 items-center border-t px-2 sm:px-3 md:px-4">
                     <div
