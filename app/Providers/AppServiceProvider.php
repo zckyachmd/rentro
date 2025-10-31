@@ -66,7 +66,60 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Vite::prefetch(concurrency: (int) config('vite.concurrency', 4));
+        // Configure Vite based on config/vite.php for CSR/SSR readiness
+        // Build / manifest / hot-file paths
+        if ($manifest = config('vite.manifest_filename')) {
+            Vite::useManifestFilename($manifest);
+        }
+        if ($buildDir = config('vite.build_directory')) {
+            Vite::useBuildDirectory($buildDir);
+        }
+        if ($hot = config('vite.hot_file')) {
+            Vite::useHotFile($hot);
+        }
+
+        // Integrity key (string or false). Accept string 'false' to disable via env
+        $integrityKey = config('vite.integrity_key');
+        if (is_string($integrityKey)) {
+            Vite::useIntegrityKey(strtolower($integrityKey) === 'false' ? false : $integrityKey);
+        } elseif ($integrityKey === false) {
+            Vite::useIntegrityKey(false);
+        }
+
+        // Optional CSP nonce (prefer per-request via middleware; this is a static fallback)
+        $cspNonce = config('vite.csp.nonce');
+        if ($cspNonce !== null && $cspNonce !== '') {
+            Vite::useCspNonce((string) $cspNonce);
+        }
+
+        // Optional tag attributes
+        $scriptAttrs = config('vite.tags.script_attributes');
+        if (is_array($scriptAttrs) && $scriptAttrs !== []) {
+            Vite::useScriptTagAttributes($scriptAttrs);
+        }
+        $styleAttrs = config('vite.tags.style_attributes');
+        if (is_array($styleAttrs) && $styleAttrs !== []) {
+            Vite::useStyleTagAttributes($styleAttrs);
+        }
+        $preloadAttrs = config('vite.tags.preload_attributes');
+        if ($preloadAttrs === false || (is_string($preloadAttrs) && strtolower($preloadAttrs) === 'false')) {
+            Vite::usePreloadTagAttributes(false);
+        } elseif (is_array($preloadAttrs) && $preloadAttrs !== []) {
+            Vite::usePreloadTagAttributes($preloadAttrs);
+        }
+
+        // Prefetch strategy
+        if (filter_var(config('vite.prefetch.enabled', true), FILTER_VALIDATE_BOOL)) {
+            $event       = (string) config('vite.prefetch.event', 'load');
+            $strategy    = config('vite.prefetch.strategy', 'waterfall');
+            $concurrency = (int) (config('vite.prefetch.concurrency') ?? config('vite.concurrency', 4));
+
+            if ($strategy === 'aggressive') {
+                Vite::prefetch(null, $event);
+            } else {
+                Vite::prefetch($concurrency, $event);
+            }
+        }
 
         if (filter_var(config('app.force_https', false), FILTER_VALIDATE_BOOL)) {
             URL::forceScheme('https');

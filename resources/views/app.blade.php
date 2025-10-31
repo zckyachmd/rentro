@@ -29,7 +29,7 @@
     <meta property="og:site_name" content="{{ config('app.name', 'Laravel') }}">
 
     <!-- Scripts -->
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         (function () {
             try {
                 var root = document.documentElement;
@@ -76,7 +76,7 @@
         })();
     </script>
 
-    @routes
+    @routes(nonce: csp_nonce())
     @viteReactRefresh
     @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
     @inertiaHead

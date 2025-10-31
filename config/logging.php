@@ -135,6 +135,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'csp' => [
+            'driver'               => 'daily',
+            'path'                 => storage_path('logs/csp.log'),
+            'level'                => env('LOG_CSP_LEVEL', 'info'),
+            'days'                 => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
         'null' => [
             'driver'  => 'monolog',
             'handler' => NullHandler::class,

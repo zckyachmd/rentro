@@ -24,6 +24,7 @@
         "paragonie/constant_time_encoding": "^2.6",
         "pragmarx/google2fa": "^8.0",
         "spatie/laravel-activitylog": "^4.10",
+        "spatie/laravel-csp": "^2.10",
         "spatie/laravel-permission": "^6.21",
         "tightenco/ziggy": "^2.0"
     },

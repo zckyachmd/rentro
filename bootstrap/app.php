@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Spatie\Csp\AddCspHeaders;
 use App\Console\Commands\SeedCore;
 use App\Console\Commands\SeedDemo;
 use App\Http\Middleware\SetLocale;
@@ -10,9 +11,7 @@ use App\Http\Middleware\TrustedGateway;
 use App\Providers\RouteServiceProvider;
 use App\Providers\BroadcastServiceProvider;
 use App\Providers\RateLimitServiceProvider;
-use Illuminate\Broadcasting\BroadcastManager;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Console\Commands\NormalizeNotifications;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,7 +31,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         SeedCore::class,
         SeedDemo::class,
-        NormalizeNotifications::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->replace(\Illuminate\Http\Middleware\TrustProxies::class, \App\Http\Middleware\TrustProxies::class);
@@ -51,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            AddCspHeaders::class,
         ]);
 
         $middleware->encryptCookies(except: ['sidebar_state', 'theme', 'locale']);
