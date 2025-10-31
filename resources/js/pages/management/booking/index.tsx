@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import { buildRangeErrorMessage, isRangeInvalid } from '@/lib/date-range';
 import {
     createColumns,
     type BookingRow,
@@ -84,6 +85,7 @@ export default function ManagementBookingsIndex() {
         (query?.end as string | undefined) || null,
     );
     const applyDates = React.useCallback(() => {
+        if (isRangeInvalid(start, end)) return;
         onQueryChange({ page: 1, start: start || null, end: end || null });
     }, [onQueryChange, start, end]);
 
@@ -95,6 +97,28 @@ export default function ManagementBookingsIndex() {
                 router.visit(
                     route('management.bookings.show', { booking: b.id }),
                 ),
+            onApprove: (b) => {
+                setProcessing(true);
+                router.post(
+                    route('management.bookings.approve', { booking: b.id }),
+                    {},
+                    {
+                        preserveScroll: true,
+                        onFinish: () => setProcessing(false),
+                    },
+                );
+            },
+            onReject: (b) => {
+                setProcessing(true);
+                router.post(
+                    route('management.bookings.reject', { booking: b.id }),
+                    {},
+                    {
+                        preserveScroll: true,
+                        onFinish: () => setProcessing(false),
+                    },
+                );
+            },
         });
     }, [lang]);
 
@@ -211,6 +235,7 @@ export default function ManagementBookingsIndex() {
                                 <DatePickerInput
                                     value={start}
                                     onChange={setStart}
+                                    max={end || undefined}
                                 />
                             </div>
                             <div>
@@ -220,6 +245,7 @@ export default function ManagementBookingsIndex() {
                                 <DatePickerInput
                                     value={end}
                                     onChange={setEnd}
+                                    min={start || undefined}
                                 />
                             </div>
                             <div>
@@ -227,12 +253,22 @@ export default function ManagementBookingsIndex() {
                                     type="button"
                                     variant="outline"
                                     size="sm"
+                                    disabled={isRangeInvalid(start, end)}
                                     onClick={applyDates}
                                 >
                                     {t('dashboard.filters.apply')}
                                 </Button>
                             </div>
                         </div>
+                        {isRangeInvalid(start, end) && (
+                            <div className="text-destructive mt-2 text-xs">
+                                {buildRangeErrorMessage(
+                                    t,
+                                    t('dashboard.filters.start'),
+                                    t('dashboard.filters.end'),
+                                )}
+                            </div>
+                        )}
                         <div className="mt-3 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-between">
                             <QuickRange
                                 onSelect={(s, e) => {
@@ -268,8 +304,10 @@ export default function ManagementBookingsIndex() {
                                             statusValue !== 'all'
                                         )
                                             qs.set('status', statusValue);
-                                        if (start) qs.set('start', start);
-                                        if (end) qs.set('end', end);
+                                        if (!isRangeInvalid(start, end)) {
+                                            if (start) qs.set('start', start);
+                                            if (end) qs.set('end', end);
+                                        }
                                         const currentSearch =
                                             (
                                                 q as QueryBag & {
@@ -314,6 +352,13 @@ export default function ManagementBookingsIndex() {
                             showColumn
                             autoRefreshDefault="1m"
                             showRefresh
+                            onRowClick={(row) =>
+                                router.visit(
+                                    route('management.bookings.show', {
+                                        booking: row.id,
+                                    }),
+                                )
+                            }
                         />
                     </CardContent>
                 </Card>

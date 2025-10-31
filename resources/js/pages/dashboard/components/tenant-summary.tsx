@@ -4,6 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
 import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
     Empty,
     EmptyDescription,
     EmptyHeader,
@@ -11,17 +18,10 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import {
-    Tooltip as UiTooltip,
     TooltipContent,
     TooltipTrigger,
+    Tooltip as UiTooltip,
 } from '@/components/ui/tooltip';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForInvoiceStatus } from '@/lib/status';
 import type {
@@ -95,7 +95,9 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             <UiTooltip>
                                 <TooltipTrigger asChild>
                                     <span
-                                        aria-label={t('dashboard.metrics.invoices_unpaid')}
+                                        aria-label={t(
+                                            'dashboard.metrics.invoices_unpaid',
+                                        )}
                                         className="text-muted-foreground hover:text-foreground cursor-help"
                                     >
                                         <Info className="h-4 w-4" />
@@ -153,7 +155,9 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             <UiTooltip>
                                 <TooltipTrigger asChild>
                                     <span
-                                        aria-label={t('dashboard.metrics.outstanding_total')}
+                                        aria-label={t(
+                                            'dashboard.metrics.outstanding_total',
+                                        )}
                                         className="text-muted-foreground hover:text-foreground cursor-help"
                                     >
                                         <Info className="h-4 w-4" />
@@ -200,13 +204,17 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                     {t('dashboard.metrics.recent_invoices')}
                                 </CardTitle>
                                 <CardDescription>
-                                    {t('dashboard.metrics.recent_invoices_desc')}
+                                    {t(
+                                        'dashboard.metrics.recent_invoices_desc',
+                                    )}
                                 </CardDescription>
                             </div>
                             <UiTooltip>
                                 <TooltipTrigger asChild>
                                     <span
-                                        aria-label={t('dashboard.metrics.recent_invoices')}
+                                        aria-label={t(
+                                            'dashboard.metrics.recent_invoices',
+                                        )}
                                         className="text-muted-foreground hover:text-foreground cursor-help"
                                     >
                                         <Info className="h-4 w-4" />
@@ -214,7 +222,9 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <span className="max-w-xs text-xs">
-                                        {t('dashboard.metrics.recent_invoices_desc')}
+                                        {t(
+                                            'dashboard.metrics.recent_invoices_desc',
+                                        )}
                                     </span>
                                 </TooltipContent>
                             </UiTooltip>
@@ -231,12 +241,20 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                         <FileWarning className="h-5 w-5" />
                                     </EmptyMedia>
                                     <EmptyTitle>
-                                        {t('dashboard.metrics.no_recent_invoices')}
+                                        {t(
+                                            'dashboard.metrics.no_recent_invoices',
+                                        )}
                                     </EmptyTitle>
                                     <EmptyDescription>
                                         <Can all={['tenant.invoice.view']}>
-                                            <a href={route('tenant.invoices.index')}>
-                                                {t('dashboard.actions.view_all')}
+                                            <a
+                                                href={route(
+                                                    'tenant.invoices.index',
+                                                )}
+                                            >
+                                                {t(
+                                                    'dashboard.actions.view_all',
+                                                )}
                                             </a>
                                         </Can>
                                     </EmptyDescription>
@@ -249,7 +267,9 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                         (tenant.invoices?.latest ??
                                             []) as TenantInvoiceListItem[]
                                     ).map((inv) => {
-                                        const statusKey = String(inv.status || '')
+                                        const statusKey = String(
+                                            inv.status || '',
+                                        )
                                             .toLowerCase()
                                             .replace(/\s+/g, '_');
                                         return (
@@ -265,7 +285,8 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                                             {inv.number}
                                                         </div>
                                                         <div className="text-muted-foreground truncate">
-                                                            {(inv.room_number || '-') +
+                                                            {(inv.room_number ||
+                                                                '-') +
                                                                 ' • ' +
                                                                 (inv.due_date
                                                                     ? formatDate(
@@ -322,7 +343,9 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                     <Can all={['tenant.invoice.view']}>
                                         <a
                                             className="text-primary text-xs hover:underline"
-                                            href={route('tenant.invoices.index')}
+                                            href={route(
+                                                'tenant.invoices.index',
+                                            )}
                                         >
                                             {t('dashboard.actions.view_all')}
                                         </a>
@@ -341,13 +364,17 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                     {t('dashboard.metrics.recent_payments')}
                                 </CardTitle>
                                 <CardDescription>
-                                    {t('dashboard.metrics.recent_payments_desc')}
+                                    {t(
+                                        'dashboard.metrics.recent_payments_desc',
+                                    )}
                                 </CardDescription>
                             </div>
                             <UiTooltip>
                                 <TooltipTrigger asChild>
                                     <span
-                                        aria-label={t('dashboard.metrics.recent_payments')}
+                                        aria-label={t(
+                                            'dashboard.metrics.recent_payments',
+                                        )}
                                         className="text-muted-foreground hover:text-foreground cursor-help"
                                     >
                                         <Info className="h-4 w-4" />
@@ -355,7 +382,9 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <span className="max-w-xs text-xs">
-                                        {t('dashboard.metrics.recent_payments_desc')}
+                                        {t(
+                                            'dashboard.metrics.recent_payments_desc',
+                                        )}
                                     </span>
                                 </TooltipContent>
                             </UiTooltip>
@@ -370,12 +399,18 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                                         <Banknote className="h-5 w-5" />
                                     </EmptyMedia>
                                     <EmptyTitle>
-                                        {t('dashboard.metrics.no_recent_payments')}
+                                        {t(
+                                            'dashboard.metrics.no_recent_payments',
+                                        )}
                                     </EmptyTitle>
                                     <EmptyDescription>
                                         <Can all={['tenant.invoice.view']}>
-                                            <a href={`${route('tenant.invoices.index')}?status=paid`}>
-                                                {t('dashboard.actions.view_all')}
+                                            <a
+                                                href={`${route('tenant.invoices.index')}?status=paid`}
+                                            >
+                                                {t(
+                                                    'dashboard.actions.view_all',
+                                                )}
                                             </a>
                                         </Can>
                                     </EmptyDescription>
@@ -383,39 +418,42 @@ export default function TenantSummary({ tenant }: { tenant?: TenantPayload }) {
                             </Empty>
                         ) : (
                             <>
-                            <ul className="space-y-1 text-sm">
-                                {(
-                                    (tenant.payments?.recent as
-                                        | PaymentRecent[]
-                                        | undefined) ?? []
-                                ).map((p) => (
-                                    <li key={p.id}>
-                                        <div className="hover:bg-accent flex items-center justify-between rounded px-2 py-2">
-                                            <div className="min-w-0">
-                                                <div className="truncate font-medium">
-                                                    {p.invoice_no || '-'}
+                                <ul className="space-y-1 text-sm">
+                                    {(
+                                        (tenant.payments?.recent as
+                                            | PaymentRecent[]
+                                            | undefined) ?? []
+                                    ).map((p) => (
+                                        <li key={p.id}>
+                                            <div className="hover:bg-accent flex items-center justify-between rounded px-2 py-2">
+                                                <div className="min-w-0">
+                                                    <div className="truncate font-medium">
+                                                        {p.invoice_no || '-'}
+                                                    </div>
+                                                    <div className="text-muted-foreground truncate text-xs">
+                                                        {formatDate(
+                                                            p.paid_at,
+                                                            true,
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className="text-muted-foreground text-xs truncate">
-                                                    {formatDate(p.paid_at, true)}
+                                                <div className="text-right font-semibold">
+                                                    {formatIDR(p.amount)}
                                                 </div>
                                             </div>
-                                            <div className="text-right font-semibold">
-                                                {formatIDR(p.amount)}
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="mt-3 text-right">
-                                <Can all={['tenant.invoice.view']}>
-                                    <a
-                                        className="text-primary text-xs hover:underline"
-                                        href={`${route('tenant.invoices.index')}?status=paid`}
-                                    >
-                                        {t('dashboard.actions.view_all')}
-                                    </a>
-                                </Can>
-                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="mt-3 text-right">
+                                    <Can all={['tenant.invoice.view']}>
+                                        <a
+                                            className="text-primary text-xs hover:underline"
+                                            href={`${route('tenant.invoices.index')}?status=paid`}
+                                        >
+                                            {t('dashboard.actions.view_all')}
+                                        </a>
+                                    </Can>
+                                </div>
                             </>
                         )}
                     </CardContent>

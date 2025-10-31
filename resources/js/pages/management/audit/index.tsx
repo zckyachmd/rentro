@@ -130,6 +130,9 @@ export default function AuditLogIndex() {
                             emptyText={tAudit('empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
+                            onRowClick={(row) =>
+                                setDetail({ open: true, item: row })
+                            }
                         />
                     </CardContent>
                 </Card>

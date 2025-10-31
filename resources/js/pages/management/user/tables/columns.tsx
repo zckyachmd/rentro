@@ -252,7 +252,7 @@ export const createColumns = (
                             <DropdownMenuLabel>
                                 {i18n.t('common.actions')}
                             </DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
+                            <DropdownMenuItem data-row-action="true" asChild>
                                 <a
                                     href={route(
                                         'management.users.show',
@@ -265,6 +265,7 @@ export const createColumns = (
                             </DropdownMenuItem>
                             <Can all={['user.role.manage']}>
                                 <DropdownMenuItem
+                                    data-row-action="true"
                                     onClick={() => opts?.onManageRoles?.(u)}
                                 >
                                     <ShieldCheck className="mr-2 h-4 w-4" />{' '}
@@ -275,6 +276,7 @@ export const createColumns = (
                             </Can>
                             <Can all={['user.password.reset']}>
                                 <DropdownMenuItem
+                                    data-row-action="true"
                                     onClick={() => opts?.onResetPassword?.(u)}
                                 >
                                     <KeyRound className="mr-2 h-4 w-4" />{' '}
@@ -300,6 +302,7 @@ export const createColumns = (
                             <DropdownMenuSeparator />
                             <Can all={['user.force-logout']}>
                                 <DropdownMenuItem
+                                    data-row-action="true"
                                     className="text-destructive focus:text-destructive"
                                     onClick={() => opts?.onRevokeSession?.(u)}
                                 >

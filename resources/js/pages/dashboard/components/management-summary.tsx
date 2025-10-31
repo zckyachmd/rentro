@@ -33,6 +33,7 @@ import {
     TooltipTrigger,
     Tooltip as UiTooltip,
 } from '@/components/ui/tooltip';
+import { buildRangeErrorMessage, isRangeInvalid } from '@/lib/date-range';
 import { formatDate, formatIDR } from '@/lib/format';
 import { variantForContractStatus } from '@/lib/status';
 import type {
@@ -133,6 +134,7 @@ export default function ManagementSummary({
     }, []);
 
     const onApplyFilter = () => {
+        if (isRangeInvalid(start, end)) return;
         const params: Record<string, string> = {};
         if (start) params.start = start;
         if (end) params.end = end;
@@ -161,25 +163,40 @@ export default function ManagementSummary({
                             <DatePickerInput
                                 value={start}
                                 onChange={setStart}
+                                max={end || undefined}
                             />
                         </div>
                         <div>
                             <label className="text-muted-foreground mb-1 block text-xs">
                                 {t('dashboard.filters.end')}
                             </label>
-                            <DatePickerInput value={end} onChange={setEnd} />
+                            <DatePickerInput
+                                value={end}
+                                onChange={setEnd}
+                                min={start || undefined}
+                            />
                         </div>
                         <div>
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
+                                disabled={isRangeInvalid(start, end)}
                                 onClick={onApplyFilter}
                             >
                                 {t('dashboard.filters.apply')}
                             </Button>
                         </div>
                     </div>
+                    {isRangeInvalid(start, end) && (
+                        <div className="text-destructive mt-2 text-xs">
+                            {buildRangeErrorMessage(
+                                t,
+                                t('dashboard.filters.start'),
+                                t('dashboard.filters.end'),
+                            )}
+                        </div>
+                    )}
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                         <QuickRange
                             onSelect={(s, e) => {
@@ -577,9 +594,16 @@ export default function ManagementSummary({
                                     | undefined) ?? []
                             ).map((p) => (
                                 <li key={p.id}>
-                                    <a
-                                        href={route('management.payments.show', p.id)}
-                                        className="hover:bg-accent flex items-center justify-between rounded px-2 py-2"
+                                    <div
+                                        className="hover:bg-accent flex cursor-pointer items-center justify-between rounded px-2 py-2"
+                                        onClick={() =>
+                                            router.visit(
+                                                route(
+                                                    'management.payments.show',
+                                                    p.id,
+                                                ),
+                                            )
+                                        }
                                         title={(p.invoice_no || '') as string}
                                     >
                                         <div className="min-w-0">
@@ -587,7 +611,24 @@ export default function ManagementSummary({
                                                 {p.tenant || '-'}
                                             </div>
                                             <div className="text-muted-foreground truncate">
-                                                {(p.room || '-') + ' • ' + (p.invoice_no || '-')}
+                                                {(p.room || '-') + ' • '}
+                                                {p.invoice_no ? (
+                                                    <a
+                                                        href={`${route('management.invoices.index')}?q=${encodeURIComponent(
+                                                            String(
+                                                                p.invoice_no,
+                                                            ),
+                                                        )}`}
+                                                        className="underline underline-offset-2 hover:opacity-80"
+                                                        onClick={(e) =>
+                                                            e.stopPropagation()
+                                                        }
+                                                    >
+                                                        {p.invoice_no}
+                                                    </a>
+                                                ) : (
+                                                    '-'
+                                                )}
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -598,7 +639,7 @@ export default function ManagementSummary({
                                                 {formatDate(p.paid_at, true)}
                                             </div>
                                         </div>
-                                    </a>
+                                    </div>
                                 </li>
                             ))}
                             {(!management.payments?.recent ||
@@ -795,7 +836,10 @@ export default function ManagementSummary({
                             ).map((c) => (
                                 <li key={c.id}>
                                     <a
-                                        href={route('management.contracts.show', { contract: c.id })}
+                                        href={route(
+                                            'management.contracts.show',
+                                            { contract: c.id },
+                                        )}
                                         className="hover:bg-accent flex items-center justify-between rounded px-2 py-2"
                                     >
                                         <div className="flex min-w-0 items-center gap-2">
@@ -805,21 +849,29 @@ export default function ManagementSummary({
                                                     {c.tenant || '-'}
                                                 </div>
                                                 <div className="text-muted-foreground truncate">
-                                                    {(c.room || '-') + ' • ' + formatDate(c.date)}
+                                                    {(c.room || '-') +
+                                                        ' • ' +
+                                                        formatDate(c.date)}
                                                 </div>
                                             </div>
                                         </div>
                                         <Badge
-                                            variant={variantForContractStatus(String(c.status || ''))}
+                                            variant={variantForContractStatus(
+                                                String(c.status || ''),
+                                            )}
                                             className="capitalize"
                                         >
                                             {t(
-                                                `contract.status.${String(c.status || '')
+                                                `contract.status.${String(
+                                                    c.status || '',
+                                                )
                                                     .toLowerCase()
                                                     .replace(/\s+/g, '_')}`,
                                                 {
                                                     ns: 'enum',
-                                                    defaultValue: String(c.status || '-'),
+                                                    defaultValue: String(
+                                                        c.status || '-',
+                                                    ),
                                                 },
                                             )}
                                         </Badge>
@@ -861,7 +913,10 @@ export default function ManagementSummary({
                             ).map((c) => (
                                 <li key={c.id}>
                                     <a
-                                        href={route('management.contracts.show', { contract: c.id })}
+                                        href={route(
+                                            'management.contracts.show',
+                                            { contract: c.id },
+                                        )}
                                         className="hover:bg-accent flex items-center justify-between rounded px-2 py-2"
                                     >
                                         <div className="flex min-w-0 items-center gap-2">
@@ -871,21 +926,29 @@ export default function ManagementSummary({
                                                     {c.tenant || '-'}
                                                 </div>
                                                 <div className="text-muted-foreground truncate">
-                                                    {(c.room || '-') + ' • ' + formatDate(c.date)}
+                                                    {(c.room || '-') +
+                                                        ' • ' +
+                                                        formatDate(c.date)}
                                                 </div>
                                             </div>
                                         </div>
                                         <Badge
-                                            variant={variantForContractStatus(String(c.status || ''))}
+                                            variant={variantForContractStatus(
+                                                String(c.status || ''),
+                                            )}
                                             className="capitalize"
                                         >
                                             {t(
-                                                `contract.status.${String(c.status || '')
+                                                `contract.status.${String(
+                                                    c.status || '',
+                                                )
                                                     .toLowerCase()
                                                     .replace(/\s+/g, '_')}`,
                                                 {
                                                     ns: 'enum',
-                                                    defaultValue: String(c.status || '-'),
+                                                    defaultValue: String(
+                                                        c.status || '-',
+                                                    ),
                                                 },
                                             )}
                                         </Badge>

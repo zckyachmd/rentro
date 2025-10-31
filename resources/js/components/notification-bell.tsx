@@ -16,6 +16,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useNotificationsActions } from '@/hooks/use-notifications';
 import { formatDate, formatTimeAgo } from '@/lib/format';
+import NotificationDetailDialog from '@/pages/notifications/dialogs/detail-dialog';
+import type { NotificationItem } from '@/stores/notifications';
 import { useNotificationsStore } from '@/stores/notifications';
 
 const TITLE_MAX_CHARS = 30;
@@ -36,7 +38,7 @@ export function NotificationBell() {
     const { t: tEnum } = useTranslation('enum');
     const [filter, setFilter] = React.useState<'all' | 'unread'>('all');
     const LS_FILTER_KEY = 'rentro:notifications:bell:filter';
-    // Hydrate filter from localStorage on mount (avoid SSR mismatch by doing it in effect)
+
     React.useEffect(() => {
         try {
             const raw = localStorage.getItem(LS_FILTER_KEY);
@@ -45,7 +47,7 @@ export function NotificationBell() {
             /* ignore */
         }
     }, []);
-    // Persist changes
+
     React.useEffect(() => {
         try {
             localStorage.setItem(LS_FILTER_KEY, filter);
@@ -65,8 +67,14 @@ export function NotificationBell() {
 
     const goToIndex = () => router.visit(route('notifications.index'));
 
+    const [menuOpen, setMenuOpen] = React.useState(false);
+    const [detail, setDetail] = React.useState<{
+        open: boolean;
+        item: NotificationItem | null;
+    }>({ open: false, item: null });
+
     return (
-        <DropdownMenu>
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
@@ -99,12 +107,10 @@ export function NotificationBell() {
                 </Button>
             </DropdownMenuTrigger>
 
-            {/* Panel dropdown dengan header + konten scroll + footer yang selalu di bawah */}
             <DropdownMenuContent
                 align="end"
                 className="flex w-96 flex-col !overflow-hidden p-0"
                 style={{
-                    // Give the content a definite height so ScrollArea can size correctly
                     height: `min(${PANEL_MAX_HEIGHT}, var(--radix-dropdown-menu-content-available-height))`,
                     minHeight: PANEL_MIN_HEIGHT,
                 }}
@@ -249,10 +255,8 @@ export function NotificationBell() {
                                         const hasUrl =
                                             typeof n.action_url === 'string' &&
                                             n.action_url.length > 0;
-                                        const isLong = rawMessage.length > 50; // heuristic utk konten panjang
 
                                         if (hasUrl) {
-                                            // External -> new tab, internal -> same tab. Keduanya: tandai baca segera
                                             if (n.id) void markRead(n.id);
                                             if (isExternal(n.action_url!)) {
                                                 window.open(
@@ -268,18 +272,11 @@ export function NotificationBell() {
                                             return;
                                         }
 
-                                        if (isLong && n.id) {
-                                            // Konten panjang: buka halaman notif (dialog auto open by query), tandai baca di sana
-                                            router.visit(
-                                                route('notifications.index', {
-                                                    open: n.id,
-                                                }),
-                                            );
-                                            return;
-                                        }
-
-                                        // Plain text & pendek: tandai baca langsung
-                                        if (n.id) void markRead(n.id);
+                                        setMenuOpen(false);
+                                        setDetail({
+                                            open: true,
+                                            item: n as NotificationItem,
+                                        });
                                     };
 
                                     return (
@@ -290,7 +287,6 @@ export function NotificationBell() {
                                                 }
                                                 onClick={handleClick}
                                             >
-                                                {/* Floating unread badge (kiri atas) */}
                                                 {isUnread && (
                                                     <span
                                                         aria-hidden
@@ -298,7 +294,6 @@ export function NotificationBell() {
                                                     />
                                                 )}
 
-                                                {/* Konten utama */}
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-start justify-between gap-3">
                                                         <div className="truncate pl-2.5 text-sm leading-5 font-medium">
@@ -335,7 +330,6 @@ export function NotificationBell() {
                     })()}
                 </ScrollArea>
 
-                {/* Footer selalu di bawah */}
                 <div className="bg-popover/80 border-t px-4 py-2 backdrop-blur">
                     <Button
                         variant="secondary"
@@ -349,6 +343,13 @@ export function NotificationBell() {
                     </Button>
                 </div>
             </DropdownMenuContent>
+
+            <NotificationDetailDialog
+                open={detail.open}
+                item={detail.item}
+                onOpenChange={(o) => setDetail((s) => ({ ...s, open: o }))}
+                onMarkRead={(id) => markRead(id)}
+            />
         </DropdownMenu>
     );
 }

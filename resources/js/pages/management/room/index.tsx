@@ -702,6 +702,10 @@ export default function RoomIndex(props: RoomsPageProps) {
                                 loading={processing}
                                 emptyText={tRoom('empty')}
                                 showColumn
+                                onRowClick={(row) => {
+                                    setDetailItem(row);
+                                    setDetailOpen(true);
+                                }}
                             />
                         </CardContent>
                     </Card>

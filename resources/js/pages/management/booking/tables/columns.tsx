@@ -1,7 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { Eye, MoreHorizontal } from 'lucide-react';
+import { CheckCircle2, Eye, MoreHorizontal, XCircle } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,8 @@ export type BookingRow = {
 
 type CreateColumnsOpts<T extends BookingRow> = {
     onDetail?: (row: T) => void;
+    onApprove?: (row: T) => void;
+    onReject?: (row: T) => void;
 };
 
 const COL = {
@@ -77,7 +79,7 @@ export const createColumns = <T extends BookingRow>(
                 <div className={`flex items-center gap-2 ${COL.number}`}>
                     <button
                         type="button"
-                        className="text-left font-mono text-xs underline underline-offset-2"
+                        className="text-left font-mono text-xs"
                         onClick={() => opts?.onDetail?.(b)}
                         aria-label={t('common.view_detail') + ' ' + b.number}
                         title={t('common.view_detail')}
@@ -198,6 +200,10 @@ export const createColumns = <T extends BookingRow>(
         cell: ({ row }) => {
             const b = row.original;
             const t = i18n.t.bind(i18n);
+            const statusKey = (b.status || '')
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, '_');
             return (
                 <div
                     className={`${COL.actions} flex items-center justify-end pr-2 md:pr-3`}
@@ -220,11 +226,37 @@ export const createColumns = <T extends BookingRow>(
                                 {t('common.actions')}
                             </DropdownMenuLabel>
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() => opts?.onDetail?.(b)}
                             >
                                 <Eye className="mr-2 h-4 w-4" />{' '}
                                 {t('common.view_detail')}
                             </DropdownMenuItem>
+                            {statusKey === 'requested' && (
+                                <>
+                                    <DropdownMenuItem
+                                        data-row-action="true"
+                                        onClick={() => opts?.onApprove?.(b)}
+                                    >
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
+                                        {t('approve', {
+                                            ns: 'management/booking',
+                                            defaultValue: t('common.approve'),
+                                        })}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        data-row-action="true"
+                                        onClick={() => opts?.onReject?.(b)}
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <XCircle className="text-destructive focus:text-destructive mr-2 h-4 w-4" />{' '}
+                                        {t('reject', {
+                                            ns: 'management/booking',
+                                            defaultValue: t('common.reject'),
+                                        })}
+                                    </DropdownMenuItem>
+                                </>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

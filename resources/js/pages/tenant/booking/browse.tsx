@@ -3,28 +3,32 @@ import {
     ArrowLeft,
     Banknote,
     Building2,
+    CalendarCheck,
+    Eye,
     HelpCircle,
     Info,
     ShieldCheck,
     Tag,
 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { Can } from '@/components/acl';
 import { DatePickerInput } from '@/components/date-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+// no direct Dialog usage here — moved to ConfirmBookingDialog
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
 import {
     Select,
     SelectContent,
@@ -39,8 +43,9 @@ import {
 } from '@/components/ui/tooltip';
 import { ensureXsrfToken } from '@/hooks/use-confirm-password';
 import { AppLayout } from '@/layouts';
+import ConfirmBookingDialog from '@/pages/tenant/booking/dialogs/confirm-dialog';
+import BookingGuideDialog from '@/pages/tenant/booking/dialogs/guide-dialog';
 import RoomDetailDialog from '@/pages/tenant/booking/dialogs/room-detail-dialog';
-import BookingGuideDialog from '@/pages/tenant/booking/guide-dialog';
 import type { PageProps } from '@/types';
 
 type RoomItem = {
@@ -64,6 +69,7 @@ type Paginator<T> = {
 };
 
 export default function TenantRoomBrowse() {
+    const { t } = useTranslation('tenant/booking');
     const { rooms, query, options } = usePage<
         PageProps<Record<string, unknown>>
     >().props as unknown as {
@@ -87,6 +93,14 @@ export default function TenantRoomBrowse() {
     const [startDate, setStartDate] = React.useState<string>('');
     const [duration, setDuration] = React.useState<string>('6');
     const [promo, setPromo] = React.useState<string>('');
+
+    const parsePromoPercent = React.useCallback((code: string): number => {
+        const m = String(code || '')
+            .trim()
+            .match(/(\d{1,2})$/);
+        const pct = m ? Number.parseInt(m[1]!, 10) : 0;
+        return Number.isFinite(pct) ? Math.max(0, Math.min(50, pct)) : 0;
+    }, []);
 
     React.useEffect(() => {
         if (!startDate) {
@@ -144,10 +158,30 @@ export default function TenantRoomBrowse() {
     const [guideOpen, setGuideOpen] = React.useState(false);
     const [detailOpen, setDetailOpen] = React.useState(false);
     const [detailRoom, setDetailRoom] = React.useState<RoomItem | null>(null);
+    const planRef = React.useRef<HTMLDivElement | null>(null);
+    const [planHighlight, setPlanHighlight] = React.useState(false);
+
+    const focusPlan = React.useCallback(() => {
+        try {
+            planRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+            setPlanHighlight(true);
+            window.setTimeout(() => setPlanHighlight(false), 1600);
+        } catch {
+            // ignore
+        }
+    }, []);
 
     const book = async (roomId: string) => {
         if (!startDate || !duration) {
-            toast.warning('Lengkapi rencana sewa dulu (tanggal & durasi).');
+            toast.warning(
+                t(
+                    'errors.plan_incomplete',
+                    'Lengkapi rencana sewa dulu (tanggal & durasi).',
+                ),
+            );
             return;
         }
         try {
@@ -195,8 +229,11 @@ export default function TenantRoomBrowse() {
                             msg.billing_period ||
                             msg.promo_code ||
                             msg.notes ||
-                            'Gagal mengirim booking. Coba lagi.';
-                        toast.error(first);
+                            t(
+                                'errors.submit_failed',
+                                'Gagal mengirim booking. Coba lagi.',
+                            );
+                        toast.error(first as string);
                     },
                     onFinish: () => {
                         setSubmittingId(null);
@@ -209,7 +246,10 @@ export default function TenantRoomBrowse() {
         } catch {
             setSubmittingId(null);
             toast.error(
-                'Gagal mempersiapkan pengiriman. Periksa koneksi Anda.',
+                t(
+                    'errors.prepare_failed',
+                    'Gagal mempersiapkan pengiriman. Periksa koneksi Anda.',
+                ),
             );
         }
     };
@@ -221,28 +261,42 @@ export default function TenantRoomBrowse() {
 
     const items = React.useMemo(() => rooms?.data ?? [], [rooms?.data]);
     const hasPlan = startDate !== '' && Number(duration) > 0;
+    const [page, setPage] = React.useState(1);
+    const perPage = 9;
+    const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+    React.useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [totalPages, page]);
+    const paged = React.useMemo(
+        () => items.slice((page - 1) * perPage, page * perPage),
+        [items, page],
+    );
 
     return (
         <AppLayout
-            pageTitle="Browse Kamar"
-            pageDescription="Pilih kamar tersedia, atur rencana sewa, dan booking."
+            pageTitle={t('browse_page_title', 'Browse Kamar')}
+            pageDescription={t(
+                'browse_page_desc',
+                'Pilih kamar tersedia, atur rencana sewa, dan booking.',
+            )}
             actions={
                 <div className="flex items-center gap-2">
                     <Can all={['tenant.booking.view']}>
                         <Button asChild size="sm">
                             <Link href={route('tenant.bookings.index')}>
-                                <ArrowLeft className="mr-1 h-4 w-4" /> Kembali
-                                ke Booking
+                                <ArrowLeft className="mr-1 h-4 w-4" />
+                                {t('back_to_bookings', 'Kembali ke Booking')}
                             </Link>
                         </Button>
                     </Can>
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => setGuideOpen(true)}
                     >
-                        <HelpCircle className="mr-1 h-4 w-4" /> Panduan Booking
+                        <HelpCircle className="mr-1 h-4 w-4" />
+                        {t('guide', 'Panduan Booking')}
                     </Button>
                 </div>
             }
@@ -251,29 +305,27 @@ export default function TenantRoomBrowse() {
                 <Card>
                     <CardHeader className="pb-3">
                         <div className="flex items-start justify-between gap-2">
-                            <div>
-                                <CardTitle className="text-base font-medium">
-                                    Cari Kamar
-                                </CardTitle>
-                                <p className="text-muted-foreground text-sm">
-                                    Gunakan filter dan rencana sewa untuk
-                                    melihat estimasi biaya sebelum booking.
-                                </p>
-                            </div>
+                            <CardTitle className="text-base font-semibold">
+                                {t('plan_header_title', 'Rencana & Estimasi')}
+                            </CardTitle>
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <button
                                         type="button"
                                         className="text-muted-foreground hover:text-foreground mt-0.5"
-                                        aria-label="Info rencana sewa"
+                                        aria-label={t(
+                                            'plan_info_aria',
+                                            'Info rencana sewa',
+                                        )}
                                     >
                                         <Info className="h-4 w-4" />
                                     </button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    Rencana dipakai untuk menghitung estimasi
-                                    dan mempermudah Booking cepat pada setiap
-                                    kamar.
+                                    {t(
+                                        'plan_info_tooltip',
+                                        'Rencana dipakai untuk menghitung estimasi dan mempermudah Booking cepat pada setiap kamar.',
+                                    )}
                                 </TooltipContent>
                             </Tooltip>
                         </div>
@@ -282,23 +334,28 @@ export default function TenantRoomBrowse() {
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                             <div className="space-y-2">
                                 <div className="text-sm font-medium">
-                                    Filter
+                                    {t('common.filter')}
                                 </div>
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div>
                                         <Label className="text-muted-foreground text-xs">
-                                            Gedung
+                                            {t('common.building')}
                                         </Label>
                                         <Select
                                             value={building}
                                             onValueChange={setBuilding}
                                         >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Pilih gedung" />
+                                            <SelectTrigger className="h-9 w-full">
+                                                <SelectValue
+                                                    placeholder={t(
+                                                        'filter.building_placeholder',
+                                                        'Pilih gedung',
+                                                    )}
+                                                />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value={SELECT_ALL}>
-                                                    Semua
+                                                    {t('common.all')}
                                                 </SelectItem>
                                                 {(options?.buildings ?? []).map(
                                                     (b) => (
@@ -315,18 +372,23 @@ export default function TenantRoomBrowse() {
                                     </div>
                                     <div>
                                         <Label className="text-muted-foreground text-xs">
-                                            Tipe
+                                            {t('common.type')}
                                         </Label>
                                         <Select
                                             value={type}
                                             onValueChange={setType}
                                         >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Pilih tipe" />
+                                            <SelectTrigger className="h-9 w-full">
+                                                <SelectValue
+                                                    placeholder={t(
+                                                        'filter.type_placeholder',
+                                                        'Pilih tipe',
+                                                    )}
+                                                />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value={SELECT_ALL}>
-                                                    Semua
+                                                    {t('common.all')}
                                                 </SelectItem>
                                                 {(options?.types ?? []).map(
                                                     (t) => (
@@ -347,7 +409,7 @@ export default function TenantRoomBrowse() {
                                             size="sm"
                                             onClick={applyFilter}
                                         >
-                                            Terapkan
+                                            {t('common.apply')}
                                         </Button>
                                         <Button
                                             type="button"
@@ -359,20 +421,23 @@ export default function TenantRoomBrowse() {
                                                 type === SELECT_ALL
                                             }
                                         >
-                                            Reset
+                                            {t('common.reset')}
                                         </Button>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-2 lg:col-span-2">
+                            <div
+                                ref={planRef}
+                                className={`space-y-2 lg:col-span-2 ${planHighlight ? 'ring-primary/40 -m-2 rounded-md p-2 ring-2 transition' : ''}`}
+                            >
                                 <div className="text-sm font-medium">
-                                    Rencana Sewa
+                                    {t('plan.title', 'Rencana & Promo')}
                                 </div>
                                 <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                                     <div>
                                         <Label className="text-muted-foreground text-xs">
-                                            Tanggal Mulai
+                                            {t('common.start')}
                                         </Label>
                                         <DatePickerInput
                                             value={startDate}
@@ -383,14 +448,22 @@ export default function TenantRoomBrowse() {
                                     </div>
                                     <div>
                                         <Label className="text-muted-foreground text-xs">
-                                            Durasi (bulan)
+                                            {t(
+                                                'plan.duration_label',
+                                                'Durasi (bulan)',
+                                            )}
                                         </Label>
                                         <Select
                                             value={duration}
                                             onValueChange={setDuration}
                                         >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Durasi" />
+                                            <SelectTrigger className="h-9 w-full">
+                                                <SelectValue
+                                                    placeholder={t(
+                                                        'plan.duration_placeholder',
+                                                        'Durasi',
+                                                    )}
+                                                />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {['1', '3', '6', '12'].map(
@@ -408,23 +481,26 @@ export default function TenantRoomBrowse() {
                                     </div>
                                     <div>
                                         <Label className="text-muted-foreground text-xs">
-                                            Kode Promo (opsional)
+                                            {`${t('common.promo_code')} (${t('common.optional')})`}
                                         </Label>
                                         <Input
                                             value={promo}
                                             onChange={(e) =>
                                                 setPromo(e.target.value)
                                             }
-                                            placeholder="PROMO10"
+                                            placeholder={t(
+                                                'plan.promo_placeholder',
+                                                'PROMO10',
+                                            )}
                                         />
                                         <p className="text-muted-foreground mt-1 text-[11px]">
-                                            Jika diisi, promo yang valid akan
-                                            diterapkan ke estimasi saat booking
-                                            dibuat.
+                                            {t(
+                                                'plan.promo_note',
+                                                'Jika diisi, promo yang valid akan diterapkan ke estimasi saat booking dibuat.',
+                                            )}
                                         </p>
                                     </div>
                                 </div>
-                                {null}
                             </div>
                         </div>
                     </CardContent>
@@ -435,281 +511,348 @@ export default function TenantRoomBrowse() {
                         <CardContent className="pt-6">
                             <div className="py-8 text-center">
                                 <div className="text-lg font-medium">
-                                    Tidak ada kamar yang cocok
+                                    {t(
+                                        'empty_browse_title',
+                                        'Tidak ada kamar yang cocok',
+                                    )}
                                 </div>
                                 <p className="text-muted-foreground mt-1">
-                                    Coba ubah filter gedung/tipe untuk melihat
-                                    pilihan lainnya.
+                                    {t(
+                                        'empty_browse_desc',
+                                        'Coba ubah filter gedung/tipe untuk melihat pilihan lainnya.',
+                                    )}
                                 </p>
                             </div>
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {items.map((r) => {
-                            const est = hasPlan
-                                ? Number(duration) * (r.price_month || 0) +
-                                  (r.deposit || 0)
-                                : null;
-                            return (
-                                <Card key={r.id} className="flex flex-col">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-base font-semibold">
-                                            {r.number}
-                                            {r.name ? (
-                                                <span className="text-muted-foreground">
-                                                    {' '}
-                                                    • {r.name}
-                                                </span>
-                                            ) : null}
-                                        </CardTitle>
-                                        <div className="flex flex-wrap gap-2 pt-1 text-xs">
-                                            {r.building ? (
-                                                <span className="text-muted-foreground inline-flex items-center gap-1">
-                                                    <Building2 className="h-3.5 w-3.5" />
-                                                    {r.building}
-                                                </span>
-                                            ) : null}
-                                            {r.type ? (
-                                                <span className="text-muted-foreground inline-flex items-center gap-1">
-                                                    <Tag className="h-3.5 w-3.5" />
-                                                    {r.type}
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="pt-0">
-                                        <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                            <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
-                                                <Banknote className="text-muted-foreground h-4 w-4" />
-                                                <div>
-                                                    <div className="text-muted-foreground flex items-center gap-1 text-[11px] leading-3">
-                                                        <span>Harga/bulan</span>
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Info className="h-3 w-3" />
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                Tarif sewa per
-                                                                bulan (sebelum
-                                                                promo).
-                                                            </TooltipContent>
-                                                        </Tooltip>
+                    <>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {paged.map((r) => {
+                                const promoPct = promo
+                                    ? parsePromoPercent(promo)
+                                    : 0;
+                                const priceAfter = Math.max(
+                                    0,
+                                    (r.price_month || 0) -
+                                        Math.round(
+                                            (r.price_month || 0) *
+                                                (promoPct / 100),
+                                        ),
+                                );
+                                const est = hasPlan
+                                    ? Number(duration) * (r.price_month || 0) +
+                                      (r.deposit || 0)
+                                    : null;
+                                const estPromo = hasPlan
+                                    ? Number(duration) * priceAfter +
+                                      (r.deposit || 0)
+                                    : null;
+                                return (
+                                    <Card key={r.id} className="flex flex-col">
+                                        <CardHeader className="pb-1">
+                                            <CardTitle className="text-base font-semibold">
+                                                {r.number}
+                                                {r.name ? (
+                                                    <span className="text-muted-foreground">
+                                                        {' '}
+                                                        • {r.name}
+                                                    </span>
+                                                ) : null}
+                                            </CardTitle>
+                                            <div className="flex flex-wrap gap-2 pt-0 text-xs">
+                                                {r.building ? (
+                                                    <span className="text-muted-foreground inline-flex items-center gap-1">
+                                                        <Building2 className="h-3.5 w-3.5" />
+                                                        {r.building}
+                                                    </span>
+                                                ) : null}
+                                                {r.type ? (
+                                                    <span className="text-muted-foreground inline-flex items-center gap-1">
+                                                        <Tag className="h-3.5 w-3.5" />
+                                                        {r.type}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="pt-0">
+                                            <div className="mt-0 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                                                    <Banknote className="text-muted-foreground h-4 w-4" />
+                                                    <div>
+                                                        <div className="text-muted-foreground flex items-center gap-1 text-[11px] leading-3">
+                                                            <span>
+                                                                {t(
+                                                                    'room.price_month_label',
+                                                                    'Harga/bulan',
+                                                                )}
+                                                            </span>
+                                                            <Tooltip>
+                                                                <TooltipTrigger
+                                                                    asChild
+                                                                >
+                                                                    <Info className="h-3 w-3" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {t(
+                                                                        'room.price_hint',
+                                                                        'Tarif sewa per bulan (sebelum promo).',
+                                                                    )}
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                        <div className="font-medium">
+                                                            {promoPct > 0 ? (
+                                                                <>
+                                                                    <div className="text-muted-foreground line-through">
+                                                                        Rp{' '}
+                                                                        {formatIDR(
+                                                                            r.price_month,
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span>
+                                                                            Rp{' '}
+                                                                            {formatIDR(
+                                                                                priceAfter,
+                                                                            )}
+                                                                        </span>
+                                                                        <span className="bg-primary/10 text-primary inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium">
+                                                                            {t(
+                                                                                'room.promo_preview_badge',
+                                                                                'Promo (perkiraan) −{{pct}}%',
+                                                                                {
+                                                                                    pct: promoPct,
+                                                                                },
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    Rp{' '}
+                                                                    {formatIDR(
+                                                                        r.price_month,
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="font-medium">
-                                                        Rp{' '}
-                                                        {formatIDR(
-                                                            r.price_month,
+                                                </div>
+                                                <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                                                    <ShieldCheck className="text-muted-foreground h-4 w-4" />
+                                                    <div>
+                                                        <div className="text-muted-foreground flex items-center gap-1 text-[11px] leading-3">
+                                                            <span>
+                                                                {t(
+                                                                    'common.deposit',
+                                                                )}
+                                                            </span>
+                                                            <Tooltip>
+                                                                <TooltipTrigger
+                                                                    asChild
+                                                                >
+                                                                    <Info className="h-3 w-3" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {t(
+                                                                        'room.deposit_hint',
+                                                                        'Jaminan dikembalikan saat akhir sewa sesuai ketentuan.',
+                                                                    )}
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                        <div className="font-medium">
+                                                            Rp{' '}
+                                                            {formatIDR(
+                                                                r.deposit,
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {est != null && (
+                                                <div className="mt-2 text-sm">
+                                                    <div>
+                                                        {t(
+                                                            'room.estimate_total_for',
+                                                            'Perkiraan total {{months}} bln:',
+                                                            {
+                                                                months: Number(
+                                                                    duration,
+                                                                ),
+                                                            },
+                                                        )}{' '}
+                                                        <span className="font-semibold">
+                                                            Rp {formatIDR(est)}
+                                                        </span>
+                                                    </div>
+                                                    {promoPct > 0 && (
+                                                        <div className="text-foreground mt-0.5 text-[13px]">
+                                                            <span className="text-muted-foreground line-through">
+                                                                Rp{' '}
+                                                                {formatIDR(est)}
+                                                            </span>{' '}
+                                                            <span className="font-semibold">
+                                                                Rp{' '}
+                                                                {formatIDR(
+                                                                    estPromo ||
+                                                                        0,
+                                                                )}
+                                                            </span>
+                                                            <Tooltip>
+                                                                <TooltipTrigger
+                                                                    asChild
+                                                                >
+                                                                    <span className="text-muted-foreground ml-1 cursor-help underline-offset-2 hover:underline">
+                                                                        {t(
+                                                                            'room.estimate_after_promo',
+                                                                            'Perkiraan total setelah promo',
+                                                                        )}
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {t(
+                                                                        'room.promo_preview_hint',
+                                                                        'Perkiraan promo berdasarkan kode yang dimasukkan. Diskon aktual mengikuti syarat promo saat booking.',
+                                                                    )}
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {est == null && (
+                                                <div className="text-muted-foreground mt-2 text-xs">
+                                                    {t(
+                                                        'room.fill_plan_hint',
+                                                        'Isi rencana sewa untuk melihat estimasi total.',
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div className="mt-4">
+                                                <Can
+                                                    all={[
+                                                        'tenant.booking.create',
+                                                    ]}
+                                                >
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (!hasPlan) {
+                                                                toast.warning(
+                                                                    t(
+                                                                        'errors.plan_incomplete',
+                                                                        'Lengkapi rencana sewa dulu (tanggal & durasi).',
+                                                                    ),
+                                                                );
+                                                                return;
+                                                            }
+                                                            setConfirmRoom(r);
+                                                            setConfirmOpen(
+                                                                true,
+                                                            );
+                                                        }}
+                                                        disabled={
+                                                            submittingId ===
+                                                            r.id
+                                                        }
+                                                    >
+                                                        <CalendarCheck className="mr-1 h-4 w-4" />{' '}
+                                                        {t(
+                                                            'book_action',
+                                                            'Booking',
                                                         )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
-                                                <ShieldCheck className="text-muted-foreground h-4 w-4" />
-                                                <div>
-                                                    <div className="text-muted-foreground flex items-center gap-1 text-[11px] leading-3">
-                                                        <span>Deposit</span>
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Info className="h-3 w-3" />
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                Jaminan
-                                                                dikembalikan
-                                                                saat akhir sewa
-                                                                sesuai
-                                                                ketentuan.
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </div>
-                                                    <div className="font-medium">
-                                                        Rp{' '}
-                                                        {formatIDR(r.deposit)}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {est != null ? (
-                                            <div className="mt-2 text-sm">
-                                                Perkiraan total {duration} bln:{' '}
-                                                <span className="font-semibold">
-                                                    Rp {formatIDR(est)}
-                                                </span>
-                                            </div>
-                                        ) : (
-                                            <div className="text-muted-foreground mt-2 text-xs">
-                                                Isi rencana sewa untuk melihat
-                                                estimasi total.
-                                            </div>
-                                        )}
-                                        <div className="mt-4">
-                                            <Can
-                                                all={['tenant.booking.create']}
-                                            >
+                                                    </Button>
+                                                </Can>
                                                 <Button
                                                     type="button"
+                                                    variant="outline"
+                                                    className="ml-2"
                                                     onClick={() => {
-                                                        if (!hasPlan) {
-                                                            toast.warning(
-                                                                'Lengkapi rencana sewa dulu (tanggal & durasi).',
-                                                            );
-                                                            return;
-                                                        }
-                                                        setConfirmRoom(r);
-                                                        setConfirmOpen(true);
+                                                        setDetailRoom(r);
+                                                        setDetailOpen(true);
                                                     }}
-                                                    disabled={
-                                                        submittingId === r.id
-                                                    }
                                                 >
-                                                    Booking
+                                                    <Eye className="mr-1 h-4 w-4" />{' '}
+                                                    {t('common.view_detail')}
                                                 </Button>
-                                            </Can>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="ml-2"
-                                                onClick={() => {
-                                                    setDetailRoom(r);
-                                                    setDetailOpen(true);
-                                                }}
-                                            >
-                                                Detail
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-                    </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                        {totalPages > 1 && (
+                            <Pagination className="mt-4">
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setPage((p) =>
+                                                    Math.max(1, p - 1),
+                                                );
+                                            }}
+                                        />
+                                    </PaginationItem>
+                                    {Array.from({ length: totalPages }).map(
+                                        (_, i) => (
+                                            <PaginationItem key={i}>
+                                                <PaginationLink
+                                                    href="#"
+                                                    isActive={page === i + 1}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setPage(i + 1);
+                                                    }}
+                                                >
+                                                    {i + 1}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        ),
+                                    )}
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setPage((p) =>
+                                                    Math.min(totalPages, p + 1),
+                                                );
+                                            }}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        )}
+                    </>
                 )}
             </div>
 
             {/* Konfirmasi Booking */}
-            <Dialog
+            <ConfirmBookingDialog
                 open={confirmOpen}
-                onOpenChange={(o) =>
-                    !o ? (setConfirmOpen(false), setConfirmRoom(null)) : null
-                }
-            >
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Konfirmasi Booking</DialogTitle>
-                        <DialogDescription>
-                            Periksa kembali detail berikut sebelum melanjutkan.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="bg-muted/60 text-muted-foreground mb-2 rounded-md p-2 text-xs">
-                        Booking akan masuk status{' '}
-                        <span className="font-medium">On Hold</span> untuk
-                        diverifikasi. Lihat progress di menu{' '}
-                        <span className="font-medium">Booking Saya</span> atau
-                        baca
-                        <button
-                            type="button"
-                            className="text-primary ml-1 underline-offset-2 hover:underline"
-                            onClick={() => setGuideOpen(true)}
-                        >
-                            panduan
-                        </button>
-                        .
-                    </div>
-                    <div className="space-y-1 text-sm">
-                        <div>
-                            Kamar:{' '}
-                            <span className="font-medium">
-                                {confirmRoom?.number}
-                                {confirmRoom?.name
-                                    ? ` • ${confirmRoom.name}`
-                                    : ''}
-                            </span>
-                        </div>
-                        <div className="text-muted-foreground">
-                            {(confirmRoom?.building || confirmRoom?.type) && (
-                                <>
-                                    {confirmRoom?.building || '-'} •{' '}
-                                    {confirmRoom?.type || '-'}
-                                </>
-                            )}
-                        </div>
-                        <div className="pt-1">
-                            Mulai:{' '}
-                            <span className="font-medium">{startDate}</span>
-                        </div>
-                        <div>
-                            Durasi:{' '}
-                            <span className="font-medium">
-                                {duration} bulan
-                            </span>
-                        </div>
-                        <div className="pt-1">
-                            Harga/bulan:{' '}
-                            <span className="font-medium">
-                                Rp {formatIDR(confirmRoom?.price_month)}
-                            </span>
-                        </div>
-                        <div>
-                            Deposit:{' '}
-                            <span className="font-medium">
-                                Rp {formatIDR(confirmRoom?.deposit)}
-                            </span>
-                        </div>
-                        <div className="pt-1">
-                            Perkiraan total:{' '}
-                            <span className="font-semibold">
-                                Rp{' '}
-                                {formatIDR(
-                                    (Number(duration) || 0) *
-                                        (confirmRoom?.price_month || 0) +
-                                        (confirmRoom?.deposit || 0),
-                                )}
-                            </span>
-                        </div>
-                        {promo ? (
-                            <div>
-                                Kode Promo:{' '}
-                                <span className="font-medium">{promo}</span>
-                            </div>
-                        ) : null}
-                        <div className="pt-2">
-                            <Label className="text-muted-foreground text-xs">
-                                Catatan (opsional)
-                            </Label>
-                            <textarea
-                                rows={3}
-                                className="border-input bg-background focus-visible:ring-ring w-full rounded-md border px-2 py-1 text-sm outline-none focus-visible:ring-2"
-                                placeholder="Catatan untuk pengelola"
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                maxLength={2000}
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                setConfirmOpen(false);
-                                setConfirmRoom(null);
-                            }}
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={() => confirmRoom && book(confirmRoom.id)}
-                            disabled={submittingId === confirmRoom?.id}
-                        >
-                            Konfirmasi Booking
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                onOpenChange={(o) => {
+                    setConfirmOpen(o);
+                    if (!o) setConfirmRoom(null);
+                }}
+                room={confirmRoom}
+                startDate={startDate}
+                duration={duration}
+                promo={promo}
+                notes={notes}
+                onNotesChange={setNotes}
+                onConfirm={() => confirmRoom && book(confirmRoom.id)}
+                loading={submittingId === confirmRoom?.id}
+                onOpenGuide={() => setGuideOpen(true)}
+                onEditPlan={() => {
+                    setConfirmOpen(false);
+                    setConfirmRoom(null);
+                    window.setTimeout(() => focusPlan(), 50);
+                }}
+            />
 
             {/* Panduan Booking */}
             <BookingGuideDialog open={guideOpen} onOpenChange={setGuideOpen} />
@@ -722,13 +865,17 @@ export default function TenantRoomBrowse() {
                     if (!o) setDetailRoom(null);
                 }}
                 room={detailRoom}
+                promo={promo}
                 onBook={(roomId) => {
                     // reuse existing flow
                     const target = items.find((it) => it.id === roomId);
                     if (!target) return;
                     if (!hasPlan) {
                         toast.warning(
-                            'Lengkapi rencana sewa dulu (tanggal & durasi).',
+                            t(
+                                'errors.plan_incomplete',
+                                'Lengkapi rencana sewa dulu (tanggal & durasi).',
+                            ),
                         );
                         return;
                     }

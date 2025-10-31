@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 
 import { Can } from '@/components/acl';
+import LazyIcon from '@/components/lazy-icon';
 import { Button } from '@/components/ui/button';
 import { makeColumn } from '@/components/ui/data-table-column-header';
 import {
@@ -57,11 +58,19 @@ export const createColumns = (opts?: {
         accessorKey: 'icon',
         title: i18n.t('common.icon'),
         className: COL.icon,
-        cell: ({ getValue }) => (
-            <code className={`${COL.icon} text-xs`}>
-                {String(getValue() ?? '')}
-            </code>
-        ),
+        cell: ({ getValue }) => {
+            const name = String(getValue() ?? '').trim();
+            return (
+                <div className={`${COL.icon} flex items-center gap-2`}>
+                    {name ? (
+                        <LazyIcon name={name} className="h-4 w-4" />
+                    ) : (
+                        <span className="text-muted-foreground">—</span>
+                    )}
+                    <code className="text-xs">{name || ''}</code>
+                </div>
+            );
+        },
     }),
     makeColumn<AmenityItem>({
         id: 'actions',

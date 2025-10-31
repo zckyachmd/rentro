@@ -5,6 +5,7 @@ import {
     CheckCircle2,
     CircleSlash,
     Eye,
+    FileSignature,
     Hash,
     HelpCircle,
     Plus,
@@ -12,6 +13,7 @@ import {
     XCircle,
 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Can } from '@/components/acl';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +25,8 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { AppLayout } from '@/layouts';
-import BookingGuideDialog from '@/pages/tenant/booking/guide-dialog';
+import { formatDate, formatIDR } from '@/lib/format';
+import BookingGuideDialog from '@/pages/tenant/booking/dialogs/guide-dialog';
 import type { PageProps } from '@/types';
 
 type BookingItem = {
@@ -34,6 +37,7 @@ type BookingItem = {
     duration: number;
     period: string;
     promo_code?: string | null;
+    contract_id?: string | null;
     room?: {
         number?: string | null;
         name?: string | null;
@@ -46,6 +50,8 @@ type BookingItem = {
 type Paginator<T> = { data: T[] };
 
 export default function TenantBookingsIndex() {
+    const { t } = useTranslation('tenant/booking');
+    const { t: tEnum } = useTranslation('enum');
     const { bookings } = usePage<PageProps<Record<string, unknown>>>()
         .props as unknown as {
         bookings: Paginator<BookingItem>;
@@ -79,16 +85,18 @@ export default function TenantBookingsIndex() {
         return agg;
     }, [items]);
 
-    const formatIDR = (n?: number | null) =>
-        new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(
-            Number(n || 0),
-        );
-
     const formatPeriod = (p?: string | null) => {
         const key = String(p || '').toLowerCase();
-        if (key === 'weekly') return 'Mingguan';
-        if (key === 'daily') return 'Harian';
-        return 'Bulanan';
+        return (
+            tEnum(`billing_period.${key}`, {
+                defaultValue:
+                    key === 'weekly'
+                        ? 'Weekly'
+                        : key === 'daily'
+                          ? 'Daily'
+                          : 'Monthly',
+            }) || '—'
+        );
     };
 
     const StatusBadge = ({ status }: { status: string }) => {
@@ -96,28 +104,40 @@ export default function TenantBookingsIndex() {
         if (key === 'requested') {
             return (
                 <Badge className="inline-flex items-center gap-1 bg-yellow-500/15 text-yellow-700 hover:bg-yellow-500/20">
-                    <CalendarCheck className="h-3 w-3" /> On Hold
+                    <CalendarCheck className="h-3 w-3" />
+                    {tEnum('booking.status.requested', {
+                        defaultValue: 'Requested',
+                    })}
                 </Badge>
             );
         }
         if (key === 'approved') {
             return (
                 <Badge className="inline-flex items-center gap-1 bg-green-500/15 text-green-700 hover:bg-green-500/20">
-                    <CheckCircle2 className="h-3 w-3" /> Approved
+                    <CheckCircle2 className="h-3 w-3" />
+                    {tEnum('booking.status.approved', {
+                        defaultValue: 'Approved',
+                    })}
                 </Badge>
             );
         }
         if (key === 'rejected') {
             return (
                 <Badge className="inline-flex items-center gap-1 bg-red-500/15 text-red-700 hover:bg-red-500/20">
-                    <XCircle className="h-3 w-3" /> Rejected
+                    <XCircle className="h-3 w-3" />
+                    {tEnum('booking.status.rejected', {
+                        defaultValue: 'Rejected',
+                    })}
                 </Badge>
             );
         }
         if (key === 'cancelled') {
             return (
                 <Badge className="inline-flex items-center gap-1 bg-zinc-500/15 text-zinc-700 hover:bg-zinc-500/20">
-                    <CircleSlash className="h-3 w-3" /> Cancelled
+                    <CircleSlash className="h-3 w-3" />
+                    {tEnum('booking.status.cancelled', {
+                        defaultValue: 'Cancelled',
+                    })}
                 </Badge>
             );
         }
@@ -132,22 +152,26 @@ export default function TenantBookingsIndex() {
 
     return (
         <AppLayout
-            pageTitle="Booking"
-            pageDescription="Daftar booking Anda."
+            pageTitle={t('page_title', 'Bookings')}
+            pageDescription={t('page_desc', 'Your booking list.')}
             actions={
                 <div className="flex items-center gap-2">
-                    <Button asChild size="sm">
-                        <Link href={route('tenant.rooms.index')}>
-                            <Plus className="mr-1 h-4 w-4" /> Booking Baru
-                        </Link>
-                    </Button>
+                    <Can all={['tenant.booking.create']}>
+                        <Button asChild size="sm">
+                            <Link href={route('tenant.rooms.index')}>
+                                <Plus className="mr-1 h-4 w-4" />
+                                {t('new', 'New Booking')}
+                            </Link>
+                        </Button>
+                    </Can>
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => setGuideOpen(true)}
                     >
-                        <HelpCircle className="mr-1 h-4 w-4" /> Panduan Booking
+                        <HelpCircle className="mr-1 h-4 w-4" />
+                        {t('guide', 'Booking Guide')}
                     </Button>
                 </div>
             }
@@ -155,71 +179,51 @@ export default function TenantBookingsIndex() {
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base font-medium">
-                        Booking Saya
+                        {t('title', 'My Bookings')}
                     </CardTitle>
                 </div>
-                {/* Stat Summary */}
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-3">
-                            <div className="space-y-0.5">
-                                <div className="text-muted-foreground text-xs">
-                                    On Hold
-                                </div>
-                                <div className="text-xl font-semibold">
-                                    {counts.requested}
-                                </div>
-                            </div>
-                            <div className="grid size-8 place-items-center rounded-md bg-yellow-500/15 text-yellow-700">
-                                <CalendarCheck className="h-4 w-4" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-3">
-                            <div className="space-y-0.5">
-                                <div className="text-muted-foreground text-xs">
-                                    Approved
-                                </div>
-                                <div className="text-xl font-semibold">
-                                    {counts.approved}
-                                </div>
-                            </div>
-                            <div className="grid size-8 place-items-center rounded-md bg-green-500/15 text-green-700">
-                                <CheckCircle2 className="h-4 w-4" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-3">
-                            <div className="space-y-0.5">
-                                <div className="text-muted-foreground text-xs">
-                                    Rejected
-                                </div>
-                                <div className="text-xl font-semibold">
-                                    {counts.rejected}
-                                </div>
-                            </div>
-                            <div className="grid size-8 place-items-center rounded-md bg-red-500/15 text-red-700">
-                                <XCircle className="h-4 w-4" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="flex items-center justify-between p-3">
-                            <div className="space-y-0.5">
-                                <div className="text-muted-foreground text-xs">
-                                    Cancelled
-                                </div>
-                                <div className="text-xl font-semibold">
-                                    {counts.cancelled}
-                                </div>
-                            </div>
-                            <div className="grid size-8 place-items-center rounded-md bg-zinc-500/15 text-zinc-700">
-                                <CircleSlash className="h-4 w-4" />
-                            </div>
-                        </CardContent>
-                    </Card>
+                {/* Summary (compact) */}
+                <div className="text-muted-foreground text-xs">
+                    {[
+                        {
+                            key: 'requested',
+                            label: tEnum('booking.status.requested', {
+                                defaultValue: 'Requested',
+                            }),
+                            icon: <CalendarCheck className="h-4 w-4" />,
+                            tone: 'bg-yellow-500/15 text-yellow-700',
+                            value: counts.requested,
+                        },
+                        {
+                            key: 'approved',
+                            label: tEnum('booking.status.approved', {
+                                defaultValue: 'Approved',
+                            }),
+                            icon: <CheckCircle2 className="h-4 w-4" />,
+                            tone: 'bg-green-500/15 text-green-700',
+                            value: counts.approved,
+                        },
+                        {
+                            key: 'rejected',
+                            label: tEnum('booking.status.rejected', {
+                                defaultValue: 'Rejected',
+                            }),
+                            icon: <XCircle className="h-4 w-4" />,
+                            tone: 'bg-red-500/15 text-red-700',
+                            value: counts.rejected,
+                        },
+                        {
+                            key: 'cancelled',
+                            label: tEnum('booking.status.cancelled', {
+                                defaultValue: 'Cancelled',
+                            }),
+                            icon: <CircleSlash className="h-4 w-4" />,
+                            tone: 'bg-zinc-500/15 text-zinc-700',
+                            value: counts.cancelled,
+                        },
+                    ]
+                        .map((s) => `${s.label} ${s.value}`)
+                        .join(' • ')}
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {items.map((b) => (
@@ -238,7 +242,10 @@ export default function TenantBookingsIndex() {
                                             </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Status booking Anda saat ini.
+                                            {t(
+                                                'status_hint',
+                                                'Your current booking status.',
+                                            )}
                                         </TooltipContent>
                                     </Tooltip>
                                 </CardTitle>
@@ -246,7 +253,7 @@ export default function TenantBookingsIndex() {
                             <CardContent className="space-y-3">
                                 <div className="space-y-0.5 text-sm">
                                     <div>
-                                        Kamar:{' '}
+                                        {t('common.room', 'Room')}:
                                         <span className="font-medium">
                                             {b.room?.number || '-'}
                                         </span>
@@ -274,26 +281,27 @@ export default function TenantBookingsIndex() {
                                     <div className="rounded-md border p-2 text-xs">
                                         <div className="text-muted-foreground inline-flex items-center gap-1">
                                             <CalendarCheck className="h-3.5 w-3.5" />{' '}
-                                            Mulai
+                                            {t('common.start')}
                                         </div>
                                         <div className="text-sm font-medium">
-                                            {b.start_date}
+                                            {formatDate(b.start_date)}
                                         </div>
                                     </div>
                                     <div className="rounded-md border p-2 text-xs">
                                         <div className="text-muted-foreground inline-flex items-center gap-1">
                                             <Timer className="h-3.5 w-3.5" />{' '}
-                                            Durasi
+                                            {t('common.duration', 'Duration')}
                                         </div>
                                         <div className="text-sm font-medium">
-                                            {b.duration} bln
+                                            {b.duration}{' '}
+                                            {t('common.monthly', 'Monthly')}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="rounded-md border p-2 text-xs">
                                     <div className="text-muted-foreground inline-flex items-center gap-1">
                                         <CalendarRange className="h-3.5 w-3.5" />{' '}
-                                        Periode
+                                        {t('common.period')}
                                     </div>
                                     <div className="text-sm font-medium">
                                         {formatPeriod(b.period)}
@@ -301,28 +309,56 @@ export default function TenantBookingsIndex() {
                                 </div>
                                 <div className="rounded-md border p-2">
                                     <div className="text-muted-foreground text-xs">
-                                        Estimasi Total
+                                        {t('common.total', 'Total')}
                                     </div>
                                     <div className="text-lg font-semibold">
-                                        Rp {formatIDR(b.estimate?.total)}
+                                        {formatIDR(b.estimate?.total || 0)}
                                     </div>
                                 </div>
                                 <div className="pt-1">
-                                    <Can all={['tenant.booking.view']}>
-                                        <Button asChild size="sm">
-                                            <Link
-                                                href={route(
-                                                    'tenant.bookings.show',
-                                                    {
-                                                        booking: b.id,
-                                                    },
-                                                )}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Can all={['tenant.booking.view']}>
+                                            <Button asChild size="sm">
+                                                <Link
+                                                    href={route(
+                                                        'tenant.bookings.show',
+                                                        {
+                                                            booking: b.id,
+                                                        },
+                                                    )}
+                                                >
+                                                    <Eye className="mr-1 h-4 w-4" />{' '}
+                                                    {t('common.view_detail')}
+                                                </Link>
+                                            </Button>
+                                        </Can>
+                                        {String(
+                                            b.status || '',
+                                        ).toLowerCase() === 'approved' &&
+                                        b.contract_id ? (
+                                            <Button
+                                                asChild
+                                                size="sm"
+                                                variant="outline"
                                             >
-                                                <Eye className="mr-1 h-4 w-4" />{' '}
-                                                Detail
-                                            </Link>
-                                        </Button>
-                                    </Can>
+                                                <Link
+                                                    href={route(
+                                                        'tenant.contracts.show',
+                                                        {
+                                                            contract:
+                                                                b.contract_id,
+                                                        },
+                                                    )}
+                                                >
+                                                    <FileSignature className="mr-1 h-4 w-4" />{' '}
+                                                    {t(
+                                                        'detail.view_contract',
+                                                        'Lihat Kontrak',
+                                                    )}
+                                                </Link>
+                                            </Button>
+                                        ) : null}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -333,11 +369,16 @@ export default function TenantBookingsIndex() {
                         <CardContent className="pt-6">
                             <div className="py-8 text-center">
                                 <div className="text-lg font-medium">
-                                    Belum pernah melakukan booking
+                                    {t(
+                                        'empty_title',
+                                        'Belum pernah melakukan booking',
+                                    )}
                                 </div>
                                 <p className="text-muted-foreground mt-1">
-                                    Mulai dengan mencari kamar yang cocok dan
-                                    ikuti panduan booking.
+                                    {t(
+                                        'empty_desc',
+                                        'Mulai dengan mencari kamar yang cocok dan ikuti panduan booking.',
+                                    )}
                                 </p>
                                 <div className="mt-4 flex items-center justify-center gap-2">
                                     <Can all={['tenant.rooms.view']}>
@@ -347,17 +388,10 @@ export default function TenantBookingsIndex() {
                                                     'tenant.rooms.index',
                                                 )}
                                             >
-                                                Browse Kamar
+                                                {t('browse', 'Browse Rooms')}
                                             </Link>
                                         </Button>
                                     </Can>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        onClick={() => setGuideOpen(true)}
-                                    >
-                                        Panduan
-                                    </Button>
                                 </div>
                             </div>
                         </CardContent>

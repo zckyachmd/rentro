@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import { buildRangeErrorMessage, isRangeInvalid } from '@/lib/date-range';
 import CancelContractDialog from '@/pages/management/contract/dialogs/cancel-contract-dialog';
 import ContractsActionGuideDialog from '@/pages/management/contract/dialogs/contracts-action-guide-dialog';
 import HandoverCreate from '@/pages/management/contract/dialogs/handover-create-dialog';
@@ -128,6 +129,7 @@ export default function ContractIndex(props: ContractsPageProps) {
     );
 
     const applyFilters = () => {
+        if (isRangeInvalid(start, end)) return;
         const payload: Record<string, unknown> = {
             page: 1,
             status: status || null,
@@ -175,6 +177,20 @@ export default function ContractIndex(props: ContractsPageProps) {
         <AppLayout
             pageTitle={tContract('list.title')}
             pageDescription={tContract('list.desc')}
+            actions={
+                <Can all={['contract.create']}>
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={() =>
+                            router.visit(route('management.contracts.create'))
+                        }
+                    >
+                        <Plus className="mr-2 h-4 w-4" />{' '}
+                        {tContract('list.create')}
+                    </Button>
+                </Can>
+            }
         >
             <div className="space-y-6">
                 <ContractsActionGuideDialog
@@ -284,6 +300,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                                 <DatePickerInput
                                     value={start}
                                     onChange={setStart}
+                                    max={end || undefined}
                                 />
                             </div>
                             <div>
@@ -293,6 +310,7 @@ export default function ContractIndex(props: ContractsPageProps) {
                                 <DatePickerInput
                                     value={end}
                                     onChange={setEnd}
+                                    min={start || undefined}
                                 />
                             </div>
                             <div>
@@ -300,12 +318,22 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     type="button"
                                     variant="outline"
                                     size="sm"
+                                    disabled={isRangeInvalid(start, end)}
                                     onClick={applyFilters}
                                 >
                                     {t('common.apply')}
                                 </Button>
                             </div>
                         </div>
+                        {isRangeInvalid(start, end) && (
+                            <div className="text-destructive mt-2 text-xs">
+                                {buildRangeErrorMessage(
+                                    t,
+                                    t('dashboard.filters.start'),
+                                    t('dashboard.filters.end'),
+                                )}
+                            </div>
+                        )}
 
                         <div className="mt-3 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
@@ -335,8 +363,10 @@ export default function ContractIndex(props: ContractsPageProps) {
                                             (q as QueryBag).search ?? '';
                                         if (currentSearch)
                                             qs.set('q', currentSearch);
-                                        if (start) qs.set('start', start);
-                                        if (end) qs.set('end', end);
+                                        if (!isRangeInvalid(start, end)) {
+                                            if (start) qs.set('start', start);
+                                            if (end) qs.set('end', end);
+                                        }
                                         const url = `${route('management.contracts.export')}${qs.toString() ? `?${qs.toString()}` : ''}`;
                                         if (typeof window !== 'undefined')
                                             window.open(url, '_blank');
@@ -351,20 +381,6 @@ export default function ContractIndex(props: ContractsPageProps) {
                                     onClick={() => setOpenGuide(true)}
                                 >
                                     {tContract('list.guide')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={() =>
-                                        router.visit(
-                                            route(
-                                                'management.contracts.create',
-                                            ),
-                                        )
-                                    }
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />{' '}
-                                    {tContract('list.create')}
                                 </Button>
                             </div>
                         </div>
@@ -396,6 +412,13 @@ export default function ContractIndex(props: ContractsPageProps) {
                             showColumn
                             autoRefreshDefault="1m"
                             showRefresh
+                            onRowClick={(row) =>
+                                router.visit(
+                                    route('management.contracts.show', {
+                                        contract: row.id,
+                                    }),
+                                )
+                            }
                         />
                     </CardContent>
                 </Card>

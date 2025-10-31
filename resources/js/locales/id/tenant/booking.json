@@ -1,0 +1,88 @@
+{
+    "page_title": "Booking",
+    "page_desc": "Daftar booking Anda.",
+    "title": "Booking Saya",
+    "new": "Booking Baru",
+    "guide": "Panduan Booking",
+    "guide_desc": "Langkah-langkah proses booking agar jelas dan tidak ambigu.",
+    "guide_steps": {
+        "1": "Pilih kamar pada menu Browse Kamar. Perhatikan informasi penting: gedung, tipe kamar, harga per-bulan, dan deposit.",
+        "2": "Tentukan Rencana Sewa: pilih tanggal mulai dan durasi (bulan). Isi kode promo jika ada.",
+        "3": "Klik Booking lalu cek ringkasan: kamar, tanggal mulai, durasi, harga/bulan, deposit, dan estimasi total. Tambahkan catatan jika perlu, lalu kirim.",
+        "4": "Status awal booking adalah On Hold (menunggu persetujuan). Pantau status pada menu Booking Saya.",
+        "5": "Jika disetujui, tahap berikutnya adalah pembuatan kontrak dan tagihan awal (sewa + deposit). Pembayaran dapat dicek di menu Invoice.",
+        "6": "Perubahan/pembatalan: hubungi pengelola melalui kontak yang tersedia pada sistem jika diperlukan."
+    },
+    "guide_note": "Catatan: Estimasi total adalah perkiraan. Promo yang valid akan diterapkan otomatis pada estimasi.",
+    "status_hint": "Status booking Anda saat ini.",
+    "empty_title": "Belum pernah melakukan booking",
+    "empty_desc": "Mulai dengan mencari kamar yang cocok dan ikuti panduan booking.",
+    "browse": "Browse Kamar",
+    "detail": {
+        "title": "Booking {{number}}",
+        "desc": "Detail booking.",
+        "summary": "Ringkasan Booking",
+        "estimate_promo": "Estimasi & Promo",
+        "room_info": "Informasi Kamar",
+        "estimate_total": "Total Estimasi",
+        "applied_promos": "Promo yang diterapkan",
+        "discount_rent": "Diskon sewa",
+        "discount_deposit": "Diskon deposit",
+        "no_promos": "Tidak ada promo yang diterapkan.",
+        "view_contract": "Lihat Kontrak",
+        "contact_admin": "Hubungi Pengelola",
+        "months_short": "bln"
+    },
+    "browse_page_title": "Browse Kamar",
+    "browse_page_desc": "Pilih kamar tersedia, atur rencana sewa, dan booking.",
+    "back_to_bookings": "Kembali ke Booking",
+    "plan_hint": "Gunakan rencana sewa dan opsi di bawah untuk melihat estimasi biaya sebelum booking.",
+    "plan_info_aria": "Info rencana sewa",
+    "plan_info_tooltip": "Rencana dipakai untuk menghitung estimasi dan mempermudah Booking cepat pada setiap kamar.",
+    "filter": {
+        "building_placeholder": "Pilih gedung",
+        "type_placeholder": "Pilih tipe"
+    },
+    "plan": {
+        "title": "Rencana & Promo",
+        "duration_label": "Durasi (bulan)",
+        "duration_placeholder": "Durasi",
+        "promo_placeholder": "PROMO10",
+        "promo_note": "Jika diisi, promo yang valid akan diterapkan ke estimasi saat booking dibuat."
+    },
+    "plan_header_title": "Rencana & Estimasi",
+    "plan.edit_action": "Ubah Rencana",
+    "plan_header_title": "Rencana & Estimasi",
+    "empty_browse_title": "Tidak ada kamar yang cocok",
+    "empty_browse_desc": "Coba ubah filter gedung/tipe untuk melihat pilihan lainnya.",
+    "room": {
+        "price_month_label": "Harga/bulan",
+        "price_hint": "Tarif sewa per bulan (sebelum promo).",
+        "deposit_hint": "Jaminan dikembalikan saat akhir sewa sesuai ketentuan.",
+        "estimate_total_for": "Perkiraan total {{months}} bln:",
+        "fill_plan_hint": "Isi rencana sewa untuk melihat estimasi total.",
+        "estimate_after_promo": "Perkiraan total setelah promo",
+        "promo_preview_hint": "Perkiraan promo berdasarkan kode yang dimasukkan. Diskon aktual mengikuti syarat promo saat booking.",
+        "price_after_promo": "Setelah promo",
+        "promo_preview_badge": "Promo (perkiraan) −{{pct}}%"
+    },
+    "book_action": "Booking",
+    "confirm": {
+        "title": "Konfirmasi Booking",
+        "desc": "Periksa kembali detail berikut sebelum melanjutkan.",
+        "note_on_hold": {
+            "prefix": "Booking akan masuk status",
+            "suffix": "untuk diverifikasi. Lihat progress di menu",
+            "join": "atau baca"
+        },
+        "total_label": "Perkiraan total",
+        "notes_placeholder": "Catatan untuk pengelola",
+        "action": "Konfirmasi Booking"
+    },
+    "errors": {
+        "plan_incomplete": "Lengkapi rencana sewa dulu (tanggal & durasi).",
+        "prepare_failed": "Gagal mempersiapkan pengiriman. Periksa koneksi Anda.",
+        "submit_failed": "Gagal mengirim booking. Coba lagi.",
+        "fetch_room_failed": "Gagal memuat detail kamar."
+    }
+}

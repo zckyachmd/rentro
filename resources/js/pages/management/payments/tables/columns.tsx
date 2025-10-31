@@ -60,7 +60,7 @@ export const createColumns = (opts?: {
                 <button
                     type="button"
                     onClick={() => opts?.onShowDetail?.(p)}
-                    className={`${COL.date} text-primary truncate text-left underline underline-offset-2`}
+                    className={`${COL.date} text-primary truncate text-left`}
                     title={i18n.t('common.view_detail')}
                 >
                     {p.paid_at}
@@ -179,6 +179,7 @@ export const createColumns = (opts?: {
                                 {i18n.t('common.actions')}
                             </DropdownMenuLabel>
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() => opts?.onShowDetail?.(p)}
                             >
                                 <Eye className="mr-2 h-4 w-4" />{' '}
@@ -190,6 +191,7 @@ export const createColumns = (opts?: {
                                 'review' ? (
                                 <Can all={['payment.update']}>
                                     <DropdownMenuItem
+                                        data-row-action="true"
                                         onClick={() =>
                                             opts?.onReview
                                                 ? opts.onReview(p)
@@ -206,6 +208,7 @@ export const createColumns = (opts?: {
                                 <>
                                     <Can all={['payment.view']}>
                                         <DropdownMenuItem
+                                            data-row-action="true"
                                             onClick={() => opts?.onPrint?.(p)}
                                         >
                                             <Printer className="mr-2 h-4 w-4" />{' '}
@@ -215,10 +218,11 @@ export const createColumns = (opts?: {
                                     <DropdownMenuSeparator />
                                     <Can all={['payment.update']}>
                                         <DropdownMenuItem
+                                            data-row-action="true"
                                             className="text-destructive focus:text-destructive"
                                             onClick={() => opts?.onVoid?.(p)}
                                         >
-                                            <XCircle className="mr-2 h-4 w-4" />{' '}
+                                            <XCircle className="text-destructive focus:text-destructive mr-2 h-4 w-4" />{' '}
                                             {i18n.t('payment.void.title')}
                                         </DropdownMenuItem>
                                     </Can>

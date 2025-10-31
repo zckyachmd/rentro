@@ -1,18 +1,24 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Banknote,
+    Building2,
     CalendarCheck,
     CalendarRange,
     CheckCircle2,
     CircleSlash,
     FileSignature,
+    Hash,
     HelpCircle,
     LifeBuoy,
     Receipt,
+    ShieldCheck,
+    Tag,
     Timer,
     XCircle,
 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,7 +37,8 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { AppLayout } from '@/layouts';
-import BookingGuideDialog from '@/pages/tenant/booking/guide-dialog';
+import { formatDate } from '@/lib/format';
+import BookingGuideDialog from '@/pages/tenant/booking/dialogs/guide-dialog';
 import type { PageProps } from '@/types';
 
 type BookingDetail = {
@@ -69,6 +76,9 @@ type BookingDetail = {
 };
 
 export default function TenantBookingDetail() {
+    const { t } = useTranslation('tenant/booking');
+    const { t: tCommon } = useTranslation('common');
+    const { t: tEnum } = useTranslation('enum');
     const { booking } = usePage<PageProps<Record<string, unknown>>>()
         .props as unknown as {
         booking: BookingDetail;
@@ -90,10 +100,36 @@ export default function TenantBookingDetail() {
     const cancelled = status === 'cancelled';
     const approved = status === 'approved';
 
+    // Promo (perkiraan) badge percent — matches Browse/Confirm logic
+    const promoPct = React.useMemo(() => {
+        const m = String(booking.promo_code || '')
+            .trim()
+            .match(/(\d{1,2})$/);
+        const pct = m ? parseInt(m[1]!, 10) : 0;
+        return Number.isFinite(pct) ? Math.max(0, Math.min(50, pct)) : 0;
+    }, [booking.promo_code]);
+
+    const formatPeriod = (p?: string | null) => {
+        const key = String(p || '').toLowerCase();
+        return (
+            tEnum(`billing_period.${key}`, {
+                defaultValue:
+                    key === 'weekly'
+                        ? 'Weekly'
+                        : key === 'daily'
+                          ? 'Daily'
+                          : 'Monthly',
+            }) || '—'
+        );
+    };
+
     return (
         <AppLayout
-            pageTitle={`Booking ${booking.number}`}
-            pageDescription="Detail booking."
+            pageTitle={t('detail.title', {
+                number: booking.number,
+                defaultValue: `Booking ${booking.number}`,
+            })}
+            pageDescription={t('detail.desc', 'Detail booking.')}
             actions={
                 <div className="flex items-center gap-2">
                     <Button asChild size="sm">
@@ -388,68 +424,139 @@ export default function TenantBookingDetail() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-base font-medium">
-                            Ringkasan Booking
+                            {t('detail.summary', 'Ringkasan Booking')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid gap-2 md:grid-cols-2">
-                            <div className="space-y-1 text-sm">
-                                <div>No: {booking.number}</div>
-                                <div>
-                                    Status:{' '}
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <Hash className="h-4 w-4" />
+                                    <span className="font-medium">
+                                        {booking.number}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
                                     <Badge className="inline-flex items-center gap-1 capitalize">
-                                        <CalendarCheck className="h-3 w-3" />{' '}
+                                        <CalendarCheck className="h-3.5 w-3.5" />{' '}
                                         {booking.status}
                                     </Badge>
                                 </div>
-                                <div className="inline-flex items-center gap-1">
-                                    <CalendarCheck className="h-3.5 w-3.5" />{' '}
-                                    Start: {booking.start_date}
+                                {booking.room?.building ||
+                                booking.room?.type ? (
+                                    <div className="text-muted-foreground inline-flex flex-wrap items-center gap-2 text-xs">
+                                        {booking.room?.building ? (
+                                            <span className="inline-flex items-center gap-1">
+                                                <Building2 className="h-3.5 w-3.5" />{' '}
+                                                {booking.room.building}
+                                            </span>
+                                        ) : null}
+                                        {booking.room?.type ? (
+                                            <span className="inline-flex items-center gap-1">
+                                                <Tag className="h-3.5 w-3.5" />{' '}
+                                                {booking.room.type}
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                ) : null}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="rounded-md border p-2 text-xs">
+                                        <div className="text-muted-foreground inline-flex items-center gap-1">
+                                            <CalendarCheck className="h-3.5 w-3.5" />{' '}
+                                            {tCommon('start')}
+                                        </div>
+                                        <div className="text-sm font-medium">
+                                            {formatDate(booking.start_date)}
+                                        </div>
+                                    </div>
+                                    <div className="rounded-md border p-2 text-xs">
+                                        <div className="text-muted-foreground inline-flex items-center gap-1">
+                                            <Timer className="h-3.5 w-3.5" />{' '}
+                                            {tCommon('duration', 'Durasi')}
+                                        </div>
+                                        <div className="text-sm font-medium">
+                                            {booking.duration}{' '}
+                                            {tCommon('monthly', 'bulan')}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="inline-flex items-center gap-1">
-                                    <Timer className="h-3.5 w-3.5" /> Durasi:{' '}
-                                    {booking.duration} bulan
+                                <div className="rounded-md border p-2 text-xs">
+                                    <div className="text-muted-foreground inline-flex items-center gap-1">
+                                        <CalendarRange className="h-3.5 w-3.5" />{' '}
+                                        {tCommon('period')}
+                                    </div>
+                                    <div className="text-sm font-medium">
+                                        {formatPeriod(booking.period)}
+                                    </div>
                                 </div>
-                                <div className="inline-flex items-center gap-1">
-                                    <CalendarRange className="h-3.5 w-3.5" />{' '}
-                                    Periode:{' '}
-                                    {String(booking.period).toLowerCase() ===
-                                    'weekly'
-                                        ? 'Mingguan'
-                                        : String(
-                                                booking.period,
-                                            ).toLowerCase() === 'daily'
-                                          ? 'Harian'
-                                          : 'Bulanan'}
-                                </div>
-                                {booking.promo_code && (
-                                    <div>
-                                        Promo:
-                                        <span className="bg-primary/10 text-primary ml-1 inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium">
+                                {booking.promo_code ? (
+                                    <div className="flex items-center gap-2">
+                                        <span className="bg-primary/10 text-primary inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium">
+                                            {tCommon('promo_code')}:{' '}
                                             {booking.promo_code}
                                         </span>
+                                        {(() => {
+                                            const m = String(
+                                                booking.promo_code || '',
+                                            )
+                                                .trim()
+                                                .match(/(\d{1,2})$/);
+                                            const pct = m
+                                                ? Math.max(
+                                                      0,
+                                                      Math.min(
+                                                          50,
+                                                          parseInt(m[1]!, 10),
+                                                      ),
+                                                  )
+                                                : 0;
+                                            return pct > 0 ? (
+                                                <span className="bg-primary/10 text-primary inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium">
+                                                    {t(
+                                                        'room.promo_preview_badge',
+                                                        'Promo (perkiraan) −{{pct}}%',
+                                                        { pct },
+                                                    )}
+                                                </span>
+                                            ) : null;
+                                        })()}
                                     </div>
-                                )}
-                                {booking.notes && (
-                                    <div className="text-muted-foreground mt-2 text-xs">
-                                        Catatan: {booking.notes}
+                                ) : null}
+                                {booking.notes ? (
+                                    <div className="text-muted-foreground mt-1 text-xs">
+                                        {tCommon('notes')}: {booking.notes}
                                     </div>
-                                )}
+                                ) : null}
                             </div>
                             <div className="space-y-2">
                                 <div className="rounded-md border p-2 text-sm">
                                     <div className="text-muted-foreground text-xs">
-                                        Total Estimasi
-                                    </div>
-                                    <div className="text-lg font-semibold">
-                                        Rp{' '}
-                                        {new Intl.NumberFormat('id-ID').format(
-                                            booking.estimate?.total || 0,
+                                        {t(
+                                            'detail.estimate_total',
+                                            'Total Estimasi',
                                         )}
                                     </div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <div className="text-lg font-semibold">
+                                            {new Intl.NumberFormat(
+                                                'id-ID',
+                                            ).format(
+                                                booking.estimate?.total || 0,
+                                            )}
+                                        </div>
+                                        {promoPct > 0 ? (
+                                            <span className="bg-primary/10 text-primary inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium">
+                                                {t(
+                                                    'room.promo_preview_badge',
+                                                    'Promo (perkiraan) −{{pct}}%',
+                                                    { pct: promoPct },
+                                                )}
+                                            </span>
+                                        ) : null}
+                                    </div>
                                 </div>
-                                {booking.contract_id && (
-                                    <div className="pt-1">
+                                {booking.contract_id ? (
+                                    <div className="flex items-center gap-2 pt-1">
                                         <Button asChild size="sm">
                                             <Link
                                                 href={route(
@@ -461,25 +568,33 @@ export default function TenantBookingDetail() {
                                                 )}
                                             >
                                                 <FileSignature className="mr-1 h-4 w-4" />{' '}
-                                                Lihat Kontrak
+                                                {t(
+                                                    'detail.view_contract',
+                                                    'Lihat Kontrak',
+                                                )}
                                             </Link>
                                         </Button>
-                                    </div>
-                                )}
-                                {(rejected || cancelled) && (
-                                    <div className="pt-1">
-                                        <Button asChild size="sm">
-                                            <a
-                                                href={contactUrl}
-                                                target="_blank"
-                                                rel="noreferrer"
+                                        {rejected || cancelled ? (
+                                            <Button
+                                                asChild
+                                                size="sm"
+                                                variant="outline"
                                             >
-                                                <LifeBuoy className="mr-1 h-4 w-4" />{' '}
-                                                Hubungi Pengelola
-                                            </a>
-                                        </Button>
+                                                <a
+                                                    href={contactUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    <LifeBuoy className="mr-1 h-4 w-4" />{' '}
+                                                    {t(
+                                                        'detail.contact_admin',
+                                                        'Hubungi Pengelola',
+                                                    )}
+                                                </a>
+                                            </Button>
+                                        ) : null}
                                     </div>
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     </CardContent>
@@ -489,45 +604,44 @@ export default function TenantBookingDetail() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-base font-medium">
-                            Estimasi & Promo
+                            {t('detail.estimate_promo', 'Estimasi & Promo')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid gap-3 md:grid-cols-2">
                             <div className="space-y-2 text-sm">
                                 <div className="rounded-md border p-2">
-                                    <div className="text-muted-foreground text-xs">
-                                        Sewa
+                                    <div className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                                        <Banknote className="h-3.5 w-3.5" />{' '}
+                                        {t('detail.rent', 'Sewa')}
                                     </div>
-                                    <div>
-                                        Rp{' '}
+                                    <div className="text-sm">
                                         {new Intl.NumberFormat('id-ID').format(
                                             booking.estimate?.final_rent || 0,
                                         )}{' '}
-                                        x{' '}
+                                        ×{' '}
                                         {booking.estimate?.duration ||
                                             booking.duration}{' '}
-                                        bln
+                                        {t('detail.months_short', 'bln')}
                                     </div>
                                 </div>
                                 <div className="rounded-md border p-2">
-                                    <div className="text-muted-foreground text-xs">
-                                        Deposit
+                                    <div className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                                        <ShieldCheck className="h-3.5 w-3.5" />{' '}
+                                        {t('common.deposit')}
                                     </div>
                                     <div>
-                                        Rp{' '}
                                         {new Intl.NumberFormat('id-ID').format(
                                             booking.estimate?.final_deposit ||
                                                 0,
                                         )}
                                     </div>
                                 </div>
-                                <div className="rounded-md border p-2">
+                                <div className="bg-muted/50 rounded-md border p-2">
                                     <div className="text-muted-foreground text-xs">
-                                        Total
+                                        {t('common.total')}
                                     </div>
                                     <div className="text-lg font-semibold">
-                                        Rp{' '}
                                         {new Intl.NumberFormat('id-ID').format(
                                             booking.estimate?.total || 0,
                                         )}
@@ -536,7 +650,10 @@ export default function TenantBookingDetail() {
                             </div>
                             <div className="space-y-2 text-sm">
                                 <div className="text-muted-foreground text-xs">
-                                    Promo yang diterapkan
+                                    {t(
+                                        'detail.applied_promos',
+                                        'Promo yang diterapkan',
+                                    )}
                                 </div>
                                 {booking.estimate?.promo?.applied &&
                                 booking.estimate.promo.applied.length > 0 ? (
@@ -544,20 +661,39 @@ export default function TenantBookingDetail() {
                                         {booking.estimate.promo.applied.map(
                                             (p) => (
                                                 <li key={p.id}>
-                                                    {p.name} — Diskon sewa Rp{' '}
+                                                    {p.name} —{' '}
+                                                    {t(
+                                                        'detail.discount_rent',
+                                                        'Diskon sewa',
+                                                    )}{' '}
                                                     {new Intl.NumberFormat(
                                                         'id-ID',
                                                     ).format(p.discount_rent)}
-                                                    {p.discount_deposit
-                                                        ? ` · Diskon deposit Rp${new Intl.NumberFormat('id-ID').format(p.discount_deposit)}`
-                                                        : ''}
+                                                    {p.discount_deposit ? (
+                                                        <>
+                                                            {' '}
+                                                            ·{' '}
+                                                            {t(
+                                                                'detail.discount_deposit',
+                                                                'Diskon deposit',
+                                                            )}{' '}
+                                                            {new Intl.NumberFormat(
+                                                                'id-ID',
+                                                            ).format(
+                                                                p.discount_deposit,
+                                                            )}
+                                                        </>
+                                                    ) : null}
                                                 </li>
                                             ),
                                         )}
                                     </ul>
                                 ) : (
                                     <div className="text-muted-foreground text-xs">
-                                        Tidak ada promo yang diterapkan.
+                                        {t(
+                                            'detail.no_promos',
+                                            'Tidak ada promo yang diterapkan.',
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -569,49 +705,52 @@ export default function TenantBookingDetail() {
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-base font-medium">
-                            Informasi Kamar
+                            {t('detail.room_info', 'Informasi Kamar')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                             <div className="rounded-md border p-2 text-sm">
-                                <div className="text-muted-foreground text-xs">
-                                    No Kamar
+                                <div className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                                    <Hash className="h-3.5 w-3.5" />{' '}
+                                    {tCommon('number')}
                                 </div>
                                 <div className="font-medium">
                                     {booking.room?.number || '-'}
                                 </div>
                             </div>
-                            {booking.room?.name && (
+                            {booking.room?.name ? (
                                 <div className="rounded-md border p-2 text-sm">
                                     <div className="text-muted-foreground text-xs">
-                                        Nama
+                                        {tCommon('name')}
                                     </div>
                                     <div className="font-medium">
                                         {booking.room.name}
                                     </div>
                                 </div>
-                            )}
-                            {booking.room?.building && (
+                            ) : null}
+                            {booking.room?.building ? (
                                 <div className="rounded-md border p-2 text-sm">
-                                    <div className="text-muted-foreground text-xs">
-                                        Gedung
+                                    <div className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                                        <Building2 className="h-3.5 w-3.5" />{' '}
+                                        {tCommon('building')}
                                     </div>
                                     <div className="font-medium">
                                         {booking.room.building}
                                     </div>
                                 </div>
-                            )}
-                            {booking.room?.type && (
+                            ) : null}
+                            {booking.room?.type ? (
                                 <div className="rounded-md border p-2 text-sm">
-                                    <div className="text-muted-foreground text-xs">
-                                        Tipe
+                                    <div className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                                        <Tag className="h-3.5 w-3.5" />{' '}
+                                        {tCommon('type')}
                                     </div>
                                     <div className="font-medium">
                                         {booking.room.type}
                                     </div>
                                 </div>
-                            )}
+                            ) : null}
                         </div>
                     </CardContent>
                 </Card>

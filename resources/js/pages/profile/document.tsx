@@ -21,6 +21,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { todayISO, tomorrowISO } from '@/lib/date';
+import { isRangeInvalid } from '@/lib/date-range';
 import DocumentFilePicker from '@/pages/profile/components/document-file-picker';
 import DocumentStatusBadge from '@/pages/profile/components/document-status-badge';
 import type { DocumentFormValue, DocumentSectionProps } from '@/types/profile';
@@ -176,7 +177,12 @@ export default function DocumentSection({
                                     placeholder={t(
                                         'form.placeholder.pick_date',
                                     )}
-                                    max={todayISO()}
+                                    max={
+                                        value.expires_at &&
+                                        value.expires_at < todayISO()
+                                            ? value.expires_at
+                                            : todayISO()
+                                    }
                                 />
                                 <InputError
                                     message={errors['document.issued_at']}
@@ -198,11 +204,33 @@ export default function DocumentSection({
                                     placeholder={t(
                                         'form.placeholder.pick_date',
                                     )}
-                                    min={tomorrowISO()}
+                                    min={
+                                        value.issued_at &&
+                                        value.issued_at > tomorrowISO()
+                                            ? value.issued_at
+                                            : tomorrowISO()
+                                    }
                                 />
                                 <InputError
                                     message={errors['document.expires_at']}
                                 />
+                                {isRangeInvalid(
+                                    value.issued_at,
+                                    value.expires_at,
+                                ) && (
+                                    <p className="text-destructive text-xs">
+                                        {t('validation.before_or_equal', {
+                                            ns: 'validation',
+                                            attribute:
+                                                tProfile('document.issued_at'),
+                                            date: tProfile(
+                                                'document.expires_at',
+                                            ),
+                                            defaultValue:
+                                                'Issue date must be before or equal to expiry date.',
+                                        })}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2 md:col-span-4">

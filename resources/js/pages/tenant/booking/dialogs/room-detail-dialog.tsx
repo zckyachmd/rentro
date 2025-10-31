@@ -1,10 +1,12 @@
 import {
     Building2,
+    CalendarCheck,
     Layers,
     Ruler,
     ShieldCheck,
     Tag,
     Users,
+    X,
 } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,22 +52,26 @@ export default function RoomDetailDialog({
     room,
     onBook,
     bookDisabled,
+    promo,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     room: RoomDetail | null;
     onBook?: (roomId: string) => void;
     bookDisabled?: boolean;
+    promo?: string | null;
 }) {
     const { t } = useTranslation();
+    const { t: tTenant } = useTranslation('tenant/booking');
     const [data, setData] = React.useState<RoomDetail | null>(null);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const title = React.useMemo(() => {
-        if (!data) return 'Detail Kamar';
+        if (!data)
+            return t('common.room', 'Kamar') + ' ' + (room?.number || '');
         const postfix = data.name ? ` • ${data.name}` : '';
-        return `Kamar ${data.number}${postfix}`;
-    }, [data]);
+        return `${t('common.room', 'Kamar')} ${data.number}${postfix}`;
+    }, [data, room?.number, t]);
 
     const photos = data?.photo_urls?.length
         ? data.photo_urls
@@ -104,7 +110,13 @@ export default function RoomDetailDialog({
                     else throw new Error('Invalid payload');
                 }
             } catch {
-                if (!abort) setError('Gagal memuat detail kamar.');
+                if (!abort)
+                    setError(
+                        tTenant(
+                            'errors.fetch_room_failed',
+                            'Gagal memuat detail kamar.',
+                        ),
+                    );
             } finally {
                 if (!abort) setLoading(false);
             }
@@ -112,17 +124,36 @@ export default function RoomDetailDialog({
         return () => {
             abort = true;
         };
-    }, [open, room, room?.id]);
+    }, [open, room, room?.id, tTenant]);
 
     const [amenExpanded, setAmenExpanded] = React.useState(false);
+    const promoPct = React.useMemo(() => {
+        const m = String(promo || '')
+            .trim()
+            .match(/(\d{1,2})$/);
+        const pct = m ? Number.parseInt(m[1]!, 10) : 0;
+        return Number.isFinite(pct) ? Math.max(0, Math.min(50, pct)) : 0;
+    }, [promo]);
     const amenAll = (data?.amenities ?? []).map((a) =>
         typeof a === 'string' ? { name: a } : { name: a.name, icon: a.icon },
     );
     const amenities = amenExpanded ? amenAll : amenAll.slice(0, 8);
 
+    // Prefer fetched data when valid (> 0), otherwise fall back to list item values
+    const basePrice = React.useMemo(() => {
+        const a = Number(data?.price_month ?? 0);
+        const b = Number(room?.price_month ?? 0);
+        return a > 0 ? a : b;
+    }, [data?.price_month, room?.price_month]);
+    const baseDeposit = React.useMemo(() => {
+        const a = Number(data?.deposit ?? 0);
+        const b = Number(room?.deposit ?? 0);
+        return a > 0 ? a : b;
+    }, [data?.deposit, room?.deposit]);
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="sm:max-w-xl md:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
@@ -166,7 +197,10 @@ export default function RoomDetailDialog({
                                                         photos.length,
                                                 )
                                             }
-                                            aria-label="Sebelumnya"
+                                            aria-label={t(
+                                                'datatable.prev',
+                                                'Sebelumnya',
+                                            )}
                                         >
                                             ‹
                                         </button>
@@ -179,7 +213,10 @@ export default function RoomDetailDialog({
                                                         (i + 1) % photos.length,
                                                 )
                                             }
-                                            aria-label="Berikutnya"
+                                            aria-label={t(
+                                                'datatable.next',
+                                                'Berikutnya',
+                                            )}
                                         >
                                             ›
                                         </button>
@@ -200,11 +237,11 @@ export default function RoomDetailDialog({
                                                 ? 'ring-primary ring-2'
                                                 : 'hover:opacity-90',
                                         ].join(' ')}
-                                        aria-label={`Foto ${idx + 1}`}
+                                        aria-label={`${t('attachment.image_alt', 'Lampiran')} ${idx + 1}`}
                                     >
                                         <img
                                             src={p}
-                                            alt={`Foto ${idx + 1}`}
+                                            alt={`${t('attachment.image_alt', 'Lampiran')} ${idx + 1}`}
                                             className="h-full w-full object-cover"
                                             loading="lazy"
                                         />
@@ -216,7 +253,7 @@ export default function RoomDetailDialog({
                 ) : null}
 
                 {data && (
-                    <div className="grid gap-4 md:grid-cols-[1fr_320px]">
+                    <div className="grid gap-4 md:grid-cols-[1fr_420px]">
                         <div className="space-y-3">
                             <div className="flex flex-wrap gap-2">
                                 {data?.building ? (
@@ -260,7 +297,8 @@ export default function RoomDetailDialog({
                                         variant="outline"
                                         className="inline-flex items-center gap-1"
                                     >
-                                        <Users className="h-3.5 w-3.5" /> Maks{' '}
+                                        <Users className="h-3.5 w-3.5" />
+                                        {t('room.max_occupancy')}:{' '}
                                         {data.max_occupancy}
                                     </Badge>
                                 ) : null}
@@ -306,20 +344,65 @@ export default function RoomDetailDialog({
                         </div>
 
                         <div className="space-y-2 rounded-md border p-3">
-                            <div className="text-sm">Harga/bulan</div>
-                            <div className="text-2xl leading-6 font-semibold">
-                                Rp {formatIDR(data?.price_month)}
+                            <div className="text-sm">
+                                {tTenant(
+                                    'room.price_month_label',
+                                    'Harga/bulan',
+                                )}
                             </div>
+                            <div className="text-2xl leading-6 font-semibold">
+                                {promoPct > 0 ? (
+                                    <>
+                                        <div className="text-muted-foreground text-base line-through">
+                                            Rp {formatIDR(basePrice)}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span>
+                                                Rp{' '}
+                                                {formatIDR(
+                                                    Math.max(
+                                                        0,
+                                                        basePrice -
+                                                            Math.round(
+                                                                basePrice *
+                                                                    (promoPct /
+                                                                        100),
+                                                            ),
+                                                    ),
+                                                )}
+                                            </span>
+                                            <span className="bg-primary/10 text-primary inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium">
+                                                {tTenant(
+                                                    'room.promo_preview_badge',
+                                                    'Promo (perkiraan) −{{pct}}%',
+                                                    { pct: promoPct },
+                                                )}
+                                            </span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>Rp {formatIDR(basePrice)}</>
+                                )}
+                            </div>
+                            {promo ? (
+                                <div className="text-xs">
+                                    <span className="bg-primary/10 text-primary inline-flex items-center rounded-md px-1.5 py-0.5 font-medium">
+                                        {t('common.promo_code')}: {promo}
+                                    </span>
+                                </div>
+                            ) : null}
                             <div className="text-muted-foreground text-xs">
-                                Belum termasuk listrik/air (jika berlaku). Promo
-                                akan diterapkan saat booking jika valid.
+                                {t(
+                                    'management/booking:price_note',
+                                    'Belum termasuk listrik/air (jika berlaku). Promo akan diterapkan saat booking jika valid.',
+                                )}
                             </div>
                             <div className="mt-2 flex items-center gap-2 rounded-md border p-2">
                                 <ShieldCheck className="text-muted-foreground h-4 w-4" />
                                 <div className="text-sm">
-                                    Deposit:{' '}
+                                    {t('common.deposit')}:{' '}
                                     <span className="font-medium">
-                                        Rp {formatIDR(data?.deposit)}
+                                        Rp {formatIDR(baseDeposit)}
                                     </span>
                                 </div>
                             </div>
@@ -333,7 +416,7 @@ export default function RoomDetailDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                     >
-                        Tutup
+                        <X className="mr-1 h-4 w-4" /> {t('common.close')}
                     </Button>
                     {data && onBook ? (
                         <Button
@@ -341,7 +424,8 @@ export default function RoomDetailDialog({
                             onClick={() => onBook(data.id)}
                             disabled={!!bookDisabled || loading}
                         >
-                            Booking
+                            <CalendarCheck className="mr-1 h-4 w-4" />{' '}
+                            {tTenant('book_action', 'Booking')}
                         </Button>
                     ) : null}
                 </DialogFooter>

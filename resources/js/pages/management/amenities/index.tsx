@@ -89,8 +89,20 @@ export default function AmenitiesIndex() {
         [openEdit, onDelete],
     );
 
+    const actions = (
+        <Can all={['amenity.create']}>
+            <Button size="sm" onClick={openCreate}>
+                <Plus className="mr-2 h-4 w-4" /> {tAmen('add')}
+            </Button>
+        </Can>
+    );
+
     return (
-        <AppLayout pageTitle={tAmen('title')} pageDescription={tAmen('desc')}>
+        <AppLayout
+            pageTitle={tAmen('title')}
+            pageDescription={tAmen('desc')}
+            actions={actions}
+        >
             <div className="space-y-6">
                 <Card>
                     <CardHeader className="pb-2">
@@ -135,12 +147,7 @@ export default function AmenitiesIndex() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <Can all={['amenity.create']}>
-                                <Button size="sm" onClick={openCreate}>
-                                    <Plus className="mr-2 h-4 w-4" />{' '}
-                                    {tAmen('add')}
-                                </Button>
-                            </Can>
+                            {null}
                         </div>
                     </CardContent>
                 </Card>

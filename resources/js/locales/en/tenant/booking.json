@@ -1,0 +1,88 @@
+{
+    "page_title": "Bookings",
+    "page_desc": "Your booking list.",
+    "title": "My Bookings",
+    "new": "New Booking",
+    "guide": "Booking Guide",
+    "guide_desc": "Steps to keep the booking process clear and unambiguous.",
+    "guide_steps": {
+        "1": "Pick a room from Browse Rooms. Check building, type, monthly price, and deposit.",
+        "2": "Set the Plan: choose start date and duration (months). Fill promo code if any.",
+        "3": "Click Book then review: room, start date, duration, price/month, deposit, and estimated total. Add notes if needed, then submit.",
+        "4": "Initial booking status is On Hold (pending approval). Track progress in My Bookings.",
+        "5": "If approved, the next step is contract creation and initial invoice (rent + deposit). Payments are available in Invoices.",
+        "6": "For changes/cancellations, contact the manager using the provided contacts if needed."
+    },
+    "guide_note": "Note: Estimated total is an approximation. Valid promotions will be applied automatically to the estimate.",
+    "status_hint": "Your current booking status.",
+    "empty_title": "No bookings yet",
+    "empty_desc": "Start by browsing suitable rooms and follow the booking guide.",
+    "browse": "Browse Rooms",
+    "detail": {
+        "title": "Booking {{number}}",
+        "desc": "Booking detail.",
+        "summary": "Booking Summary",
+        "estimate_promo": "Estimate & Promotions",
+        "room_info": "Room Information",
+        "estimate_total": "Estimated Total",
+        "applied_promos": "Applied Promotions",
+        "discount_rent": "Rent discount",
+        "discount_deposit": "Deposit discount",
+        "no_promos": "No promotions applied.",
+        "view_contract": "View Contract",
+        "contact_admin": "Contact Admin",
+        "months_short": "mo"
+    },
+    "browse_page_title": "Browse Rooms",
+    "browse_page_desc": "Pick available rooms, set a plan, then book.",
+    "back_to_bookings": "Back to Bookings",
+    "plan_hint": "Use the plan and options below to preview estimated costs.",
+    "plan_info_aria": "Plan info",
+    "plan_info_tooltip": "The plan is used to estimate totals and enable quick booking from each card.",
+    "filter": {
+        "building_placeholder": "Select building",
+        "type_placeholder": "Select type"
+    },
+    "plan": {
+        "title": "Plan & Promo",
+        "duration_label": "Duration (months)",
+        "duration_placeholder": "Duration",
+        "promo_placeholder": "PROMO10",
+        "promo_note": "If provided, valid promotions are applied to the estimate when booking is created."
+    },
+    "plan_header_title": "Plan & Estimate",
+    "plan.edit_action": "Edit Plan",
+    "plan_header_title": "Plan & Estimate",
+    "empty_browse_title": "No matching rooms",
+    "empty_browse_desc": "Try adjusting building/type filters to see more options.",
+    "room": {
+        "price_month_label": "Price/month",
+        "price_hint": "Monthly rate (before any promotion).",
+        "deposit_hint": "Refundable deposit at end of stay, per policy.",
+        "estimate_total_for": "Estimated total for {{months}} mo:",
+        "fill_plan_hint": "Fill the plan to see total estimate.",
+        "estimate_after_promo": "Estimated total after promo",
+        "promo_preview_hint": "Promo estimate based on entered code. Actual discount depends on eligibility at booking.",
+        "price_after_promo": "After promo",
+        "promo_preview_badge": "Promo (preview) −{{pct}}%"
+    },
+    "book_action": "Book",
+    "confirm": {
+        "title": "Confirm Booking",
+        "desc": "Review the details below before proceeding.",
+        "note_on_hold": {
+            "prefix": "Booking will be",
+            "suffix": "for verification. Track progress in",
+            "join": "or read the"
+        },
+        "total_label": "Estimated total",
+        "notes_placeholder": "Notes for manager",
+        "action": "Confirm Booking"
+    },
+    "errors": {
+        "plan_incomplete": "Complete the plan first (date & duration).",
+        "prepare_failed": "Failed to prepare submission. Check your connection.",
+        "submit_failed": "Failed to submit booking. Please try again.",
+        "fetch_room_failed": "Failed to load room details."
+    }
+}

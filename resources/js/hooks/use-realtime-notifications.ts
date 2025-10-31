@@ -200,8 +200,10 @@ export function useRealtimeNotifications(params: Params) {
                     const hasAny = (v: unknown) =>
                         (typeof v === 'string' && v.trim().length > 0) ||
                         (v !== null && typeof v === 'object');
-                    if (!hasAny((data as { title?: unknown }).title) &&
-                        !hasAny((data as { message?: unknown }).message)) {
+                    if (
+                        !hasAny((data as { title?: unknown }).title) &&
+                        !hasAny((data as { message?: unknown }).message)
+                    ) {
                         return;
                     }
                     const parseMaybeJson = (v: unknown) => {
@@ -462,8 +464,10 @@ export function useRealtimeNotifications(params: Params) {
                     const hasAny = (v: unknown) =>
                         (typeof v === 'string' && v.trim().length > 0) ||
                         (v !== null && typeof v === 'object');
-                    if (!hasAny((data as { title?: unknown }).title) &&
-                        !hasAny((data as { message?: unknown }).message)) {
+                    if (
+                        !hasAny((data as { title?: unknown }).title) &&
+                        !hasAny((data as { message?: unknown }).message)
+                    ) {
                         return;
                     }
                     const persist = Boolean(
@@ -611,8 +615,10 @@ export function useRealtimeNotifications(params: Params) {
                 const hasAny = (v: unknown) =>
                     (typeof v === 'string' && v.trim().length > 0) ||
                     (v !== null && typeof v === 'object');
-                if (!hasAny((data as { title?: unknown }).title) &&
-                    !hasAny((data as { message?: unknown }).message)) {
+                if (
+                    !hasAny((data as { title?: unknown }).title) &&
+                    !hasAny((data as { message?: unknown }).message)
+                ) {
                     return;
                 }
                 const persist = Boolean(

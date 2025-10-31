@@ -55,7 +55,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                 <div className={`flex items-center gap-2 ${COL.number}`}>
                     <button
                         type="button"
-                        className="text-left font-mono text-xs underline underline-offset-2"
+                        className="text-left font-mono text-xs"
                         onClick={() => opts?.onShowDetail?.(inv)}
                         aria-label={t('common.view_detail') + ' ' + inv.number}
                         title={t('common.view_detail')}
@@ -185,6 +185,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                 {t('common.actions')}
                             </DropdownMenuLabel>
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() => opts?.onShowDetail?.(inv)}
                             >
                                 <Eye className="mr-2 h-4 w-4" />{' '}
@@ -192,7 +193,10 @@ export const createColumns = <T extends BaseInvoiceRow>(
                             </DropdownMenuItem>
                             {typeof inv.ticket_url === 'string' &&
                             inv.ticket_url ? (
-                                <DropdownMenuItem asChild>
+                                <DropdownMenuItem
+                                    asChild
+                                    data-row-action="true"
+                                >
                                     <Link href={inv.ticket_url} target="_blank">
                                         <Receipt className="mr-2 h-4 w-4" />
                                         {t('table.view_ticket', {
@@ -210,6 +214,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                             })() ? (
                                 <Can all={['invoice.update']}>
                                     <DropdownMenuItem
+                                        data-row-action="true"
                                         onClick={() => opts?.onExtendDue?.(inv)}
                                     >
                                         <Clock3 className="mr-2 h-4 w-4" />{' '}
@@ -220,6 +225,7 @@ export const createColumns = <T extends BaseInvoiceRow>(
                                 </Can>
                             ) : null}
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() => opts?.onPrint?.(inv)}
                             >
                                 <Printer className="mr-2 h-4 w-4" />{' '}
@@ -229,10 +235,11 @@ export const createColumns = <T extends BaseInvoiceRow>(
                             {inv.status !== 'Voided' ? (
                                 <Can all={['invoice.update']}>
                                     <DropdownMenuItem
+                                        data-row-action="true"
                                         onClick={() => opts?.onCancel?.(inv)}
                                         className="text-destructive focus:text-destructive"
                                     >
-                                        <XCircle className="mr-2 h-4 w-4" />{' '}
+                                        <XCircle className="text-destructive focus:text-destructive mr-2 h-4 w-4" />{' '}
                                         {t('common.cancel')}
                                     </DropdownMenuItem>
                                 </Can>

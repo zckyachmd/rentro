@@ -1,5 +1,5 @@
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Filter, UserPlus } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -313,6 +313,11 @@ export default function UsersIndex() {
                             onQueryChange={onQueryChange}
                             loading={processing}
                             emptyText={tUser('empty')}
+                            onRowClick={(row) =>
+                                router.visit(
+                                    route('management.users.show', row.id),
+                                )
+                            }
                         />
                     </CardContent>
                 </Card>

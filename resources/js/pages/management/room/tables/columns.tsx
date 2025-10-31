@@ -202,6 +202,7 @@ export const createColumns = (
                         <DropdownMenuSeparator />
                         <Can all={['room.manage.view']}>
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() => opts?.onDetail?.(row.original)}
                             >
                                 <Eye className="mr-2 h-4 w-4" />{' '}
@@ -210,6 +211,7 @@ export const createColumns = (
                         </Can>
                         <Can all={['room.manage.update']}>
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() => opts?.onEdit?.(row.original)}
                             >
                                 <Pencil className="mr-2 h-4 w-4" />{' '}
@@ -219,6 +221,7 @@ export const createColumns = (
                         <DropdownMenuSeparator />
                         <Can all={['room.manage.delete']}>
                             <DropdownMenuItem
+                                data-row-action="true"
                                 className="text-destructive focus:text-destructive"
                                 onClick={() => opts?.onDelete?.(row.original)}
                             >

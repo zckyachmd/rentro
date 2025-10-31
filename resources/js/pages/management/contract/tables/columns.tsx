@@ -26,7 +26,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { formatIDR } from '@/lib/format';
 import i18n from '@/lib/i18n';
 import { variantForContractStatus } from '@/lib/status';
 import type {
@@ -79,7 +78,7 @@ export const createColumns = (
                     {no ? (
                         <Link
                             href={href}
-                            className="underline underline-offset-2 hover:opacity-80"
+                            className="hover:opacity-80"
                             title={i18n.t(
                                 'management/contract:table.view_detail_title',
                                 { number: no },
@@ -137,15 +136,6 @@ export const createColumns = (
         className: COL.end,
         cell: ({ getValue }) => (
             <div className={COL.end}>{(getValue() as string) ?? '-'}</div>
-        ),
-    }),
-    makeColumn<ContractItem>({
-        id: 'rent',
-        title: i18n.t('management/contract:table.columns.rent'),
-        className: COL.rent,
-        sortable: true,
-        cell: ({ row }) => (
-            <div className={COL.rent}>{formatIDR(row.original.rent_idr)}</div>
         ),
     }),
     makeColumn<ContractItem>({
@@ -292,6 +282,7 @@ export const createColumns = (
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() =>
                                     router.visit(
                                         route('management.contracts.show', {
@@ -304,6 +295,7 @@ export const createColumns = (
                                 {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() =>
                                     window.open(
                                         route('management.contracts.print', {
@@ -318,6 +310,7 @@ export const createColumns = (
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
+                                data-row-action="true"
                                 onClick={() => {
                                     const url = route(
                                         'management.invoices.index',
@@ -333,6 +326,7 @@ export const createColumns = (
                             {canCheckin && (
                                 <Can any={['handover.create']}>
                                     <DropdownMenuItem
+                                        data-row-action="true"
                                         onClick={() =>
                                             opts?.onCheckin?.(row.original)
                                         }
@@ -351,6 +345,7 @@ export const createColumns = (
                             {canCheckout && (
                                 <Can any={['handover.create']}>
                                     <DropdownMenuItem
+                                        data-row-action="true"
                                         onClick={() =>
                                             opts?.onCheckout?.(row.original)
                                         }
@@ -366,6 +361,7 @@ export const createColumns = (
                             {row.original.auto_renew && canStopRenew && (
                                 <Can all={['contract.renew']}>
                                     <DropdownMenuItem
+                                        data-row-action="true"
                                         onClick={() =>
                                             opts?.onStopAutoRenew?.(
                                                 row.original,
@@ -382,6 +378,7 @@ export const createColumns = (
                             {!row.original.auto_renew && canStartRenew && (
                                 <Can all={['contract.renew']}>
                                     <DropdownMenuItem
+                                        data-row-action="true"
                                         onClick={() =>
                                             opts?.onStartAutoRenew?.(
                                                 row.original,
@@ -401,12 +398,13 @@ export const createColumns = (
                                     <>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem
+                                            data-row-action="true"
                                             onClick={() =>
                                                 opts?.onCancel?.(row.original)
                                             }
                                             className="text-destructive focus:text-destructive"
                                         >
-                                            <Trash2 className="mr-2 h-4 w-4" />{' '}
+                                            <Trash2 className="text-destructive focus:text-destructive mr-2 h-4 w-4" />{' '}
                                             {i18n.t('common.cancel')}
                                         </DropdownMenuItem>
                                     </>

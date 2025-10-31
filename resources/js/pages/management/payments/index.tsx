@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useServerTable } from '@/hooks/use-datatable';
 import { AppLayout } from '@/layouts';
+import { buildRangeErrorMessage, isRangeInvalid } from '@/lib/date-range';
 import { formatIDR } from '@/lib/format';
 import PaymentDetailDialog from '@/pages/management/payments/dialogs/detail-dialog';
 import ManualPaymentDialog from '@/pages/management/payments/dialogs/manual-dialog';
@@ -97,6 +98,7 @@ export default function PaymentIndex() {
     );
 
     const applyDates = React.useCallback(() => {
+        if (isRangeInvalid(start, end)) return;
         onQueryChange({ page: 1, start: start || null, end: end || null });
     }, [start, end, onQueryChange]);
 
@@ -113,6 +115,17 @@ export default function PaymentIndex() {
         <AppLayout
             pageTitle={tPayment('title')}
             pageDescription={tPayment('desc')}
+            actions={
+                <Can all={['payment.create']}>
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setOpen(true)}
+                    >
+                        <FilePlus2 className="mr-2 h-4 w-4" /> {tPayment('add')}
+                    </Button>
+                </Can>
+            }
         >
             <div className="space-y-6">
                 <Card>
@@ -244,6 +257,7 @@ export default function PaymentIndex() {
                                 <DatePickerInput
                                     value={start}
                                     onChange={setStart}
+                                    max={end || undefined}
                                 />
                             </div>
                             <div>
@@ -253,6 +267,7 @@ export default function PaymentIndex() {
                                 <DatePickerInput
                                     value={end}
                                     onChange={setEnd}
+                                    min={start || undefined}
                                 />
                             </div>
                             <div>
@@ -260,12 +275,22 @@ export default function PaymentIndex() {
                                     type="button"
                                     variant="outline"
                                     size="sm"
+                                    disabled={isRangeInvalid(start, end)}
                                     onClick={applyDates}
                                 >
                                     {t('dashboard.filters.apply')}
                                 </Button>
                             </div>
                         </div>
+                        {isRangeInvalid(start, end) && (
+                            <div className="text-destructive mt-2 text-xs">
+                                {buildRangeErrorMessage(
+                                    t,
+                                    t('dashboard.filters.start'),
+                                    t('dashboard.filters.end'),
+                                )}
+                            </div>
+                        )}
                         <div className="mt-3 flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
                                 <QuickRange
@@ -308,8 +333,10 @@ export default function PaymentIndex() {
                                             methodValue !== 'all'
                                         )
                                             qs.set('method', methodValue);
-                                        if (start) qs.set('start', start);
-                                        if (end) qs.set('end', end);
+                                        if (!isRangeInvalid(start, end)) {
+                                            if (start) qs.set('start', start);
+                                            if (end) qs.set('end', end);
+                                        }
                                         const url = `${route('management.payments.export')}${qs.toString() ? `?${qs.toString()}` : ''}`;
                                         if (typeof window !== 'undefined')
                                             window.open(url, '_blank');
@@ -317,16 +344,6 @@ export default function PaymentIndex() {
                                 >
                                     {t('common.export_csv', 'Export CSV')}
                                 </Button>
-                                <Can all={['payment.create']}>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        onClick={() => setOpen(true)}
-                                    >
-                                        <FilePlus2 className="mr-2 h-4 w-4" />{' '}
-                                        {tPayment('add')}
-                                    </Button>
-                                </Can>
                             </div>
                         </div>
                     </CardContent>
@@ -376,6 +393,7 @@ export default function PaymentIndex() {
                             emptyText={tPayment('empty')}
                             autoRefreshDefault="1m"
                             showRefresh={true}
+                            onRowClick={(row) => setDetail({ id: row.id })}
                         />
                     </CardContent>
                 </Card>
