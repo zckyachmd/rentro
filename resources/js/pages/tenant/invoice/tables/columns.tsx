@@ -135,6 +135,18 @@ export const createColumns = (opts?: {
                                 <Eye className="mr-2 h-4 w-4" />{' '}
                                 {i18n.t('common.view_detail')}
                             </DropdownMenuItem>
+                            {canPay ? (
+                                <>
+                                    <Can all={['tenant.invoice.pay']}>
+                                        <DropdownMenuItem
+                                            onClick={() => opts?.onPay?.(inv)}
+                                        >
+                                            <CreditCard className="mr-2 h-4 w-4" />{' '}
+                                            {i18n.t('common.pay')}
+                                        </DropdownMenuItem>
+                                    </Can>
+                                </>
+                            ) : null}
                             <Can all={['tenant.invoice.view']}>
                                 <DropdownMenuItem
                                     onClick={() =>
@@ -151,19 +163,6 @@ export const createColumns = (opts?: {
                                     {i18n.t('common.print')}
                                 </DropdownMenuItem>
                             </Can>
-                            {canPay ? (
-                                <>
-                                    <DropdownMenuSeparator />
-                                    <Can all={['tenant.invoice.pay']}>
-                                        <DropdownMenuItem
-                                            onClick={() => opts?.onPay?.(inv)}
-                                        >
-                                            <CreditCard className="mr-2 h-4 w-4" />{' '}
-                                            {i18n.t('common.pay')}
-                                        </DropdownMenuItem>
-                                    </Can>
-                                </>
-                            ) : null}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

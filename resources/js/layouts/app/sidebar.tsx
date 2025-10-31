@@ -34,7 +34,7 @@ function Sidebar({
             setOpenSection(undefined);
             return;
         }
-        if (openSection == null && activeParentId) {
+        if (activeParentId && openSection !== activeParentId) {
             setOpenSection(activeParentId);
         }
     }, [collapsed, activeParentId, openSection]);

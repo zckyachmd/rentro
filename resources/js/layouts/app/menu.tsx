@@ -29,12 +29,21 @@ function isRouteActive(name?: string): boolean {
 }
 
 function getIsActive(href?: string, name?: string): boolean {
+    // Prefer named route checks (supports Ziggy wildcards like `orders.*`)
     if (name && isRouteActive(name)) return true;
     if (!href) return false;
     try {
         const currentPath = window.location?.pathname || '';
         const itemPath = new URL(href, window.location.origin).pathname;
-        return itemPath === currentPath;
+
+        // Normalize paths by removing trailing slashes (except root)
+        const normalize = (p: string) => (p.replace(/\/+$/, '') || '/');
+        const curr = normalize(currentPath);
+        const target = normalize(itemPath);
+
+        if (target === '/') return curr === '/';
+        // Active when exact match or any deeper nested path (wildcard/prefix)
+        return curr === target || curr.startsWith(`${target}/`);
     } catch {
         return false;
     }
@@ -292,13 +301,28 @@ export function MenuGroups(props: MenuGroupsProps) {
                             >
                                 {group.items
                                     .filter(hasChildren)
-                                    .map((parent) => (
+                                    .map((parent) => {
+                                        const anyChildActive = (
+                                            parent.children as MenuChild[]
+                                        ).some((c) =>
+                                            getIsActive(
+                                                c.href,
+                                                (c as { name?: string }).name,
+                                            ),
+                                        );
+                                        const parentSelfActive = getIsActive(
+                                            (parent as { href?: string }).href,
+                                            (parent as { name?: string }).name,
+                                        );
+                                        const parentActive =
+                                            anyChildActive || parentSelfActive;
+                                        return (
                                         <AccordionItem
                                             key={parent.label}
                                             value={`${group.id}:${parent.label}`}
                                             className="border-b-0"
                                         >
-                                            <AccordionTrigger className="hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-2 text-sm">
+                                            <AccordionTrigger className={`hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-2 text-sm ${parentActive ? 'bg-accent/60 text-accent-foreground' : ''}`}>
                                                 <span className="flex items-center gap-2">
                                                     <IconOrFallback
                                                         icon={parent.icon}
@@ -367,7 +391,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                 </div>
                                             </AccordionContent>
                                         </AccordionItem>
-                                    ))}
+                                    )})}
                             </Accordion>
                         ) : (
                             <>
@@ -376,14 +400,28 @@ export function MenuGroups(props: MenuGroupsProps) {
                                     <div className="mt-1 space-y-1">
                                         {group.items
                                             .filter(hasChildren)
-                                            .map((parent) => {
-                                                const pid = `${group.id}:${parent.label}`;
-                                                return (
-                                                    <Popover
-                                                        key={parent.label}
-                                                        open={
-                                                            flyoutOpen === pid
-                                                        }
+                                    .map((parent) => {
+                                        const pid = `${group.id}:${parent.label}`;
+                                        const anyChildActive = (
+                                            parent.children as MenuChild[]
+                                        ).some((c) =>
+                                            getIsActive(
+                                                c.href,
+                                                (c as { name?: string }).name,
+                                            ),
+                                        );
+                                        const parentSelfActive = getIsActive(
+                                            (parent as { href?: string }).href,
+                                            (parent as { name?: string }).name,
+                                        );
+                                        const parentActive =
+                                            anyChildActive || parentSelfActive;
+                                        return (
+                                            <Popover
+                                                key={parent.label}
+                                                open={
+                                                    flyoutOpen === pid
+                                                }
                                                         onOpenChange={(open) =>
                                                             setFlyoutOpen(
                                                                 open
@@ -412,7 +450,7 @@ export function MenuGroups(props: MenuGroupsProps) {
                                                                             : pid,
                                                                     );
                                                                 }}
-                                                                className="hover:bg-accent hover:text-accent-foreground flex w-full justify-center rounded-md px-3 py-2 text-sm"
+                                                                className={`hover:bg-accent hover:text-accent-foreground flex w-full justify-center rounded-md px-3 py-2 text-sm ${parentActive ? 'bg-accent/60 text-accent-foreground' : ''}`}
                                                                 title={getParentText(
                                                                     parent.label,
                                                                 )}
@@ -512,13 +550,34 @@ export function MenuGroups(props: MenuGroupsProps) {
                                             .filter(hasChildren)
                                             .map((parent) => {
                                                 const pid = `${group.id}:${parent.label}`;
+                                                const anyChildActive = (
+                                                    parent.children as MenuChild[]
+                                                ).some((c) =>
+                                                    getIsActive(
+                                                        c.href,
+                                                        (c as { name?: string })
+                                                            .name,
+                                                    ),
+                                                );
+                                                const parentSelfActive =
+                                                    getIsActive(
+                                                        (parent as {
+                                                            href?: string;
+                                                        }).href,
+                                                        (parent as {
+                                                            name?: string;
+                                                        }).name,
+                                                    );
+                                                const parentActive =
+                                                    anyChildActive ||
+                                                    parentSelfActive;
                                                 return (
                                                     <AccordionItem
                                                         key={parent.label}
                                                         value={pid}
                                                         className="border-b-0"
                                                     >
-                                                        <AccordionTrigger className="hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-2 text-sm">
+                                                        <AccordionTrigger className={`hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-2 text-sm ${parentActive ? 'bg-accent/60 text-accent-foreground' : ''}`}>
                                                             <span className="flex items-center gap-3">
                                                                 <IconOrFallback
                                                                     icon={

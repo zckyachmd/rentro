@@ -1,5 +1,4 @@
 import { router } from '@inertiajs/react';
-import { Search } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,7 +8,6 @@ import {
     DataTableServer,
     type QueryBag,
 } from '@/components/ui/data-table-server';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -54,7 +52,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
               sort: qinit.sort ?? null,
               dir: qinit.dir ?? null,
               ...(qinit.status ? { status: qinit.status } : {}),
-              ...(qinit.q ? { q: qinit.q } : {}),
+              ...(qinit.q ? { q: qinit.q, search: qinit.q } : {}),
           }
         : undefined;
 
@@ -74,9 +72,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
     const [status, setStatus] = React.useState<string>(
         String((query as { status?: string | null }).status ?? ''),
     );
-    const [keyword, setKeyword] = React.useState<string>(
-        String((query as { q?: string | null }).q ?? ''),
-    );
+    // Search is handled by DataTableServer; no local keyword input here
 
     const safeOnQueryChange = React.useCallback(
         (payload: SafePayload) => {
@@ -84,36 +80,33 @@ export default function TenantInvoiceIndex(props: PageProps) {
             Object.keys(merged).forEach((k) => {
                 if (merged[k] === undefined) delete merged[k];
             });
-            if (
-                Object.prototype.hasOwnProperty.call(merged, 'search') &&
-                merged['search'] === null
-            )
-                delete merged['search'];
+            // Normalize search: map to `q` for server while using `search` for table state
+            if (Object.prototype.hasOwnProperty.call(merged, 'search')) {
+                const val = merged['search'] as string | null | undefined;
+                if (val === null) delete merged['search'];
+                // also reflect into `q` param
+                merged['q'] = val ?? null;
+            }
             onQueryChange(merged as ServerQuery);
         },
         [onQueryChange],
     );
 
     const applyFilters = () => {
-        const trimmedQ = (keyword || '').trim();
-        const hadQ =
-            'q' in (q as Record<string, unknown>) &&
-            Boolean((q as Record<string, unknown>).q);
+        // Apply only non-search filters; search is handled by table toolbar
         const payload: Record<string, unknown> = {
             page: 1,
             status: status || null,
             sort: q.sort ?? null,
             dir: q.dir ?? null,
         };
-        if (trimmedQ) payload.q = trimmedQ;
-        else if (hadQ) payload.q = null;
         safeOnQueryChange(payload as SafePayload);
     };
 
     const resetFilter = React.useCallback(() => {
         setStatus('');
-        setKeyword('');
-        safeOnQueryChange({ page: 1, status: null, q: null } as SafePayload);
+        // Do not reset search here; only reset filters
+        safeOnQueryChange({ page: 1, status: null } as SafePayload);
     }, [safeOnQueryChange]);
 
     const [detail, setDetail] = React.useState<null | {
@@ -150,7 +143,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
     return (
         <AppLayout pageTitle={tInv('title')} pageDescription={tInv('desc')}>
             <div className="space-y-6">
-                {/* Filter */}
+                {/* Filter (only non-search filters) */}
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base font-semibold">
@@ -160,31 +153,10 @@ export default function TenantInvoiceIndex(props: PageProps) {
                     <CardContent className="space-y-3">
                         <div className="grid items-end gap-3 md:grid-cols-2">
                             <div>
-                                <Label htmlFor="invoice-search">
-                                    {tInv('search')}
-                                </Label>
-                                <div className="relative">
-                                    <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
-                                    <Input
-                                        id="invoice-search"
-                                        className="h-9 pl-8"
-                                        value={keyword}
-                                        onChange={(e) =>
-                                            setKeyword(e.target.value)
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                applyFilters();
-                                            }
-                                        }}
-                                        placeholder={tInv('search_placeholder')}
-                                        aria-label={tInv('search')}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <Label htmlFor="status">
+                                <Label
+                                    htmlFor="status"
+                                    className="text-muted-foreground mb-1 block text-xs"
+                                >
                                     {t('common.status')}
                                 </Label>
                                 <Select
@@ -197,7 +169,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
                                         });
                                     }}
                                 >
-                                    <SelectTrigger id="status" className="h-9">
+                                    <SelectTrigger id="status" className="h-9 w-full md:w-[180px]">
                                         <SelectValue
                                             placeholder={t('common.all')}
                                         />
@@ -240,7 +212,7 @@ export default function TenantInvoiceIndex(props: PageProps) {
                     </CardContent>
                 </Card>
 
-                {/* Table */}
+                        {/* Table */}
                 <Card>
                     <CardContent>
                         <DataTableServer<TenantInvoiceItem, unknown>
@@ -249,6 +221,16 @@ export default function TenantInvoiceIndex(props: PageProps) {
                             paginator={paginator ?? null}
                             autoRefreshDefault="15s"
                             showRefresh={false}
+                            search={q.search}
+                            onSearchChange={(v) =>
+                                safeOnQueryChange({
+                                    page: 1,
+                                    search: v,
+                                    q: v || null,
+                                } as SafePayload)
+                            }
+                            searchKey="number"
+                            searchPlaceholder={t('nav.search.placeholder')}
                             sort={q.sort}
                             dir={q.dir}
                             onSortChange={handleSortChange}
@@ -256,6 +238,9 @@ export default function TenantInvoiceIndex(props: PageProps) {
                             loading={processing}
                             emptyText={t('invoice.empty')}
                             showColumn={false}
+                            onRowClick={(row) =>
+                                setDetail({ id: row.id, number: row.number })
+                            }
                         />
                     </CardContent>
                 </Card>

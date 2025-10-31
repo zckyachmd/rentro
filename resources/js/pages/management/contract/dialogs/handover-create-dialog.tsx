@@ -1,3 +1,4 @@
+import type { FormDataKeys } from '@inertiajs/core';
 import { router, useForm } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -55,6 +56,23 @@ export default function HandoverCreate({
             notes: '',
             files: {},
         });
+
+    // Narrowed, typed helpers for Inertia form error APIs to support nested keys
+    const clearErrorsTyped = React.useMemo(
+        () =>
+            (clearErrors as unknown as (
+                ...fields: Array<FormDataKeys<FormState>>
+            ) => void),
+        [clearErrors],
+    );
+    const setErrorTyped = React.useMemo(
+        () =>
+            (setError as unknown as (
+                field: FormDataKeys<FormState>,
+                value: string,
+            ) => void),
+        [setError],
+    );
 
     const isCheckin = mode === 'checkin';
     const notesId = React.useId();
@@ -198,14 +216,8 @@ export default function HandoverCreate({
                                                     general: next,
                                                 });
                                                 if (fileErrors.length) {
-                                                    clearErrors(
-                                                        'files.general',
-                                                        'files.general.0',
-                                                        'files.general.1',
-                                                        'files.general.2',
-                                                        'files.general.3',
-                                                        'files.general.4',
-                                                    );
+                                                    // Clear at parent key; Inertia clears nested keys too
+                                                    clearErrorsTyped('files.general');
                                                 }
                                             }}
                                             multiple
@@ -291,15 +303,13 @@ export default function HandoverCreate({
                                                         Array.isArray(val)
                                                             ? val.join(' ')
                                                             : String(val);
-                                                    if (
-                                                        isAllowedErrorKey(key)
-                                                    ) {
-                                                        setError(
-                                                            key,
+                                                    if (isAllowedErrorKey(key)) {
+                                                        setErrorTyped(
+                                                            key as FormDataKeys<FormState>,
                                                             messageStr,
                                                         );
                                                     } else {
-                                                        setError(
+                                                        setErrorTyped(
                                                             'notes',
                                                             messageStr,
                                                         );

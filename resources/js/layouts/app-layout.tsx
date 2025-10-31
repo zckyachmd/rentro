@@ -29,12 +29,18 @@ import type { MenuGroup } from '@/types/navigation';
 
 const LS_SIDEBAR = 'rentro:sidebar:collapsed';
 
-type ServerMenuChild = { label: string; href?: string; icon?: string };
+type ServerMenuChild = {
+    label: string;
+    href?: string;
+    icon?: string;
+    name?: string; // optional Ziggy route name
+};
 
 type ServerMenuItem = {
     label: string;
     href?: string;
     icon?: string;
+    name?: string; // optional Ziggy route name
     children?: ServerMenuChild[] | null;
 };
 
@@ -85,6 +91,7 @@ export default function AppLayout({
         menus: serverMenus,
         notifications: notifSummary,
     } = usePage<AppPageProps>().props;
+    const { url } = usePage();
     const user = auth?.user || { name: 'User', email: 'user@example.com' };
 
     // Realtime notifications via WebSocket (Echo), polling removed
@@ -217,20 +224,30 @@ export default function AppLayout({
                 label: m.label,
                 href: m.href,
                 icon: m.icon,
+                name: m.name,
                 children: (m.children ?? undefined)?.map((c) => ({
                     label: c.label,
                     href: c.href,
                     icon: c.icon,
+                    name: c.name,
                 })),
             })),
         }));
     }, [serverMenus]);
 
-    const derivedTitleIcon: ReactNode | string | undefined =
-        React.useMemo(() => {
+    const derivedTitleIcon: ReactNode | string | undefined = React.useMemo(() => {
             if (titleIcon) return titleIcon;
             try {
-                const currentPath = window.location?.pathname || '';
+                const currentPath = (() => {
+                    try {
+                        if (typeof url === 'string') {
+                            return new URL(url, window.location.origin).pathname;
+                        }
+                    } catch {
+                        /* noop */
+                    }
+                    return (typeof window !== 'undefined' && window.location?.pathname) || '';
+                })();
                 const normalize = (p: string) =>
                     p.endsWith('/') && p.length > 1 ? p.slice(0, -1) : p;
                 const matchHref = (href?: string) => {
@@ -271,7 +288,7 @@ export default function AppLayout({
                 /* noop */
             }
             return undefined;
-        }, [titleIcon, menuGroups]);
+        }, [titleIcon, menuGroups, url]);
 
     const effectiveBreadcrumbs: Crumb[] = React.useMemo(() => {
         if (breadcrumbs && breadcrumbs.length) return breadcrumbs;
@@ -283,19 +300,48 @@ export default function AppLayout({
     >(undefined);
     React.useEffect(() => {
         try {
-            const currentPath = window.location?.pathname || '';
+            const currentPath = (() => {
+                try {
+                    if (typeof url === 'string') {
+                        return new URL(url, window.location.origin).pathname;
+                    }
+                } catch {
+                    /* noop */
+                }
+                return (typeof window !== 'undefined' && window.location?.pathname) || '';
+            })();
+            // Normalize path helper
+            const normalize = (p: string) => (p.endsWith('/') && p.length > 1 ? p.slice(0, -1) : p) || '/';
+            const curr = normalize(currentPath);
+            const matchHref = (href?: string) => {
+                if (!href) return false;
+                try {
+                    const u = new URL(href, window.location.origin);
+                    const menuPath = normalize(u.pathname);
+                    return curr === menuPath || curr.startsWith(menuPath + '/');
+                } catch {
+                    const menuPath = normalize(href);
+                    return curr === menuPath || curr.startsWith(menuPath + '/');
+                }
+            };
+            const isRouteActive = (name?: string) => {
+                try {
+                    return !!(name && typeof route === 'function' && route().current?.(name as string));
+                } catch {
+                    return false;
+                }
+            };
             for (const group of menuGroups) {
                 for (const parent of group.items || []) {
                     if (!hasChildren(parent)) continue;
-                    for (const child of parent.children) {
-                        const byHref = child.href
-                            ? new URL(child.href, window.location.origin)
-                                  .pathname === currentPath
-                            : false;
-                        if (byHref) {
-                            setActiveParentId(`${group.id}:${parent.label}`);
-                            return;
-                        }
+                    // If any child matches by href prefix or by route name
+                    const childActive = parent.children.some(
+                        (child) => matchHref(child.href) || isRouteActive((child as { name?: string }).name),
+                    );
+                    const parentActive = matchHref(parent.href) || isRouteActive((parent as { name?: string }).name);
+                    if (childActive || parentActive) {
+                        setActiveParentId(`${group.id}:${parent.label}`);
+                        return;
                     }
                 }
             }
@@ -303,7 +349,7 @@ export default function AppLayout({
         } catch {
             setActiveParentId(undefined);
         }
-    }, [menuGroups]);
+    }, [menuGroups, url]);
 
     return (
         <div className="bg-background text-foreground min-h-screen">
